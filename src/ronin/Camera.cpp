@@ -1,19 +1,19 @@
 #include "framework.h"
 
-RoninEngine::Runtime::Camera* _main = nullptr;
+static RoninEngine::Runtime::Camera* _main = nullptr;
 
 namespace RoninEngine::Runtime {
 
 Camera::Camera() : Camera(typeid(*this).name()) {}
 Camera::Camera(const std::string& name) : Component(name) {
-    if (!_main) {
-        _main = this;
-    }
+    //using this camera as main
+    _main = this;
     targetClear = true;
     enabled = true;
     distanceEvcall = 2;
 }
 Camera::~Camera() {
+    //release using pointer
     if (_main == this) _main = nullptr;
 }
 
@@ -157,9 +157,9 @@ const Vec2 Camera::WorldToScreenPoint(Vec2 worldPoint) {
     Vec2 offset = _main->transform()->position();
     SDL_RenderGetScale(Application::GetRenderer(), &scale.x, &scale.y);
     scale *= pixelsPerPoint;
-    //Положение по горизонтале
+    //Horizontal position
     worldPoint.x = (res.width / 2.0f - (offset.x - worldPoint.x) * scale.x);
-    //Положение по вертикале
+    //Vertical position
     worldPoint.y = (res.height / 2.0f + (offset.y - worldPoint.y) * scale.y);
     return worldPoint;
 }
