@@ -4,10 +4,10 @@
 
 namespace RoninEngine::Runtime {
 
-std::list<Transform*> Physics2D::stormCast(const Vec2& origin, int edges) {
+std::list<Transform*> Physics2D::stormCast(const Vec2& origin, int edges, int layer) {
     /*
     Описание данных stormMember
-    Младшие 4 байта, это все для шаги
+    Младшие 4 байта, отвечают за шаги (steps) график использования приведена ниже
 
     stormMember low bits == steps
     stormMember high bits == maxSteps
@@ -17,6 +17,27 @@ std::list<Transform*> Physics2D::stormCast(const Vec2& origin, int edges) {
     остаток 1 байт (8 бит) stormFlags >> 24 = determinants (определители направлений луча)
     0xF000000    xDeterminant = stormFlags >> 24 & 0xF - горизонтальный детерминант x оси (абцис)
     0xF0000000   yDeterminant = stormFlags >> 28       - вертикальный детерминант y оси (ординат)
+
+    VARIABLE    |   DATA   | bits | DESCRIPTION
+    ------------|------------------------------
+    stormMember | LOWBITS  |  32  | STEPS
+                | HIGHBITS |  32  | MAXSTEPS
+    -------------------------------------------
+    stormFlags  | first    |  24  | DIMENSIONS
+                | second   |  8   | DETERMINANTS
+
+
+            Method finder: Storm
+             ' * * * * * * * * *'
+             ' * * * * * * * * *'   n = 10
+             ' * * * * * * * * *'   n0 (first input point) = 0
+             ' * * * 2 3 4 * * *'   n10 (last input point) = 9
+             ' * * 9 1 0 5 * * *'
+             ' * * * 8 7 6 * * *'
+             ' * * * * * * * * *'
+             ' * * * * * * * * *'
+             ' * * * * * * * * *'
+
     */
     auto& mx = Level::self()->matrixWorld;
     Vec2Int ray = Vec2::RoundToInt(origin);
@@ -55,12 +76,10 @@ std::list<Transform*> Physics2D::stormCast(const Vec2& origin, int edges) {
             char&& yDeter = stormFlags >> 28;
             auto iter = mx.find(ray);
             if (iter != std::end(mx)) {
-                for(auto x : iter->second)
-                grubbed.emplace_back(x);
+                for (auto x : iter->second) grubbed.emplace_back(x);
             }
             ray.x += xDeter == 2 ? -1 : xDeter;
             ray.y += yDeter == 2 ? -1 : yDeter;
-
 
             if (!(stormMember & const_storm_steps_flag)) {
                 if (yDeter) {
@@ -101,8 +120,8 @@ std::list<Transform*> Physics2D::rectCast(Vec2 origin, float distance) {
     return _cont;
 }
 
-std::list<Transform*> Physics2D::sphereCast(Vec2 origin, float distance) {
-    std::list<Transform*> _cont = stormCast(origin, Mathf::number(Mathf::ceil(distance)));
+std::list<Transform*> Physics2D::sphereCast(Vec2 origin, float distance, int layer) {
+    std::list<Transform*> _cont = stormCast(origin, Mathf::number(Mathf::ceil(distance)), layer);
 
     _cont.remove_if([&](Transform* lhs) { return Vec2::Distance(lhs->p, origin) > distance; });
 

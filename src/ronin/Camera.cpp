@@ -86,7 +86,7 @@ std::tuple<std::map<int, std::set<Renderer*>>*, std::set<Light*>*> Camera::matri
             |                   |
              -------------------y
 
-            Method finder: Storm
+            Method finder: Storm                                    see: Physics2D::stormCast for details
              ' * * * * * * * * *'
              ' * * * * * * * * *'   n = 10
              ' * * * * * * * * *'   n0 (first input point) = 0
