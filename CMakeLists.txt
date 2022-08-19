@@ -61,5 +61,6 @@ add_subdirectory(src/ronin) #get sources and linking from the "Sources" director
 #include to #include <ronin/...>
 target_include_directories(RoninEngineLib INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/src")
 
-target_sources(RoninEngineLib PUBLIC ${RONIN_ENGINE_HEADERS} ${RONIN_ENGINE_SOURCES})
+#ronin engine sources (cpp) only for RoninEngine Lib
+target_sources(RoninEngineLib PRIVATE ${RONIN_ENGINE_HEADERS} ${RONIN_ENGINE_SOURCES})
 
