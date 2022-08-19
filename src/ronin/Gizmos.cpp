@@ -1,6 +1,6 @@
 #include "Gizmos.h"
 
-#define USE_PRIMITIVES 0
+#define USE_PRIMITIVES 1
 
 #if USE_PRIMITIVES
 #include <SDL2/SDL2_gfxPrimitives.h>
