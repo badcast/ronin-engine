@@ -8,6 +8,8 @@ elseif(CMAKE_SIZEOF_VOID_P STREQUAL "8")
     set(ARCHITECTURE "x64")
 endif()
 
+message(STATUS "Architecture select ${ARCHITECTURE}")
+
 set(RONINENGINE_VERSION_MIN 1.0)
 set(RUNTIME_OUTPUT_NAME "rengine_provider")
 set(CMAKE_CXX_STANDARD 17)
@@ -17,11 +19,10 @@ if(UNIX)
 	add_library(RoninEngineLib SHARED)
 	
 	find_package(SDL2 REQUIRED)
-
 elseif(WIN32)
 	add_library(RoninEngineLib STATIC)
-	
-	find_package(SDL2 QUIET)
+
+        find_package(SDL2 QUIET)
 
 	set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 
