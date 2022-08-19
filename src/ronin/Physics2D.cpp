@@ -5,6 +5,7 @@
 namespace RoninEngine::Runtime {
 
 std::list<Transform*> Physics2D::stormCast(const Vec2& origin, int edges, int layer) {
+
     /*
     Описание данных stormMember
     Младшие 4 байта, отвечают за шаги (steps) график использования приведена ниже
@@ -29,11 +30,11 @@ std::list<Transform*> Physics2D::stormCast(const Vec2& origin, int edges, int la
 
             Method finder: Storm
              ' * * * * * * * * *'
-             ' * * * * * * * * *'   n = 10
+             ' * * * * * * * * *'   n = 9
              ' * * * * * * * * *'   n0 (first input point) = 0
-             ' * * * 2 3 4 * * *'   n10 (last input point) = 9
-             ' * * 9 1 0 5 * * *'
-             ' * * * 8 7 6 * * *'
+             ' * * * 4 5 6 * * *'   n10 (last input point) = 8
+             ' * * * 3 0 7 * * *'
+             ' * * * 2 1 8 * * *'
              ' * * * * * * * * *'
              ' * * * * * * * * *'
              ' * * * * * * * * *'
@@ -76,7 +77,8 @@ std::list<Transform*> Physics2D::stormCast(const Vec2& origin, int edges, int la
             char&& yDeter = stormFlags >> 28;
             auto iter = mx.find(ray);
             if (iter != std::end(mx)) {
-                for (auto x : iter->second) grubbed.emplace_back(x);
+                for (auto x : iter->second)
+                    if (x->layer & layer) grubbed.emplace_back(x);
             }
             ray.x += xDeter == 2 ? -1 : xDeter;
             ray.y += yDeter == 2 ? -1 : yDeter;

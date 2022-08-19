@@ -1,6 +1,7 @@
 #include "framework.h"
 
 namespace RoninEngine {
+//TODO: optimze MatrixSelection USE TRANSFORM::LAYER component for selection (as INDEX)
 
 Level *selfLevel;
 
@@ -81,8 +82,10 @@ int Level::matrixRestore() {
     return matrixRestore(damaged);
 }
 
+//try restore damaged matrix element's
 int Level::matrixRestore(const std::list<Runtime::Transform *> &damaged_content) {
     int restored = 0;
+
     for (Runtime::Transform *dam : damaged_content) {
         Vec2Int find = Vec2::RoundToInt(dam->p);
         auto vertList = selfLevel->matrixWorld.find(find);
@@ -121,6 +124,7 @@ void Level::matrix_nature(Transform *target, Vec2Int lastPoint) {
     matrix_nature(target, Vec2::RoundToInt(target->position()), lastPoint);
 }
 
+//THIS is matrix get from world space
 void Level::matrix_nature(Runtime::Transform *target, const RoninEngine::Runtime::Vec2Int &newPoint, const RoninEngine::Runtime::Vec2Int &lastPoint) {
     if (newPoint == lastPoint) return;
 
