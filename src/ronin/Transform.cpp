@@ -7,6 +7,7 @@ Transform::Transform() : Transform(typeid(*this).name()) {}
 Transform::Transform(const std::string& name) : Component(name) {
     m_parent = nullptr;
     _angle = 0;
+    layer = 1;
     // set as default
     Level::self()->matrix_nature(this, Vec2::RoundToInt(p + Vec2::one));
 }

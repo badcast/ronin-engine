@@ -31,6 +31,8 @@ class Transform : public Component {
     static void hierarchy_sibiling(Transform* from, int index);
 
    public:
+    int layer;
+
     Transform();
     Transform(const std::string& name);
     ~Transform();

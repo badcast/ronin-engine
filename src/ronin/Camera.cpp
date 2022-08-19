@@ -110,7 +110,7 @@ std::tuple<std::map<int, std::set<Renderer*>>*, std::set<Light*>*> Camera::matri
         //собираем оставшиеся которые прикреплены к видимости
         for (auto x = std::begin(prev); x != std::end(prev); ++x) {
             if (areaCast(*x, wpLeftTop, wpRightBottom)) {
-                renders[(*x)->zOrder].insert((*x));
+                renders[(*x)->transform()->layer].insert((*x));
             } else {
                 _removes.emplace_back((*x));
             }
@@ -118,13 +118,13 @@ std::tuple<std::map<int, std::set<Renderer*>>*, std::set<Light*>*> Camera::matri
 
         for (Renderer* y : _removes) prev.erase(y);
 
-        // order by zOrder component
+        // order by layer component
 
         for (auto iter = std::begin(result); iter != std::end(result); ++iter) {
             std::list<Renderer*> rends = (*iter)->gameObject()->getComponents<Renderer>();
             if (!rends.empty()) {
                 for (auto x : rends) {
-                    renders[x->zOrder].insert(x);
+                    renders[x->transform()->layer].insert(x);
                 }
 
                 prev.insert(rends.begin(), rends.end());
@@ -169,9 +169,9 @@ const Vec2 Camera::ViewportToWorldPoint(Vec2 viewportPoint) {
     Vec2 scale, offset = _main->transform()->position();
     SDL_RenderGetScale(Application::GetRenderer(), &scale.x, &scale.y);
     scale *= pixelsPerPoint;
-    // Horizontal
+    // Horizontal position
     viewportPoint.x = (res.width / 2.f - res.width * viewportPoint.x) * -1 / scale.x;
-    // Vertical
+    // Vertical position
     viewportPoint.y = (res.height / 2.f - res.height * viewportPoint.y) / scale.y;
     viewportPoint += offset;
     return viewportPoint;
@@ -183,9 +183,9 @@ const Vec2 Camera::WorldToViewport(Vec2 worldPoint) {
     Vec2 offset = _main->transform()->position();
     SDL_RenderGetScale(Application::GetRenderer(), &scale.x, &scale.y);
     scale *= pixelsPerPoint;
-    // Horizontal
+    // Horizontal position
     worldPoint.x = (res.width / 2.0f - (offset.x - worldPoint.x) * scale.x) / res.width;
-    // Vertical
+    // Vertical position
     worldPoint.y = (res.height / 2.0f + (offset.y - worldPoint.y) * scale.y) / res.height;
     return worldPoint;
 }
