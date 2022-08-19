@@ -1,5 +1,3 @@
-#include "Transform.h"
-
 #include "framework.h"
 
 namespace RoninEngine::Runtime {

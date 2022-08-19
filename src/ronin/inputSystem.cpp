@@ -34,7 +34,7 @@ void input::Update_Input(SDL_Event* e) {
             m_mousePoint.y = e->motion.y;
             break;
         case SDL_MOUSEWHEEL:
-            mouseWheels = e->wheel.preciseY;
+            mouseWheels = e->wheel.y;
         break;
         case SDL_MOUSEBUTTONUP:
             // e->type == SDL_MOUSEBUTTONUP && button == event->button.button

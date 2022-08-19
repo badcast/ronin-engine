@@ -128,8 +128,8 @@ inline const Vec2 Vec2::down(0, -1);
 inline const Vec2 Vec2::left(-1, 0);
 inline const Vec2 Vec2::right(1, 0);
 inline const Vec2 Vec2::up(0, 1);
-inline const Vec2 Vec2::infinity(1.f / 0.f, 1.f / 0.f);
-inline const Vec2 Vec2::negativeInfinity(-1.f / 0.f, -1.f / 0.f);
+inline const Vec2 Vec2::infinity(std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity());
+inline const Vec2 Vec2::negativeInfinity(-std::numeric_limits<float>::infinity(), -std::numeric_limits<float>::infinity());
 
 Vec2Int operator+(const Vec2Int& lhs, const Vec2Int& rhs);
 Vec2Int operator-(const Vec2Int& lhs, const Vec2Int& rhs);

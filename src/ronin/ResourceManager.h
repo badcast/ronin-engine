@@ -57,6 +57,10 @@ struct GCMemoryStick {
     void *memory;
 };
 
+extern int gc_write_memblock_runtime(GCMemoryStick** ms, const std::uint8_t& typeIndex, const std::size_t size);
+
+extern int gc_native_collect(const int freeID);
+
 class GC {
     friend class ::RoninEngine::Application;
     friend class Scene;
@@ -206,7 +210,6 @@ constexpr T *_cut_oop_from(T *m) {
 
 template <typename T, typename... Args>
 typename std::enable_if<std::is_base_of<Object, T>::value, T *>::type GC::gc_push(Args &&..._Args) {
-    extern int gc_write_memblock_runtime(GCMemoryStick * *ms, const std::uint8_t &typeIndex, const std::size_t size);
 
     GCMemoryStick *ms;
     int id;
@@ -221,7 +224,6 @@ typename std::enable_if<std::is_base_of<Object, T>::value, T *>::type GC::gc_pus
 
 template <typename T>
 typename std::enable_if<std::is_base_of<Object, T>::value, bool>::type GC::gc_unload(T *pointer) {
-    extern int gc_native_collect(const int freeID);
     int id;
     int released = 0;
     id = get_id(pointer);

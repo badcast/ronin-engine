@@ -42,7 +42,7 @@ class GameObject final : public Object {
 
    private:
     std::list<Component*> m_components;
-    // TODO: Реализовать компонент m_active, для всех объектов GameObject
+    // TODO: Реализовать компонент m_active, для объектов GameObject
     bool m_active;
 
    public:
@@ -86,6 +86,8 @@ class GameObject final : public Object {
     std::list<T*> getComponents() {
         return AttribGetTypeHelper<T>::getTypes(this->m_components);
     }
+
+    //Transform* getComponent();
 };
 
 }  // namespace Runtime

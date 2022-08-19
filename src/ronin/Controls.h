@@ -7,19 +7,23 @@ namespace RoninEngine { namespace UI {
 class UC;
 class GUI;
 
+typedef std::uint8_t ID;
+
 enum ControlType : std::uint8_t { _UC, CTEXT, CBUTTON, CEDIT, CHSLIDER, CVSLIDER, CIMAGEANIMATOR, CTEXTRAND, CIMAGE };
 struct RenderData {
     Runtime::Rect rect;
     std::uint8_t options;
-    std::int8_t id;
-    std::int8_t parentId;
+    ID id;
+    ID parentId;
     std::string text;
     void* resources;
     UC* prototype;
     std::list<uint8_t> childs;
 };
 
-typedef void (*ui_callback)(const uid_t& id, void* userdata);
+
+
+typedef void (*ui_callback)(const ID& id, void* userdata);
 typedef void (*ui_render_callback)(GUI* gui, RenderData& data, SDL_Renderer* render, bool* hover);
 
 void InitalizeControls();

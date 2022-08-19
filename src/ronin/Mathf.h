@@ -21,19 +21,13 @@ class Random {
 
 class Mathf {
    public:
-    static constexpr float FloatMinNormal = 1.175494E-38;
-    static constexpr float FloatMinDenormal = 1.401298E-45;
-    static constexpr bool IsFlushToZeroEnabled = FloatMinNormal == 0;
-    static constexpr float Epsilon = (!IsFlushToZeroEnabled) ? FloatMinDenormal : FloatMinNormal;
-    static constexpr long double LongPI = 3.14159265358979323846264338327950288;
-    static constexpr float PI = static_cast<float>(LongPI);  // calc PI formula l / d (Length circle div diameter)
-    static constexpr float Infinity = 1e+600;
+    static constexpr long double longPI = 3.14159265358979323846264338327950288;
+    static constexpr float PI = static_cast<float>(longPI);  // calc PI formula l / d (Length circle div diameter)
+    static constexpr float Infinity = std::numeric_limits<float>::infinity();
     static constexpr float NegativeInfinity = -Infinity;
     static constexpr float Deg2Rad = 0.01745329;
     static constexpr float Rad2Deg = 180 / PI;
     static constexpr int RLevelDigits = 10000;
-
-    static bool Approximately(float a, float b);
 
     static float cos(float x);
 

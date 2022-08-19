@@ -64,6 +64,10 @@ Component* GameObject::addComponent(Component* component) {
     return component;
 }
 
+//Transform* GameObject::getComponent() {
+//    return transform();
+//}
+
 template <>
 Transform* GameObject::getComponent<Transform>() {
     return transform();

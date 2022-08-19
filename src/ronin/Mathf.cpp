@@ -35,10 +35,6 @@ Vec2 Random::randomVector() { return Vec2(Random::value() * 2 - 1, Random::value
 
 float Random::randomAngle() { return value() * 360; }
 
-bool Mathf::Approximately(float a, float b) {
-    return Mathf::abs(b - a) < Mathf::max(1E-06f * Mathf::max(Mathf::abs(a), Mathf::abs(b)), Epsilon * 8);
-}
-
 float Mathf::cos(float x) { return ::cosf(x); }
 
 float Mathf::sin(float x) { return ::sinf(x); }
@@ -69,11 +65,11 @@ float Mathf::signf(float x) { return x < 0.f ? -1.f : 1.f; }
 
 int Mathf::sign(int x) { return x < 0 ? -1 : 1; }
 
-float Mathf::round(float x) { return ::SDL_roundf(x); }
+float Mathf::round(float x) { return std::round(x); }
 
-float Mathf::ceil(float x) { return SDL_ceilf(x); }
+float Mathf::ceil(float x) { return std::ceil(x); }
 
-float Mathf::floor(float x) { return SDL_floorf(x); }
+float Mathf::floor(float x) { return std::floor(x); }
 
 float Mathf::frac(float x) { return x - number(x); }
 
@@ -89,7 +85,7 @@ int Mathf::pow(int x, int y) { return ::pow(x, y); }
 
 float Mathf::pow(float x, float y) { return ::powf(x, y); }
 
-float Mathf::sqrt(float x) { return ::SDL_sqrtf(x); }
+float Mathf::sqrt(float x) { return std::sqrt(x); }
 
 float Mathf::repeat(float t, float length) { return Clamp(t - floor(t / length) * length, 0, length); }
 

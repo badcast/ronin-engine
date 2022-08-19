@@ -132,4 +132,3 @@ const size_t get_process_sizeMemory() {
     return total;
 }
 
-const int get_availableRAM() { return unix_process_info().totalRam; }

@@ -31,10 +31,10 @@ void Application::Init(const std::uint32_t& width, const std::uint32_t& height) 
 
     window = SDL_CreateWindow("Ronin Engine", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, SDL_WINDOW_SHOWN);
 
-    if (!window) fail(SDL_GetErrorMsg(errorStr, 128));
+    if (!window) fail(SDL_GetError());
 
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED /*| SDL_RENDERER_PRESENTVSYNC*/);
-    if (!renderer) fail(SDL_GetErrorMsg(errorStr, 128));
+    if (!renderer) fail(SDL_GetError());
 
     // Brightness - Яркость
     SDL_SetWindowBrightness(window, 1);

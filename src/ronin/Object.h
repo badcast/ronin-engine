@@ -62,14 +62,14 @@ class Object {
     operator bool();
 };
 
-template <typename _based, typename _derived>
+template <typename base, typename _derived>
 constexpr bool object_base_of() {
-    return std::is_base_of<_based, _derived>();
+    return std::is_base_of<base, _derived>();
 }
 
-template <typename _based, typename _derived>
-constexpr bool object_base_of(_based* obj, _derived* compare) {
-    return std::is_base_of<_based, _derived>();
+template <typename base, typename _derived>
+constexpr bool object_base_of(base* obj, _derived* compare) {
+    return std::is_base_of<base, _derived>();
 }
 }  // namespace Runtime
 }  // namespace RoninEngine

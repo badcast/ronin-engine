@@ -2,22 +2,63 @@ cmake_minimum_required(VERSION 3.0)
 #SET PROJECT NAME, VERSION
 project(RoninEngine LANGUAGES CXX VERSION 1.0)
 
+if(CMAKE_SIZEOF_VOID_P STREQUAL "4")
+    set(ARCHITECTURE "x86")
+elseif(CMAKE_SIZEOF_VOID_P STREQUAL "8")
+    set(ARCHITECTURE "x64")
+endif()
+
 set(RONINENGINE_VERSION_MIN 1.0)
-set(RUNTIME_OUTPUT_NAME "ronin.${RONINENGINE_VERSION_MIN}")
+set(RUNTIME_OUTPUT_NAME "rengine_provider")
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(SDL2 REQUIRED)
+if(UNIX)
+	add_library(RoninEngineLib SHARED)
+	
+	find_package(SDL2 REQUIRED)
+
+elseif(WIN32)
+	add_library(RoninEngineLib STATIC)
+	
+	find_package(SDL2 QUIET)
+
+	set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
+
+	if(NOT ${SDL2_FOUND})
+		set(LIBS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/third-party/SDL2")
+		#next use 
+		if(NOT EXISTS "${LIBS_DIR}")
+			message(FATAL_ERROR "directory-libs not found, error binding SDL2")
+		endif()	 
+
+		#DO 
+		set(CMAKE_PREFIX_PATH ${LIBS_DIR})
+		
+		target_include_directories(RoninEngineLib INTERFACE "${LIBS_DIR}/SDL2-2.0.22/include")	
+		message(STATUS "internal SDL2 - binded. Include use SDL2/SDL.h")
+		
+		set(STATIC_LIBS_SDL2PATH "${LIBS_DIR}/SDL2-2.0.22/lib/${ARCHITECTURE}")
+
+		add_library(SDL2::SDL2 SHARED IMPORTED)
+
+		set_target_properties(SDL2::SDL2 PROPERTIES
+			IMPORTED_LOCATION "SDL2"
+			IMPORTED_IMPLIB  "${STATIC_LIBS_SDL2PATH}/SDL2.lib" 
+		)
+	endif()
+endif()
+
+find_package(SDL2_mixer REQUIRED)
+find_package(SDL2_image REQUIRED)
+find_package(SDL2_ttf REQUIRED)
+
+target_link_libraries(RoninEngineLib SDL2::SDL2 SDL2_mixer SDL2_ttf SDL2_image SDL2_gfx)
 
 add_subdirectory(src/ronin) #get sources and linking from the "Sources" directory
 
-add_library(RoninEngine SHARED ${RONINE_ENGINE_HEADERS} ${RONIN_ENGINE_SOURCES})
-set_target_properties(RoninEngine PROPERTIES
-    OUTPUT_NAME ${RUNTIME_OUTPUT_NAME})
-
-
 #include to #include <ronin/...>
-target_include_directories(RoninEngine INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/src")
+target_include_directories(RoninEngineLib INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/src")
 
-#link SDL2
-target_link_libraries(RoninEngine SDL2::SDL2 SDL2_mixer SDL2_ttf SDL2_image SDL2_gfx)
+target_sources(RoninEngineLib PUBLIC ${RONIN_ENGINE_HEADERS} ${RONIN_ENGINE_SOURCES})
+

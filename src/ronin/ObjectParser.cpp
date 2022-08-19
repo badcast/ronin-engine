@@ -326,9 +326,6 @@ std::vector<jbool>* jno_object_node::toBooleans() {
 jno_object_parser::jno_object_parser() {}
 jno_object_parser::~jno_object_parser() {}
 
-#ifdef _DEBUG
-static ObjectNode* _dbgLastNode;
-#endif
 
 // big algorithm, please free me.
 int jno_object_parser::avail(jno_object_parser::jstruct& entry, const char* source, int len, int levels) {
@@ -507,9 +504,7 @@ void jno_object_parser::deserialize(const jstring& source) { deserialize(source.
 void jno_object_parser::deserialize(const char* source, int len) {
     // FIXME: CLEAR FUNCTION TO UPGRADE
     entry.clear();  // clears alls
-#ifdef _DEBUG
-    _dbgLastNode = nullptr;
-#endif
+
     jno_object_parser::avail(entry, source, len);
 }
 jstring jno_object_parser::serialize() {

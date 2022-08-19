@@ -79,7 +79,7 @@ std::list<Transform*> Physics2D::stormCast(const Vec2& origin, int edges) {
     return grubbed;
 }
 
-std::list<Transform*> Physics2D::sectorCast(Vec2 origin, float distance) {
+std::list<Transform*> Physics2D::rectCast(Vec2 origin, float distance) {
     auto& mx = Level::self()->matrixWorld;
     std::list<Transform*> _cont;
 
