@@ -1,5 +1,7 @@
 #include "framework.h"
 
+//TODO: how to create shadow ? for all sprite renderer component
+
 namespace RoninEngine::Runtime {
 Camera2D::Camera2D() : Camera("Camera 2D"), scale(Vec2::one) {
     this->visibleBorders = false;
@@ -27,14 +29,15 @@ void Camera2D::render(SDL_Renderer* renderer, Rect rect, GameObject* root) {
         Gizmos::DrawPosition(transform()->position());
     }
 
-    auto stack = matrixSelection();
+    //get from matrix selection
+    auto filter = matrixSelection();
 
     // scale.x = Mathf::Min(Mathf::Max(scale.x, 0.f), 10.f);
     // scale.y = Mathf::Min(Mathf::Max(scale.y, 0.f), 10.f);
     //_scale = scale*squarePerPixels;
     SDL_RenderSetScale(renderer, scale.x, scale.y);
     // Render Objects
-    for (auto layer : *(std::get<0>(stack)))
+    for (const auto &layer : *(std::get<0>(filter)))
         for (auto renderSource : layer.second) {
             // drawing
             // clear
@@ -43,6 +46,7 @@ void Camera2D::render(SDL_Renderer* renderer, Rect rect, GameObject* root) {
 
             renderSource->Render(&wrapper);  // draw
             if (wrapper.texture) {
+                //FIXME: point (transform()->position) ? wtf?
                 Vec2 point = transform()->p;
                 Transform* rTrans = renderSource->transform();
 
@@ -69,13 +73,14 @@ void Camera2D::render(SDL_Renderer* renderer, Rect rect, GameObject* root) {
                 //Положение по вертикале
                 wrapper.dst.y = arranged.y + ((rect.h - wrapper.dst.h) / 2.0f + (point.y - sourcePoint.y) * pixelsPerPoint);
 
+                //native renderer component
                 SDL_RenderCopyExF(renderer, wrapper.texture->native(), (SDL_Rect*)&wrapper.src,
                                   reinterpret_cast<SDL_FRect*>(&wrapper.dst), renderSource->transform()->angle(), nullptr,
                                   SDL_RendererFlip::SDL_FLIP_NONE);
             }
         }
     // Render Lights
-    for (auto lightSource : *std::get<1>(stack)) {
+    for (auto lightSource : *std::get<1>(filter)) {
         // drawing
         // clear
         wrapper = {};
@@ -131,7 +136,7 @@ void Camera2D::render(SDL_Renderer* renderer, Rect rect, GameObject* root) {
     }
 
     if (visibleObjects) {
-        for (auto layer : (*std::get<0>(stack)))
+        for (const auto &layer : (*std::get<0>(filter)))
             for (auto face : layer.second) {
                 Vec2 p = face->transform()->position();
                 Vec2 sz = face->GetSize() * 2;

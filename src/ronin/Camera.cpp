@@ -1,6 +1,7 @@
 #include "framework.h"
 
 RoninEngine::Runtime::Camera* _main = nullptr;
+
 namespace RoninEngine::Runtime {
 
 Camera::Camera() : Camera(typeid(*this).name()) {}
@@ -72,7 +73,7 @@ inline bool areaCast(Renderer* target, const Vec2Int& wpLeftTop, const Vec2Int& 
            (pos.y - rSz.y <= wpLeftTop.y && pos.y + rSz.y >= wpRightBottom.y);
 }
 std::tuple<std::map<int, std::set<Renderer*>>*, std::set<Light*>*> Camera::matrixSelection() {
-    /*       This is projection
+    /*       This is projection: Algorithm storm member used.
             x-------------------
             |                   |      = * - is Vector2 (point)
             |  r * * * * * * *  |      = r - current point (ray)

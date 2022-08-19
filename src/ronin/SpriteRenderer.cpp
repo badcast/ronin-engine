@@ -1,6 +1,9 @@
 #include "framework.h"
 
 namespace RoninEngine::Runtime {
+
+//FIXME: OPTIMIZING SPRITE RENDERER COMPONENT
+
 SpriteRenderer::SpriteRenderer() : SpriteRenderer(typeid(*this).name()) {}
 
 SpriteRenderer::SpriteRenderer(const std::string& name)

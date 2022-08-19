@@ -3,11 +3,17 @@
 #include "dependency.h"
 
 namespace RoninEngine::Runtime {
-enum class SpriteRenderPresentTiles : char { Fixed, Place };
+enum class SpriteRenderPresentTiles : char
+{
+    //Fixed type
+    Fixed,
+    //Placement type
+    Place
+};
 enum class SpriteRenderType : char {
-    ///Обычное отрисовка спрайта с учетом его параметров.
+    //Simple drawing tiles with self properties
     Simple,
-    ///Отрисовка спрайта с учетом его параметров и черепиция от size
+    //Tile (Tilling) drawing tiles, with self properties tilling
     Tile
 };
 
