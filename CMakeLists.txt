@@ -20,6 +20,7 @@ if(UNIX)
 	
 	find_package(SDL2 REQUIRED)
 elseif(WIN32)
+	set(SDL2_VERSION_WININTERNAL "2.0.22")
 	add_library(RoninEngineLib STATIC)
 
         find_package(SDL2 QUIET)
@@ -36,10 +37,10 @@ elseif(WIN32)
 		#DO 
 		set(CMAKE_PREFIX_PATH ${LIBS_DIR})
 		
-		target_include_directories(RoninEngineLib INTERFACE "${LIBS_DIR}/SDL2-2.0.22/include")	
+		target_include_directories(RoninEngineLib INTERFACE "${LIBS_DIR}/SDL2-${SDL2_VERSION_WININTERNAL}/include")
 		message(STATUS "internal SDL2 - binded. Include use SDL2/SDL.h")
 		
-		set(STATIC_LIBS_SDL2PATH "${LIBS_DIR}/SDL2-2.0.22/lib/${ARCHITECTURE}")
+		set(STATIC_LIBS_SDL2PATH "${LIBS_DIR}/SDL2-${SDL2_VERSION_WININTERNAL}/lib/${ARCHITECTURE}")
 
 		add_library(SDL2::SDL2 SHARED IMPORTED)
 
