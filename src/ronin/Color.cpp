@@ -4,7 +4,7 @@
 
 Color::Color() { memset(this, 0, sizeof(Color)); }
 
-Color::Color(const Color &assign) : r(assign.r), g(assign.g), b(assign.b), a(assign.a) { }
+Color::Color(const Color &assign) : r(assign.r), g(assign.g), b(assign.b), a(assign.a) {}
 
 Color::Color(const int32_t rgba) { memcpy(this, &rgba, sizeof(Color)); }
 
@@ -43,8 +43,8 @@ Color Color::operator=(const std::uint32_t &rhs) {
     return *this;
 }
 
-Color::operator int() { return *reinterpret_cast<int *>(this); }
+Color::operator int() const { return *(const int *)(this); }
 
-Color::operator std::uint32_t() { return *reinterpret_cast<std::uint32_t *>(this); }
+Color::operator std::uint32_t() const { return *(std::uint32_t *)(this); }
 
-Color::operator SDL_Color() { return *reinterpret_cast<SDL_Color *>(this); }
+Color::operator SDL_Color() const { return *(SDL_Color *)(this); }

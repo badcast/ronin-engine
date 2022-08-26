@@ -129,10 +129,9 @@ int gc_native_collect(const int freeID = -1) {
 }
 
 void GC::gc_init() {
-    constexpr int bufferSize = sizeof(*_assocMultiFiles) + sizeof(*_assocMultiLoadedImages) +
-                               sizeof(*_assocMultiCacheTextures) + sizeof(*_assocSingleFile) +
-                               sizeof(*_resourceLoaded_surfaces) + sizeof(*_assocCacheTextures) + sizeof(*_assocCacheCursors) +
-                               sizeof(*_assocLoadedMusic) + sizeof(*gc_fast_lock);
+    constexpr int bufferSize = sizeof(*_assocMultiFiles) + sizeof(*_assocMultiLoadedImages) + sizeof(*_assocMultiCacheTextures) + sizeof(*_assocSingleFile) +
+                               sizeof(*_resourceLoaded_surfaces) + sizeof(*_assocCacheTextures) + sizeof(*_assocCacheCursors) + sizeof(*_assocLoadedMusic) +
+                               sizeof(*gc_fast_lock);
 
     void *buffer = gc_malloc(bufferSize);
     memset(buffer, 0, bufferSize);
@@ -231,14 +230,14 @@ void GC::UnloadAll(bool immediate) {
 }
 
 void GC::CheckResources() {
-      std::string p = dataPath();
-      char *membuf = (char *)GC::gc_malloc(256);
-      *membuf = '\0';
-      if (!std::filesystem::exists(p)) {
-          SDL_strlcat(membuf, "\"Data\" is not found", 256);
-          Application::fail(membuf);
-      }
-      GC::gc_free(membuf);
+    std::string p = dataPath();
+    char *membuf = (char *)GC::gc_malloc(256);
+    *membuf = '\0';
+    if (!std::filesystem::exists(p)) {
+        SDL_strlcat(membuf, "\"Data\" is not found", 256);
+        Application::fail(membuf);
+    }
+    GC::gc_free(membuf);
 }
 
 //Для автоматического уничтожения ресурса, обязательно его нужно скинуть на
@@ -315,15 +314,11 @@ Texture *GC::GetTexture(const std::string &resourceName, FolderKind pathOn, bool
 
     return texture;
 }
-Texture *GC::GetTexture(const std::string &resourceName, bool autoUnload) {
-    return GetTexture(resourceName, FolderKind::TEXTURES, autoUnload);
-}
+Texture *GC::GetTexture(const std::string &resourceName, bool autoUnload) { return GetTexture(resourceName, FolderKind::TEXTURES, autoUnload); }
 
 // Create texture format RGBA 8888
 Texture *GC::GetTexture(const int w, const int h) { return GetTexture(w, h, SDL_PixelFormatEnum::SDL_PIXELFORMAT_RGBA8888); }
-Texture *GC::GetTexture(const int w, const int h, const ::SDL_PixelFormatEnum format) {
-    return GetTexture(w, h, format, SDL_TextureAccess::SDL_TEXTUREACCESS_STREAMING);
-}
+Texture *GC::GetTexture(const int w, const int h, const ::SDL_PixelFormatEnum format) { return GetTexture(w, h, format, SDL_TextureAccess::SDL_TEXTUREACCESS_STREAMING); }
 Texture *GC::GetTexture(const int w, const int h, const ::SDL_PixelFormatEnum format, const ::SDL_TextureAccess access) {
     Texture *tex;
     gc_alloc_texture(&tex, w, h, format, access);
@@ -334,9 +329,7 @@ Texture *GC::GetTexture(const int w, const int h, const ::SDL_PixelFormatEnum fo
 
 //Для автоматического уничтожения ресурса, обязательно его нужно скинуть на
 // ResourceManager::Unload()
-SDL_Cursor *GC::GetCursor(const std::string &resourceName, const Vec2Int &hotspot, bool autoUnload) {
-    return GetCursor(GetSurface(resourceName), hotspot);
-}
+SDL_Cursor *GC::GetCursor(const std::string &resourceName, const Vec2Int &hotspot, bool autoUnload) { return GetCursor(GetSurface(resourceName), hotspot); }
 
 //Для автоматического уничтожения ресурса, обязательно его нужно скинуть на
 // ResourceManager::Unload()
@@ -437,7 +430,7 @@ SDL_Surface *GC::resource_bitmap(const std::string &resourceName, FolderKind fol
     auto gcid = resource_bitmap(resourceName, folderKind, &sdlsurf);
     if (gcid == GCInvalidID) {
         sdlsurf = nullptr;
-        Application::fail("Surface name "+resourceName+" not registered");
+        Application::fail("Surface name " + resourceName + " not registered");
     }
     return sdlsurf;
 }
@@ -485,14 +478,12 @@ int GC::gc_alloc_sdl_texture(SDL_Texture **sdltexturePtr, const int &w, const in
     return gc_alloc_sdl_texture(sdltexturePtr, w, h, format, SDL_TextureAccess::SDL_TEXTUREACCESS_STATIC);
 }
 
-int GC::gc_alloc_sdl_texture(SDL_Texture **sdltexturePtr, const int &w, const int &h, const SDL_PixelFormatEnum &format,
-                             const SDL_TextureAccess &access) {
+int GC::gc_alloc_sdl_texture(SDL_Texture **sdltexturePtr, const int &w, const int &h, const SDL_PixelFormatEnum &format, const SDL_TextureAccess &access) {
     int id;
     GCMemoryStick *mem;
 
     id = gc_write_memblock_runtime<SDL_Texture>(&mem);
-    auto &&gc_ptr =
-        reinterpret_cast<SDL_Texture *>(mem->memory = SDL_CreateTexture(Application::GetRenderer(), format, access, w, h));
+    auto &&gc_ptr = reinterpret_cast<SDL_Texture *>(mem->memory = SDL_CreateTexture(Application::GetRenderer(), format, access, w, h));
 
     if (sdltexturePtr != nullptr) (*sdltexturePtr) = gc_ptr;
 
@@ -516,15 +507,11 @@ int GC::gc_alloc_sdl_texture(SDL_Texture **sdltexturePtr, SDL_Surface *from) {
 
 int GC::gc_alloc_texture_empty(Texture **texturePtr) { return gc_alloc_texture(texturePtr, 32, 32); }
 
-int GC::gc_alloc_texture(Texture **texturePtr, const int &w, const int &h) {
-    return gc_alloc_texture(texturePtr, w, h, SDL_PixelFormatEnum::SDL_PIXELFORMAT_RGBA8888);
-}
+int GC::gc_alloc_texture(Texture **texturePtr, const int &w, const int &h) { return gc_alloc_texture(texturePtr, w, h, SDL_PixelFormatEnum::SDL_PIXELFORMAT_RGBA8888); }
 int GC::gc_alloc_texture(Texture **texturePtr, const int &w, const int &h, const SDL_PixelFormatEnum &format) {
-    return gc_alloc_texture(texturePtr, w, h, SDL_PixelFormatEnum::SDL_PIXELFORMAT_RGBA8888,
-                            SDL_TextureAccess::SDL_TEXTUREACCESS_STATIC);
+    return gc_alloc_texture(texturePtr, w, h, SDL_PixelFormatEnum::SDL_PIXELFORMAT_RGBA8888, SDL_TextureAccess::SDL_TEXTUREACCESS_STATIC);
 }
-int GC::gc_alloc_texture(Texture **texturePtr, const int &w, const int &h, const SDL_PixelFormatEnum &format,
-                         const SDL_TextureAccess &access) {
+int GC::gc_alloc_texture(Texture **texturePtr, const int &w, const int &h, const SDL_PixelFormatEnum &format, const SDL_TextureAccess &access) {
     int id;
     GCMemoryStick *mem;
 
@@ -543,11 +530,19 @@ int GC::gc_alloc_texture_from(Texture **texturePtr, SDL_Surface *from) {
     int id;
     GCMemoryStick *mem;
 
+    if (!from || !texturePtr) {
+        return GCInvalidID;
+    }
+
     // alloc empty ptr
     // and create SDL_CreateTextureFromSurface
     id = gc_write_memblock_runtime<SDL_Texture>(&mem);
     mem->memory = SDL_CreateTextureFromSurface(Application::GetRenderer(), from);
-    auto gc_ptr = reinterpret_cast<SDL_Texture *>(mem->memory);
+    if(!mem->memory)
+    {
+        return GCInvalidID;
+    }
+    auto gc_ptr = static_cast<SDL_Texture *>(mem->memory);
 
     gc_alloc_texture_from(texturePtr, gc_ptr);
     return id;
@@ -572,13 +567,9 @@ int GC::gc_alloc_texture_from(Texture **texturePtr, SDL_Texture *sdltexture) {
 
 int GC::gc_alloc_sprite_empty(Sprite **spritePtr) { return gc_alloc_sprite_empty(spritePtr, {0, 0, 0, 0}); }
 
-int GC::gc_alloc_sprite_empty(Sprite **spritePtr, const Rect &rect) {
-    return gc_alloc_sprite_with(spritePtr, nullptr, rect, Vec2::half);
-}
+int GC::gc_alloc_sprite_empty(Sprite **spritePtr, const Rect &rect) { return gc_alloc_sprite_with(spritePtr, nullptr, rect, Vec2::half); }
 
-int GC::gc_alloc_sprite_with(Sprite **spritePtr, Texture *texture) {
-    return gc_alloc_sprite_with(spritePtr, texture, Vec2::half);
-}
+int GC::gc_alloc_sprite_with(Sprite **spritePtr, Texture *texture) { return gc_alloc_sprite_with(spritePtr, texture, Vec2::half); }
 
 int GC::gc_alloc_sprite_with(Sprite **spritePtr, Texture *texture, const Vec2 &center) {
     Rect rect{};

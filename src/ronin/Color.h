@@ -31,9 +31,9 @@ struct Color {
 
     bool operator==(const Color& rhs);
     bool operator!=(const Color& rhs);
-    operator int();
-    operator std::uint32_t();
-    operator SDL_Color();
+    operator int() const;
+    operator std::uint32_t() const;
+    operator SDL_Color() const;
 
     // Basic Collors
     static const Color transparent;

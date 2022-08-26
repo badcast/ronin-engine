@@ -5,7 +5,7 @@
 namespace RoninEngine {
 namespace Runtime {
 
-constexpr int GCInvalidID = 0xffffffff;
+enum { GCInvalidID = 0xffffffff };
 constexpr std::uint8_t SDL_TYPE_MAX_INDEX = 31;
 constexpr std::uint8_t InvalidType = 0xff;
 
@@ -57,7 +57,7 @@ struct GCMemoryStick {
     void *memory;
 };
 
-extern int gc_write_memblock_runtime(GCMemoryStick** ms, const std::uint8_t& typeIndex, const std::size_t size);
+extern int gc_write_memblock_runtime(GCMemoryStick **ms, const std::uint8_t &typeIndex, const std::size_t size);
 
 extern int gc_native_collect(const int freeID);
 
@@ -89,8 +89,7 @@ class GC {
     [[deprecated]] static Texture *GetTexture(const std::string &resourceName, bool autoUnload = true);
     [[deprecated]] static Texture *GetTexture(const int w, const int h);
     [[deprecated]] static Texture *GetTexture(const int w, const int h, const ::SDL_PixelFormatEnum format);
-    [[deprecated]] static Texture *GetTexture(const int w, const int h, const ::SDL_PixelFormatEnum format,
-                                             const ::SDL_TextureAccess access);
+    [[deprecated]] static Texture *GetTexture(const int w, const int h, const ::SDL_PixelFormatEnum format, const ::SDL_TextureAccess access);
     [[deprecated]] static SDL_Cursor *GetCursor(const std::string &resourceName, const Vec2Int &hotspot, bool autoUnload = true);
     [[deprecated]] static SDL_Cursor *GetCursor(SDL_Surface *texture, const Vec2Int &hotspot);
 
@@ -162,8 +161,7 @@ class GC {
 
     static int gc_alloc_sdl_texture(SDL_Texture **sdltexturePtr, const int &w, const int &h, const SDL_PixelFormatEnum &format);
 
-    static int gc_alloc_sdl_texture(SDL_Texture **sdltexturePtr, const int &w, const int &h, const SDL_PixelFormatEnum &format,
-                                    const SDL_TextureAccess &access);
+    static int gc_alloc_sdl_texture(SDL_Texture **sdltexturePtr, const int &w, const int &h, const SDL_PixelFormatEnum &format, const SDL_TextureAccess &access);
 
     static int gc_alloc_sdl_texture(SDL_Texture **sdltexturePtr, SDL_Surface *from);
 
@@ -174,8 +172,7 @@ class GC {
     static int gc_alloc_texture(Texture **texturePtr, const int &w, const int &h);
 
     static int gc_alloc_texture(Texture **texturePtr, const int &w, const int &h, const SDL_PixelFormatEnum &format);
-    static int gc_alloc_texture(Texture **texturePtr, const int &w, const int &h, const SDL_PixelFormatEnum &format,
-                                const SDL_TextureAccess &access);
+    static int gc_alloc_texture(Texture **texturePtr, const int &w, const int &h, const SDL_PixelFormatEnum &format, const SDL_TextureAccess &access);
 
     static int gc_alloc_texture_from(Texture **texturePtr, SDL_Surface *sdlsurface);
 
@@ -210,7 +207,6 @@ constexpr T *_cut_oop_from(T *m) {
 
 template <typename T, typename... Args>
 typename std::enable_if<std::is_base_of<Object, T>::value, T *>::type GC::gc_push(Args &&..._Args) {
-
     GCMemoryStick *ms;
     int id;
     T *mem;
@@ -234,7 +230,7 @@ typename std::enable_if<std::is_base_of<Object, T>::value, bool>::type GC::gc_un
 
 template <typename T, typename... Args>
 T *GC::gc_alloc(Args &&..._Args) {
-    T *p = reinterpret_cast<T *>(gc_malloc(sizeof(T)));
+    T *p = static_cast<T *>(gc_malloc(sizeof(T)));
     if (p == nullptr) throw std::bad_alloc();
     memset(p, 0, sizeof(T));
     _paste_oop_init(p, std::forward<Args &&>(_Args)...);
