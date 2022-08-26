@@ -1,17 +1,34 @@
-#include "inputSystem.h"
 #include "framework.h"
+#include "inputSystem.h"
 
-constexpr int _mEnabled = 1;
-constexpr int _mVisibled = 2;
-constexpr int _mGroup = 4;
+enum { ElementEnableMask = 1, ElementVisibleMask = 2, ElementGroupMask = 4 };
 
 namespace RoninEngine::UI {
 GUI* guiInstance;
 
-GUI::GUI(Level* level)
-    : m_level(level), hitCast(true), callback(nullptr), callbackData(nullptr), visible(true), _focusedUI(false) {
-    guiInstance = this;
+extern void* factory_resource(ControlType type);
+extern void factory_free(UIElement* element);
+extern bool general_render_ui_section(GUI* gui, UIElement& element, SDL_Renderer* render, bool* hover);
+
+uid call_register_ui(GUI* gui, uid parent = NOPARENT) throw() {
+    if (parent && !gui->Has_ID(parent)) throw std::runtime_error("Is not end parent");
+
+    UIElement data{};
+    data.parentId = parent;
+    data.options = ElementVisibleMask | ElementEnableMask;
+    gui->ui_layer.elements.emplace_back(data);
+    data.id = gui->ui_layer.elements.size();
+    // add the child
+    if (parent)
+        gui->ui_layer.elements[parent - 1].childs.emplace_back(gui->ui_layer.elements.size() - 1);
+    else
+        gui->ui_layer.layers.push_back(data.id);
+
+    return data.id;
 }
+inline UIElement& call_get_element(GUI* gui, uid id) { return gui->ui_layer.elements[id - 1]; }
+
+GUI::GUI(Level* level) : m_level(level), hitCast(true), callback(nullptr), callbackData(nullptr), visible(true), _focusedUI(false) { guiInstance = this; }
 
 GUI::~GUI() {}
 
@@ -20,125 +37,103 @@ GUI::~GUI() {}
 std::list<uid> GUI::get_groups() {
     std::list<uid> __;
 
-    for (auto iter : m_Sticks.controls) {
+    for (auto& iter : ui_layer.elements) {
         if (this->Is_Group(iter.id)) __.push_back(iter.id);
     };
 
     return __;
 }
 
-uid GUI::call_register_ui(const uid& parent) throw() {
-    if (parent && !Has_ID(parent)) throw std::runtime_error("Is not ed parent");
-
-    RenderData data{};
-    data.parentId = parent;
-    data.options = _mVisibled | _mEnabled;
-    m_Sticks.controls.emplace_back(data);
-    data.id = m_Sticks.controls.size();
-    // add the child
-    if (parent)
-        m_Sticks.controls[parent - 1].childs.emplace_back(m_Sticks.controls.size() - 1);
-    else
-        m_Sticks._rendering.push_back(data.id);
-
-    return data.id;
-}
-
-RenderData& GUI::ID(const uid& id) { return m_Sticks.controls[id - 1]; }
+UIElement& GUI::getElement(uid id) { return call_get_element(this, id); }
 
 // public---------------------------------------
 
-bool GUI::Has_ID(const uid& id) { return m_Sticks.controls.size() >= id; }
+bool GUI::Has_ID(uid id) { return ui_layer.elements.size() >= id; }
 uid GUI::Create_Group(const RoninEngine::Runtime::Rect& rect) {
-    uid id = call_register_ui();
-    auto& data = ID(id);
+    uid id = call_register_ui(this);
+    auto& data = getElement(id);
     data.rect = rect;
-    data.options |= _mGroup;
+    data.options |= ElementGroupMask;
     return id;
 }
 uid GUI::Create_Group() { return Create_Group(RoninEngine::Runtime::Rect::zero); }
 
-uid GUI::Push_Label(const std::string& text, const RoninEngine::Runtime::Rect& rect, const int& fontWidth, const uid& parent) {
+uid GUI::Push_Label(const std::string& text, const RoninEngine::Runtime::Rect& rect, const int& fontWidth, uid parent) {
     // todo: fontWidth
-    uid id = call_register_ui(parent);
-    auto& data = ID(id);
+    uid id = call_register_ui(this, parent);
+    auto& data = getElement(id);
     data.text = text;
     data.rect = rect;
-    data.prototype = findControl(CTEXT);
+    data.prototype = CTEXT;
     return id;
 }
-uid GUI::Push_Label(const std::string& text, const Vec2Int& point, const int& fontWidth, const uid& parent) {
+uid GUI::Push_Label(const std::string& text, const Vec2Int& point, const int& fontWidth, uid parent) {
     return Push_Label(text, {point.x, point.y, 0, 0}, fontWidth, parent);
 }
 
-uid GUI::Push_Button(const std::string& text, const RoninEngine::Runtime::Rect& rect, const uid& parent) {
-    int id = call_register_ui(parent);
-    auto& data = ID(id);
-    data.prototype = findControl(CBUTTON);
+uid GUI::Push_Button(const std::string& text, const RoninEngine::Runtime::Rect& rect, uid parent) {
+    int id = call_register_ui(this, parent);
+    auto& data = getElement(id);
     data.rect = rect;
+    data.text = text;
+    data.prototype = CBUTTON;
+    return id;
+}
+uid GUI::Push_Button(const std::string& text, const Vec2Int point, uid parent) { return Push_Button(text, {point.x, point.y, 256, 32}, parent); }
+
+uid GUI::Push_DisplayRandomizer(TextRandomizer_Format format, const Vec2Int& point, uid parent) {
+    uid id = call_register_ui(this, parent);
+
+    auto& data = getElement(id);
+
+    data.resources = (void*)format;
+    data.prototype = CTEXTRAND;
+    return id;
+}
+uid GUI::Push_DisplayRandomizer(TextRandomizer_Format format, uid parent) {
+    return Push_DisplayRandomizer(format, Vec2Int(std::numeric_limits<int>::max(), std::numeric_limits<int>::max()), parent);
+}
+uid GUI::Push_DisplayRandomizer_Text(const std::string& text, const Vec2Int& point, uid parent) {
+    uid id = Push_DisplayRandomizer(TextRandomizer_Format::OnlyText, point, parent);
+    auto& data = getElement(id);
     data.text = text;
     return id;
 }
-uid GUI::Push_Button(const std::string& text, const Vec2Int point, const uid& parent) {
-    return Push_Button(text, {point.x, point.y, 256, 32}, parent);
-}
-
-uid GUI::Push_DisplayRandomizer(TextRandomizer_Format format, const Vec2Int& point, const uid& parent) {
-    uid id = call_register_ui(parent);
-
-    auto& data = ID(id);
-
-    data.prototype = findControl(CTEXTRAND);
-    data.resources = (void*)format;
-    return id;
-}
-uid GUI::Push_DisplayRandomizer(TextRandomizer_Format format, const uid& parent) {
-    return Push_DisplayRandomizer(format, Vec2Int(std::numeric_limits<int>::max(), std::numeric_limits<int>::max()), parent);
-}
-uid GUI::Push_DisplayRanomizer_Text(const std::string& text, const Vec2Int& point, const uid& parent) {
-    uid id = Push_DisplayRandomizer(TextRandomizer_Format::OnlyText, point, parent);
-    auto& data = ID(id);
-
-    return id;
-}
-uid GUI::Push_DisplayRanomizer_Number(const int& min, const int& max, TextAlign textAlign, const uid& parent) {
+uid GUI::Push_DisplayRandomizer_Number(const int& min, const int& max, TextAlign textAlign, uid parent) {
     uid id = Push_DisplayRandomizer(OnlyNumber, parent);
     // TODO: min and max не реализованы.
     return id;
 }
 
-uid GUI::Push_TextureStick(Texture* texture, const RoninEngine::Runtime::Rect& rect, const uid& parent) {
-    uid id = call_register_ui(parent);
+uid GUI::Push_TextureStick(Texture* texture, const RoninEngine::Runtime::Rect& rect, uid parent) {
+    uid id = call_register_ui(this, parent);
 
-    auto& data = ID(id);
-    data.prototype = findControl(CIMAGE);
+    auto& data = getElement(id);
+    data.prototype = CIMAGE;
     data.rect = rect;
     data.resources = texture;
     return id;
 }
-uid GUI::Push_TextureStick(Texture* texture, const Vec2Int point, const uid& parent) {
+uid GUI::Push_TextureStick(Texture* texture, const Vec2Int point, uid parent) {
     return Push_TextureStick(texture, {point.x, point.y, texture->width(), texture->height()}, parent);
 }
-uid GUI::Push_TextureAnimator(Timeline* timeline, const RoninEngine::Runtime::Rect& rect, const uid& parent) {
-    uid id = call_register_ui(parent);
+uid GUI::Push_TextureAnimator(Timeline* timeline, const RoninEngine::Runtime::Rect& rect, uid parent) {
+    uid id = call_register_ui(this, parent);
 
-    auto& data = ID(id);
-    data.prototype = findControl(CIMAGE);
+    auto& data = getElement(id);
+    data.prototype = CIMAGE;
     data.rect = rect;
     data.resources = timeline;
     return id;
 }
-uid GUI::Push_TextureAnimator(Timeline* timeline, const Vec2Int& point, const uid& parent) {
-    return Push_TextureAnimator(timeline, {point.x, point.y, 0, 0}, parent);
-}
-uid GUI::Push_TextureAnimator(const std::list<Texture*>& roads, float duration, TimelineOptions option, const RoninEngine::Runtime::Rect& rect,
-                              const uid& parent) {
-    Timeline* timeline = nullptr;
-    uid id = call_register_ui(parent);
-    auto& data = ID(id);
-    data.prototype = findControl(CIMAGEANIMATOR);
+uid GUI::Push_TextureAnimator(Timeline* timeline, const Vec2Int& point, uid parent) { return Push_TextureAnimator(timeline, {point.x, point.y, 0, 0}, parent); }
+uid GUI::Push_TextureAnimator(const std::list<Texture*>& roads, float duration, TimelineOptions option, const RoninEngine::Runtime::Rect& rect, uid parent) {
+    Timeline* timeline;
+    uid id = call_register_ui(this, parent);
+    auto& data = getElement(id);
+    data.prototype = CIMAGEANIMATOR;
     data.rect = rect;
-    GC::gc_alloc_lval(timeline);
+    data.resources = timeline = (Timeline*)factory_resource(data.prototype);
     timeline->SetOptions(option);
 
     // todo: wBest и hBest - вычисляется даже когда rect.w != 0
@@ -151,53 +146,106 @@ uid GUI::Push_TextureAnimator(const std::list<Texture*>& roads, float duration, 
     }
     if (!data.rect.w) data.rect.w = wBest;
     if (!data.rect.h) data.rect.h = hBest;
-    // can destroy
-    data.resources = timeline;
+
     return id;
 }
-uid GUI::Push_TextureAnimator(const std::list<Texture*>& roads, float duration, TimelineOptions option, const Vec2Int& point,
-                              const uid& parent) {
+uid GUI::Push_TextureAnimator(const std::list<Texture*>& roads, float duration, TimelineOptions option, const Vec2Int& point, uid parent) {
     return Push_TextureAnimator(roads, duration, option, {point.x, point.y, 0, 0}, parent);
 }
 
-void* GUI::Resources(const uid& id) { return ID(id).resources; }
-void GUI::Resources(const uid& id, void* data) { ID(id).resources = data; }
-RoninEngine::Runtime::Rect GUI::Rect(const uid& id) { return ID(id).rect; }
-void GUI::Rect(const uid& id, const RoninEngine::Runtime::Rect& rect) { ID(id).rect = rect; }
-std::string GUI::Text(const uid& id) { return ID(id).text; }
-void GUI::Text(const uid& id, const std::string& text) { ID(id).text = text; }
+template <typename Container>
+uid internal_push_dropdown(const Container& container, int index, const Runtime::Rect& rect, uid parent) {
+    uid id = call_register_ui(guiInstance, parent);
+    auto& element = call_get_element(guiInstance, id);
+    element.prototype = CDROPDOWN;
+    element.rect = rect;
 
-void GUI::Visible(const uid& id, bool state) { ID(id).options = ID(id).options & (~_mVisibled) | (_mVisibled * state); }
-bool GUI::Visible(const uid& id) { return (ID(id).options & _mVisibled) >> 1; }
+    element.resources = factory_resource(element.prototype);
 
-void GUI::Enable(const uid& id, bool state) { ID(id).options = ID(id).options & (~_mEnabled) | (_mEnabled * state); }
-bool GUI::Enable(const uid& id) { return ID(id).options & _mEnabled; }
+    if (!element.resources) Application::fail_OutOfMemory();
+
+    std::list<std::string>* link = reinterpret_cast<std::list<std::string>*>(element.resources);
+    for (auto iter = std::cbegin(container); iter != std::cend(container); ++iter) {
+        if constexpr (!std::is_same<decltype(*iter), std::string>()) {
+            link->emplace_back(*iter);
+        } else {
+            link->emplace_back(std::to_string(*iter));
+        }
+    }
+
+    return id;
+}
+
+template <>
+uid GUI::Push_DropDown(const std::vector<std::uint32_t>& elements, int index, const Runtime::Rect& rect, uid parent) {
+    return internal_push_dropdown(elements, index, rect, parent);
+}
+
+template <>
+uid GUI::Push_DropDown(const std::vector<int>& elements, int index, const Runtime::Rect& rect, uid parent) {
+    return internal_push_dropdown(elements, index, rect, parent);
+}
+
+template <>
+uid GUI::Push_DropDown(const std::vector<float>& elements, int index, const Runtime::Rect& rect, uid parent) {
+    return internal_push_dropdown(elements, index, rect, parent);
+}
+
+template <>
+uid GUI::Push_DropDown(const std::list<std::string>& elements, int index, const Runtime::Rect& rect, uid parent) {
+    return internal_push_dropdown(elements, index, rect, parent);
+}
+
+template <>
+uid GUI::Push_DropDown(const std::vector<std::string>& elements, int index, const Runtime::Rect& rect, uid parent) {
+    return internal_push_dropdown(elements, index, rect, parent);
+}
+
+template <>
+uid GUI::Push_DropDown(const std::list<float>& elements, int index, const Runtime::Rect& rect, uid parent) {
+    return internal_push_dropdown(elements, index, rect, parent);
+}
+
+// property --------------------------------------------------------------------------------------------------------
+
+void* GUI::Resources(uid id) { return getElement(id).resources; }
+void GUI::Resources(uid id, void* data) { getElement(id).resources = data; }
+RoninEngine::Runtime::Rect GUI::Rect(uid id) { return getElement(id).rect; }
+void GUI::Rect(uid id, const RoninEngine::Runtime::Rect& rect) { getElement(id).rect = rect; }
+std::string GUI::Text(uid id) { return getElement(id).text; }
+void GUI::Text(uid id, const std::string& text) { getElement(id).text = text; }
+
+void GUI::Visible(uid id, bool state) { getElement(id).options = getElement(id).options & (~ElementVisibleMask) | (ElementVisibleMask * (state == true)); }
+bool GUI::Visible(uid id) { return (getElement(id).options & ElementVisibleMask) >> 1; }
+
+void GUI::Enable(uid id, bool state) { getElement(id).options = (getElement(id).options & (~ElementEnableMask)) | (ElementEnableMask * (state == true)); }
+bool GUI::Enable(uid id) { return getElement(id).options & ElementEnableMask; }
 
 // grouping-----------------------------------------------------------------------------------------------------------
 
-bool GUI::Is_Group(const uid& id) { return ID(id).options & _mGroup; }
+bool GUI::Is_Group(uid id) { return getElement(id).options & ElementGroupMask; }
 
-void GUI::Show_GroupUnique(const uid& id) throw() {
+void GUI::Show_GroupUnique(uid id) throw() {
     if (!Is_Group(id)) throw std::runtime_error("Is't group");
 
-    this->m_Sticks._rendering.remove_if([this](auto v) { return this->Is_Group(v); });
+    this->ui_layer.layers.remove_if([this](auto v) { return this->Is_Group(v); });
 
     Show_Group(id);
 }
-void GUI::Show_Group(const uid& id) throw() {
+void GUI::Show_Group(uid id) throw() {
     if (!Is_Group(id)) throw std::runtime_error("Is't group");
 
-    auto iter = find_if(begin(m_Sticks._rendering), end(m_Sticks._rendering), [&id](auto& _id) { return _id == id; });
+    auto iter = find_if(begin(ui_layer.layers), end(ui_layer.layers), [&id](auto& _id) { return _id == id; });
 
-    if (iter == end(m_Sticks._rendering)) {
-        m_Sticks._rendering.emplace_back(id);
+    if (iter == end(ui_layer.layers)) {
+        ui_layer.layers.emplace_back(id);
         Visible(id, true);
     }
 }
 
-bool GUI::Close_Group(const uid& id) throw() {
+bool GUI::Close_Group(uid id) throw() {
     if (!Is_Group(id)) throw std::runtime_error("Is't group");
-    m_Sticks._rendering.remove(id);
+    ui_layer.layers.remove(id);
     Visible(id, false);
 }
 
@@ -208,35 +256,32 @@ void GUI::Register_Callback(ui_callback callback, void* userData) {
     this->callback = callback;
     this->callbackData = userData;
 }
-bool GUI::Remove(const uid& id) {
+bool GUI::Pop_Element(uid id) {
     // TODO: мда. Тут проблема. ID которое удаляется может задеть так же и другие. Нужно исправить и найти способ! T``T
 
     return false;
 }
-void GUI::RemoveAll() { m_Sticks.controls.clear(); }
+void GUI::RemoveAll() { ui_layer.elements.clear(); }
 void GUI::Do_Present(SDL_Renderer* renderer) {
     if (visible) {
         uid id;
-        RenderData* x;
+        UIElement* x;
         std::list<uid> _render;
         ResetControls();  // Reset
         bool targetFocus = false;
         _focusedUI = false;
-        for (auto iter = begin(m_Sticks._rendering); iter != end(m_Sticks._rendering); ++iter) _render.emplace_back(*iter);
+        for (auto iter = begin(ui_layer.layers); iter != end(ui_layer.layers); ++iter) _render.emplace_back(*iter);
 
         while (_render.size()) {
             id = _render.front();
-            x = &ID(id);
+            x = &getElement(id);
 
             _render.pop_front();
-            if (!(x->options & _mGroup) && x->options & _mVisibled && x->prototype) {
-                if (x->prototype->render_control(this, *x, renderer, &targetFocus) && hitCast) {
+            if (!(x->options & ElementGroupMask) && x->options & ElementVisibleMask && x->prototype) {
+                if (general_render_ui_section(this, *x, renderer, &targetFocus) && hitCast) {
                     _focusedUI = true;
                     //Избавляемся от перекликов в UI
-                    //  input::event->type = SDL_FIRSTEVENT;
-                    // TODO: input::event->type SDL_FIRSTEVENT
-
-                    if (x->options & _mEnabled && callback) {
+                    if (x->options & ElementEnableMask && callback) {
                         //Отправка сообщения о действий.
                         callback(id, callbackData);
                     }
@@ -254,8 +299,8 @@ void GUI::Do_Present(SDL_Renderer* renderer) {
 }
 void GUI::GUI_SetMainColorRGB(uint32_t RGB) { GUI_SetMainColorRGBA(RGB << 8 | SDL_ALPHA_OPAQUE); }
 void GUI::GUI_SetMainColorRGBA(uint32_t ARGB) {
-    SDL_SetRenderDrawColor(Application::GetRenderer(), (uid)(ARGB >> 24) & 0xFF, (uid)(ARGB >> 16) & 0xFF,
-                           (uid)(ARGB >> 8) & 0xFF, (uid)ARGB & 0xFF);
+    SDL_SetRenderDrawColor(Application::GetRenderer(), (uid)(ARGB >> 24) & 0xFF, (uid)(ARGB >> 16) & 0xFF, (uid)(ARGB >> 8) & 0xFF, (uid)ARGB & 0xFF);
 }
 bool GUI::Focused_UI() { return _focusedUI; }
+
 }  // namespace RoninEngine::UI

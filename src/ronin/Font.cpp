@@ -81,7 +81,7 @@ void Initialize_Fonts(bool optimizeDeffects) {
 
     if (pfontTexture == nullptr || pfontTextureHilight == nullptr) Application::fail("error initialization fonts");
 
-    if (optimizeDeffects && false) {
+    if (optimizeDeffects) {
         SDL_Surface *model = pfont->surfNormal;
         int i, x, y, cx, cy;
         Rect rect_point;

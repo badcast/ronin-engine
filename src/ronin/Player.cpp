@@ -1,5 +1,4 @@
 #include "framework.h"
-
 namespace RoninEngine::Runtime {
 
 void Player::OnAwake() {

@@ -3,6 +3,10 @@
 #include "dependency.h"
 
 namespace RoninEngine {
+
+// This is control (GUI, UI) identifier type
+typedef std::uint8_t uid;
+
 namespace Runtime {
 
 enum Align { Left, Right, Center };

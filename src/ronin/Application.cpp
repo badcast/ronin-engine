@@ -65,8 +65,6 @@ void Application::Quit() {
 void Application::LoadGame() {
     GC::gc_lock();
 
-    //Загружаем данные и готовим программу к запуску
-
     GC::CheckResources();
 
     // initialize GC
@@ -143,8 +141,7 @@ SDL_Surface* Application::ScreenShot() {
     // read the Texture buffer
     SDL_RenderReadPixels(renderer, nullptr, SDL_PIXELFORMAT_RGBA8888, pixels, pitch);
 
-    SDL_Surface* su =
-        SDL_CreateRGBSurfaceFrom(pixels, pitch / 4, rect.h - rect.y, 32, pitch, 0x000000ff, 0x0000ff00, 0x00ff0000, 0xff000000);
+    SDL_Surface* su = SDL_CreateRGBSurfaceFrom(pixels, pitch / 4, rect.h - rect.y, 32, pitch, 0x000000ff, 0x0000ff00, 0x00ff0000, 0xff000000);
     return su;
 }
 
@@ -174,11 +171,11 @@ bool Application::Simulate() {
     int firstStep;
     char _title[128];
     float fps;
-   // float fpsRound = 0;
+    // float fpsRound = 0;
     int delayed;
     SDL_WindowFlags wndFlags;
     SDL_DisplayMode displayMode = Application::getDisplayMode();
-    float secPerFrame = 1000.f / displayMode.refresh_rate; // refresh screen from Monitor Settings
+    float secPerFrame = 1000.f / displayMode.refresh_rate;  // refresh screen from Monitor Settings
     Time::Init_TimeEngine();
 
     if (m_level == nullptr) {
@@ -245,19 +242,18 @@ bool Application::Simulate() {
             std::sprintf(_title,
                          "Ronin Engine (Debug) FPS:%d Memory:%luMiB, "
                          "GC_Allocated:%lu, SDL_Allocated:%d",
-                         static_cast<int>(fps), get_process_sizeMemory() / 1024 / 1024, GC::gc_total_allocated(),
-                         SDL_GetNumAllocations());
+                         static_cast<int>(fps), get_process_sizeMemory() / 1024 / 1024, GC::gc_total_allocated(), SDL_GetNumAllocations());
             SDL_SetWindowTitle(Application::GetWindow(), _title);
-           // fpsRound = Time::startUpTime() + 1;  // updater per 1 seconds
+            // fpsRound = Time::startUpTime() + 1;  // updater per 1 seconds
         }
 
         Time::m_deltaTime = delayed / secPerFrame;  // get deltas
         Time::m_deltaTime = Math::Clamp01(Time::m_deltaTime);
 
         Time::m_time += 0.001f * Math::ceil(secPerFrame);
-        delayed = Math::max(0, static_cast<int>(secPerFrame - delayed));
 
-        if (delayed > 0) std::this_thread::sleep_for(std::chrono::milliseconds(delayed));
+        //delay elapsed
+        SDL_Delay(Math::max(0, static_cast<int>(secPerFrame - delayed)));
     }
 
     return isQuiting;
@@ -283,10 +279,8 @@ void Application::fail(const std::string& message) {
 
     fprintf(stderr, "%s", _template.data());
 
-    SDL_LogMessage(SDL_LogCategory::SDL_LOG_CATEGORY_APPLICATION, SDL_LogPriority::SDL_LOG_PRIORITY_CRITICAL, "%s",
-                   _template.c_str());
-    SDL_ShowSimpleMessageBox(SDL_MessageBoxFlags::SDL_MESSAGEBOX_INFORMATION, "Ronin Engine: failed", _template.c_str(),
-                             window);
+    SDL_LogMessage(SDL_LogCategory::SDL_LOG_CATEGORY_APPLICATION, SDL_LogPriority::SDL_LOG_PRIORITY_CRITICAL, "%s", _template.c_str());
+    SDL_ShowSimpleMessageBox(SDL_MessageBoxFlags::SDL_MESSAGEBOX_INFORMATION, "Ronin Engine: failed", _template.c_str(), window);
     back_fail();
 }
 

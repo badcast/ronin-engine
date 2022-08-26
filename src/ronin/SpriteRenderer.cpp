@@ -2,7 +2,7 @@
 
 namespace RoninEngine::Runtime {
 
-//FIXME: OPTIMIZING SPRITE RENDERER COMPONENT
+// FIXME: OPTIMIZING SPRITE RENDERER COMPONENT
 
 SpriteRenderer::SpriteRenderer() : SpriteRenderer(typeid(*this).name()) {}
 
@@ -56,8 +56,8 @@ void SpriteRenderer::offsetFromWorldPosition(Vec2 position) {
 void SpriteRenderer::Render(Render_info* render) {
     Rect& _srcRect = render->src;
     Rectf_t& _dstRect = render->dst;
-    uint16_t x, y;
-    SDL_Rect dest;
+    static std::uint16_t x, y;
+    static SDL_Rect dest;
 
     if (sprite && sprite->width() && sprite->height()) {
         switch (this->renderType) {
@@ -77,11 +77,12 @@ void SpriteRenderer::Render(Render_info* render) {
                 _dstRect.w = sprite->width() * abs(this->size.x) / pixelsPerPoint;
                 _dstRect.h = sprite->height() * abs(this->size.y) / pixelsPerPoint;
 
-                //                if (this->tileRenderPresent == SpriteRenderTile::Fixed) {
-                //                    _srcRect.w = (_srcRect.w / sprite->width()) * sprite->width();
-                //                    _srcRect.h = (_srcRect.h / sprite->height()) * sprite->height();
-                //                }
+                // if (this->tileRenderPresent == SpriteRenderTile::Fixed) {
+                //     _srcRect.w = (_srcRect.w / sprite->width()) * sprite->width();
+                //     _srcRect.h = (_srcRect.h / sprite->height()) * sprite->height();
+                // }
 
+                //generate tiles
                 if (!texture) {
                     GC::gc_alloc_texture(&texture, _srcRect.w, _srcRect.h, SDL_PIXELFORMAT_RGBA8888,
                                          SDL_TextureAccess::SDL_TEXTUREACCESS_TARGET);

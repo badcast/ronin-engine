@@ -2,7 +2,7 @@
 
 char* basePath = nullptr;
 char* prefPath = nullptr;
-namespace RoninEngine::Runtime{
+namespace RoninEngine::Runtime {
 
 static const char seperator =
 #ifdef __WIN32__
@@ -11,13 +11,13 @@ static const char seperator =
     '/'
 #endif
     ;
-static const char data_path[] = "data";
-static const char gfx_path[] = "gfx";
-static const char sound_path[] = "sound";
-static const char music_path[] = "music";
-static const char loader_path[] = "loader";
-static const char levels_path[] = "levels";
-static const char textures_path[] = "textures";
+constexpr char data_path[] = "data";
+constexpr char gfx_path[] = "gfx";
+constexpr char sound_path[] = "sound";
+constexpr char music_path[] = "music";
+constexpr char loader_path[] = "loader";
+constexpr char levels_path[] = "levels";
+constexpr char textures_path[] = "textures";
 
 const char* applicationPath() {
     if (!basePath) basePath = SDL_GetBasePath();
@@ -58,7 +58,7 @@ const std::string getDataFrom(FolderKind type) {
             p += textures_path;
             break;
     }
-    return p + seperator;
+    return p += seperator;
 }
 
 void release_sdlpaths() {
@@ -67,4 +67,4 @@ void release_sdlpaths() {
     basePath = nullptr;
     prefPath = nullptr;
 }
-}  // namespace RoninEngine
+}  // namespace RoninEngine::Runtime

@@ -35,7 +35,7 @@ namespace RoninEngine {
 	class Level;
 
 	namespace UI {
-		struct RenderData;
+          struct UIElement;
 		class GUI;
 	}  // namespace UI
 

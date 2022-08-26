@@ -118,7 +118,7 @@ void Destroy_Immediate(Object* obj) {
         }
     }
 
-    // todo: деструктор для этого объекта
+    // TODO: деструктор для этого объекта
     SDL_Log("Object destroyed id: %lu", obj->id);
 
     Level::self()->_objects.erase(obj);
