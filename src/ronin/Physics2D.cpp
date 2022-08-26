@@ -5,7 +5,6 @@
 namespace RoninEngine::Runtime {
 
 std::list<Transform*> Physics2D::stormCast(const Vec2& origin, int edges, int layer) {
-
     /*
     Описание данных stormMember
     Младшие 4 байта, отвечают за шаги (steps) график использования приведена ниже
@@ -61,14 +60,18 @@ std::list<Transform*> Physics2D::stormCast(const Vec2& origin, int edges, int la
                     stormFlags = ((stormFlags & const_storm_dimensions) + 1) | const_storm_yDeterminant_start;
                 } else {
                     if (stormFlags >> 28) {
-                        stormFlags ^= stormFlags & const_storm_xDeterminant;                                      // clear x
+                        // stormFlags ^= stormFlags & const_storm_xDeterminant;
+                        stormFlags &= ~const_storm_xDeterminant;                                                  // clear x
                         stormFlags |= ((stormFlags & const_storm_yDeterminant) >> 4) & const_storm_xDeterminant;  // x = y
-                        stormFlags ^= stormFlags & const_storm_yDeterminant;                                      // clear y
+                        stormFlags &= ~const_storm_yDeterminant;                                                  // clear y
+                        // stormFlags ^= stormFlags & const_storm_yDeterminant;
                     } else {
-                        stormFlags ^= stormFlags & const_storm_yDeterminant;                                      // clear y
+                        // stormFlags ^= stormFlags & const_storm_yDeterminant;
+                        stormFlags &= ~const_storm_yDeterminant;                                                  // clear y
                         stormFlags |= ((stormFlags & const_storm_xDeterminant) << 4) & const_storm_yDeterminant;  // y = x
                         stormFlags ^= const_storm_yDeterminant_inverse;                                           // inverse
-                        stormFlags ^= stormFlags & const_storm_xDeterminant;                                      // clear x
+                        stormFlags &= ~const_storm_xDeterminant;                                                  // clear x
+                        // stormFlags ^= stormFlags & const_storm_xDeterminant;
                     }
                 }
             }
@@ -85,13 +88,17 @@ std::list<Transform*> Physics2D::stormCast(const Vec2& origin, int edges, int la
 
             if (!(stormMember & const_storm_steps_flag)) {
                 if (yDeter) {
-                    stormFlags ^= stormFlags & const_storm_xDeterminant;                                      // clear x
+                    // stormFlags ^= stormFlags & const_storm_xDeterminant;
+                    stormFlags &= ~const_storm_xDeterminant;                                                  // clear x
                     stormFlags |= ((stormFlags & const_storm_yDeterminant) >> 4) & const_storm_xDeterminant;  // x = y
-                    stormFlags ^= stormFlags & const_storm_yDeterminant;                                      // clear y
+                    stormFlags &= ~const_storm_yDeterminant;                                                  // clear y
+                    // stormFlags ^= stormFlags & const_storm_yDeterminant;
                 } else if (xDeter) {
-                    stormFlags ^= stormFlags & const_storm_yDeterminant;                                      // clear y
+                    // stormFlags ^= stormFlags & const_storm_yDeterminant;
+                    stormFlags &= ~const_storm_yDeterminant;                                                  // clear y
                     stormFlags |= ((stormFlags & const_storm_xDeterminant) << 4) & const_storm_yDeterminant;  // y = x
-                    stormFlags ^= stormFlags & const_storm_xDeterminant;                                      // clear x
+                    stormFlags &= ~const_storm_xDeterminant;                                                  // clear x
+                    // stormFlags ^= stormFlags & const_storm_xDeterminant;
                 }
             }
 
