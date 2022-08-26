@@ -8,7 +8,7 @@ GUI* guiInstance;
 
 extern void* factory_resource(ControlType type);
 extern void factory_free(UIElement* element);
-extern bool general_render_ui_section(GUI* gui, UIElement& element, SDL_Renderer* render, const bool hovering, bool &focus);
+extern bool general_render_ui_section(GUI* gui, UIElement& element, SDL_Renderer* render, const bool hovering, bool& focus);
 
 uid call_register_ui(GUI* gui, uid parent = NOPARENT) throw() {
     if (parent && !gui->Has_ID(parent)) throw std::runtime_error("Is not end parent");
@@ -166,13 +166,21 @@ uid internal_push_dropdown(const Container& container, int index, const Runtime:
 
     if (!element.resources) Application::fail_OutOfMemory();
 
-    std::list<std::string>* link = reinterpret_cast<std::list<std::string>*>(element.resources);
+    auto link = static_cast<std::pair<int, std::list<std::string>>*>(element.resources);
+    link->first = index;
+
     for (auto iter = std::cbegin(container); iter != std::cend(container); ++iter) {
         if constexpr (std::is_same<T, std::string>()) {
-            link->emplace_back(*iter);
+            link->second.emplace_back(*iter);
         } else {
-            link->emplace_back(std::to_string(*iter));
+            link->second.emplace_back(std::to_string(*iter));
         }
+    }
+
+    if (!link->second.empty()) {
+        auto iter = link->second.begin();
+        std::advance(iter, Math::min(static_cast<int>(link->second.size() - 1), index));
+        element.text = *iter;
     }
 
     return id;
@@ -271,41 +279,51 @@ void GUI::RemoveAll() {
     ui_layer.elements.clear();
 }
 void GUI::Do_Present(SDL_Renderer* renderer) {
-    if (visible) {
-        uid id;
-        UIElement* x;
-        std::list<uid> _render;
-        ResetControls();  // Reset
-        bool targetFocus = false;
-        bool hovering;
-        _focusedUI = false;
-        for (auto iter = begin(ui_layer.layers); iter != end(ui_layer.layers); ++iter) _render.emplace_back(*iter);
+    if (!visible) return;
 
-        while (_render.size()) {
-            id = _render.front();
-            x = &getElement(id);
+    uid id;
+    UIElement* x;
+    Vec2Int ms;
+    std::list<uid> drain;
+    ResetControls();  // Reset
+    bool targetFocus;
+    bool hovering;
+    _focusedUI = false;
 
-            hovering = SDL_PointInRect((SDL_Point*)&ms, (SDL_Rect*)&element.rect);
-            _render.pop_front();
-            if (!(x->options & ElementGroupMask) && x->options & ElementVisibleMask && x->prototype) {
-                if (general_render_ui_section(this, *x, renderer, hovering, targetFocus) && hitCast) {
-                    //Избавляемся от перекликов в UI
-                    _focusedUI = true;
-                    if (x->options & ElementEnableMask && callback) {
-                        //Отправка сообщения о действий.
-                        callback(id, callbackData);
-                    }
-                } else  // disabled state
-                    // TODO: disabled state for UI element's
-                    ;
+    ms = input::getMousePoint();
 
-                if (!_focusedUI) _focusedUI = targetFocus;
+    for (auto iter = begin(ui_layer.layers); iter != end(ui_layer.layers); ++iter) drain.emplace_back(*iter);
+
+    while (drain.size()) {
+        id = drain.front();
+        x = &getElement(id);
+
+        hovering = SDL_PointInRect((SDL_Point*)&ms, (SDL_Rect*)&x->rect);
+        drain.pop_front();
+        if (!(x->options & ElementGroupMask) && x->options & ElementVisibleMask && x->prototype) {
+            targetFocus = id == ui_layer.focusedID;
+            if (general_render_ui_section(this, *x, renderer, hovering, targetFocus) && hitCast) {
+                //Избавляемся от перекликов в UI
+                _focusedUI = true;
+
+                if (targetFocus) {
+                    ui_layer.focusedID = id;
+                }
+
+                if (x->options & ElementEnableMask && callback) {
+                    //Отправка сообщения о действий.
+                    callback(id, callbackData);
+                }
+            } else {  // disabled state
+                // TODO: disabled state for UI element's
+                if (id == ui_layer.focusedID && !targetFocus) ui_layer.focusedID = 0;
             }
-
-            if (this->m_level->m_isUnload) break;
-
-            for (auto iter = begin(x->childs); iter != end(x->childs); ++iter) _render.emplace_back(*iter + 1);
+            if (!_focusedUI) _focusedUI = targetFocus;
         }
+
+        if (this->m_level->m_isUnload) break;
+
+        for (auto iter = begin(x->childs); iter != end(x->childs); ++iter) drain.emplace_back(*iter + 1);
     }
 }
 void GUI::GUI_SetMainColorRGB(uint32_t RGB) { GUI_SetMainColorRGBA(RGB << 8 | SDL_ALPHA_OPAQUE); }

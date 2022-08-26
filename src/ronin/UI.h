@@ -25,6 +25,7 @@ class GUI final {
         // controls
         std::vector<UIElement> elements;
         std::list<uid> layers;
+        uid focusedID;
     } ui_layer;
 
     CI ui_callback callback;
