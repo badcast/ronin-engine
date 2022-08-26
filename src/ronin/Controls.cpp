@@ -56,10 +56,18 @@ void factory_free(UIElement* element) {
 }
 
 bool general_render_ui_section(GUI* gui, UIElement& element, SDL_Renderer* render, const bool hovering, bool& focus) {
+    static float dropDownLinear = 0;
     bool result = false;
-
     {
         // TODO: general drawing
+    }
+
+    if (hovering) {
+        if (input::get_key_down(SDL_SCANCODE_LCTRL)) {
+            Vec2Int ms = input::getMousePoint();
+            element.rect.x = ms.x - element.rect.w / 2;
+            element.rect.y = ms.y - element.rect.h / 2;
+        }
     }
 
     switch (element.prototype) {
@@ -174,7 +182,7 @@ bool general_render_ui_section(GUI* gui, UIElement& element, SDL_Renderer* rende
 
             // draw text
             Texture* texture;
-            SDL_Surface* surf = TTF_RenderText_Solid(font, element.text.c_str(), Color::white);
+            SDL_Surface* surf = TTF_RenderUTF8_Solid(font, element.text.c_str(), Color::white);
             if (GC::gc_alloc_texture_from(&texture, surf) != GCInvalidID) {
                 r = element.rect;
                 r.x += 5;
@@ -197,7 +205,8 @@ bool general_render_ui_section(GUI* gui, UIElement& element, SDL_Renderer* rende
                 Rect elrect;
                 r = element.rect;
                 r.y += r.h;
-                r.h = link->second.size() * sz;
+
+                r.h = dropDownLinear = Math::LerpUnclamped(dropDownLinear, link->second.size() * sz, 0.1f);
 
                 Gizmos::setColor(Color::darkred);
                 // draw background
@@ -222,7 +231,7 @@ bool general_render_ui_section(GUI* gui, UIElement& element, SDL_Renderer* rende
                     }
 
                     Gizmos::setColor(Color::darkred);
-                    surf = TTF_RenderUTF8_Solid(font, iter->c_str(), Color::white);
+                    surf = TTF_RenderUTF8_Solid(font, iter->c_str(), link->first != index ? Color::white : Color::gold);
                     GC::gc_alloc_texture_from(&texture, surf);
                     r.h = texture->height();
                     r.w = texture->width();
@@ -233,6 +242,11 @@ bool general_render_ui_section(GUI* gui, UIElement& element, SDL_Renderer* rende
                     GC::gc_unalloc(texture);
                     SDL_FreeSurface(surf);
                     elrect.y += sz;
+                }
+
+                if (msClick) {
+                    focus = false;
+                    dropDownLinear = 0;
                 }
             } else {
                 // clik and shown
