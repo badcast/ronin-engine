@@ -252,10 +252,10 @@ bool Application::Simulate() {
         }
 
         Time::m_deltaTime = delayed / secPerFrame;  // get deltas
-        Time::m_deltaTime = Mathf::Clamp01(Time::m_deltaTime);
+        Time::m_deltaTime = Math::Clamp01(Time::m_deltaTime);
 
-        Time::m_time += 0.001f * Mathf::ceil(secPerFrame);
-        delayed = Mathf::max(0, static_cast<int>(secPerFrame - delayed));
+        Time::m_time += 0.001f * Math::ceil(secPerFrame);
+        delayed = Math::max(0, static_cast<int>(secPerFrame - delayed));
 
         if (delayed > 0) std::this_thread::sleep_for(std::chrono::milliseconds(delayed));
     }

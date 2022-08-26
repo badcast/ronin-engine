@@ -219,8 +219,8 @@ namespace RoninEngine::Runtime {
 	void Gizmos::DrawCircle(Vec2 origin, float distance) {
 		origin = Camera::mainCamera()->WorldToScreenPoint(origin);
 		std::uint16_t x, y, r;
-		x = Mathf::number(origin.x);
-		y = Mathf::number(origin.y);
+		x = Math::number(origin.x);
+		y = Math::number(origin.y);
 		r = static_cast<std::uint16_t>(distance * pixelsPerPoint);
 		Color m_color = getColor();
 #if USE_PRIMITIVES
@@ -335,7 +335,7 @@ namespace RoninEngine::Runtime {
 		 *      S = (PI * d^2) / 4
 		 *
 		 */
-		return Mathf::PI * Mathf::pow2(radius);
+		return Math::PI * Math::pow2(radius);
 	}
 	float Gizmos::square_mesh(std::list<Vec2>&& vecs) {
 		/*

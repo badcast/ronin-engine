@@ -25,10 +25,10 @@ namespace RoninEngine::Runtime
 	}
 
 	int Sprite::width() {
-		return Mathf::max(0, m_rect.w - m_rect.x);
+		return Math::max(0, m_rect.w - m_rect.x);
 	}
 	int Sprite::height() {
-		return Mathf::max(0, m_rect.h - m_rect.y);
+		return Math::max(0, m_rect.h - m_rect.y);
 	}
 
 

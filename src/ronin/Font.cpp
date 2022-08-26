@@ -205,7 +205,7 @@ void Render_String(SDL_Renderer *renderer, Rect rect, const char *text, int len,
             }
 
             //отрисовываем остаток входящую в область
-            dst.w = Mathf::max(0, Mathf::min(deltax - dst.x, dst.w));
+            dst.w = Math::max(0, Math::min(deltax - dst.x, dst.w));
             // if (dst.x <= src.x + src.w && dst.y <= src.y + src.h)
             SDL_RenderCopy(renderer, targetpfont, (SDL_Rect *)src, &dst);
             dst.x += src->w;

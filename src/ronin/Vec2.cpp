@@ -27,7 +27,7 @@ Vec2::Vec2(const float& x, const float& y) {
     ++countRun;
 }
 
-float Vec2::magnitude() const { return Mathf::sqrt(x * x + y * y); }
+float Vec2::magnitude() const { return Math::sqrt(x * x + y * y); }
 
 float Vec2::sqrMagnitude() const { return x * x + y * y; }
 
@@ -46,22 +46,22 @@ void Vec2::Normalize() {
     }
 }
 
-const Vec2 Vec2::Abs(const Vec2& value) { return {Mathf::abs(value.x), Mathf::abs(value.y)}; }
+const Vec2 Vec2::Abs(const Vec2& value) { return {Math::abs(value.x), Math::abs(value.y)}; }
 
-const Vec2 Vec2::NAbs(const Vec2& value) { return {Mathf::nabs(value.x), Mathf::nabs(value.y)}; }
+const Vec2 Vec2::NAbs(const Vec2& value) { return {Math::nabs(value.x), Math::nabs(value.y)}; }
 
 Vec2 Vec2::Slerp(const Vec2& a, const Vec2& b, float t) {
-    t = Mathf::Clamp01(t);
+    t = Math::Clamp01(t);
 
     // get cosine of angle between disposition (-1 -> 1)
     float CosAlpha = Dot(a, b);
     // get angle (0 -> pi)
-    float Alpha = Mathf::acos(CosAlpha);
+    float Alpha = Math::acos(CosAlpha);
     // get sine of angle between disposition (0 -> 1)
-    float SinAlpha = Mathf::sin(Alpha);
+    float SinAlpha = Math::sin(Alpha);
     // this breaks down when SinAlpha = 0, i.e. Alpha = 0 or pi
-    float t1 = Mathf::sin(1.f - t * Alpha) / SinAlpha;
-    float t2 = Mathf::sin(t * Alpha) / SinAlpha;
+    float t1 = Math::sin(1.f - t * Alpha) / SinAlpha;
+    float t2 = Math::sin(t * Alpha) / SinAlpha;
 
     // interpolate src disposition
     return a * t1 + b * t2;
@@ -70,26 +70,26 @@ Vec2 Vec2::SlerpUnclamped(const Vec2& a, const Vec2& b, float t) {
     // get cosine of angle between disposition (-1 -> 1)
     float CosAlpha = Dot(a, b);
     // get angle (0 -> pi)
-    float Alpha = Mathf::acos(CosAlpha);
+    float Alpha = Math::acos(CosAlpha);
     // get sine of angle between disposition (0 -> 1)
-    float SinAlpha = Mathf::sin(Alpha);
+    float SinAlpha = Math::sin(Alpha);
     // this breaks down when SinAlpha = 0, i.e. Alpha = 0 or pi
-    float t1 = Mathf::sin(1.f - t * Alpha) / SinAlpha;
-    float t2 = Mathf::sin(t * Alpha) / SinAlpha;
+    float t1 = Math::sin(1.f - t * Alpha) / SinAlpha;
+    float t2 = Math::sin(t * Alpha) / SinAlpha;
 
     // interpolate src disposition
     return a * t1 + b * t2;
 }
 Vec2 Vec2::Lerp(const Vec2& a, const Vec2& b, float t) {
-    t = Mathf::Clamp01(t);
+    t = Math::Clamp01(t);
     return Vec2(a.x + (b.x - a.x) * t, a.y + (b.y - a.y) * t);
 }
 
 Vec2 Vec2::LerpUnclamped(const Vec2& a, const Vec2& b, float t) { return Vec2(a.x + (b.x - a.x) * t, a.y + (b.y - a.y) * t); }
 
-Vec2 Vec2::Max(const Vec2& lhs, const Vec2& rhs) { return Vec2(Mathf::max(lhs.x, rhs.x), Mathf::max(lhs.y, rhs.y)); }
+Vec2 Vec2::Max(const Vec2& lhs, const Vec2& rhs) { return Vec2(Math::max(lhs.x, rhs.x), Math::max(lhs.y, rhs.y)); }
 
-Vec2 Vec2::Min(const Vec2& lhs, const Vec2& rhs) { return Vec2(Mathf::min(lhs.x, rhs.x), Mathf::min(lhs.y, rhs.y)); }
+Vec2 Vec2::Min(const Vec2& lhs, const Vec2& rhs) { return Vec2(Math::min(lhs.x, rhs.x), Math::min(lhs.y, rhs.y)); }
 
 Vec2 Vec2::MoveTowards(const Vec2& current, const Vec2& target, float maxDistanceDelta) {
     Vec2 a = target - current;
@@ -112,7 +112,7 @@ Vec2 Vec2::Scale(const Vec2& a, const Vec2& b) { return Vec2(a.x * b.x, a.y * b.
 float Vec2::Distance(const Vec2& lhs, const Vec2& rhs) {
     float num = lhs.x - rhs.x;
     float num2 = lhs.y - rhs.y;
-    return Mathf::sqrt(num * num + num2 * num2);
+    return Math::sqrt(num * num + num2 * num2);
 }
 
 float Vec2::DistanceSqr(const Vec2& lhs, const Vec2& rhs) {
@@ -124,14 +124,14 @@ float Vec2::DistanceSqr(const Vec2& lhs, const Vec2& rhs) {
 float Vec2::Angle(Vec2 from, Vec2 to) {
     from.Normalize();
     to.Normalize();
-    return Mathf::acos(Mathf::Clamp(Vec2::Dot(from, to), -1, 1));
+    return Math::acos(Math::Clamp(Vec2::Dot(from, to), -1, 1));
 }
 
 float Vec2::SignedAngle(Vec2 from, Vec2 to) {
     float num = Angle(from, to);
     from.Normalize();
     to.Normalize();
-    float num2 = Mathf::sign(from.x * to.y - from.y * to.x);
+    float num2 = Math::sign(from.x * to.y - from.y * to.x);
 
     return num * num2;
 }
@@ -147,7 +147,7 @@ Vec2 Vec2::ClampMagnitude(Vec2 vector, float maxLength) {
 }
 
 Vec2 Vec2::SmoothDamp(Vec2 current, Vec2 target, Vec2& currentVelocity, float smoothTime, float maxSpeed, float deltaTime) {
-    smoothTime = Mathf::max(0.f, Mathf::max(0001.f, smoothTime));
+    smoothTime = Math::max(0.f, Math::max(0001.f, smoothTime));
     float num = 2 / smoothTime;
     float num2 = num * deltaTime;
     float d = 1 / (1 + num2 + 0, 48 * num2 * num2 + 0, 235 * num2 * num2 * num2);
@@ -284,31 +284,31 @@ bool Vec2::AreaPointInRect(const Vec2& p, const SDL_FRect& r) {
 bool Vec2::InArea(const Vec2& p, const SDL_FRect& r) { return p.x >= r.x && p.x <= r.w && p.y >= r.h && p.y <= r.y; }
 
 const Vec2 Vec2::Rotate(Vec2 vec, Vec2 normal, float angleRadian) {
-    normal = Vec2::RotateClockwise(normal,angleRadian * Mathf::Deg2Rad);
+    normal = Vec2::RotateClockwise(normal,angleRadian * Math::Deg2Rad);
     normal.x *= vec.x;
     normal.y *= vec.y;
     return normal;
 }
 
 const Vec2 Vec2::Rotate(Vec2 position,float angleRadian) {
-    float Cos = Mathf::cos(angleRadian);
-    float Sin = Mathf::sin(angleRadian);
+    float Cos = Math::cos(angleRadian);
+    float Sin = Math::sin(angleRadian);
     position.x = position.x * Cos - position.y * Sin;
     position.y = position.x * Sin + position.y * Cos;
     return position;
 }
 
 const Vec2 Vec2::RotateClockwise(Vec2 position,float angleRadian) {
-    float Cos = Mathf::cos(angleRadian);
-    float Sin = Mathf::sin(angleRadian);
+    float Cos = Math::cos(angleRadian);
+    float Sin = Math::sin(angleRadian);
     position.x = position.x * Cos + position.y * Sin;
     position.y = -position.x * Sin + position.y * Cos;
     return position;
 }
 
 const Vec2 Vec2::RotateAround(Vec2 center, Vec2 localPosition, float angleRadian) {
-    float Cos = Mathf::cos(angleRadian);
-    float Sin = Mathf::sin(angleRadian);
+    float Cos = Math::cos(angleRadian);
+    float Sin = Math::sin(angleRadian);
     center.x = center.x + localPosition.x * Sin;
     center.y = center.y + localPosition.y * Cos;
     return center;

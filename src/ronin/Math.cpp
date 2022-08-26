@@ -12,13 +12,13 @@ int getRVal() {
     p[1] = (char)rand() % 0xff;
     p[2] = (char)rand() % 0xff;
     p[3] = (char)rand() % 0xff;
-    return Mathf::abs(value);
+    return Math::abs(value);
 }
 
 void Random::srand(int seed) { std::srand(static_cast<uint32_t>(seed)); }
 
 int Random::range(int min, int max) {
-    int result = Mathf::number(value() * (max - min)) + min;
+    int result = Math::number(value() * (max - min)) + min;
     return result;
 }
 
@@ -36,61 +36,61 @@ Vec2 Random::randomVector() { return Vec2(Random::value() * 2 - 1, Random::value
 
 float Random::randomAngle() { return value() * 360; }
 
-float Mathf::cos(float x) { return ::cosf(x); }
+float Math::cos(float x) { return ::cosf(x); }
 
-float Mathf::sin(float x) { return ::sinf(x); }
+float Math::sin(float x) { return ::sinf(x); }
 
-float Mathf::tan(float x) { return ::tanf(x); }
+float Math::tan(float x) { return ::tanf(x); }
 
-float Mathf::acos(float x) { return ::acosf(x); }
+float Math::acos(float x) { return ::acosf(x); }
 
-float Mathf::atan(float x) { return ::atanf(x); }
+float Math::atan(float x) { return ::atanf(x); }
 
-float Mathf::atan2(float y, float x) { return ::atan2f(y, x); }
+float Math::atan2(float y, float x) { return ::atan2f(y, x); }
 
-float Mathf::Clamp01(float val) { return Clamp(val, 0, 1.f); }
+float Math::Clamp01(float val) { return Clamp(val, 0, 1.f); }
 
-float Mathf::Clamp(float val, const float min, const float max) { return val > max ? max : val < min ? min : val; }
+float Math::Clamp(float val, const float min, const float max) { return val > max ? max : val < min ? min : val; }
 
-int Mathf::abs(int x) { return x * (x < 0 ? -1 : 1); }
+int Math::abs(int x) { return x * (x < 0 ? -1 : 1); }
 
-float Mathf::abs(float x) { return x * (x < 0 ? -1 : 1); }
-
-// negative absolute value
-float Mathf::nabs(float x) { return abs(x) * ~0; }
+float Math::abs(float x) { return x * (x < 0 ? -1 : 1); }
 
 // negative absolute value
-int Mathf::nabs(int x) { return abs(x) * ~0; }
+float Math::nabs(float x) { return abs(x) * ~0; }
 
-float Mathf::signf(float x) { return x < 0.f ? -1.f : 1.f; }
+// negative absolute value
+int Math::nabs(int x) { return abs(x) * ~0; }
 
-int Mathf::sign(int x) { return x < 0 ? -1 : 1; }
+float Math::signf(float x) { return x < 0.f ? -1.f : 1.f; }
 
-float Mathf::round(float x) { return std::round(x); }
+int Math::sign(int x) { return x < 0 ? -1 : 1; }
 
-float Mathf::ceil(float x) { return std::ceil(x); }
+float Math::round(float x) { return std::round(x); }
 
-float Mathf::floor(float x) { return std::floor(x); }
+float Math::ceil(float x) { return std::ceil(x); }
 
-float Mathf::frac(float x) { return x - number(x); }
+float Math::floor(float x) { return std::floor(x); }
 
-int Mathf::number(float x) { return static_cast<int>(x); }
+float Math::frac(float x) { return x - number(x); }
 
-float Mathf::exp(float x) { return ::expf(x); }
+int Math::number(float x) { return static_cast<int>(x); }
 
-float Mathf::pow2(float x) { return ::powf(x, 2); }
+float Math::exp(float x) { return ::expf(x); }
 
-int Mathf::pow2(int x) { return ::pow(x, 2); }
+float Math::pow2(float x) { return ::powf(x, 2); }
 
-int Mathf::pow(int x, int y) { return ::pow(x, y); }
+int Math::pow2(int x) { return ::pow(x, 2); }
 
-float Mathf::pow(float x, float y) { return ::powf(x, y); }
+int Math::pow(int x, int y) { return ::pow(x, y); }
 
-float Mathf::sqrt(float x) { return std::sqrt(x); }
+float Math::pow(float x, float y) { return ::powf(x, y); }
 
-float Mathf::repeat(float t, float length) { return Clamp(t - floor(t / length) * length, 0, length); }
+float Math::sqrt(float x) { return std::sqrt(x); }
 
-float Mathf::DeltaAngle(float current, float target) {
+float Math::repeat(float t, float length) { return Clamp(t - floor(t / length) * length, 0, length); }
+
+float Math::DeltaAngle(float current, float target) {
     float num = repeat(target - current, 360);
     if (num > 180) {
         num -= 360;
@@ -98,7 +98,7 @@ float Mathf::DeltaAngle(float current, float target) {
     return num;
 }
 
-float Mathf::Gamma(float value, float absmax, float gamma) {
+float Math::Gamma(float value, float absmax, float gamma) {
     bool flag = false;
     if (value < 0) {
         flag = true;
@@ -114,7 +114,7 @@ float Mathf::Gamma(float value, float absmax, float gamma) {
     return result;
 }
 
-float Mathf::InverseLerp(float a, float b, float value) {
+float Math::InverseLerp(float a, float b, float value) {
     float result;
     if (a != b) {
         result = Clamp01((value - a) / (b - a));
@@ -124,9 +124,9 @@ float Mathf::InverseLerp(float a, float b, float value) {
     return result;
 }
 
-float Mathf::Lerp(float a, float b, float t) { return a + (b - a) * Clamp01(t); }
+float Math::Lerp(float a, float b, float t) { return a + (b - a) * Clamp01(t); }
 
-float Mathf::LerpAngle(float a, float b, float t) {
+float Math::LerpAngle(float a, float b, float t) {
     float num = repeat(b - a, 360);
     if (num > 180) {
         num -= 360;
@@ -134,9 +134,9 @@ float Mathf::LerpAngle(float a, float b, float t) {
     return a + num * Clamp01(t);
 }
 
-float Mathf::LerpUnclamped(float a, float b, float t) { return a + (b - a) * t; }
+float Math::LerpUnclamped(float a, float b, float t) { return a + (b - a) * t; }
 
-bool Mathf::LineIntersection(Vec2 p1, Vec2 p2, Vec2 p3, Vec2 p4, Vec2& result) {
+bool Math::LineIntersection(Vec2 p1, Vec2 p2, Vec2 p3, Vec2 p4, Vec2& result) {
     float num = p2.x - p1.x;
     float num2 = p2.y - p1.y;
     float num3 = p4.x - p3.x;
@@ -155,7 +155,7 @@ bool Mathf::LineIntersection(Vec2 p1, Vec2 p2, Vec2 p3, Vec2 p4, Vec2& result) {
     return result2;
 }
 
-float Mathf::MoveTowards(float current, float target, float maxDelta) {
+float Math::MoveTowards(float current, float target, float maxDelta) {
     float result;
     if (abs(target - current) <= maxDelta) {
         result = target;
@@ -165,7 +165,7 @@ float Mathf::MoveTowards(float current, float target, float maxDelta) {
     return result;
 }
 
-bool Mathf::LineSegmentIntersection(Vec2 p1, Vec2 p2, Vec2 p3, Vec2 p4, Vec2& result) {
+bool Math::LineSegmentIntersection(Vec2 p1, Vec2 p2, Vec2 p3, Vec2 p4, Vec2& result) {
     float num = p2.x - p1.x;
     float num2 = p2.y - p1.y;
     float num3 = p4.x - p3.x;
@@ -193,18 +193,18 @@ bool Mathf::LineSegmentIntersection(Vec2 p1, Vec2 p2, Vec2 p3, Vec2 p4, Vec2& re
     return result2;
 }
 
-float Mathf::SmoothDamp(float current, float target, float& currentVelocity, float smoothTime, float maxSpeed) {
+float Math::SmoothDamp(float current, float target, float& currentVelocity, float smoothTime, float maxSpeed) {
     float deltaTime = RoninEngine::Time::deltaTime();
-    return Mathf::SmoothDamp(current, target, currentVelocity, smoothTime, maxSpeed, deltaTime);
+    return Math::SmoothDamp(current, target, currentVelocity, smoothTime, maxSpeed, deltaTime);
 }
 
-float Mathf::SmoothDamp(float current, float target, float& currentVelocity, float smoothTime) {
+float Math::SmoothDamp(float current, float target, float& currentVelocity, float smoothTime) {
     float deltaTime = RoninEngine::Time::deltaTime();
     float maxSpeed = Infinity;
-    return Mathf::SmoothDamp(current, target, currentVelocity, smoothTime, maxSpeed, deltaTime);
+    return Math::SmoothDamp(current, target, currentVelocity, smoothTime, maxSpeed, deltaTime);
 }
 
-float Mathf::SmoothDamp(float current, float target, float& currentVelocity, float smoothTime, float maxSpeed,
+float Math::SmoothDamp(float current, float target, float& currentVelocity, float smoothTime, float maxSpeed,
                         float deltaTime) {
     smoothTime = max(0.f, max(1.f, smoothTime));
     float num = 2 / smoothTime;
@@ -225,28 +225,28 @@ float Mathf::SmoothDamp(float current, float target, float& currentVelocity, flo
     return num8;
 }
 
-float Mathf::cel2far(float celsius) { return celsius * 1.8f + 32; }
+float Math::cel2far(float celsius) { return celsius * 1.8f + 32; }
 
-float Mathf::far2cel(float fahrenheit) { return (fahrenheit - 32) * periodic_fahren; }
+float Math::far2cel(float fahrenheit) { return (fahrenheit - 32) * periodic_fahren; }
 
-float Mathf::SmoothDampAngle(float current, float target, float& currentVelocity, float smoothTime, float maxSpeed) {
+float Math::SmoothDampAngle(float current, float target, float& currentVelocity, float smoothTime, float maxSpeed) {
     float deltaTime = Time::deltaTime();
     return SmoothDampAngle(current, target, currentVelocity, smoothTime, maxSpeed, deltaTime);
 }
 
-float Mathf::SmoothDampAngle(float current, float target, float& currentVelocity, float smoothTime) {
+float Math::SmoothDampAngle(float current, float target, float& currentVelocity, float smoothTime) {
     float deltaTime = Time::deltaTime();
     float maxSpeed = Infinity;
     return SmoothDampAngle(current, target, currentVelocity, smoothTime, maxSpeed, deltaTime);
 }
 
-float Mathf::SmoothDampAngle(float current, float target, float& currentVelocity, float smoothTime, float maxSpeed,
+float Math::SmoothDampAngle(float current, float target, float& currentVelocity, float smoothTime, float maxSpeed,
                              float deltaTime) {
     target = current + DeltaAngle(current, target);
     return SmoothDamp(current, target, currentVelocity, smoothTime, maxSpeed, deltaTime);
 }
 
-float Mathf::SmoothStep(float from, float to, float t) {
+float Math::SmoothStep(float from, float to, float t) {
     t = Clamp01(t);
     t = -2 * t * t * t + 3 * t * t;
     return to * t + from * (1 - t);

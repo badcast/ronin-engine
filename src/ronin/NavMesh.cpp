@@ -16,7 +16,7 @@ NavMesh::NavMesh(int lwidth, int lheight) {
     this->widthSpace = lwidth;
     this->heightSpace = lheight;
     this->worldScale = Vec2::one;
-    auto lockedDiv = div(Mathf::max(lheight = (lwidth * lheight), 8), 8);  // add locked bits
+    auto lockedDiv = div(Math::max(lheight = (lwidth * lheight), 8), 8);  // add locked bits
     segmentOffset = lwidth = lockedDiv.quot + lockedDiv.rem;
     this->neurons = GC::gc_malloc(lheight * NavMeshDataSizeMultiplier + lwidth);
 
@@ -32,8 +32,8 @@ void NavMesh::randomGenerate(int flagFilter) {
     do {
         lhs = static_cast<std::uint32_t>(rand() & flagFilter);
         memcpy(reinterpret_cast<std::int8_t *>(neurons) + segmentOffset - rhs, &lhs,
-               Mathf::min(rhs, (std::uint32_t)sizeof(int)));
-        rhs -= Mathf::min(rhs, static_cast<std::uint32_t>(sizeof(int)));
+               Math::min(rhs, (std::uint32_t)sizeof(int)));
+        rhs -= Math::min(rhs, static_cast<std::uint32_t>(sizeof(int)));
     } while (rhs > 0);
 }
 
@@ -76,8 +76,8 @@ Neuron *NavMesh::GetNeuron(const Runtime::Vec2Int &range) {
 
 const Vec2Int NavMesh::WorldPointToPoint(const Vec2 &worldPoint) {
     Vec2Int p;
-    p.x = Mathf::ceil(widthSpace / 2 + (worldPoint.x + worldOffset.x) / worldScale.x);
-    p.y = Mathf::ceil(heightSpace / 2 - (worldPoint.y + worldOffset.y) / worldScale.y);
+    p.x = Math::ceil(widthSpace / 2 + (worldPoint.x + worldOffset.x) / worldScale.x);
+    p.y = Math::ceil(heightSpace / 2 - (worldPoint.y + worldOffset.y) / worldScale.y);
     return p;
 }
 
@@ -87,13 +87,13 @@ void NavMesh::find(NavResult &navResult, NavMethodRule method, Runtime::Vec2 wor
 
 Neuron *NavMesh::GetNeuron(const Vec2 &worldPoint) {
     Vec2Int p;
-    p.x = Mathf::ceil(widthSpace / 2 + worldPoint.x / worldScale.x);
-    p.y = Mathf::ceil(heightSpace / 2 - worldPoint.y / worldScale.y);
+    p.x = Math::ceil(widthSpace / 2 + worldPoint.x / worldScale.x);
+    p.y = Math::ceil(heightSpace / 2 - worldPoint.y / worldScale.y);
     return GetNeuron(p);
 }
 Neuron *NavMesh::GetNeuron(const Runtime::Vec2 &worldPoint, Runtime::Vec2Int &outPoint) {
-    outPoint.x = Mathf::ceil(widthSpace / 2 + (worldPoint.x + worldOffset.x) / worldScale.x);
-    outPoint.y = Mathf::ceil(heightSpace / 2 - (worldPoint.y + worldOffset.y) / worldScale.y);
+    outPoint.x = Math::ceil(widthSpace / 2 + (worldPoint.x + worldOffset.x) / worldScale.x);
+    outPoint.y = Math::ceil(heightSpace / 2 - (worldPoint.y + worldOffset.y) / worldScale.y);
     return GetNeuron(outPoint);
 }
 
@@ -282,10 +282,10 @@ void NavMesh::find(NavResult &navResult, NavMethodRule method, Vec2Int first, Ve
 }
 
 int AlgorithmUtils::DistancePhf(const Vec2Int &a, const Vec2Int &b) {
-    return Mathf::pow(a.x - b.x, 2) + Mathf::pow(a.y - b.y, 2);  // a->x * a->y + b->x * b->y;
+    return Math::pow(a.x - b.x, 2) + Math::pow(a.y - b.y, 2);  // a->x * a->y + b->x * b->y;
 }
 
-int AlgorithmUtils::DistanceManht(const Vec2Int &a, const Vec2Int &b) { return Mathf::abs(b.x - a.x) + Mathf::abs(b.y - a.y); }
+int AlgorithmUtils::DistanceManht(const Vec2Int &a, const Vec2Int &b) { return Math::abs(b.x - a.x) + Math::abs(b.y - a.y); }
 
 auto AlgorithmUtils::GetMinCostPath(NavMesh &map, std::list<Vec2Int> *paths) -> decltype(std::begin(*paths)) {
     int min = std::numeric_limits<int>::max();

@@ -113,7 +113,7 @@ std::list<Transform*> Physics2D::rectCast(Vec2 origin, float distance) {
 
     Vec2Int env;
     Vec2Int originRounded = Vec2::RoundToInt(origin);
-    float distanceRounded = Mathf::ceil(distance);
+    float distanceRounded = Math::ceil(distance);
     for (env.x = originRounded.x - distanceRounded; env.x <= originRounded.x + distanceRounded; ++env.x) {
         for (env.y = originRounded.y - distanceRounded; env.y <= originRounded.y + distanceRounded; ++env.y) {
             auto findedIter = mx.find(env);
@@ -130,7 +130,7 @@ std::list<Transform*> Physics2D::rectCast(Vec2 origin, float distance) {
 }
 
 std::list<Transform*> Physics2D::sphereCast(Vec2 origin, float distance, int layer) {
-    std::list<Transform*> _cont = stormCast(origin, Mathf::number(Mathf::ceil(distance)), layer);
+    std::list<Transform*> _cont = stormCast(origin, Math::number(Math::ceil(distance)), layer);
 
     _cont.remove_if([&](Transform* lhs) { return Vec2::Distance(lhs->p, origin) > distance; });
 

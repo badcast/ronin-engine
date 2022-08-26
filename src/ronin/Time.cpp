@@ -23,7 +23,7 @@ bool Time::is_paused() { return timeScale == 0; }
 
 float Time::get_time_scale() { return Time::timeScale; }
 
-void Time::set_time_scale(float scale) { Time::timeScale = Mathf::min(Mathf::max(scale, 0.F), 1.f); }
+void Time::set_time_scale(float scale) { Time::timeScale = Math::min(Math::max(scale, 0.F), 1.f); }
 
 std::uint32_t Time::frame() { return m_frames; }
 

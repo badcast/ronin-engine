@@ -45,7 +45,7 @@ void Transform::LookAt(Transform* target, Vec2 axis) { LookAt(target->p, axis); 
 void Transform::LookAt(Vec2 target) { LookAt(target, Vec2::up); }
 
 void Transform::LookAt(Vec2 target, Vec2 axis) {
-    _angle = Vec2::Angle(axis, target - position()) * Mathf::Rad2Deg;
+    _angle = Vec2::Angle(axis, target - position()) * Math::Rad2Deg;
 
     // normalize horz
     if (axis.x == 1) {
@@ -63,7 +63,7 @@ void Transform::LookAt(Vec2 target, Vec2 axis) {
 
 void Transform::LookAtLerp(Vec2 target, float t) {
     Vec2 axis = Vec2::up;
-    float a = Vec2::Angle(axis, target - position()) * Mathf::Rad2Deg;
+    float a = Vec2::Angle(axis, target - position()) * Math::Rad2Deg;
     // normalize
     if (axis.x == 1) {
         if (p.y < target.y) a = -a;
@@ -77,7 +77,7 @@ void Transform::LookAtLerp(Vec2 target, float t) {
         if (p.x < target.x) a = -a;
     }
 
-    localAngle(Mathf::LerpAngle(_angle, a, t));
+    localAngle(Math::LerpAngle(_angle, a, t));
 }
 
 void Transform::LookAtLerp(Transform* target, float t) { LookAtLerp(target->p, t); }
@@ -110,7 +110,7 @@ const Vec2 Transform::up() { return transformDirection(Vec2::up); }
 
 const Vec2 Transform::down() { return transformDirection(Vec2::down); }
 
-const Vec2 Transform::transformDirection(Vec2 direction) { return Vec2::RotateAround(p, direction, _angle * Mathf::Deg2Rad); }
+const Vec2 Transform::transformDirection(Vec2 direction) { return Vec2::RotateAround(p, direction, _angle * Math::Deg2Rad); }
 
 const Vec2 Transform::transformDirection(float x, float y) { return transformDirection(Vec2(x, y)); }
 

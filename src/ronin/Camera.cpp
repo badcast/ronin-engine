@@ -103,7 +103,7 @@ std::tuple<std::map<int, std::set<Renderer*>>*, std::set<Light*>*> Camera::matri
         Vec2Int wpRightBottom = Vec2::RoundToInt(ScreenToWorldPoint(Vec2(res.width, res.height)));
         //RUN STORM CAST
         std::list<Transform*> result = Physics2D::stormCast(
-            transform()->p, Mathf::number(Mathf::max(wpRightBottom.x - transform()->p.x, wpRightBottom.y - transform()->p.y)) +
+            transform()->p, Math::number(Math::max(wpRightBottom.x - transform()->p.x, wpRightBottom.y - transform()->p.y)) +
                                 1 + distanceEvcall);
 
         std::list<Renderer*> _removes;
@@ -192,8 +192,8 @@ const Vec2 Camera::WorldToViewport(Vec2 worldPoint) {
 
 const Vec2 Camera::WorldToViewportClamp(Vec2 worldPoint) {
     worldPoint = WorldToViewport(worldPoint);
-    worldPoint.x = Mathf::Clamp01(worldPoint.x);
-    worldPoint.y = Mathf::Clamp01(worldPoint.y);
+    worldPoint.x = Math::Clamp01(worldPoint.x);
+    worldPoint.y = Math::Clamp01(worldPoint.y);
     return worldPoint;
 }
 Camera* Camera::mainCamera() { return _main; }

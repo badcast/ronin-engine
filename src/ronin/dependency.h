@@ -84,7 +84,7 @@ namespace RoninEngine {
 
 		struct Color;
 
-		class Mathf;
+		class Math;
 
 	}  // namespace Runtime
 }  // namespace RoninEngine

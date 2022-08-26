@@ -19,7 +19,7 @@ class Random {
     static float randomAngle();
 };
 
-class Mathf {
+class Math {
    public:
     static constexpr long double longPI = 3.14159265358979323846264338327950288;
     static constexpr float PI = static_cast<float>(longPI);  // calc PI formula l / d (Length circle div diameter)

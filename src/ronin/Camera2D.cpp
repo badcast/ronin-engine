@@ -52,7 +52,7 @@ void Camera2D::render(SDL_Renderer* renderer, Rect rect, GameObject* root) {
 
                 if (rTrans->m_parent && renderSource->transform()->m_parent != Level::self()->main_object->transform()) {
                     Vec2 direction = rTrans->p;
-                    sourcePoint = Vec2::RotateAround(rTrans->m_parent->position(), direction, rTrans->angle() * Mathf::Deg2Rad);
+                    sourcePoint = Vec2::RotateAround(rTrans->m_parent->position(), direction, rTrans->angle() * Math::Deg2Rad);
                     //                rTrans->localPosition(
                     //                    Vec2::Max(direction, Vec2::RotateAround(Vec2::zero, direction, rTrans->angle() *
                     //                    Mathf::Deg2Rad)));
@@ -66,7 +66,7 @@ void Camera2D::render(SDL_Renderer* renderer, Rect rect, GameObject* root) {
 
                 Vec2 arranged(wrapper.dst.x, wrapper.dst.y);
                 if (arranged != Vec2::zero)
-                    arranged = Vec2::RotateAround(sourcePoint, arranged, renderSource->transform()->angle() * Mathf::Deg2Rad);
+                    arranged = Vec2::RotateAround(sourcePoint, arranged, renderSource->transform()->angle() * Math::Deg2Rad);
 
                 //Положение по горизонтале
                 wrapper.dst.x = arranged.x + ((rect.w - wrapper.dst.w) / 2.0f - (point.x - sourcePoint.x) * pixelsPerPoint);
