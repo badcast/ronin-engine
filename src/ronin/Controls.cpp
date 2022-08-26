@@ -1,9 +1,13 @@
+#include <SDL2_gfxPrimitives.h>
+
 #include "framework.h"
 #include "inputSystem.h"
 
 namespace RoninEngine::UI {
 uid _controlId;
 uid _focusedId;
+
+class ColorE {};
 
 void InitalizeControls() {
     // TODO: init controls?
@@ -41,11 +45,11 @@ void factory_free(UIElement* element) {
     }
 }
 
-bool general_render_ui_section(GUI* gui, UIElement& element, SDL_Renderer* render, bool* hover) {
+bool general_render_ui_section(GUI* gui, UIElement& element, SDL_Renderer* render, const bool hovering, bool& focus) {
     switch (element.prototype) {
         case CTEXT: {
             Render_String(render, element.rect, element.text.c_str(), element.text.size());
-            return false;
+            break;
         }
 
         case CBUTTON: {
@@ -53,38 +57,38 @@ bool general_render_ui_section(GUI* gui, UIElement& element, SDL_Renderer* rende
             static Rect inside = Rect(pSize, pSize, -pSize * 2, -pSize * 2);
             auto ms = input::getMousePoint();
             Rect rect;
-            *hover = SDL_PointInRect((SDL_Point*)&ms, (SDL_Rect*)&element.rect);
+
             // border
             guiInstance->GUI_SetMainColorRGB(0xa75100);
             SDL_RenderDrawRect(render, (SDL_Rect*)&element.rect);
             // fill
-            guiInstance->GUI_SetMainColorRGB(*hover ? input::isMouseDown() ? 0xab0000 : 0xe70000 : 0xc90000);
+            guiInstance->GUI_SetMainColorRGB(hovering ? input::isMouseDown() ? 0xab0000 : 0xe70000 : 0xc90000);
             rect = element.rect;
             rect += inside / 2;
             SDL_RenderFillRect(render, (SDL_Rect*)&rect);
 
             // render text
-            Render_String(render, element.rect, element.text.c_str(), element.text.size(), 13, TextAlign::MiddleCenter, true, *hover);
+            Render_String(render, element.rect, element.text.c_str(), element.text.size(), 13, TextAlign::MiddleCenter, true, hovering);
             bool msClick = input::isMouseUp();
-            return (*hover) && msClick;
+            return hover && msClick;
         }
 
         case CEDIT: {
-            return false;
+            break;
         }
 
         case CHSLIDER: {
             float* value = (float*)element.resources;
             // Minimal support
 
-            return false;
+            break;
         }
 
         case CVSLIDER: {
             float* value = (float*)element.resources;
             // Minimal support
 
-            return false;
+            break;
         }
 
         case CIMAGE: {
@@ -98,13 +102,13 @@ bool general_render_ui_section(GUI* gui, UIElement& element, SDL_Renderer* rende
 
                 SDL_RenderCopy(render, tex->native(), nullptr, &sdlr);
             }
-            return false;
+            break;
         }
         case CIMAGEANIMATOR: {
             Timeline* timeline = (Timeline*)element.resources;
             Texture* texture = timeline->Evaluate(Time::time())->texture;
             SDL_RenderCopy(render, texture->native(), nullptr, (SDL_Rect*)&element.rect);
-            return false;
+            break;
         }
         case CTEXTRAND: {
             static float lasttime = 0;
@@ -134,26 +138,31 @@ bool general_render_ui_section(GUI* gui, UIElement& element, SDL_Renderer* rende
 
             Render_String(Application::GetRenderer(), element.rect, element.text.c_str(), element.text.size());
 
-            return false;
+            break;
         }
         case CDROPDOWN: {
-            return false;
+            static const int thickness =2;
+            static const Rect thick = {thickness, thickness, -thickness, -thickness};
+            Rect r = element.rect;
+            if (hover) {
+                int ccc = 0;
+            }
+
+            r.x += 800;
+            r += thick;
+
+            Gizmos::setColor((hovering) ? Color::red : Color::darkred);
+            SDL_RenderFillRect(render, (SDL_Rect*)&r);
+            Gizmos::setColor((hovering) ? Color::darkred : Color::red);
+            for (int x = 0; x < thickness; ++x) {
+                r -= Rect(1, 1, -1, -1);
+                SDL_RenderDrawRect(render, (SDL_Rect*)&r);
+            }
+            break;
         }
     }
 
     return false;
 }
-
-//***************** destructors
-
-// void UC::destructor(void* resources) {}
-// void CText::destructor(void* resources) {}
-// void CButton::destructor(void* resources) {}
-// void CEdit::destructor(void* resources) {}
-// void CHorizontalSlider::destructor(void* resources) {}
-// void CVerticalSlider::destructor(void* resources) {}
-// void CImage::destructor(void* resources) {}
-// void CImageAnimator::destructor(void* resources) {}
-// void CTextRandomizerDisplay::destructor(void* resources) {}
 
 }  // namespace RoninEngine::UI

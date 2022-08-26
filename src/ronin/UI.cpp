@@ -8,7 +8,7 @@ GUI* guiInstance;
 
 extern void* factory_resource(ControlType type);
 extern void factory_free(UIElement* element);
-extern bool general_render_ui_section(GUI* gui, UIElement& element, SDL_Renderer* render, bool* hover);
+extern bool general_render_ui_section(GUI* gui, UIElement& element, SDL_Renderer* render, const bool hovering, bool &focus);
 
 uid call_register_ui(GUI* gui, uid parent = NOPARENT) throw() {
     if (parent && !gui->Has_ID(parent)) throw std::runtime_error("Is not end parent");
@@ -30,7 +30,7 @@ inline UIElement& call_get_element(GUI* gui, uid id) { return gui->ui_layer.elem
 
 GUI::GUI(Level* level) : m_level(level), hitCast(true), callback(nullptr), callbackData(nullptr), visible(true), _focusedUI(false) { guiInstance = this; }
 
-GUI::~GUI() {}
+GUI::~GUI() { RemoveAll(); }
 
 // private--------------------------------------
 
@@ -155,6 +155,8 @@ uid GUI::Push_TextureAnimator(const std::list<Texture*>& roads, float duration, 
 
 template <typename Container>
 uid internal_push_dropdown(const Container& container, int index, const Runtime::Rect& rect, uid parent) {
+    using T = typename std::iterator_traits<decltype(container.cbegin())>::value_type;
+
     uid id = call_register_ui(guiInstance, parent);
     auto& element = call_get_element(guiInstance, id);
     element.prototype = CDROPDOWN;
@@ -166,7 +168,7 @@ uid internal_push_dropdown(const Container& container, int index, const Runtime:
 
     std::list<std::string>* link = reinterpret_cast<std::list<std::string>*>(element.resources);
     for (auto iter = std::cbegin(container); iter != std::cend(container); ++iter) {
-        if constexpr (!std::is_same<decltype(*iter), std::string>()) {
+        if constexpr (std::is_same<T, std::string>()) {
             link->emplace_back(*iter);
         } else {
             link->emplace_back(std::to_string(*iter));
@@ -174,11 +176,6 @@ uid internal_push_dropdown(const Container& container, int index, const Runtime:
     }
 
     return id;
-}
-
-template <>
-uid GUI::Push_DropDown(const std::vector<std::uint32_t>& elements, int index, const Runtime::Rect& rect, uid parent) {
-    return internal_push_dropdown(elements, index, rect, parent);
 }
 
 template <>
@@ -192,17 +189,22 @@ uid GUI::Push_DropDown(const std::vector<float>& elements, int index, const Runt
 }
 
 template <>
-uid GUI::Push_DropDown(const std::list<std::string>& elements, int index, const Runtime::Rect& rect, uid parent) {
-    return internal_push_dropdown(elements, index, rect, parent);
-}
-
-template <>
 uid GUI::Push_DropDown(const std::vector<std::string>& elements, int index, const Runtime::Rect& rect, uid parent) {
     return internal_push_dropdown(elements, index, rect, parent);
 }
 
 template <>
 uid GUI::Push_DropDown(const std::list<float>& elements, int index, const Runtime::Rect& rect, uid parent) {
+    return internal_push_dropdown(elements, index, rect, parent);
+}
+
+template <>
+uid GUI::Push_DropDown(const std::list<int>& elements, int index, const Runtime::Rect& rect, uid parent) {
+    return internal_push_dropdown(elements, index, rect, parent);
+}
+
+template <>
+uid GUI::Push_DropDown(const std::list<std::string>& elements, int index, const Runtime::Rect& rect, uid parent) {
     return internal_push_dropdown(elements, index, rect, parent);
 }
 
@@ -261,7 +263,13 @@ bool GUI::Pop_Element(uid id) {
 
     return false;
 }
-void GUI::RemoveAll() { ui_layer.elements.clear(); }
+void GUI::RemoveAll() {
+    for (int x = 0; x < ui_layer.elements.size(); ++x) {
+        factory_free(&ui_layer.elements[x]);
+    }
+    ui_layer.layers.clear();
+    ui_layer.elements.clear();
+}
 void GUI::Do_Present(SDL_Renderer* renderer) {
     if (visible) {
         uid id;
@@ -269,6 +277,7 @@ void GUI::Do_Present(SDL_Renderer* renderer) {
         std::list<uid> _render;
         ResetControls();  // Reset
         bool targetFocus = false;
+        bool hovering;
         _focusedUI = false;
         for (auto iter = begin(ui_layer.layers); iter != end(ui_layer.layers); ++iter) _render.emplace_back(*iter);
 
@@ -276,16 +285,18 @@ void GUI::Do_Present(SDL_Renderer* renderer) {
             id = _render.front();
             x = &getElement(id);
 
+            hovering = SDL_PointInRect((SDL_Point*)&ms, (SDL_Rect*)&element.rect);
             _render.pop_front();
             if (!(x->options & ElementGroupMask) && x->options & ElementVisibleMask && x->prototype) {
-                if (general_render_ui_section(this, *x, renderer, &targetFocus) && hitCast) {
-                    _focusedUI = true;
+                if (general_render_ui_section(this, *x, renderer, hovering, targetFocus) && hitCast) {
                     //Избавляемся от перекликов в UI
+                    _focusedUI = true;
                     if (x->options & ElementEnableMask && callback) {
                         //Отправка сообщения о действий.
                         callback(id, callbackData);
                     }
                 } else  // disabled state
+                    // TODO: disabled state for UI element's
                     ;
 
                 if (!_focusedUI) _focusedUI = targetFocus;

@@ -15,8 +15,8 @@ typedef std::uint8_t uid;
 enum TextRandomizer_Format { All = -1, OnlyText = 0, OnlyNumber = 1, OnlyReal = 3, MaskText = 2, MaskNumber = 4, MaskReal = 8, MaskUpperChar = 16, MaskLowwerChar = 32 };
 
 struct {
-    Vec2Int dropdownSize = Vec2Int(120, 30);
-    Vec2Int buttonSize = Vec2Int(120, 30);
+    Vec2Int dropdownSize = Vec2Int(240, 30);
+    Vec2Int buttonSize = Vec2Int(240, 30);
 } defaultMakets;
 
 class GUI final {
