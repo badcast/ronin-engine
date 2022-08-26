@@ -9,7 +9,7 @@ GUI* guiInstance;
 extern void* factory_resource(ControlType type);
 extern void factory_free(UIElement* element);
 extern bool general_render_ui_section(GUI* gui, UIElement& element, SDL_Renderer* render, const bool hovering, bool& focus);
-
+extern void event_action(UIElement* element);
 uid call_register_ui(GUI* gui, uid parent = NOPARENT) throw() {
     if (parent && !gui->Has_ID(parent)) throw std::runtime_error("Is not end parent");
 
@@ -282,7 +282,7 @@ void GUI::Do_Present(SDL_Renderer* renderer) {
     if (!visible) return;
 
     uid id;
-    UIElement* x;
+    UIElement* uielement;
     Vec2Int ms;
     std::list<uid> drain;
     ResetControls();  // Reset
@@ -296,13 +296,13 @@ void GUI::Do_Present(SDL_Renderer* renderer) {
 
     while (drain.size()) {
         id = drain.front();
-        x = &getElement(id);
+        uielement = &getElement(id);
 
-        hovering = SDL_PointInRect((SDL_Point*)&ms, (SDL_Rect*)&x->rect);
+        hovering = SDL_PointInRect((SDL_Point*)&ms, (SDL_Rect*)&uielement->rect);
         drain.pop_front();
-        if (!(x->options & ElementGroupMask) && x->options & ElementVisibleMask && x->prototype) {
+        if (!(uielement->options & ElementGroupMask) && uielement->options & ElementVisibleMask && uielement->prototype) {
             targetFocus = id == ui_layer.focusedID;
-            if (general_render_ui_section(this, *x, renderer, hovering, targetFocus) && hitCast) {
+            if (general_render_ui_section(this, *uielement, renderer, hovering, targetFocus) && hitCast) {
                 //Избавляемся от перекликов в UI
                 _focusedUI = true;
 
@@ -310,9 +310,13 @@ void GUI::Do_Present(SDL_Renderer* renderer) {
                     ui_layer.focusedID = id;
                 }
 
-                if (x->options & ElementEnableMask && callback) {
-                    //Отправка сообщения о действий.
-                    callback(id, callbackData);
+                if (uielement->options & ElementEnableMask) {
+                    if (callback) {
+                        //Отправка сообщения о действий.
+                        callback(id, callbackData);
+                    }
+                    // run event
+                    event_action(uielement);
                 }
             } else {  // disabled state
                 // TODO: disabled state for UI element's
@@ -323,7 +327,7 @@ void GUI::Do_Present(SDL_Renderer* renderer) {
 
         if (this->m_level->m_isUnload) break;
 
-        for (auto iter = begin(x->childs); iter != end(x->childs); ++iter) drain.emplace_back(*iter + 1);
+        for (auto iter = begin(uielement->childs); iter != end(uielement->childs); ++iter) drain.emplace_back(*iter + 1);
     }
 }
 void GUI::GUI_SetMainColorRGB(uint32_t RGB) { GUI_SetMainColorRGBA(RGB << 8 | SDL_ALPHA_OPAQUE); }

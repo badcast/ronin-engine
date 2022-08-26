@@ -4,13 +4,13 @@
 #include "framework.h"
 #include "inputSystem.h"
 
+#define DROPDOWN_RESOURCE std::pair<int, std::list<std::string>>
+
 namespace RoninEngine::UI {
 uid _controlId;
 uid _focusedId;
 
 TTF_Font* font;
-
-class ColorE {};
 
 void InitalizeControls() {
     // TODO: init controls?
@@ -34,7 +34,7 @@ void* factory_resource(ControlType type) {
 
     switch (type) {
         case CDROPDOWN:
-            resources = GC::gc_alloc<std::pair<int, std::list<std::string>>>();
+            resources = GC::gc_alloc<DROPDOWN_RESOURCE>();
             break;
         case CIMAGEANIMATOR:
             resources = GC::gc_alloc<Timeline>();
@@ -47,7 +47,7 @@ void* factory_resource(ControlType type) {
 void factory_free(UIElement* element) {
     switch (element->prototype) {
         case CDROPDOWN:
-            GC::gc_unalloc(static_cast<std::pair<int, std::list<std::string>>*>(element->resources));
+            GC::gc_unalloc(static_cast<DROPDOWN_RESOURCE*>(element->resources));
             break;
         case CIMAGEANIMATOR:
             GC::gc_unalloc(static_cast<Timeline*>(element->resources));
@@ -206,48 +206,50 @@ bool general_render_ui_section(GUI* gui, UIElement& element, SDL_Renderer* rende
                 r = element.rect;
                 r.y += r.h;
 
-                r.h = dropDownLinear = Math::LerpUnclamped(dropDownLinear, link->second.size() * sz, 0.1f);
+                r.h = dropDownLinear = Math::ceil(Math::LerpUnclamped(dropDownLinear, link->second.size() * sz, 2*Time::deltaTime()));
 
                 Gizmos::setColor(Color::darkred);
                 // draw background
                 SDL_RenderFillRect(render, (SDL_Rect*)&r);
+                if (link->second.size() * sz == r.h) {
+                    r.h = sz;  // set for height
+                    elrect = r;
+                    r.x += 5;
 
-                r.h = sz;  // set for height
-                elrect = r;
-                r.x += 5;
-
-                int index = 0;
-                for (auto iter = std::begin(link->second); iter != std::end(link->second); ++iter, ++index) {
-                    // draw highligh
-                    vi = input::getMousePoint();
-                    if (SDL_PointInRect((SDL_Point*)&vi, (SDL_Rect*)&elrect)) {
-                        Gizmos::setColor(Color::mediumvioletred);
-                        SDL_RenderFillRect(render, (SDL_Rect*)&elrect);
-                        if (input::isMouseUp()) {
-                            link->first = index;
-                            element.text = *iter;
-                            focus = false;
+                    int index = 0;
+                    for (auto iter = std::begin(link->second); iter != std::end(link->second); ++iter, ++index) {
+                        // draw highligh
+                        vi = input::getMousePoint();
+                        if (SDL_PointInRect((SDL_Point*)&vi, (SDL_Rect*)&elrect)) {
+                            Gizmos::setColor(Color::mediumvioletred);
+                            SDL_RenderFillRect(render, (SDL_Rect*)&elrect);
+                            if (input::isMouseUp()) {
+                                link->first = index;
+                                element.text = *iter;
+                                focus = false;
+                            }
                         }
+
+                        Gizmos::setColor(Color::darkred);
+                        surf = TTF_RenderUTF8_Solid(font, iter->c_str(), link->first != index ? Color::white : Color::gold);
+                        GC::gc_alloc_texture_from(&texture, surf);
+                        r.h = texture->height();
+                        r.w = texture->width();
+
+                        r.y = elrect.y + elrect.h / 2 - r.h / 2;
+                        SDL_RenderCopy(render, texture->native(), nullptr, (SDL_Rect*)&(r));
+
+                        GC::gc_unalloc(texture);
+                        SDL_FreeSurface(surf);
+                        elrect.y += sz;
                     }
-
-                    Gizmos::setColor(Color::darkred);
-                    surf = TTF_RenderUTF8_Solid(font, iter->c_str(), link->first != index ? Color::white : Color::gold);
-                    GC::gc_alloc_texture_from(&texture, surf);
-                    r.h = texture->height();
-                    r.w = texture->width();
-
-                    r.y = elrect.y + elrect.h / 2 - r.h / 2;
-                    SDL_RenderCopy(render, texture->native(), nullptr, (SDL_Rect*)&(r));
-
-                    GC::gc_unalloc(texture);
-                    SDL_FreeSurface(surf);
-                    elrect.y += sz;
                 }
 
                 if (msClick) {
                     focus = false;
                     dropDownLinear = 0;
                 }
+
             } else {
                 // clik and shown
                 if (focus = result = msClick) {
@@ -258,6 +260,17 @@ bool general_render_ui_section(GUI* gui, UIElement& element, SDL_Renderer* rende
     }
 
     return result;
+}
+
+void event_action(UIElement* element) {
+    if (!element->event) return;
+
+    switch (element->prototype) {
+        case CDROPDOWN:
+
+            ((event_index_changed)(element->event))(element->id, ((DROPDOWN_RESOURCE*)element->resources)->first);
+            break;
+    }
 }
 
 }  // namespace RoninEngine::UI
