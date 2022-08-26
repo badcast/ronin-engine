@@ -7,7 +7,7 @@
 #include "Controls.h"
 #include "Font.h"
 #include "LevelEntity.h"
-#include "Mathf.h" 
+#include "Math.h"
 #include "ObjectParser.h"
 #include "Paths.h"
 #include "Texture.h"
@@ -41,4 +41,3 @@
 #include "Application.h"
 #include "ResourceManager.h"
 #include "SystemInformation.h"
-

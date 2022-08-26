@@ -8,8 +8,7 @@ Camera::Camera() : Camera(typeid(*this).name()) {}
 Camera::Camera(const std::string& name) : Component(name) {
     //using this camera as main
     _main = this;
-    targetClear = true;
-    enabled = true;
+    targetClear = enabled = true;
     distanceEvcall = 2;
 }
 Camera::~Camera() {
@@ -102,6 +101,7 @@ std::tuple<std::map<int, std::set<Renderer*>>*, std::set<Light*>*> Camera::matri
         Resolution res = Application::getResolution();
         Vec2Int wpLeftTop = Vec2::RoundToInt(ScreenToWorldPoint(Vec2::zero));
         Vec2Int wpRightBottom = Vec2::RoundToInt(ScreenToWorldPoint(Vec2(res.width, res.height)));
+        //RUN STORM CAST
         std::list<Transform*> result = Physics2D::stormCast(
             transform()->p, Mathf::number(Mathf::max(wpRightBottom.x - transform()->p.x, wpRightBottom.y - transform()->p.y)) +
                                 1 + distanceEvcall);

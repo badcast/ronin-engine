@@ -1,6 +1,5 @@
 #include "framework.h"
 #include "Sprite.h"
-#include "Mathf.h"
 #include "Texture.h"
 
 Sprite* _empty = nullptr;

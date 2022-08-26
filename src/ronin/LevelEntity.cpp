@@ -23,14 +23,27 @@ std::vector<Level_t> m_levels;
 
 using namespace RoninEngine;
 
-std::string getHierarchyString(Transform* root) {
+std::string RoninEngine::Levels::getHierarchyString(Transform* target) {
     static char delim = 0x32;
     std::string delims;
+    std::string result;
 
-    while (root) {
-        std::vector<Transform*> *hir = &root->hierarchy;
+    std::list<Transform*> stack;
 
+    while (target) {
+        for (auto& c : target->hierarchy) {
+            stack.emplace_back(c);
+        }
 
+        result += delims;
+        result += target->name();
+        result += "\n";
+
+        if (!stack.empty()) {
+            target = stack.front();
+            stack.pop_front();
+        } else
+            target = nullptr;
     }
 }
 

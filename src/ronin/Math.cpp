@@ -1,8 +1,9 @@
-#include "Mathf.h"
-
 #include "framework.h"
 
 namespace RoninEngine {
+
+constexpr auto periodic_fahren = 5.f / 9;
+
 // get random value
 int getRVal() {
     int value;
@@ -223,6 +224,10 @@ float Mathf::SmoothDamp(float current, float target, float& currentVelocity, flo
     }
     return num8;
 }
+
+float Mathf::cel2far(float celsius) { return celsius * 1.8f + 32; }
+
+float Mathf::far2cel(float fahrenheit) { return (fahrenheit - 32) * periodic_fahren; }
 
 float Mathf::SmoothDampAngle(float current, float target, float& currentVelocity, float smoothTime, float maxSpeed) {
     float deltaTime = Time::deltaTime();

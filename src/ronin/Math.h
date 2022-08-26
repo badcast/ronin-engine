@@ -132,6 +132,11 @@ class Mathf {
     static float SmoothDamp(float current, float target, float& currentVelocity, float smoothTime, float maxSpeed,
                             float deltaTime);
 
+    // Celsius to Fahrenheit
+    static float cel2far(float celsius);
+    // Fahre nheit to Celsius
+    static float far2cel(float fahrenheit);
+
     static float SmoothDampAngle(float current, float target, float& currentVelocity, float smoothTime, float maxSpeed);
 
     static float SmoothDampAngle(float current, float target, float& currentVelocity, float smoothTime);
