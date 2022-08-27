@@ -7,6 +7,19 @@
 #define DROPDOWN_RESOURCE std::pair<int, std::list<std::string>>
 
 namespace RoninEngine::UI {
+struct ElementInteraction {
+    Color normalState;
+    Color hoverState;
+    Color pressState;
+    Color disabledState = Color::darkgray;
+};
+
+struct {
+    ElementInteraction defaultInteraction = {Color::ghostwhite, Color::white, Color::gainsboro};
+    Color dropdownText = Color::black;
+    Color dropdownSelectedText = Color::lightslategrey;
+} colorSpace;
+
 uid _controlId;
 uid _focusedId;
 
@@ -18,7 +31,7 @@ void InitalizeControls() {
     TTF_Init();
     std::string path = getDataFrom(FolderKind::GFX) + "interface/arial.ttf";
 
-    font = TTF_OpenFont(path.c_str(), 12);
+    font = TTF_OpenFont(path.c_str(), 14);
 }
 
 void Free_Controls() {
@@ -60,13 +73,13 @@ bool general_render_ui_section(GUI* gui, UIElement& element, SDL_Renderer* rende
     bool result = false;
     {
         // TODO: general drawing
-    }
 
-    if (hovering) {
-        if (input::get_key_down(SDL_SCANCODE_LCTRL)) {
-            Vec2Int ms = input::getMousePoint();
-            element.rect.x = ms.x - element.rect.w / 2;
-            element.rect.y = ms.y - element.rect.h / 2;
+        if (hovering) {
+            if (input::get_key_down(SDL_SCANCODE_LCTRL)) {
+                Vec2Int ms = input::getMousePoint();
+                element.rect.x = ms.x - element.rect.w / 2;
+                element.rect.y = ms.y - element.rect.h / 2;
+            }
         }
     }
 
@@ -172,17 +185,18 @@ bool general_render_ui_section(GUI* gui, UIElement& element, SDL_Renderer* rende
             Rect r = element.rect;
             r += thick;
 
-            Gizmos::setColor((hovering) ? Color::red : Color::darkred);
+            // uielement background
+            Gizmos::setColor((hovering) ? colorSpace.defaultInteraction.normalState : colorSpace.defaultInteraction.hoverState);
             SDL_RenderFillRect(render, (SDL_Rect*)&r);
-            Gizmos::setColor((hovering) ? Color::darkred : Color::red);
+            Gizmos::setColor(Color::gray);
             for (int x = 0; x < thickness; ++x) {
                 r -= Rect(1, 1, -1, -1);
                 SDL_RenderDrawRect(render, (SDL_Rect*)&r);
             }
 
-            // draw text
+            // draw main text
             Texture* texture;
-            SDL_Surface* surf = TTF_RenderUTF8_Solid(font, element.text.c_str(), Color::white);
+            SDL_Surface* surf = TTF_RenderUTF8_Solid(font, element.text.c_str(), colorSpace.dropdownText);
             if (GC::gc_alloc_texture_from(&texture, surf) != GCInvalidID) {
                 r = element.rect;
                 r.x += 5;
@@ -206,9 +220,9 @@ bool general_render_ui_section(GUI* gui, UIElement& element, SDL_Renderer* rende
                 r = element.rect;
                 r.y += r.h;
 
-                r.h = dropDownLinear = Math::ceil(Math::LerpUnclamped(dropDownLinear, link->second.size() * sz, 2*Time::deltaTime()));
+                r.h = dropDownLinear = Math::ceil(Math::LerpUnclamped(dropDownLinear, link->second.size() * sz, 2 * Time::deltaTime()));
 
-                Gizmos::setColor(Color::darkred);
+                Gizmos::setColor(colorSpace.defaultInteraction.hoverState);
                 // draw background
                 SDL_RenderFillRect(render, (SDL_Rect*)&r);
                 if (link->second.size() * sz == r.h) {
@@ -218,20 +232,20 @@ bool general_render_ui_section(GUI* gui, UIElement& element, SDL_Renderer* rende
 
                     int index = 0;
                     for (auto iter = std::begin(link->second); iter != std::end(link->second); ++iter, ++index) {
-                        // draw highligh
-                        vi = input::getMousePoint();
-                        if (SDL_PointInRect((SDL_Point*)&vi, (SDL_Rect*)&elrect)) {
-                            Gizmos::setColor(Color::mediumvioletred);
+                        // draw element highligh
+                        if (!result && SDL_PointInRect((SDL_Point*)&(vi = input::getMousePoint()), (SDL_Rect*)&elrect)) {
+                            Gizmos::setColor(colorSpace.defaultInteraction.pressState);
                             SDL_RenderFillRect(render, (SDL_Rect*)&elrect);
                             if (input::isMouseUp()) {
                                 link->first = index;
                                 element.text = *iter;
-                                focus = false;
+                                result = focus = false;
                             }
                         }
 
-                        Gizmos::setColor(Color::darkred);
-                        surf = TTF_RenderUTF8_Solid(font, iter->c_str(), link->first != index ? Color::white : Color::gold);
+                        Gizmos::setColor(colorSpace.defaultInteraction.hoverState);
+                        // Draw element text
+                        surf = TTF_RenderUTF8_Solid(font, iter->c_str(), link->first != index ? colorSpace.dropdownText : colorSpace.dropdownSelectedText);
                         GC::gc_alloc_texture_from(&texture, surf);
                         r.h = texture->height();
                         r.w = texture->width();
