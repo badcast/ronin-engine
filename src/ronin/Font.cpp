@@ -99,8 +99,7 @@ void Initialize_Fonts(bool optimizeDeffects) {
                         cx = rect_point.x + x;
                         cy = rect_point.y + y;
                         //Формула Y Offset * (Pitch/BytesPerPixel) + X Offset
-                        pixel =
-                            (SDL_Color *)pfont->surfNormal->pixels + (cy * (model->pitch / model->format->BytesPerPixel) + cx);
+                        pixel = (SDL_Color *)pfont->surfNormal->pixels + (cy * (model->pitch / model->format->BytesPerPixel) + cx);
                         if (pixel->a)  // isn't transparent
                             break;
                     }
@@ -115,8 +114,7 @@ void Initialize_Fonts(bool optimizeDeffects) {
                         //Формула Y Offset * (Pitch/BytesPerPixel) + X Offset
                         cx = rect_point.x + pfont->data[i].w - 1 - x;
                         cy = rect_point.y + y;
-                        pixel =
-                            (SDL_Color *)pfont->surfNormal->pixels + (cy * (model->pitch / model->format->BytesPerPixel) + cx);
+                        pixel = (SDL_Color *)pfont->surfNormal->pixels + (cy * (model->pitch / model->format->BytesPerPixel) + cx);
                         if (pixel->a)  // isn't transparent
                             break;
                     }
@@ -148,8 +146,7 @@ Rect Multiline_TextWidth_WithCyrilic(const std::string &text, int fontSize) {
     return rect;
 }
 
-void Render_String(SDL_Renderer *renderer, Rect rect, const char *text, int len, int pfontWidth, TextAlign textAlign,
-                   bool textWrap, bool hilight) {
+void Render_String(SDL_Renderer *renderer, Rect rect, const char *text, int len, int pfontWidth, TextAlign textAlign, bool textWrap, bool hilight) {
     if (len <= 0 || !pfontTexture || hilight && !pfontTextureHilight) return;
 
     std::uint8_t temp;

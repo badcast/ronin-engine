@@ -17,6 +17,7 @@ enum TextRandomizer_Format { All = -1, OnlyText = 0, OnlyNumber = 1, OnlyReal = 
 struct {
     Vec2Int dropdownSize = Vec2Int(240, 30);
     Vec2Int buttonSize = Vec2Int(240, 30);
+    Vec2Int editSize = Vec2Int(240, 30);
 } defaultMakets;
 
 class GUI final {
@@ -53,15 +54,17 @@ class GUI final {
     CI uid Create_Group();
 
     CI uid Push_Label(const std::string &text, const RoninEngine::Runtime::Rect &rect, const int &fontWidth = 13, uid parent = NOPARENT);
-    CI uid Push_Label(const std::string &text, const Vec2Int &point, const int &fontWidth = 13, uid parent = NOPARENT);
+    CI uid Push_Label(const std::string &text, const Runtime::Vec2Int &point, const int &fontWidth = 13, uid parent = NOPARENT);
     CI uid Push_Button(const std::string &text, const RoninEngine::Runtime::Rect &rect, uid parent = NOPARENT);
-    CI uid Push_Button(const std::string &text, const Vec2Int point, uid parent = NOPARENT);
+    CI uid Push_Button(const std::string &text, const Runtime::Vec2Int& point, uid parent = NOPARENT);
+    CI uid Push_Edit(const std::string &text, const Runtime::Vec2Int& point, uid parent = NOPARENT);
+    CI uid Push_Edit(const std::string &text, const Runtime::Rect& rect, uid parent = NOPARENT);
     CI uid Push_DisplayRandomizer(TextRandomizer_Format format, const Vec2Int &point, uid parent = NOPARENT);
     CI uid Push_DisplayRandomizer(TextRandomizer_Format format = TextRandomizer_Format::All, uid parent = NOPARENT);
     CI uid Push_DisplayRandomizer_Text(const std::string &text, const Vec2Int &point, uid parent = NOPARENT);
     CI uid Push_DisplayRandomizer_Number(const int &min, const int &max, TextAlign textAlign, uid parent = NOPARENT);
-    CI uid Push_TextureStick(Texture *texture, const RoninEngine::Runtime::Rect &rect, uid parent = NOPARENT);
-    CI uid Push_TextureStick(Texture *texture, const Vec2Int point, uid parent = NOPARENT);
+    CI uid Push_TextureStick(Texture *texture, const Runtime::Rect &rect, uid parent = NOPARENT);
+    CI uid Push_TextureStick(Texture *texture, const Runtime::Vec2Int &point, uid parent = NOPARENT);
     CI uid Push_TextureAnimator(Timeline *timeline, const RoninEngine::Runtime::Rect &rect, uid parent = NOPARENT);
     CI uid Push_TextureAnimator(Timeline *timeline, const Vec2Int &point, uid parent = NOPARENT);
     CI uid Push_TextureAnimator(const std::list<Texture *> &roads, float duration, TimelineOptions option, const RoninEngine::Runtime::Rect &rect,

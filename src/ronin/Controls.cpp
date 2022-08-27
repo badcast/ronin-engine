@@ -1,6 +1,7 @@
 #include <SDL2/SDL2_gfxPrimitives.h>
 #include <SDL_ttf.h>
 
+#include "FontInternal.h"
 #include "framework.h"
 #include "inputSystem.h"
 
@@ -26,12 +27,11 @@ uid _focusedId;
 TTF_Font* font;
 
 void InitalizeControls() {
-    // TODO: init controls?
-
     TTF_Init();
-    std::string path = getDataFrom(FolderKind::GFX) + "interface/arial.ttf";
 
-    font = TTF_OpenFont(path.c_str(), 14);
+    // std::string path = getDataFrom(FolderKind::GFX) + "interface/arial.ttf";
+    auto raw = SDL_RWFromConstMem(raw_arial_font, raw_arial_length);
+    font = TTF_OpenFontRW(raw, 1, 14);
 }
 
 void Free_Controls() {
@@ -112,6 +112,14 @@ bool general_render_ui_section(GUI* gui, UIElement& element, SDL_Renderer* rende
         }
 
         case CEDIT: {
+            // uielement background
+            Gizmos::setColor((hovering) ? colorSpace.defaultInteraction.normalState : colorSpace.defaultInteraction.hoverState);
+            SDL_RenderFillRect(render, (SDL_Rect*)&r);
+            Gizmos::setColor(Color::gray);
+            for (int x = 0; x < thickness; ++x) {
+                r -= Rect(1, 1, -1, -1);
+                SDL_RenderDrawRect(render, (SDL_Rect*)&r);
+            }
             break;
         }
 

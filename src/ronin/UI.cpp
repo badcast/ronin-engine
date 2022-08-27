@@ -81,6 +81,11 @@ uid GUI::Push_Button(const std::string& text, const RoninEngine::Runtime::Rect& 
 }
 uid GUI::Push_Button(const std::string& text, const Vec2Int point, uid parent) { return Push_Button(text, {point.x, point.y, 256, 32}, parent); }
 
+uid GUI::Push_Edit(const std::string& text, const Runtime::Vec2Int& point, uid parent = NOPARENT) {
+    return Push_Edit(text, {point.x, point.y, defaultMakets.editSize.x, defaultMakets.editSize.y}, parent);
+}
+uid GUI::Push_Edit(const std::string& text, const Runtime::Rect& rect, uid parent = NOPARENT) {}
+
 uid GUI::Push_DisplayRandomizer(TextRandomizer_Format format, const Vec2Int& point, uid parent) {
     uid id = call_register_ui(this, parent);
 
@@ -105,7 +110,7 @@ uid GUI::Push_DisplayRandomizer_Number(const int& min, const int& max, TextAlign
     return id;
 }
 
-uid GUI::Push_TextureStick(Texture* texture, const RoninEngine::Runtime::Rect& rect, uid parent) {
+uid GUI::Push_TextureStick(Texture* texture, const Runtime::Rect& rect, uid parent) {
     uid id = call_register_ui(this, parent);
 
     auto& data = getElement(id);
@@ -114,7 +119,7 @@ uid GUI::Push_TextureStick(Texture* texture, const RoninEngine::Runtime::Rect& r
     data.resources = texture;
     return id;
 }
-uid GUI::Push_TextureStick(Texture* texture, const Vec2Int point, uid parent) {
+uid GUI::Push_TextureStick(Texture* texture, const Vec2Int& point, uid parent) {
     return Push_TextureStick(texture, {point.x, point.y, texture->width(), texture->height()}, parent);
 }
 uid GUI::Push_TextureAnimator(Timeline* timeline, const RoninEngine::Runtime::Rect& rect, uid parent) {
