@@ -19,6 +19,7 @@ struct {
     ElementInteraction defaultInteraction = {Color::ghostwhite, Color::white, Color::gainsboro};
     Color dropdownText = Color::black;
     Color dropdownSelectedText = Color::lightslategrey;
+    Color editText = Color::black;
 } colorSpace;
 
 uid _controlId;
@@ -68,6 +69,8 @@ void factory_free(UIElement* element) {
     }
 }
 
+bool general_control_default_state() {}
+
 bool general_render_ui_section(GUI* gui, UIElement& element, SDL_Renderer* render, const bool hovering, bool& focus) {
     static float dropDownLinear = 0;
     bool result = false;
@@ -84,6 +87,8 @@ bool general_render_ui_section(GUI* gui, UIElement& element, SDL_Renderer* rende
     }
 
     switch (element.prototype) {
+        case RoninEngine::UI::_UC:
+            break;
         case CTEXT: {
             Render_String(render, element.rect, element.text.c_str(), element.text.size());
             break;
@@ -113,12 +118,49 @@ bool general_render_ui_section(GUI* gui, UIElement& element, SDL_Renderer* rende
 
         case CEDIT: {
             // uielement background
+            static const int thickness = 2;
+            static const Rect thick = {thickness, thickness, -thickness, -thickness};
+            bool msClick = hovering && input::isMouseUp();
+            Rect r = element.rect;
+            r += thick;
+
+            // uielement background
             Gizmos::setColor((hovering) ? colorSpace.defaultInteraction.normalState : colorSpace.defaultInteraction.hoverState);
             SDL_RenderFillRect(render, (SDL_Rect*)&r);
             Gizmos::setColor(Color::gray);
             for (int x = 0; x < thickness; ++x) {
                 r -= Rect(1, 1, -1, -1);
                 SDL_RenderDrawRect(render, (SDL_Rect*)&r);
+            }
+
+            // draw main text
+            Texture* texture;
+            SDL_Surface* surf = TTF_RenderUTF8_Solid(font, element.text.c_str(), colorSpace.editText);
+            if (GC::gc_alloc_texture_from(&texture, surf) != GCInvalidID) {
+                r = element.rect;
+                r.x += 5;
+                r.y += +r.h / 2 - texture->height() / 2;
+                r.w = texture->width();
+                r.h = texture->height();
+
+                SDL_RenderCopy(render, texture->native(), nullptr, (SDL_Rect*)&(r));
+
+                GC::gc_unalloc(texture);
+                SDL_FreeSurface(surf);
+            }
+
+            // focusing intersection
+            if (focus) {
+                std::string linput;
+                input::text_get(linput);
+                element.text += linput;
+            } else {
+                // clik and focused
+                if (focus = result = msClick) {
+                    input::text_start_input();
+                } else {
+                    input::text_stop_input();
+                }
             }
             break;
         }

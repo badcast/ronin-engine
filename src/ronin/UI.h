@@ -86,17 +86,17 @@ class GUI final {
     CI void *Resources(uid id);
     CI void Resources(uid id, void *data);
 
-    CI RoninEngine::Runtime::Rect Rect(uid id);
-    CI void Rect(uid id, const RoninEngine::Runtime::Rect &rect);
+    CI RoninEngine::Runtime::Rect getRect(uid id);
+    CI void setRect(uid id, const RoninEngine::Runtime::Rect &rect);
 
-    CI std::string Text(uid id);
-    CI void Text(uid id, const std::string &text);
+    CI std::string getText(uid id);
+    CI void setText(uid id, const std::string &text);
 
-    CI void Visible(uid id, bool state);
-    CI bool Visible(uid id);
+    CI void setVisible(uid id, bool state);
+    CI bool getVisible(uid id);
 
-    CI void Enable(uid id, bool state);
-    CI bool Enable(uid id);
+    CI void setEnable(uid id, bool state);
+    CI bool getEnable(uid id);
 
     // grouping-----------------------------------------------------------------------------------------------------------
 
@@ -107,8 +107,8 @@ class GUI final {
 
     // other--------------------------------------------------------------------------------------------------------------
 
-    CI void Cast(bool state);
-    CI bool Cast();
+    CI void setCast(bool state);
+    CI bool getCast();
 
     CI void Register_Callback(ui_callback callback, void *userData);
 

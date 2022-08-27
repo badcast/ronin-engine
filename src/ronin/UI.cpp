@@ -49,14 +49,14 @@ UIElement& GUI::getElement(uid id) { return call_get_element(this, id); }
 // public---------------------------------------
 
 bool GUI::Has_ID(uid id) { return ui_layer.elements.size() >= id; }
-uid GUI::Create_Group(const RoninEngine::Runtime::Rect& rect) {
+uid GUI::Create_Group(const Runtime::Rect& rect) {
     uid id = call_register_ui(this);
     auto& data = getElement(id);
     data.rect = rect;
     data.options |= ElementGroupMask;
     return id;
 }
-uid GUI::Create_Group() { return Create_Group(RoninEngine::Runtime::Rect::zero); }
+uid GUI::Create_Group() { return Create_Group(Rect::zero); }
 
 uid GUI::Push_Label(const std::string& text, const RoninEngine::Runtime::Rect& rect, const int& fontWidth, uid parent) {
     // todo: fontWidth
@@ -79,12 +79,22 @@ uid GUI::Push_Button(const std::string& text, const RoninEngine::Runtime::Rect& 
     data.prototype = CBUTTON;
     return id;
 }
-uid GUI::Push_Button(const std::string& text, const Vec2Int point, uid parent) { return Push_Button(text, {point.x, point.y, 256, 32}, parent); }
+uid GUI::Push_Button(const std::string& text, const Vec2Int& point, uid parent) {
+    return Push_Button(text, {point.x, point.y, defaultMakets.buttonSize.x, defaultMakets.buttonSize.y}, parent);
+}
 
-uid GUI::Push_Edit(const std::string& text, const Runtime::Vec2Int& point, uid parent = NOPARENT) {
+uid GUI::Push_Edit(const std::string& text, const Vec2Int& point, uid parent) {
     return Push_Edit(text, {point.x, point.y, defaultMakets.editSize.x, defaultMakets.editSize.y}, parent);
 }
-uid GUI::Push_Edit(const std::string& text, const Runtime::Rect& rect, uid parent = NOPARENT) {}
+uid GUI::Push_Edit(const std::string& text, const Runtime::Rect& rect, uid parent) {
+    uid id = call_register_ui(this, parent);
+    UIElement& element = getElement(id);
+
+    element.text = text;
+    element.rect = rect;
+    element.prototype = CEDIT;
+    return id;
+}
 
 uid GUI::Push_DisplayRandomizer(TextRandomizer_Format format, const Vec2Int& point, uid parent) {
     uid id = call_register_ui(this, parent);
@@ -225,20 +235,22 @@ uid GUI::Push_DropDown(const std::list<std::string>& elements, int index, const 
 
 void* GUI::Resources(uid id) { return getElement(id).resources; }
 void GUI::Resources(uid id, void* data) { getElement(id).resources = data; }
-RoninEngine::Runtime::Rect GUI::Rect(uid id) { return getElement(id).rect; }
-void GUI::Rect(uid id, const RoninEngine::Runtime::Rect& rect) { getElement(id).rect = rect; }
-std::string GUI::Text(uid id) { return getElement(id).text; }
-void GUI::Text(uid id, const std::string& text) { getElement(id).text = text; }
 
-void GUI::Visible(uid id, bool state) { getElement(id).options = getElement(id).options & (~ElementVisibleMask) | (ElementVisibleMask * (state == true)); }
-bool GUI::Visible(uid id) { return (getElement(id).options & ElementVisibleMask) >> 1; }
+Rect GUI::getRect(uid id) { return getElement(id).rect; }
+void GUI::setRect(uid id, const RoninEngine::Runtime::Rect& rect) { getElement(id).rect = rect; }
 
-void GUI::Enable(uid id, bool state) { getElement(id).options = (getElement(id).options & (~ElementEnableMask)) | (ElementEnableMask * (state == true)); }
-bool GUI::Enable(uid id) { return getElement(id).options & ElementEnableMask; }
+std::string GUI::getText(uid id) { return getElement(id).text; }
+void GUI::setText(uid id, const std::string& text) { getElement(id).text = text; }
+
+void GUI::setVisible(uid id, bool state) { getElement(id).options = (getElement(id).options & ~ElementVisibleMask) | (ElementVisibleMask * (state == true)); }
+bool GUI::getVisible(uid id) { return (getElement(id).options & ElementVisibleMask) != 0; }
+
+void GUI::setEnable(uid id, bool state) { getElement(id).options = ((getElement(id).options & ~ElementEnableMask)) | (ElementEnableMask * (state == true)); }
+bool GUI::getEnable(uid id) { return getElement(id).options & ElementEnableMask != 0; }
 
 // grouping-----------------------------------------------------------------------------------------------------------
 
-bool GUI::Is_Group(uid id) { return getElement(id).options & ElementGroupMask; }
+bool GUI::Is_Group(uid id) { return getElement(id).options & ElementGroupMask != 0; }
 
 void GUI::Show_GroupUnique(uid id) throw() {
     if (!Is_Group(id)) throw std::runtime_error("Is't group");
@@ -254,18 +266,18 @@ void GUI::Show_Group(uid id) throw() {
 
     if (iter == end(ui_layer.layers)) {
         ui_layer.layers.emplace_back(id);
-        Visible(id, true);
+        setVisible(id, true);
     }
 }
 
 bool GUI::Close_Group(uid id) throw() {
     if (!Is_Group(id)) throw std::runtime_error("Is't group");
     ui_layer.layers.remove(id);
-    Visible(id, false);
+    setVisible(id, false);
 }
 
-void GUI::Cast(bool state) { hitCast = state; }
-bool GUI::Cast() { return hitCast; }
+void GUI::setCast(bool state) { hitCast = state; }
+bool GUI::getCast() { return hitCast; }
 
 void GUI::Register_Callback(ui_callback callback, void* userData) {
     this->callback = callback;
