@@ -279,13 +279,13 @@ int jno_object_node::incrementMemory() {
     return ++*uses;
 }
 
-jbool jno_object_node::isValue() { return (this->valueFlag & 3) == Node_ValueFlag; }
-jbool jno_object_node::isArray() { return (this->valueFlag & 3) == Node_ArrayFlag; }
-jbool jno_object_node::isStruct() { return (this->valueFlag & 3) == Node_StructFlag; }
-jbool jno_object_node::isNumber() { return ((this->valueFlag & 0x1C) >> 2) == JNOType::JNONumber; }
-jbool jno_object_node::isReal() { return ((this->valueFlag & 0x1C) >> 2) == JNOType::JNOReal; }
-jbool jno_object_node::isString() { return ((this->valueFlag & 0x1C) >> 2) == JNOType::JNOString; }
-jbool jno_object_node::isBoolean() { return ((this->valueFlag & 0x1C) >> 2) == JNOType::JNOBoolean; }
+const jbool jno_object_node::isValue() { return (this->valueFlag & 3) == Node_ValueFlag; }
+const jbool jno_object_node::isArray() { return (this->valueFlag & 3) == Node_ArrayFlag; }
+const jbool jno_object_node::isStruct() { return (this->valueFlag & 3) == Node_StructFlag; }
+const jbool jno_object_node::isNumber() { return ((this->valueFlag & 0x1C) >> 2) == JNOType::JNONumber; }
+const jbool jno_object_node::isReal() { return ((this->valueFlag & 0x1C) >> 2) == JNOType::JNOReal; }
+const jbool jno_object_node::isString() { return ((this->valueFlag & 0x1C) >> 2) == JNOType::JNOString; }
+const jbool jno_object_node::isBoolean() { return ((this->valueFlag & 0x1C) >> 2) == JNOType::JNOBoolean; }
 
 jstring& jno_object_node::getPropertyName() { return this->propertyName; }
 void jno_object_node::set_native_memory(void* memory) { this->_bits = memory; }

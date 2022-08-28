@@ -16,6 +16,7 @@ bool m_levelLoaded = false;
 bool isQuiting;
 
 void Application::Init(const std::uint32_t& width, const std::uint32_t& height) {
+
     char errorStr[128];
     if (m_inited) return;
 
@@ -264,6 +265,11 @@ SDL_Window* Application::GetWindow() { return window; }
 SDL_Renderer* Application::GetRenderer() { return renderer; }
 
 void Application::back_fail(void) { exit(EXIT_FAILURE); }
+
+void Application::show_message(const std::string &message)
+{
+    SDL_ShowSimpleMessageBox(SDL_MessageBoxFlags::SDL_MESSAGEBOX_INFORMATION, nullptr, message.c_str(), window);
+}
 
 void Application::fail(const std::string& message) {
     std::string _template = message;

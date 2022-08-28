@@ -1,10 +1,10 @@
 #pragma once
 
+#include <fstream>
 #include <map>
+#include <stdexcept>
 #include <string>
 #include <vector>
-#include <fstream>
-#include <stdexcept>
 
 namespace jno {
 
@@ -63,18 +63,18 @@ class jno_object_node {
 
     ~jno_object_node();
 
-    inline bool isArray();
-    inline bool isStruct();
-    inline bool isValue();
-    inline bool isNumber();
-    inline bool isReal();
-    inline bool isString();
-    inline bool isBoolean();
+    const jbool isArray();
+    const jbool isStruct();
+    const jbool isValue();
+    const jbool isNumber();
+    const jbool isReal();
+    const jbool isString();
+    const jbool isBoolean();
 
     // Property name it is Node
     std::string& getPropertyName();
 
-    [[deprecated]]void set_native_memory(void* memory);
+    [[deprecated]] void set_native_memory(void* memory);
 
     std::int64_t& toNumber();
     double& toReal();

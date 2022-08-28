@@ -36,6 +36,7 @@ void Camera2D::render(SDL_Renderer* renderer, Rect rect, GameObject* root) {
     // scale.y = Mathf::Min(Mathf::Max(scale.y, 0.f), 10.f);
     //_scale = scale*squarePerPixels;
     SDL_RenderSetScale(renderer, scale.x, scale.y);
+
     // Render Objects
     for (const auto &layer : *(std::get<0>(filter)))
         for (auto renderSource : layer.second) {

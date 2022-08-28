@@ -11,7 +11,7 @@ endif()
 message(STATUS "Architecture select ${ARCHITECTURE}")
 
 set(RONINENGINE_VERSION_MIN 1.0)
-set(RUNTIME_OUTPUT_NAME "rengine_provider")
+set(RUNTIME_OUTPUT_NAME "direct_rgl")
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
@@ -56,6 +56,9 @@ find_package(SDL2_image REQUIRED)
 find_package(SDL2_ttf REQUIRED)
 
 target_link_libraries(RoninEngineLib SDL2::SDL2 SDL2_mixer SDL2_ttf SDL2_image SDL2_gfx)
+
+set_target_properties(RoninEngineLib PROPERTIES
+    OUTPUT_NAME ${RUNTIME_OUTPUT_NAME})
 
 add_subdirectory(src/ronin) #get sources and linking from the "Sources" directory
 

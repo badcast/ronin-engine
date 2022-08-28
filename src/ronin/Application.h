@@ -27,6 +27,7 @@ class Application {
     static Resolution getResolution();
 
     static void back_fail(void);
+    static void show_message(const std::string & message);
     static void fail(const std::string& message);
     static void fail_OutOfMemory();
 };
