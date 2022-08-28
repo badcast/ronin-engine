@@ -8,7 +8,7 @@ Level *selfLevel;
 Level::Level() : Level("Untitled") {}
 Level::Level(const std::string &name) {
     if (selfLevel != nullptr) {
-        static_assert("pCurrentScene replaced by new");
+        static_assert(true, "pCurrentScene replaced by new");
     }
     main_object = nullptr;
     selfLevel = this;
@@ -26,7 +26,7 @@ Level::~Level() {
     std::list<GameObject *> stack;
 
     if (selfLevel == this) {
-        static_assert("pCurrentScene set to null");
+        static_assert(true, "pCurrentScene set to null");
         selfLevel = nullptr;
     }
 

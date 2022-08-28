@@ -16,46 +16,27 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 if(UNIX)
-	add_library(RoninEngineLib SHARED)
-	
-	find_package(SDL2 REQUIRED)
+        add_library(RoninEngineLib SHARED)
 elseif(WIN32)
-	set(SDL2_VERSION_WININTERNAL "2.0.22")
-	add_library(RoninEngineLib STATIC)
+        add_library(RoninEngineLib SHARED)
 
-        find_package(SDL2 QUIET)
-
-	set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
-
-	if(NOT ${SDL2_FOUND})
-		set(LIBS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/third-party/SDL2")
-		#next use 
-		if(NOT EXISTS "${LIBS_DIR}")
-			message(FATAL_ERROR "directory-libs not found, error binding SDL2")
-		endif()	 
-
-		#DO 
-		set(CMAKE_PREFIX_PATH ${LIBS_DIR})
-		
-		target_include_directories(RoninEngineLib INTERFACE "${LIBS_DIR}/SDL2-${SDL2_VERSION_WININTERNAL}/include")
-		message(STATUS "internal SDL2 - binded. Include use SDL2/SDL.h")
-		
-		set(STATIC_LIBS_SDL2PATH "${LIBS_DIR}/SDL2-${SDL2_VERSION_WININTERNAL}/lib/${ARCHITECTURE}")
-
-		add_library(SDL2::SDL2 SHARED IMPORTED)
-
-		set_target_properties(SDL2::SDL2 PROPERTIES
-			IMPORTED_LOCATION "SDL2"
-			IMPORTED_IMPLIB  "${STATIC_LIBS_SDL2PATH}/SDL2.lib" 
-		)
-	endif()
+        #set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
+        set(LIBS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/third-party/SDL2")
+        #next use
+        if(NOT EXISTS "${LIBS_DIR}")
+                message(FATAL_ERROR "directory-libs not found, error binding SDL2")
+        endif()
+        set(CMAKE_PREFIX_PATH ${LIBS_DIR})
+        find_package(SDL2_gfx REQUIRED)
 endif()
 
-find_package(SDL2_mixer REQUIRED)
+find_package(SDL2 REQUIRED)
 find_package(SDL2_image REQUIRED)
+find_package(SDL2_mixer REQUIRED)
 find_package(SDL2_ttf REQUIRED)
 
-target_link_libraries(RoninEngineLib SDL2::SDL2 SDL2_mixer SDL2_ttf SDL2_image SDL2_gfx)
+
+target_link_libraries(RoninEngineLib SDL2::SDL2 SDL2_mixer::SDL2_mixer SDL2_ttf::SDL2_ttf SDL2_gfx SDL2_image::SDL2_image)
 
 set_target_properties(RoninEngineLib PROPERTIES
     OUTPUT_NAME ${RUNTIME_OUTPUT_NAME})

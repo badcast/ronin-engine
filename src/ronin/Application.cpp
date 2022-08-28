@@ -16,7 +16,6 @@ bool m_levelLoaded = false;
 bool isQuiting;
 
 void Application::Init(const std::uint32_t& width, const std::uint32_t& height) {
-
     char errorStr[128];
     if (m_inited) return;
 
@@ -168,29 +167,31 @@ RoninEngine::Resolution RoninEngine::Application::getResolution() {
 }
 
 bool Application::Simulate() {
-    SDL_Event e;
-    int firstStep;
-    char _title[128];
+    char windowTitle[128];
     float fps;
-    // float fpsRound = 0;
     int delayed;
+    SDL_Event event;
     SDL_WindowFlags wndFlags;
-    SDL_DisplayMode displayMode = Application::getDisplayMode();
-    float secPerFrame = 1000.f / displayMode.refresh_rate;  // refresh screen from Monitor Settings
-    Time::Init_TimeEngine();
+    float secPerFrame;
+    SDL_DisplayMode displayMode;
 
     if (m_level == nullptr) {
-        fail("Level not loaded");
+        show_message("Level not loaded");
+        return false;
     }
 
+    Time::Init_TimeEngine();
+
+    displayMode = Application::getDisplayMode();
+    secPerFrame = 1000.f / displayMode.refresh_rate;  // refresh screen from Monitor Settings
     while (!isQuiting) {
         // update events
         input::Reset();
         delayed = Time::tickMillis();
         wndFlags = static_cast<SDL_WindowFlags>(SDL_GetWindowFlags(Application::GetWindow()));
-        while (SDL_PollEvent(&e)) {
-            input::Update_Input(&e);
-            if (e.type == SDL_QUIT) isQuiting = true;
+        while (SDL_PollEvent(&event)) {
+            input::Update_Input(&event);
+            if (event.type == SDL_QUIT) isQuiting = true;
         }
 
         if ((wndFlags & SDL_WindowFlags::SDL_WINDOW_MINIMIZED) != SDL_WindowFlags::SDL_WINDOW_MINIMIZED) {
@@ -240,11 +241,11 @@ bool Application::Simulate() {
         // if (Time::startUpTime() > fpsRound)
         {
             fps = (Time::m_frames) / Time::startUpTime();
-            std::sprintf(_title,
+            std::sprintf(windowTitle,
                          "Ronin Engine (Debug) FPS:%d Memory:%luMiB, "
                          "GC_Allocated:%lu, SDL_Allocated:%d",
                          static_cast<int>(fps), get_process_sizeMemory() / 1024 / 1024, GC::gc_total_allocated(), SDL_GetNumAllocations());
-            SDL_SetWindowTitle(Application::GetWindow(), _title);
+            SDL_SetWindowTitle(Application::GetWindow(), windowTitle);
             // fpsRound = Time::startUpTime() + 1;  // updater per 1 seconds
         }
 
@@ -253,7 +254,7 @@ bool Application::Simulate() {
 
         Time::m_time += 0.001f * Math::ceil(secPerFrame);
 
-        //delay elapsed
+        // delay elapsed
         SDL_Delay(Math::max(0, static_cast<int>(secPerFrame - delayed)));
     }
 
@@ -266,8 +267,9 @@ SDL_Renderer* Application::GetRenderer() { return renderer; }
 
 void Application::back_fail(void) { exit(EXIT_FAILURE); }
 
-void Application::show_message(const std::string &message)
-{
+void Application::show_message(const std::string& message) {
+    SDL_LogMessage(SDL_LogCategory::SDL_LOG_CATEGORY_APPLICATION, SDL_LogPriority::SDL_LOG_PRIORITY_VERBOSE, "%s", message.c_str());
+    printf("%s\n", message.c_str());
     SDL_ShowSimpleMessageBox(SDL_MessageBoxFlags::SDL_MESSAGEBOX_INFORMATION, nullptr, message.c_str(), window);
 }
 
