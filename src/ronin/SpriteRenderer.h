@@ -3,7 +3,7 @@
 #include "dependency.h"
 
 namespace RoninEngine::Runtime {
-enum class SpriteRenderPresentTiles : char
+enum class SpriteRenderPresentMode : char
 {
     //Fixed type
     Fixed,
@@ -18,14 +18,14 @@ enum class SpriteRenderType : char {
 };
 
 class SpriteRenderer : public Renderer {
-    Texture* texture;
+    Texture* textureCache;
     Sprite* sprite;
 
    public:
     virtual ~SpriteRenderer();
 
     SpriteRenderType renderType;
-    SpriteRenderPresentTiles renderTilePresent;
+    SpriteRenderPresentMode renderPresentMode;
     Color color;
     Vec2 size;
     Vec2 flip;

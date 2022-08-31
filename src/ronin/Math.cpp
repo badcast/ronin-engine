@@ -52,9 +52,9 @@ float Math::Clamp01(float val) { return Clamp(val, 0, 1.f); }
 
 float Math::Clamp(float val, const float min, const float max) { return val > max ? max : val < min ? min : val; }
 
-int Math::abs(int x) { return x * (x < 0 ? -1 : 1); }
+int Math::abs(int x) { return std::abs(x); }
 
-float Math::abs(float x) { return x * (x < 0 ? -1 : 1); }
+float Math::abs(float x) { return std::abs(x); }
 
 // negative absolute value
 float Math::nabs(float x) { return abs(x) * ~0; }

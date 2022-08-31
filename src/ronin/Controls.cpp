@@ -1,4 +1,4 @@
-#include <SDL2/SDL2_gfxPrimitives.h>
+#include <SDL2_gfxPrimitives.h>
 #include <SDL_ttf.h>
 
 #include "FontInternal.h"
