@@ -11,7 +11,7 @@ endif()
 message(STATUS "Architecture select ${ARCHITECTURE}")
 
 set(RONINENGINE_VERSION_MIN 1.0)
-set(RUNTIME_OUTPUT_NAME "direct_rgl")
+set(RUNTIME_OUTPUT_NAME "across_rgl")
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
