@@ -30,7 +30,7 @@ const bool Terrain2D::isCollider(const Vec2 destination) {
     return n && nav->neuronLocked(nav->neuronGetPoint(n));
 }
 
-Vec2 Terrain2D::GetSize() { return {}; }
+Vec2 Terrain2D::getSize() { return {}; }
 
 void Terrain2D::Render(Render_info* render_info) {}
 }  // namespace RoninEngine::Runtime

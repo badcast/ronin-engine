@@ -66,7 +66,7 @@ std::tuple<list<Renderer*>*, list<Light*>*> linearSelection() {
 
 std::set<Renderer*> prev;
 inline bool areaCast(Renderer* target, const Vec2Int& wpLeftTop, const Vec2Int& wpRightBottom) {
-    Vec2 rSz = target->GetSize();
+    Vec2 rSz = target->getSize();
     Vec2 pos = target->transform()->position();
     return (pos.x + rSz.x >= wpLeftTop.x && pos.x - rSz.x <= wpRightBottom.x) &&
            (pos.y - rSz.y <= wpLeftTop.y && pos.y + rSz.y >= wpRightBottom.y);

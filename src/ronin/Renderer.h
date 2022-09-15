@@ -20,7 +20,7 @@ namespace RoninEngine::Runtime
           Renderer(const std::string& name);
 		Renderer(const Renderer&) = delete;
 
-		virtual Vec2 GetSize() = 0;
+          virtual Vec2 getSize() = 0;
 
 		virtual void Render(Render_info* render_info) = 0;
 	}; 

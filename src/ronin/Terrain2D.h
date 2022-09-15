@@ -41,7 +41,7 @@ class Terrain2D : public Renderer {
 
     const bool isCollider(const Vec2 destination);
 
-    Vec2 GetSize() override;
+    Vec2 getSize() override;
     void Render(Render_info* render_info) override;
 };
 }  // namespace RoninEngine::Runtime

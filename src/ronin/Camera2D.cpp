@@ -140,7 +140,7 @@ void Camera2D::render(SDL_Renderer* renderer, Rect rect, GameObject* root) {
         for (const auto &layer : (*std::get<0>(filter)))
             for (auto face : layer.second) {
                 Vec2 p = face->transform()->position();
-                Vec2 sz = face->GetSize() * 2;
+                Vec2 sz = face->getSize() * 2;
                 Gizmos::setColor(Color::blue);
                 Gizmos::DrawRectangleRounded(p, sz.x, sz.y, 5);
                 Gizmos::setColor(Color::black);
