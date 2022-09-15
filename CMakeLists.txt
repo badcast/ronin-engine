@@ -41,10 +41,22 @@ target_link_libraries(RoninEngineLib SDL2::SDL2 SDL2_mixer::SDL2_mixer SDL2_ttf:
 set_target_properties(RoninEngineLib PROPERTIES
     OUTPUT_NAME ${RUNTIME_OUTPUT_NAME})
 
-add_subdirectory(src/ronin) #get sources and linking from the "Sources" directory
+#get sources and linking from the "Sources" directory
+file(GLOB RONIN_ENGINE_SOURCES
+    "${CMAKE_CURRENT_SOURCE_DIR}/source/*.cpp")
+
+file(GLOB RONIN_ENGINE_HEADERS
+    "${CMAKE_CURRENT_SOURCE_DIR}/include/ronin/*.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/include/ronin/*.h")
+
+set(RONIN_ENGINE_SOURCES ${RONIN_ENGINE_SOURCES} PARENT_SCOPE)
+set(RONIN_ENGINE_HEADERS ${RONIN_ENGINE_HEADERS} PARENT_SCOPE)
+set(RONIN_ENGINE_INCLUDE_DIRS ${RONIN_ENGINE_HEADERS} PARENT_SCOPE)
+
+include_directories("${CMAKE_CURRENT_SOURCE_DIR}/include/ronin/")
 
 #include to #include <ronin/...>
-target_include_directories(RoninEngineLib INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/src")
+target_include_directories(RoninEngineLib INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/include/")
 
 #ronin engine sources (cpp) only for RoninEngine Lib
 target_sources(RoninEngineLib PRIVATE ${RONIN_ENGINE_HEADERS} ${RONIN_ENGINE_SOURCES})
