@@ -186,7 +186,10 @@ GameObject* Instantiate(GameObject* obj, Vec2 position, Transform* parent, bool 
 Object::Object() : Object(typeid(Object).name()) {}
 
 Object::Object(const std::string& name) : m_name(name) {
-    m_name.shrink_to_fit();
+
+    if(Level::self() == nullptr)
+        throw std::bad_exception();
+
     id = Level::self()->globalID++;
     Level::self()->ObjectPush(this);
 }

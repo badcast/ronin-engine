@@ -3,17 +3,24 @@
 #include "dependency.h"
 
 namespace RoninEngine::Runtime {
-enum class SpriteRenderPresentMode : char
-{
-    //Fixed type
+enum class SpriteRenderPresentMode : char {
+    // Fixed type
     Fixed,
-    //Placement type
+    // Placement type
     Place
 };
+
+enum class SpriteRenderOut : char {
+    // Draw on
+    Origin,
+    // Draw an padding
+    Centering
+};
+
 enum class SpriteRenderType : char {
-    //Simple drawing tiles with self properties
+    // Simple drawing tiles with self properties
     Simple,
-    //Tile (Tilling) drawing tiles, with self properties tilling
+    // Tile (Tilling) drawing tiles, with self properties tilling
     Tile
 };
 
@@ -22,10 +29,10 @@ class SpriteRenderer : public Renderer {
     Sprite* sprite;
 
    public:
-    virtual ~SpriteRenderer();
-
     SpriteRenderType renderType;
+    SpriteRenderOut renderOut;
     SpriteRenderPresentMode renderPresentMode;
+
     Color color;
     Vec2 size;
     Vec2 flip;
@@ -34,8 +41,9 @@ class SpriteRenderer : public Renderer {
     SpriteRenderer();
     SpriteRenderer(const std::string& name);
     SpriteRenderer(const SpriteRenderer&);
+    virtual ~SpriteRenderer();
 
-    Vec2 GetSize();
+    Vec2 getSize();
 
     void setSprite(Sprite* sprite);
     void setSpriteFromTextureToGC(Texture* texture);

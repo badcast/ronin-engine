@@ -1,4 +1,5 @@
 #include "framework.h"
+#include "SpriteRenderer.h"
 
 namespace RoninEngine::Runtime {
 
@@ -12,6 +13,7 @@ SpriteRenderer::SpriteRenderer(const std::string& name)
       textureCache(nullptr),
       flip(Vec2::one),
       renderType(SpriteRenderType::Simple),
+      renderOut(SpriteRenderOut::Origin),
       renderPresentMode(SpriteRenderPresentMode::Place),
       color(Color::white) {}
 
@@ -21,6 +23,7 @@ SpriteRenderer::SpriteRenderer(const SpriteRenderer& proto)
       sprite(proto.sprite),
       size(proto.size),
       renderType(proto.renderType),
+      renderOut(proto.renderOut),
       renderPresentMode(proto.renderPresentMode),
       color(proto.color),
       flip(proto.flip),
@@ -28,7 +31,7 @@ SpriteRenderer::SpriteRenderer(const SpriteRenderer& proto)
 
 SpriteRenderer::~SpriteRenderer() {}
 
-Vec2 SpriteRenderer::GetSize() { return Vec2::Abs(this->size); }
+Vec2 SpriteRenderer::getSize() { return Vec2::Abs(this->size); }
 
 void SpriteRenderer::setSprite(Sprite* sprite) {
     if (this->sprite == nullptr && (!this->size.x || !this->size.y)) {
@@ -44,7 +47,9 @@ void SpriteRenderer::setSpriteFromTextureToGC(Texture* texture) {
 }
 Sprite* SpriteRenderer::getSprite() { return this->sprite; }
 
-void SpriteRenderer::offsetFromLocalPosition(Vec2 localPosition) { offsetFromWorldPosition(transform()->position() + localPosition); }
+void SpriteRenderer::offsetFromLocalPosition(Vec2 localPosition) {
+    offsetFromWorldPosition(transform()->position() + localPosition);
+}
 
 void SpriteRenderer::offsetFromWorldPosition(Vec2 position) {
     // Convert world position to Screen Point
@@ -72,8 +77,8 @@ void SpriteRenderer::Render(Render_info* render) {
                 switch (renderPresentMode) {
                         // render as fixed (Resize mode)
                     case SpriteRenderPresentMode::Fixed:
-//                        _dstRect.w = sprite->width() * abs(this->size.x) / pixelsPerPoint;
-//                        _dstRect.h = sprite->height() * abs(this->size.y) / pixelsPerPoint;
+                        //                        _dstRect.w = sprite->width() * abs(this->size.x) / pixelsPerPoint;
+                        //                        _dstRect.h = sprite->height() * abs(this->size.y) / pixelsPerPoint;
                         break;
                         // render as cut
                     case SpriteRenderPresentMode::Place:
@@ -95,7 +100,8 @@ void SpriteRenderer::Render(Render_info* render) {
 
                 // generate tiles
                 if (!textureCache) {
-                    GC::gc_alloc_texture(&textureCache, _srcRect.w, _srcRect.h, SDL_PIXELFORMAT_RGBA8888, SDL_TextureAccess::SDL_TEXTUREACCESS_TARGET);
+                    GC::gc_alloc_texture(&textureCache, _srcRect.w, _srcRect.h, SDL_PIXELFORMAT_RGBA8888,
+                                         SDL_TextureAccess::SDL_TEXTUREACCESS_TARGET);
                     if (textureCache == nullptr) Application::fail("Texture create fail");
 
                     SDL_SetRenderTarget(render->renderer, textureCache->native());
@@ -113,7 +119,8 @@ void SpriteRenderer::Render(Render_info* render) {
                                 for (y = 0; y < _srcRect.y; ++y) {
                                     dest.x = x * dest.w;
                                     dest.y = y * dest.h;
-                                    SDL_RenderCopy(render->renderer, sprite->texture->native(), (SDL_Rect*)&sprite->m_rect, (SDL_Rect*)&dest);
+                                    SDL_RenderCopy(render->renderer, sprite->texture->native(), (SDL_Rect*)&sprite->m_rect,
+                                                   (SDL_Rect*)&dest);
                                 }
                             }
                             break;
@@ -124,18 +131,23 @@ void SpriteRenderer::Render(Render_info* render) {
                                     dest.x = x * dest.w;
                                     dest.y = y * dest.h;
 
-                                    SDL_RenderCopy(render->renderer, sprite->texture->native(), (SDL_Rect*)&sprite->m_rect, (SDL_Rect*)&dest);
+                                    SDL_RenderCopy(render->renderer, sprite->texture->native(), (SDL_Rect*)&sprite->m_rect,
+                                                   (SDL_Rect*)&dest);
                                 }
                             }
                             // place remained
                             for (x = 0, dest.y = _srcRect.h / dest.h * dest.h, dest.h = size.y - dest.y; x < _srcRect.x; ++x) {
                                 dest.x = x * dest.w;
-                                SDL_RenderCopy(render->renderer, sprite->texture->native(), (SDL_Rect*)&sprite->m_rect, (SDL_Rect*)&dest);
+                                SDL_RenderCopy(render->renderer, sprite->texture->native(), (SDL_Rect*)&sprite->m_rect,
+                                               (SDL_Rect*)&dest);
                             }
                             ++_srcRect.y;
-                            for (y = 0, dest.x = _srcRect.w / dest.w * dest.w, dest.h = sprite->height(), dest.w = size.x - dest.x; y < _srcRect.y; ++y) {
+                            for (y = 0, dest.x = _srcRect.w / dest.w * dest.w, dest.h = sprite->height(),
+                                dest.w = size.x - dest.x;
+                                 y < _srcRect.y; ++y) {
                                 dest.y = y * dest.h;
-                                SDL_RenderCopy(render->renderer, sprite->texture->native(), (SDL_Rect*)&sprite->m_rect, (SDL_Rect*)&dest);
+                                SDL_RenderCopy(render->renderer, sprite->texture->native(), (SDL_Rect*)&sprite->m_rect,
+                                               (SDL_Rect*)&dest);
                             }
 
                             break;
@@ -150,8 +162,10 @@ void SpriteRenderer::Render(Render_info* render) {
     _dstRect.w *= flip.x;
     _dstRect.h *= flip.y;
 
-    _dstRect.x -= offset.x;
-    _dstRect.y -= offset.y;
+    if (this->renderOut == SpriteRenderOut::Centering) {
+        _dstRect.x -= offset.x;
+        _dstRect.y -= offset.y;
+    }
 
     render->texture = textureCache;
     //#undef _dstRect
