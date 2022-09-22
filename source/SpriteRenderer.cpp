@@ -32,14 +32,12 @@ SpriteRenderer::~SpriteRenderer() {}
 
 Vec2 SpriteRenderer::getSize() { return Vec2::Abs(this->size); }
 
-Vec2 SpriteRenderer::getOffset()
-{
+Vec2 SpriteRenderer::getOffset() {
     Vec2 outOffset;
-    switch(renderOut){
-    case SpriteRenderOut::Origin:
-        Vec2 sz = this->getSize() * pixelsPerPoint;
-        outOffset.x = size.x / 2;
-        break;
+    switch (renderOut) {
+        case SpriteRenderOut::Origin:
+            outOffset = -size + size / 2 + Vec2::half;
+            break;
     }
     return outOffset;
 }

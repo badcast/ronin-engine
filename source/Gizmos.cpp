@@ -146,7 +146,7 @@ void Gizmos::Draw2DWorldSpace(const Vec2& origin, int depth) {
     setColor(lastColor);
 }
 
-void Gizmos::DrawNavMesh(AIPathFinder::NavMesh* navMesh) {
+void Gizmos::DrawNavMesh(AIPathFinder::NavMesh* navMesh, bool drawText) {
     Vec2 lastPoint;
     Vec2 a, b;
     AIPathFinder::Neuron* p;
@@ -183,6 +183,20 @@ void Gizmos::DrawNavMesh(AIPathFinder::NavMesh* navMesh) {
         ++p1.x;
     }
     setColor(prev);
+
+    if (drawText) {
+        static std::uint32_t maxTotal = 0;
+        static float upplow = 0;
+        if (Time::time() > upplow) {
+            maxTotal = 0;
+            upplow = Time::time() + 1;
+        }
+        std::uint32_t totalC = navMesh->getCachedSize();
+        maxTotal = std::max(maxTotal, totalC);
+
+        Gizmos::DrawTextOnPosition(Camera::ScreenToWorldPoint(Vec2::zero),
+                                   "Cached " + std::to_string(totalC) + " (" + std::to_string(maxTotal) + ")");
+    }
 }
 
 void Gizmos::DrawTriangle(Vec2 origin, float base, float height) {

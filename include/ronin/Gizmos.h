@@ -15,7 +15,7 @@ class Gizmos {
     static void DrawSquareRounded(Vec2 origin, float width, std::uint16_t radius);
     static void DrawRectangleRounded(Vec2 origin, float width, float height, std::uint16_t radius);
     static void Draw2DWorldSpace(const Vec2& origin = Vec2::zero, int depth = 32);
-    static void DrawNavMesh(AIPathFinder::NavMesh* map);
+    static void DrawNavMesh(AIPathFinder::NavMesh* map, bool drawText = true);
     static void DrawTriangle(Vec2 origin, float base, float height);
     static void DrawTextOnPosition(Vec2 origin, const std::string& text);
     static void DrawTextOnPosition_Legacy(Vec2 origin, const std::string& text);
