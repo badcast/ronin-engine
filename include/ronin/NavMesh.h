@@ -29,7 +29,7 @@ struct NavResult {
 struct Neuron {
     std::uint8_t flags;
     std::uint32_t h;
-    std::uint32_t CostType;
+    std::uint32_t cost;
 };
 
 struct NavMeshData {
@@ -58,6 +58,7 @@ class NavMesh {
     void randomGenerate(int flagFilter = 0xffffff);
     void stress();
 
+
     Neuron* GetNeuron(const Runtime::Vec2Int& point);
     Neuron* GetNeuron(const Runtime::Vec2 &worldPoint);
     Neuron* GetNeuron(const Runtime::Vec2 &worldPoint, Runtime::Vec2Int &outPoint);
@@ -76,6 +77,8 @@ class NavMesh {
     void neuronLock(const Runtime::Vec2Int &point, const bool state);
 
     inline const Runtime::Vec2Int WorldPointToPoint(const RoninEngine::Runtime::Vec2 &worldPoint);
+
+    inline int getCachedSize();
 
     void find(NavResult &navResult, NavMethodRule method, Runtime::Vec2 worldPointFirst, Runtime::Vec2 worldPointLast);
 

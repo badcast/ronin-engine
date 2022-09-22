@@ -81,6 +81,18 @@ const Vec2Int NavMesh::WorldPointToPoint(const Vec2 &worldPoint) {
     return p;
 }
 
+int NavMesh::getCachedSize() {
+    int cal = 0;
+
+    Neuron *n = static_cast<Neuron *>(neurons + segmentOffset);
+    Neuron *nM = n + widthSpace * heightSpace;
+    while (n < nM) {
+        cal += n->cost + n->h;
+        ++n;
+    }
+    return cal;
+}
+
 void NavMesh::find(NavResult &navResult, NavMethodRule method, Runtime::Vec2 worldPointFirst, Runtime::Vec2 worldPointLast) {
     find(navResult, method, this->WorldPointToPoint(worldPointFirst), WorldPointToPoint(worldPointLast), NavAlgorithm::AStar);
 }
@@ -121,19 +133,19 @@ bool RoninEngine::AIPathFinder::NavMesh::neuronContains(const Runtime::Vec2Int &
 }
 
 std::uint8_t &RoninEngine::AIPathFinder::NavMesh::neuronGetFlag(const Runtime::Vec2Int &range) {
-    Neuron * n = GetNeuron(range);
+    Neuron *n = GetNeuron(range);
     if (!n) throw std::out_of_range("range");
     return n->flags;
 }
 
 std::uint32_t &RoninEngine::AIPathFinder::NavMesh::neuronGetCost(const Runtime::Vec2Int &range) {
-    Neuron * n = GetNeuron(range);
+    Neuron *n = GetNeuron(range);
     if (!n) throw std::out_of_range("range");
     return n->CostType;
 }
 
 std::uint32_t &RoninEngine::AIPathFinder::NavMesh::neuronHeuristic(const Runtime::Vec2Int &range) {
-    Neuron * n = GetNeuron(range);
+    Neuron *n = GetNeuron(range);
     if (!n) throw std::out_of_range("range");
     return n->h;
 }
@@ -144,7 +156,7 @@ const int RoninEngine::AIPathFinder::NavMesh::neuronGetWeight(const Runtime::Vec
 }
 
 const std::uint32_t RoninEngine::AIPathFinder::NavMesh::neuronGetTotal(const Runtime::Vec2Int &range) {
-    Neuron * n = GetNeuron(range);
+    Neuron *n = GetNeuron(range);
     if (!n) throw std::out_of_range("range");
     return n->CostType + n->h;
 }
@@ -235,7 +247,7 @@ void NavMesh::find(NavResult &navResult, NavMethodRule method, Vec2Int first, Ve
             if (!(select->flags))  // free path
             {
                 select->flags = FLAG_OPEN_LIST;
-                select->CostType = current->CostType + 1;
+                select->cost = current->cost + 1;
                 select->h = AlgorithmUtils::DistanceManht((*iter), last);
 
                 navResult.RelativePaths.emplace_back((*iter));
@@ -270,7 +282,7 @@ void NavMesh::find(NavResult &navResult, NavMethodRule method, Vec2Int first, Ve
                                     FLAG_OPEN_LIST | FLAG_CLOSED_LIST);
         for (iter = std::begin(finded); iter != std::end(finded); ++iter) {
             select = GetNeuron(*iter);
-            if ((select->CostType && select->CostType < current->CostType) || select == firstNeuron) {
+            if ((select->cost && select->cost < current->cost) || select == firstNeuron) {
                 current = select;
                 navResult.RelativePaths.emplace_front(*iter);
                 current->flags = FLAG_TILED_LIST;
