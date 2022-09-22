@@ -158,9 +158,9 @@ const Vec2 Camera::WorldToScreenPoint(Vec2 worldPoint) {
     SDL_RenderGetScale(Application::GetRenderer(), &scale.x, &scale.y);
     scale *= pixelsPerPoint;
     //Horizontal position
-    worldPoint.x = (res.width / 2.0f - (offset.x - worldPoint.x) * scale.x);
+    worldPoint.x = (res.width / 2.f - (offset.x - worldPoint.x) * scale.x);
     //Vertical position
-    worldPoint.y = (res.height / 2.0f + (offset.y - worldPoint.y) * scale.y);
+    worldPoint.y = (res.height / 2.f + (offset.y - worldPoint.y) * scale.y);
     return worldPoint;
 }
 

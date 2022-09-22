@@ -18,7 +18,7 @@ int Sprite::width() { return Math::abs(m_rect.w - m_rect.x); }
 int Sprite::height() { return Math::abs(m_rect.h - m_rect.y); }
 
 Sprite* Sprite::empty() {
-    if (!_empty) {
+     if (!_empty) {
         // todo: for empty sprite. The pixel 1x1 and fill solid color
     }
     return _empty;

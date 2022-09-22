@@ -31,6 +31,7 @@ const bool Terrain2D::isCollider(const Vec2 destination) {
 }
 
 Vec2 Terrain2D::getSize() { return {}; }
+Vec2 Terrain2D::getOffset() { return {}; }
 
 void Terrain2D::Render(Render_info* render_info) {}
 }  // namespace RoninEngine::Runtime

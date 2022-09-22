@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.0)
 #SET PROJECT NAME, VERSION
-project(RoninEngine LANGUAGES CXX VERSION 1.0)
+project(RoninEngineLibrary LANGUAGES CXX VERSION 1.0)
 
 if(CMAKE_SIZEOF_VOID_P STREQUAL "4")
     set(ARCHITECTURE "x86")
@@ -16,12 +16,12 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 if(UNIX)
-        add_library(RoninEngineLib SHARED)
+        add_library(RoninEngineLibrary SHARED)
 elseif(WIN32)
-        add_library(RoninEngineLib SHARED)
+        add_library(RoninEngineLibrary SHARED)
 
         #set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
-        set(LIBS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/third-party/SDL2")
+        set(LIBS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/third-party/SDL2/")
         #next use
         if(NOT EXISTS "${LIBS_DIR}")
                 message(FATAL_ERROR "directory-libs not found, error binding SDL2")
@@ -35,10 +35,9 @@ find_package(SDL2_image REQUIRED)
 find_package(SDL2_mixer REQUIRED)
 find_package(SDL2_ttf REQUIRED)
 
+target_link_libraries(RoninEngineLibrary SDL2::SDL2 SDL2_mixer::SDL2_mixer SDL2_ttf::SDL2_ttf SDL2_gfx SDL2_image::SDL2_image)
 
-target_link_libraries(RoninEngineLib SDL2::SDL2 SDL2_mixer::SDL2_mixer SDL2_ttf::SDL2_ttf SDL2_gfx SDL2_image::SDL2_image)
-
-set_target_properties(RoninEngineLib PROPERTIES
+set_target_properties(RoninEngineLibrary PROPERTIES
     OUTPUT_NAME ${RUNTIME_OUTPUT_NAME})
 
 #get sources and linking from the "Sources" directory
@@ -56,8 +55,7 @@ set(RONIN_ENGINE_INCLUDE_DIRS ${RONIN_ENGINE_HEADERS} PARENT_SCOPE)
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/include/ronin/")
 
 #include to #include <ronin/...>
-target_include_directories(RoninEngineLib INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/include/")
+target_include_directories(RoninEngineLibrary INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/include/")
 
 #ronin engine sources (cpp) only for RoninEngine Lib
-target_sources(RoninEngineLib PRIVATE ${RONIN_ENGINE_HEADERS} ${RONIN_ENGINE_SOURCES})
-
+target_sources(RoninEngineLibrary PRIVATE ${RONIN_ENGINE_HEADERS} ${RONIN_ENGINE_SOURCES})

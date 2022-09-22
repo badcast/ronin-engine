@@ -110,7 +110,8 @@ bool general_render_ui_section(GUI* gui, UIElement& element, SDL_Renderer* rende
             SDL_RenderFillRect(render, (SDL_Rect*)&rect);
 
             // render text
-            Render_String(render, element.rect, element.text.c_str(), element.text.size(), 13, TextAlign::MiddleCenter, true, hovering);
+            Render_String(render, element.rect, element.text.c_str(), element.text.size(), 13, TextAlign::MiddleCenter, true,
+                          hovering);
             bool msClick = input::isMouseUp();
             result = hovering && msClick;
             break;
@@ -270,7 +271,8 @@ bool general_render_ui_section(GUI* gui, UIElement& element, SDL_Renderer* rende
                 r = element.rect;
                 r.y += r.h;
 
-                r.h = dropDownLinear = Math::ceil(Math::LerpUnclamped(dropDownLinear, link->second.size() * sz, 2 * Time::deltaTime()));
+                r.h = dropDownLinear =
+                    Math::ceil(Math::LerpUnclamped(dropDownLinear, link->second.size() * sz, 2 * Time::deltaTime()));
 
                 Gizmos::setColor(colorSpace.defaultInteraction.hoverState);
                 // draw background
@@ -295,7 +297,9 @@ bool general_render_ui_section(GUI* gui, UIElement& element, SDL_Renderer* rende
 
                         Gizmos::setColor(colorSpace.defaultInteraction.hoverState);
                         // Draw element text
-                        surf = TTF_RenderUTF8_Solid(font, iter->c_str(), link->first != index ? colorSpace.dropdownText : colorSpace.dropdownSelectedText);
+                        surf = TTF_RenderUTF8_Solid(
+                            font, iter->c_str(),
+                            link->first != index ? colorSpace.dropdownText : colorSpace.dropdownSelectedText);
                         GC::gc_alloc_texture_from(&texture, surf);
                         r.h = texture->height();
                         r.w = texture->width();
@@ -335,6 +339,21 @@ void event_action(UIElement* element) {
             ((event_index_changed)(element->event))(element->id, ((DROPDOWN_RESOURCE*)element->resources)->first);
             break;
     }
+}
+
+void DrawFontAt(SDL_Renderer* renderer, const std::string& text, int fontSize, const Runtime::Vec2Int& screenPoint) {
+    Texture* texture;
+    SDL_Rect r;
+    SDL_Surface* surf = TTF_RenderUTF8_Solid(font, text.c_str(), Color::white);
+    GC::gc_alloc_texture_from(&texture, surf);
+    r.h = texture->height();
+    r.w = texture->width();
+
+    r.x = screenPoint.x;
+    r.y = screenPoint.y;
+    SDL_RenderCopy(renderer, texture->native(), nullptr, &r);
+    GC::gc_unalloc(texture);
+    SDL_FreeSurface(surf);
 }
 
 }  // namespace RoninEngine::UI

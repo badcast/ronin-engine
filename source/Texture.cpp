@@ -69,6 +69,7 @@ const void Texture::color(const Color value) {
 }
 
 void Texture::lockTexture(const SDL_Rect* rect, void** pixels, int* pitch) { SDL_LockTexture(m_native, rect, pixels, pitch); }
+
 void Texture::unlockTexture() { SDL_UnlockTexture(m_native); }
 
 SDL_Texture* Texture::native() { return m_native; }
@@ -78,6 +79,7 @@ const SDL_Texture* Texture::cnative() { return m_native; }
 const SDL_Rect Texture::getRect() { return {0, 0, width(), height()}; }
 
 const Texture* Texture::clone() { return clone(Application::GetRenderer()); }
+
 const Texture* Texture::clone(SDL_Renderer* renderer) {
     SDL_Texture* __t = SDL_GetRenderTarget(renderer);
     Texture* _n;

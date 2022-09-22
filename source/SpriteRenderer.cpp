@@ -12,7 +12,7 @@ SpriteRenderer::SpriteRenderer(const std::string &name)
       textureCache(nullptr),
       flip(Vec2::one),
       renderType(SpriteRenderType::Simple),
-      renderOut(SpriteRenderOut::Origin),
+      renderOut(SpriteRenderOut::Centering),
       renderPresentMode(SpriteRenderPresentMode::Place),
       color(Color::white) {}
 
@@ -31,6 +31,18 @@ SpriteRenderer::SpriteRenderer(const SpriteRenderer &proto)
 SpriteRenderer::~SpriteRenderer() {}
 
 Vec2 SpriteRenderer::getSize() { return Vec2::Abs(this->size); }
+
+Vec2 SpriteRenderer::getOffset()
+{
+    Vec2 outOffset;
+    switch(renderOut){
+    case SpriteRenderOut::Origin:
+        Vec2 sz = this->getSize() * pixelsPerPoint;
+        outOffset.x = size.x / 2;
+        break;
+    }
+    return outOffset;
+}
 
 void SpriteRenderer::setSprite(Sprite *sprite) {
     if (this->sprite == nullptr && (!this->size.x || !this->size.y)) {

@@ -44,6 +44,7 @@ class SpriteRenderer : public Renderer {
     virtual ~SpriteRenderer();
 
     Vec2 getSize();
+    Vec2 getOffset();
 
     void setSprite(Sprite* sprite);
     void setSpriteFromTextureToGC(Texture* texture);

@@ -44,5 +44,7 @@ void InitalizeControls();
 void Free_Controls();
 void ResetControls();
 
+void DrawFontAt(SDL_Renderer* renderer, const std::string &text, int fontSize, const Runtime::Vec2Int &screenPoint);
+
 }  // namespace UI
 }  // namespace RoninEngine

@@ -116,6 +116,8 @@ struct Vec2 {
     Vec2& operator*=(const float& d);
     Vec2& operator/=(const float& d);
     Vec2& operator=(const Vec2& rhs);
+
+    Vec2 operator -() const;
 };
 
 //NOTE: Я не считаю это лучшим способом инициализировать переменные статических членов.

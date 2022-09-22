@@ -24,7 +24,7 @@ class xRect {
         this->h = h;
     }
 
-    bool empty() const { return x != 0 && y != 0 && w != 0 && h != 0; }
+    bool empty() const { return x == 0 && y == 0 && w == 0 && h == 0; }
 
     xRect<T> operator+(const xRect<T>& rhs) { return {this->x + rhs.x, this->y + rhs.y, this->w + rhs.w, this->h + rhs.h}; }
 
@@ -61,6 +61,10 @@ class xRect {
         this->y /= rhs;
         return *this;
     }
+
+    Vec2 getXY() const;
+
+    Vec2 getWH() const;
 
     static const xRect<T> zero;
     static const xRect<T> one;

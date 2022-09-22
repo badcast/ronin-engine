@@ -3,7 +3,7 @@
 //TODO: how to create shadow ? for all sprite renderer component
 
 namespace RoninEngine::Runtime {
-Camera2D::Camera2D() : Camera("Camera 2D"), scale(Vec2::one) {
+Camera2D::Camera2D() : Camera(typeid(*this).name()), scale(Vec2::one) {
     this->visibleBorders = false;
     this->visibleGrids = false;
     this->visibleObjects = false;
@@ -32,8 +32,8 @@ void Camera2D::render(SDL_Renderer* renderer, Rect rect, GameObject* root) {
     //get from matrix selection
     auto filter = matrixSelection();
 
-    // scale.x = Mathf::Min(Mathf::Max(scale.x, 0.f), 10.f);
-    // scale.y = Mathf::Min(Mathf::Max(scale.y, 0.f), 10.f);
+    // scale.x = Mathf::Min(Mathf::Max(scale.x, -10.f), 10.f);
+    // scale.y = Mathf::Min(Mathf::Max(scale.y, -10.f), 10.f);
     //_scale = scale*squarePerPixels;
     SDL_RenderSetScale(renderer, scale.x, scale.y);
 
@@ -42,7 +42,7 @@ void Camera2D::render(SDL_Renderer* renderer, Rect rect, GameObject* root) {
         for (auto renderSource : layer.second) {
             // drawing
             // clear
-            wrapper = {};
+            wrapper={};
             wrapper.renderer = renderer;
 
             renderSource->Render(&wrapper);  // draw
@@ -69,6 +69,10 @@ void Camera2D::render(SDL_Renderer* renderer, Rect rect, GameObject* root) {
                 if (arranged != Vec2::zero)
                     arranged = Vec2::RotateAround(sourcePoint, arranged, renderSource->transform()->angle() * Math::Deg2Rad);
 
+                sourcePoint += renderSource->getOffset();
+
+                //convert world to screen
+
                 //Положение по горизонтале
                 wrapper.dst.x = arranged.x + ((rect.w - wrapper.dst.w) / 2.0f - (point.x - sourcePoint.x) * pixelsPerPoint);
                 //Положение по вертикале
@@ -84,7 +88,7 @@ void Camera2D::render(SDL_Renderer* renderer, Rect rect, GameObject* root) {
     for (auto lightSource : *std::get<1>(filter)) {
         // drawing
         // clear
-        wrapper = {};
+        memset(&wrapper, 0, sizeof wrapper);
         wrapper.renderer = renderer;
 
         lightSource->GetLightSource(&wrapper);  // draw
@@ -139,8 +143,8 @@ void Camera2D::render(SDL_Renderer* renderer, Rect rect, GameObject* root) {
     if (visibleObjects) {
         for (const auto &layer : (*std::get<0>(filter)))
             for (auto face : layer.second) {
-                Vec2 p = face->transform()->position();
-                Vec2 sz = face->getSize() * 2;
+                Vec2 p = face->transform()->position() + face->getOffset();
+                Vec2 sz = face->getSize();
                 Gizmos::setColor(Color::blue);
                 Gizmos::DrawRectangleRounded(p, sz.x, sz.y, 5);
                 Gizmos::setColor(Color::black);
