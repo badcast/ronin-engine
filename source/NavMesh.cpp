@@ -81,8 +81,8 @@ const Vec2Int NavMesh::WorldPointToPoint(const Vec2 &worldPoint) {
     return p;
 }
 
-int NavMesh::getCachedSize() {
-    int cal = 0;
+std::uint32_t NavMesh::getCachedSize() {
+    std::uint32_t cal = 0;
 
     Neuron *n = static_cast<Neuron *>(neurons + segmentOffset);
     Neuron *nM = n + widthSpace * heightSpace;
@@ -141,7 +141,7 @@ std::uint8_t &RoninEngine::AIPathFinder::NavMesh::neuronGetFlag(const Runtime::V
 std::uint32_t &RoninEngine::AIPathFinder::NavMesh::neuronGetCost(const Runtime::Vec2Int &range) {
     Neuron *n = GetNeuron(range);
     if (!n) throw std::out_of_range("range");
-    return n->CostType;
+    return n->cost;
 }
 
 std::uint32_t &RoninEngine::AIPathFinder::NavMesh::neuronHeuristic(const Runtime::Vec2Int &range) {
@@ -158,7 +158,7 @@ const int RoninEngine::AIPathFinder::NavMesh::neuronGetWeight(const Runtime::Vec
 const std::uint32_t RoninEngine::AIPathFinder::NavMesh::neuronGetTotal(const Runtime::Vec2Int &range) {
     Neuron *n = GetNeuron(range);
     if (!n) throw std::out_of_range("range");
-    return n->CostType + n->h;
+    return n->cost + n->h;
 }
 
 const bool RoninEngine::AIPathFinder::NavMesh::neuronEmpty(const Runtime::Vec2Int &range) { return !neuronGetTotal(range); }
@@ -175,6 +175,7 @@ void RoninEngine::AIPathFinder::NavMesh::neuronLock(const Runtime::Vec2Int &rang
     auto divide = std::div(range.x * heightSpace + range.y, 8);
     auto &&pointer = (reinterpret_cast<std::uint8_t *>(neurons) + segmentOffset) + divide.quot;
     divide.quot = (1 << divide.rem);
+    // TODO: Optimized to ~divide.quout (xor)
     (*pointer) ^= (*pointer) & (divide.quot);
     (*pointer) |= divide.quot * (state == true);
 }

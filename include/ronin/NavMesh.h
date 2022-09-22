@@ -38,7 +38,7 @@ struct NavMeshData {
     void *neurons;
 };
 
-constexpr std::size_t NavMeshDataSizeMultiplier = sizeof (Neuron);
+constexpr std::size_t NavMeshDataSizeMultiplier = sizeof(Neuron);
 
 class NavMesh {
     void *neurons;
@@ -58,10 +58,9 @@ class NavMesh {
     void randomGenerate(int flagFilter = 0xffffff);
     void stress();
 
-
-    Neuron* GetNeuron(const Runtime::Vec2Int& point);
-    Neuron* GetNeuron(const Runtime::Vec2 &worldPoint);
-    Neuron* GetNeuron(const Runtime::Vec2 &worldPoint, Runtime::Vec2Int &outPoint);
+    Neuron *GetNeuron(const Runtime::Vec2Int &point);
+    Neuron *GetNeuron(const Runtime::Vec2 &worldPoint);
+    Neuron *GetNeuron(const Runtime::Vec2 &worldPoint, Runtime::Vec2Int &outPoint);
 
     inline bool neuronContains(const Runtime::Vec2Int &point);
 
@@ -78,17 +77,18 @@ class NavMesh {
 
     inline const Runtime::Vec2Int WorldPointToPoint(const RoninEngine::Runtime::Vec2 &worldPoint);
 
-    inline int getCachedSize();
-
     void find(NavResult &navResult, NavMethodRule method, Runtime::Vec2 worldPointFirst, Runtime::Vec2 worldPointLast);
 
-    void find(NavResult &navResult, NavMethodRule method, Runtime::Vec2Int firstNeuron, Runtime::Vec2Int lastNeuron, NavAlgorithm algorithm);
+    void find(NavResult &navResult, NavMethodRule method, Runtime::Vec2Int firstNeuron, Runtime::Vec2Int lastNeuron,
+              NavAlgorithm algorithm);
 
     const RoninEngine::Runtime::Vec2 PointToWorldPosition(const Runtime::Vec2Int &point);
-    const RoninEngine::Runtime::Vec2 PointToWorldPosition(Neuron*neuron);
+    const RoninEngine::Runtime::Vec2 PointToWorldPosition(Neuron *neuron);
     const RoninEngine::Runtime::Vec2 PointToWorldPosition(const int &x, const int &y);
     void load(const NavMeshData &navmeshData);
     void save(NavMeshData *navmeshData);
+
+    std::uint32_t getCachedSize();
 };
 
 class AlgorithmUtils {
@@ -110,7 +110,7 @@ class AlgorithmUtils {
     static auto GetMinCostPath(NavMesh &map, std::list<Runtime::Vec2Int> *paths) -> decltype(std::begin(*paths));
 
     /// Определяет, функцию пойска по направлениям. Таких как: left, up, right,
-    static void AvailPoints(NavMesh &map, NavMethodRule method, Runtime::Vec2Int  arrange, Runtime::Vec2Int  target,
+    static void AvailPoints(NavMesh &map, NavMethodRule method, Runtime::Vec2Int arrange, Runtime::Vec2Int target,
                             std::list<Runtime::Vec2Int> *pathTo, std::size_t maxCount = -1, int filterFlag = -1);
 };
 
