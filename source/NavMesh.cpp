@@ -23,9 +23,7 @@ NavMesh::NavMesh(int lwidth, int lheight) {
     clear(true);
 }
 
-NavMesh::~NavMesh() {
-    GC::gc_free(this->neurons);
-}
+NavMesh::~NavMesh() { GC::gc_free(this->neurons); }
 
 void NavMesh::randomGenerate(int flagFilter) {
     std::uint32_t lhs, rhs = segmentOffset;
@@ -45,6 +43,10 @@ void NavMesh::stress() {
     // TODO: next a strees
     find(result, NavMethodRule::NavigationIntelegency, first, next, NavAlgorithm::AStar);
 }
+
+int NavMesh::getWidth() { return widthSpace; }
+
+int NavMesh::getHeight() { return heightSpace; }
 
 void NavMesh::clear(bool clearLocks) {
     std::uint32_t length = widthSpace * heightSpace * NavMeshDataSizeMultiplier;

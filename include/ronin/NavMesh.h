@@ -44,13 +44,14 @@ class NavMesh {
     void *neurons;
     int segmentOffset;
 
-   public:
+   protected:
     int widthSpace, heightSpace;
+
+   public:
     Runtime::Vec2 worldScale;
     Runtime::Vec2 worldOffset;
 
     explicit NavMesh(int width, int height);
-
 
     ~NavMesh();
 
@@ -58,6 +59,9 @@ class NavMesh {
     void fill(bool fillLocks = false);
     void randomGenerate(int flagFilter = 0xffffff);
     void stress();
+
+    int getWidth();
+    int getHeight();
 
     Neuron *GetNeuron(const Runtime::Vec2Int &point);
     Neuron *GetNeuron(const Runtime::Vec2 &worldPoint);
