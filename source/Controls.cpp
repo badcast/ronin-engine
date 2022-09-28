@@ -80,18 +80,18 @@ void factory_free(UIElement* element) {
 
 bool general_control_default_state() {}
 
-bool general_render_ui_section(GUI* gui, UIElement& element, SDL_Renderer* render, const bool hovering, bool& focus) {
+bool general_render_ui_section(GUI* gui, UIElement& element, SDL_Renderer* render, const bool uiHover, bool& focus) {
     static float dropDownLinear = 0;
     Vec2Int ms = input::getMousePoint();
+    // clamp mouse point an inside
     ms.x = Math::Clamp(ms.x, element.rect.x, element.rect.x + element.rect.w);
     ms.y = Math::Clamp(ms.y, element.rect.y, element.rect.y + element.rect.h);
     bool result = false;
     {
         // TODO: general drawing
 
-        if (hovering) {
+        if (uiHover) {
             if (input::get_key_down(SDL_SCANCODE_LCTRL)) {
-                Vec2Int ms = input::getMousePoint();
                 element.rect.x = ms.x - element.rect.w / 2;
                 element.rect.y = ms.y - element.rect.h / 2;
             }
@@ -115,16 +115,16 @@ bool general_render_ui_section(GUI* gui, UIElement& element, SDL_Renderer* rende
             guiInstance->GUI_SetMainColorRGB(0xa75100);
             SDL_RenderDrawRect(render, (SDL_Rect*)&element.rect);
             // fill
-            guiInstance->GUI_SetMainColorRGB(hovering ? input::isMouseDown() ? 0xab0000 : 0xe70000 : 0xc90000);
+            guiInstance->GUI_SetMainColorRGB(uiHover ? input::isMouseDown() ? 0xab0000 : 0xe70000 : 0xc90000);
             rect = element.rect;
             rect += inside / 2;
             SDL_RenderFillRect(render, (SDL_Rect*)&rect);
 
             // render text
             Render_String(render, element.rect, element.text.c_str(), element.text.size(), 13, TextAlign::MiddleCenter, true,
-                          hovering);
+                          uiHover);
             bool msClick = input::isMouseUp();
-            result = hovering && msClick;
+            result = uiHover && msClick;
             break;
         }
 
@@ -132,12 +132,12 @@ bool general_render_ui_section(GUI* gui, UIElement& element, SDL_Renderer* rende
             // uielement background
             static const int thickness = 2;
             static const Rect thick = {thickness, thickness, -thickness, -thickness};
-            bool msClick = hovering && input::isMouseUp();
+            bool msClick = uiHover && input::isMouseUp();
             Rect r = element.rect;
             r += thick;
 
             // uielement background
-            Gizmos::setColor((hovering) ? colorSpace.defaultInteraction.normalState : colorSpace.defaultInteraction.hoverState);
+            Gizmos::setColor((uiHover) ? colorSpace.defaultInteraction.normalState : colorSpace.defaultInteraction.hoverState);
             SDL_RenderFillRect(render, (SDL_Rect*)&r);
             Gizmos::setColor(Color::gray);
             for (int x = 0; x < thickness; ++x) {
@@ -183,7 +183,7 @@ bool general_render_ui_section(GUI* gui, UIElement& element, SDL_Renderer* rende
             float* value = (float*)element.resources;
             float* min = value + 1;
             float* max = min + 1;
-            bool msClick = hovering && input::isMouseDown();
+            bool msClick = uiHover && input::isMouseDown();
 
             // get rect
             rect = *reinterpret_cast<SDL_Rect*>(&element.rect);
@@ -192,9 +192,19 @@ bool general_render_ui_section(GUI* gui, UIElement& element, SDL_Renderer* rende
                 focus = msClick;
             }
 
-            if (hovering && input::isMouseDown()) {
-                // get *x* component from mouse point for set cursor point
-                *value = Math::map((float)ms.x, (float)rect.x, (float)rect.x + rect.w, *min, *max);
+            if (uiHover && input::wheelRadix()) {
+                *value += input::wheelRadix() / 10.f;
+                *value = Math::Clamp(*value, *min, *max);
+                result = true;
+            }
+
+            // focused state
+            if (focus) {
+                if (input::isMouseDown()) {
+                    // get *x* component from mouse point for set cursor point
+                    *value = Math::map((float)ms.x, (float)rect.x, (float)rect.x + rect.w, *min, *max);
+                }
+
                 result = true;
             } else
                 *value = Math::Clamp(*value, *min, *max);
@@ -204,7 +214,7 @@ bool general_render_ui_section(GUI* gui, UIElement& element, SDL_Renderer* rende
             rect.h = 4;
             rect.y += element.rect.h / 2 - rect.h / 2;
 
-            Gizmos::setColor(hovering ? Color::lightgray : Color::gray);
+            Gizmos::setColor(uiHover ? Color::lightgray : Color::gray);
             SDL_RenderFillRect(render, &rect);
 
             // draw cursor
@@ -280,12 +290,12 @@ bool general_render_ui_section(GUI* gui, UIElement& element, SDL_Renderer* rende
         case CDROPDOWN: {
             static const int thickness = 2;
             static const Rect thick = {thickness, thickness, -thickness, -thickness};
-            bool msClick = hovering && input::isMouseUp();
+            bool msClick = uiHover && input::isMouseUp();
             Rect r = element.rect;
             r += thick;
 
             // uielement background
-            Gizmos::setColor((hovering) ? colorSpace.defaultInteraction.normalState : colorSpace.defaultInteraction.hoverState);
+            Gizmos::setColor((uiHover) ? colorSpace.defaultInteraction.normalState : colorSpace.defaultInteraction.hoverState);
             SDL_RenderFillRect(render, (SDL_Rect*)&r);
             Gizmos::setColor(Color::gray);
             for (int x = 0; x < thickness; ++x) {

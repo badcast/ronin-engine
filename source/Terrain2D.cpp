@@ -10,7 +10,7 @@ Terrain2D::Terrain2D(const std::string& name) : Renderer(name) {}
 
 Terrain2D::Terrain2D(int width, int length) : Terrain2D(typeid(*this).name()) { GC::gc_alloc_lval(nav, width, length); }
 
-Terrain2D::Terrain2D(const Terrain2D& source) { GC::gc_alloc_lval(nav, source.nav->widthSpace, source.nav->heightSpace); }
+Terrain2D::Terrain2D(const Terrain2D& source) { GC::gc_alloc_lval(nav, source.nav->getWidth(), source.nav->getHeight()); }
 Terrain2D::~Terrain2D() {
     GC::gc_free(nav);
 }

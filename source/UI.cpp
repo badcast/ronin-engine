@@ -246,8 +246,8 @@ uid GUI::Push_Slider(float value, float min, float max, const Rect& rect, event_
     element.resources = factory_resource(element.prototype);
 
     (*(float*)element.resources) = value;
-    (*(float*)(element.resources+sizeof(float))) = min;
-    (*(float*)(element.resources+sizeof(float)*2)) = max;
+    (*(float*)(element.resources + sizeof(float))) = min;
+    (*(float*)(element.resources + sizeof(float) * 2)) = max;
 
     element.event = changed;
     return id;
@@ -329,11 +329,11 @@ void GUI::Do_Present(SDL_Renderer* renderer) {
     Vec2Int ms;
     std::list<uid> drain;
     ResetControls();  // Reset
-    bool targetFocus;
-    bool hovering;
-    _focusedUI = false;
+    bool uiFocus;
+    bool uiHover;
 
     ms = input::getMousePoint();
+    _focusedUI = false;
 
     for (auto iter = begin(ui_layer.layers); iter != end(ui_layer.layers); ++iter) drain.emplace_back(*iter);
 
@@ -341,15 +341,20 @@ void GUI::Do_Present(SDL_Renderer* renderer) {
         id = drain.front();
         uielement = &getElement(id);
 
-        hovering = SDL_PointInRect((SDL_Point*)&ms, (SDL_Rect*)&uielement->rect);
+        uiHover = SDL_PointInRect((SDL_Point*)&ms, (SDL_Rect*)&uielement->rect);
         drain.pop_front();
-        if (!(uielement->options & ElementGroupMask) && uielement->options & ElementVisibleMask && uielement->prototype) {
-            targetFocus = id == ui_layer.focusedID;
-            if (general_render_ui_section(this, *uielement, renderer, hovering, targetFocus) && hitCast) {
+        if (!(uielement->options & ElementGroupMask) && uielement->options & ElementVisibleMask) {
+            // unfocus on click an not hovered
+            if ((uiFocus = id == ui_layer.focusedID) && input::isMouseUp() && !uiHover) {
+                uiFocus = false;
+                ui_layer.focusedID = 0;
+            }
+
+            if (general_render_ui_section(this, *uielement, renderer, uiHover, uiFocus) && hitCast) {
                 //Избавляемся от перекликов в UI
                 _focusedUI = true;
 
-                if (targetFocus) {
+                if (uiFocus) {
                     ui_layer.focusedID = id;
                 }
 
@@ -363,9 +368,9 @@ void GUI::Do_Present(SDL_Renderer* renderer) {
                 }
             } else {  // disabled state
                 // TODO: disabled state for UI element's
-                if (id == ui_layer.focusedID && !targetFocus) ui_layer.focusedID = 0;
+                if (id == ui_layer.focusedID && !uiFocus) ui_layer.focusedID = 0;
             }
-            if (!_focusedUI) _focusedUI = targetFocus;
+            if (!_focusedUI) _focusedUI = uiFocus;
         }
 
         if (this->m_level->m_isUnload) break;
