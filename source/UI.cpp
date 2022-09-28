@@ -331,6 +331,7 @@ void GUI::Do_Present(SDL_Renderer* renderer) {
     ResetControls();  // Reset
     bool uiFocus;
     bool uiHover;
+    bool uiContex;
 
     ms = input::getMousePoint();
     _focusedUI = false;
@@ -342,10 +343,14 @@ void GUI::Do_Present(SDL_Renderer* renderer) {
         uielement = &getElement(id);
 
         uiHover = SDL_PointInRect((SDL_Point*)&ms, (SDL_Rect*)&uielement->rect);
+        uiContex = !uielement->contextRect.empty();
+
         drain.pop_front();
         if (!(uielement->options & ElementGroupMask) && uielement->options & ElementVisibleMask) {
+            uiFocus = id == ui_layer.focusedID;
+
             // unfocus on click an not hovered
-            if ((uiFocus = id == ui_layer.focusedID) && input::isMouseUp() && !uiHover) {
+            if (uiFocus && (!uiHover || !uiContex) && input::isMouseUp()) {
                 uiFocus = false;
                 ui_layer.focusedID = 0;
             }

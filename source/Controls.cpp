@@ -83,9 +83,6 @@ bool general_control_default_state() {}
 bool general_render_ui_section(GUI* gui, UIElement& element, SDL_Renderer* render, const bool uiHover, bool& focus) {
     static float dropDownLinear = 0;
     Vec2Int ms = input::getMousePoint();
-    // clamp mouse point an inside
-    ms.x = Math::Clamp(ms.x, element.rect.x, element.rect.x + element.rect.w);
-    ms.y = Math::Clamp(ms.y, element.rect.y, element.rect.y + element.rect.h);
     bool result = false;
     {
         // TODO: general drawing
@@ -184,7 +181,9 @@ bool general_render_ui_section(GUI* gui, UIElement& element, SDL_Renderer* rende
             float* min = value + 1;
             float* max = min + 1;
             bool msClick = uiHover && input::isMouseDown();
-
+            // clamp mouse point an inside
+            ms.x = Math::Clamp(ms.x, element.rect.x, element.rect.x + element.rect.w);
+            ms.y = Math::Clamp(ms.y, element.rect.y, element.rect.y + element.rect.h);
             // get rect
             rect = *reinterpret_cast<SDL_Rect*>(&element.rect);
 
@@ -193,7 +192,7 @@ bool general_render_ui_section(GUI* gui, UIElement& element, SDL_Renderer* rende
             }
 
             if (uiHover && input::wheelRadix()) {
-                *value += input::wheelRadix() / 10.f;
+                *value += input::wheelRadix() / 10.f;  // step wheel mouse = ±0.1
                 *value = Math::Clamp(*value, *min, *max);
                 result = true;
             }
@@ -212,18 +211,23 @@ bool general_render_ui_section(GUI* gui, UIElement& element, SDL_Renderer* rende
             ratio = Math::map(*value, *min, *max, 0.f, 1.f);
 
             rect.h = 4;
-            rect.y += element.rect.h / 2 - rect.h / 2;
+            rect.y += (element.rect.h - rect.h) / 2;
 
             Gizmos::setColor(uiHover ? Color::lightgray : Color::gray);
-            SDL_RenderFillRect(render, &rect);
+            Color color = Gizmos::getColor();
+            roundedBoxColor(render, rect.x, rect.y, rect.x + rect.w, rect.y + rect.h, 3, Color::slategray);
+            roundedRectangleColor(render, rect.x, rect.y, rect.x + rect.w, rect.y + rect.h, 3, color);
+            // SDL_RenderFillRect(render, &rect);
 
             // draw cursor
             rect.w = 9;
             rect.h = 11;
             rect.x += (int)element.rect.w * ratio - rect.w / 2;
             rect.y = element.rect.y + element.rect.h / 2 - rect.h / 2;
-            Gizmos::setColor(Color::whitesmoke);
-            SDL_RenderFillRect(render, &rect);
+            color = Color::darkgray;
+            roundedBoxColor(render, rect.x, rect.y, rect.x + rect.w, rect.y + rect.h, 3, color);
+            color = Color::gray;
+            roundedRectangleColor(render, rect.x, rect.y, rect.x + rect.w, rect.y + rect.h, 3, color);
             break;
         }
 

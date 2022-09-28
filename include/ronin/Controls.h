@@ -24,6 +24,7 @@ enum ControlType : std::uint8_t {
 
 struct UIElement {
     Runtime::Rect rect;
+    Runtime::Rect contextRect;
     std::uint8_t options;
     uid id;
     uid parentId;
