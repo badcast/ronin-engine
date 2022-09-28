@@ -199,23 +199,35 @@ void Gizmos::DrawNavMesh(AIPathFinder::NavMesh* navMesh, bool drawText) {
     }
 }
 
-void Gizmos::DrawTriangle(Vec2 origin, float base, float height) {
-    Vec2 a, b;
-    origin.y -= height / 2;
-    a = b = origin;
+void Gizmos::DrawTriangle(Vec2 origin, float base, float height, bool fill) {
+    Vec2 a, b, pivot = origin;
+    pivot.y -= height / 2;
+    a.y = b.y = pivot.y;
     //  base /= 2.f;
-    a.x -= base;
-    b.x += base;
-    origin.y += height;
+    a.x -= base / 2;
+    b.x += base / 2;
+    pivot.y += height;
+
+    Gizmos::setColor(Color::red);
 
     // draw base
     DrawLine(std::move(a), std::move(b));
 
     // draw left side
-    DrawLine(std::move(a), std::move(origin));
+    DrawLine(std::move(a), std::move(pivot));
 
     // draw right side
-    DrawLine(std::move(b), std::move(origin));
+    DrawLine(std::move(b), std::move(pivot));
+
+    if (fill) {
+        float w;
+        float h;
+        w = base / 2;
+        h = height / 2;
+
+        pivot.y = a.y+h/2;
+        DrawFillRect(pivot, w, h);
+    }
 }
 void RoninEngine::Runtime::Gizmos::DrawTextOnPosition(Vec2 origin, const std::string& text) {
     origin = Camera::WorldToScreenPoint(origin);
@@ -245,7 +257,7 @@ void Gizmos::DrawCircle(Vec2 origin, float distance) {
 #endif
 }
 
-void Gizmos::DrawFill(Vec2 center, float width, float height) {
+void Gizmos::DrawFillRect(Vec2 center, float width, float height) {
     center = Camera::WorldToScreenPoint(center);
     width *= pixelsPerPoint;
     height *= pixelsPerPoint;
