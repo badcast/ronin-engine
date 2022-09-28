@@ -202,13 +202,10 @@ void Gizmos::DrawNavMesh(AIPathFinder::NavMesh* navMesh, bool drawText) {
 void Gizmos::DrawTriangle(Vec2 origin, float base, float height, bool fill) {
     Vec2 a, b, pivot = origin;
     pivot.y -= height / 2;
-    a.y = b.y = pivot.y;
-    //  base /= 2.f;
+    a = b = pivot;
     a.x -= base / 2;
     b.x += base / 2;
     pivot.y += height;
-
-    Gizmos::setColor(Color::red);
 
     // draw base
     DrawLine(std::move(a), std::move(b));
@@ -220,13 +217,11 @@ void Gizmos::DrawTriangle(Vec2 origin, float base, float height, bool fill) {
     DrawLine(std::move(b), std::move(pivot));
 
     if (fill) {
-        float w;
-        float h;
-        w = base / 2;
-        h = height / 2;
+        base /= 2;
+        height /= 2;
 
-        pivot.y = a.y+h/2;
-        DrawFillRect(pivot, w, h);
+        pivot.y = a.y + height / 2;
+        DrawFillRect(pivot, base, height);
     }
 }
 void RoninEngine::Runtime::Gizmos::DrawTextOnPosition(Vec2 origin, const std::string& text) {
