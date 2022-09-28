@@ -52,8 +52,14 @@ void* factory_resource(ControlType type) {
             break;
         case CIMAGEANIMATOR:
             resources = GC::gc_alloc<Timeline>();
+            break;
+        case CHSLIDER:
+            // value, min, max members
+            resources = GC::gc_malloc(sizeof(float) * 3);
+            break;
         default:
             resources = nullptr;
+            break;
     }
     return resources;
 }
@@ -66,6 +72,9 @@ void factory_free(UIElement* element) {
         case CIMAGEANIMATOR:
             GC::gc_unalloc(static_cast<Timeline*>(element->resources));
             break;
+        case CHSLIDER:
+            GC::gc_free(element->resources);
+            break;
     }
 }
 
@@ -73,6 +82,9 @@ bool general_control_default_state() {}
 
 bool general_render_ui_section(GUI* gui, UIElement& element, SDL_Renderer* render, const bool hovering, bool& focus) {
     static float dropDownLinear = 0;
+    Vec2Int ms = input::getMousePoint();
+    ms.x = Math::Clamp(ms.x, element.rect.x, element.rect.x + element.rect.w);
+    ms.y = Math::Clamp(ms.y, element.rect.y, element.rect.y + element.rect.h);
     bool result = false;
     {
         // TODO: general drawing
@@ -97,7 +109,6 @@ bool general_render_ui_section(GUI* gui, UIElement& element, SDL_Renderer* rende
         case CBUTTON: {
             static uint8_t pSize = 2;  // pen size
             static Rect inside = Rect(pSize, pSize, -pSize * 2, -pSize * 2);
-            auto ms = input::getMousePoint();
             Rect rect;
 
             // border
@@ -167,14 +178,51 @@ bool general_render_ui_section(GUI* gui, UIElement& element, SDL_Renderer* rende
         }
 
         case CHSLIDER: {
+            float ratio;
+            SDL_Rect rect;
             float* value = (float*)element.resources;
-            // Minimal support
+            float* min = value + 1;
+            float* max = min + 1;
+            bool msClick = hovering && input::isMouseDown();
 
+            // get rect
+            rect = *reinterpret_cast<SDL_Rect*>(&element.rect);
+
+            if (msClick) {
+                focus = msClick;
+            }
+
+            if (hovering && input::isMouseDown()) {
+                // get *x* component from mouse point for set cursor point
+                *value = Math::map((float)ms.x, (float)rect.x, (float)rect.x + rect.w, *min, *max);
+                result = true;
+            } else
+                *value = Math::Clamp(*value, *min, *max);
+
+            ratio = Math::map(*value, *min, *max, 0.f, 1.f);
+
+            rect.h = 4;
+            rect.y += element.rect.h / 2 - rect.h / 2;
+
+            Gizmos::setColor(hovering ? Color::lightgray : Color::gray);
+            SDL_RenderFillRect(render, &rect);
+
+            // draw cursor
+            rect.w = 9;
+            rect.h = 11;
+            rect.x += (int)element.rect.w * ratio - rect.w / 2;
+            rect.y = element.rect.y + element.rect.h / 2 - rect.h / 2;
+            Gizmos::setColor(Color::whitesmoke);
+            SDL_RenderFillRect(render, &rect);
             break;
         }
 
         case CVSLIDER: {
             float* value = (float*)element.resources;
+            float* min = value + 1;
+            float* max = min + 1;
+            *value = Math::Clamp(*value, *min, *max);
+
             // Minimal support
 
             break;
@@ -266,7 +314,6 @@ bool general_render_ui_section(GUI* gui, UIElement& element, SDL_Renderer* rende
             // show dropdown list
             if (focus) {
                 static int sz = 15;
-                Vec2Int vi;
                 Rect elrect;
                 r = element.rect;
                 r.y += r.h;
@@ -285,7 +332,7 @@ bool general_render_ui_section(GUI* gui, UIElement& element, SDL_Renderer* rende
                     int index = 0;
                     for (auto iter = std::begin(link->second); iter != std::end(link->second); ++iter, ++index) {
                         // draw element highligh
-                        if (!result && SDL_PointInRect((SDL_Point*)&(vi = input::getMousePoint()), (SDL_Rect*)&elrect)) {
+                        if (!result && SDL_PointInRect((SDL_Point*)&(ms), (SDL_Rect*)&elrect)) {
                             Gizmos::setColor(colorSpace.defaultInteraction.pressState);
                             SDL_RenderFillRect(render, (SDL_Rect*)&elrect);
                             if (input::isMouseUp()) {

@@ -48,9 +48,7 @@ float Math::atan(float x) { return ::atanf(x); }
 
 float Math::atan2(float y, float x) { return ::atan2f(y, x); }
 
-float Math::Clamp01(float val) { return Clamp(val, 0, 1.f); }
-
-float Math::Clamp(float val, const float min, const float max) { return val > max ? max : val < min ? min : val; }
+float Math::Clamp01(float val) { return Clamp(val, 0.f, 1.f); }
 
 int Math::abs(int x) { return std::abs(x); }
 
@@ -88,7 +86,7 @@ float Math::pow(float x, float y) { return ::powf(x, y); }
 
 float Math::sqrt(float x) { return std::sqrt(x); }
 
-float Math::repeat(float t, float length) { return Clamp(t - floor(t / length) * length, 0, length); }
+float Math::repeat(float t, float length) { return Clamp(t - floor(t / length) * length, 0.f, length); }
 
 float Math::DeltaAngle(float current, float target) {
     float num = repeat(target - current, 360);
@@ -204,8 +202,7 @@ float Math::SmoothDamp(float current, float target, float& currentVelocity, floa
     return Math::SmoothDamp(current, target, currentVelocity, smoothTime, maxSpeed, deltaTime);
 }
 
-float Math::SmoothDamp(float current, float target, float& currentVelocity, float smoothTime, float maxSpeed,
-                        float deltaTime) {
+float Math::SmoothDamp(float current, float target, float& currentVelocity, float smoothTime, float maxSpeed, float deltaTime) {
     smoothTime = max(0.f, max(1.f, smoothTime));
     float num = 2 / smoothTime;
     float num2 = num * deltaTime;
@@ -241,7 +238,7 @@ float Math::SmoothDampAngle(float current, float target, float& currentVelocity,
 }
 
 float Math::SmoothDampAngle(float current, float target, float& currentVelocity, float smoothTime, float maxSpeed,
-                             float deltaTime) {
+                            float deltaTime) {
     target = current + DeltaAngle(current, target);
     return SmoothDamp(current, target, currentVelocity, smoothTime, maxSpeed, deltaTime);
 }

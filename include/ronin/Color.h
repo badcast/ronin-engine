@@ -189,7 +189,7 @@ struct Color {
 };
 // NOTE: Optimized thats
 // TODO: Optimize to static members (release an reinitialize)
-// Basic Collors
+// Basic Colors
 inline const Color Color::transparent(0);
 inline const Color Color::black(0, 0, 0);
 inline const Color Color::silver(192, 192, 192);
@@ -208,7 +208,7 @@ inline const Color Color::blue(0, 0, 255);
 inline const Color Color::teal(0, 128, 128);
 inline const Color Color::aqua(0, 255, 255);
 
-// Extendedcolors
+// Extended Colors
 inline const Color Color::aliceblue(240, 248, 255);
 inline const Color Color::antiquewhite(250, 235, 215);
 inline const Color Color::aquamarine(127, 255, 212);

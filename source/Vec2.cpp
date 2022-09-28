@@ -124,7 +124,7 @@ float Vec2::DistanceSqr(const Vec2& lhs, const Vec2& rhs) {
 float Vec2::Angle(Vec2 from, Vec2 to) {
     from.Normalize();
     to.Normalize();
-    return Math::acos(Math::Clamp(Vec2::Dot(from, to), -1, 1));
+    return Math::acos(Math::Clamp(Vec2::Dot(from, to), -1.f, 1.f));
 }
 
 float Vec2::SignedAngle(Vec2 from, Vec2 to) {

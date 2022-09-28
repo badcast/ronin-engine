@@ -40,6 +40,8 @@ typedef void (*ui_callback)(uid id, void* userdata);
 //events
 typedef void (*event_index_changed)(uid id, int selectedIndex);
 
+typedef void (*event_value_changed)(uid id, float value);
+
 void InitalizeControls();
 void Free_Controls();
 void ResetControls();

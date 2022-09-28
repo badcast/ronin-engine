@@ -58,8 +58,10 @@ class Math {
         return x;
     }
 
-    static float Clamp(float val, const float min, const float max);
-
+    template <typename T>
+    static T Clamp(const T& val, const T& min, const T& max) {
+        return T(val > max ? max : val < min ? min : val);
+    }
     template <typename T>
     static const T& max(const T& x, const T& y) {
         return x > y ? x : y;

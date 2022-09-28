@@ -12,12 +12,23 @@ enum { NOPARENT = 0 };
 ///Тип идентификатора GUI
 typedef std::uint8_t uid;
 
-enum TextRandomizer_Format { All = -1, OnlyText = 0, OnlyNumber = 1, OnlyReal = 3, MaskText = 2, MaskNumber = 4, MaskReal = 8, MaskUpperChar = 16, MaskLowwerChar = 32 };
+enum TextRandomizer_Format {
+    All = -1,
+    OnlyText = 0,
+    OnlyNumber = 1,
+    OnlyReal = 3,
+    MaskText = 2,
+    MaskNumber = 4,
+    MaskReal = 8,
+    MaskUpperChar = 16,
+    MaskLowwerChar = 32
+};
 
 struct {
-    Vec2Int dropdownSize = Vec2Int(240, 30);
-    Vec2Int buttonSize = Vec2Int(240, 30);
-    Vec2Int editSize = Vec2Int(240, 30);
+    Runtime::Vec2Int dropdownSize = Runtime::Vec2Int(240, 30);
+    Runtime::Vec2Int buttonSize = Runtime::Vec2Int(240, 30);
+    Runtime::Vec2Int editSize = Runtime::Vec2Int(240, 30);
+    Runtime::Vec2Int sliderSize = Runtime::Vec2Int(240, 30);
 } defaultMakets;
 
 class GUI final {
@@ -53,12 +64,13 @@ class GUI final {
     CI uid Create_Group(const RoninEngine::Runtime::Rect &rect);
     CI uid Create_Group();
 
-    CI uid Push_Label(const std::string &text, const RoninEngine::Runtime::Rect &rect, const int &fontWidth = 13, uid parent = NOPARENT);
+    CI uid Push_Label(const std::string &text, const RoninEngine::Runtime::Rect &rect, const int &fontWidth = 13,
+                      uid parent = NOPARENT);
     CI uid Push_Label(const std::string &text, const Runtime::Vec2Int &point, const int &fontWidth = 13, uid parent = NOPARENT);
     CI uid Push_Button(const std::string &text, const RoninEngine::Runtime::Rect &rect, uid parent = NOPARENT);
-    CI uid Push_Button(const std::string &text, const Runtime::Vec2Int& point, uid parent = NOPARENT);
-    CI uid Push_Edit(const std::string &text, const Runtime::Vec2Int& point, uid parent = NOPARENT);
-    CI uid Push_Edit(const std::string &text, const Runtime::Rect& rect, uid parent = NOPARENT);
+    CI uid Push_Button(const std::string &text, const Runtime::Vec2Int &point, uid parent = NOPARENT);
+    CI uid Push_Edit(const std::string &text, const Runtime::Vec2Int &point, uid parent = NOPARENT);
+    CI uid Push_Edit(const std::string &text, const Runtime::Rect &rect, uid parent = NOPARENT);
     CI uid Push_DisplayRandomizer(TextRandomizer_Format format, const Vec2Int &point, uid parent = NOPARENT);
     CI uid Push_DisplayRandomizer(TextRandomizer_Format format = TextRandomizer_Format::All, uid parent = NOPARENT);
     CI uid Push_DisplayRandomizer_Text(const std::string &text, const Vec2Int &point, uid parent = NOPARENT);
@@ -67,24 +79,42 @@ class GUI final {
     CI uid Push_TextureStick(Texture *texture, const Runtime::Vec2Int &point, uid parent = NOPARENT);
     CI uid Push_TextureAnimator(Timeline *timeline, const RoninEngine::Runtime::Rect &rect, uid parent = NOPARENT);
     CI uid Push_TextureAnimator(Timeline *timeline, const Vec2Int &point, uid parent = NOPARENT);
-    CI uid Push_TextureAnimator(const std::list<Texture *> &roads, float duration, TimelineOptions option, const RoninEngine::Runtime::Rect &rect,
+    CI uid Push_TextureAnimator(const std::list<Texture *> &roads, float duration, TimelineOptions option,
+                                const RoninEngine::Runtime::Rect &rect,
                                 uid parent = NOPARENT);  // 930923840293840
-    CI uid Push_TextureAnimator(const std::list<Texture *> &roads, float duration, TimelineOptions option, const Vec2Int &point, uid parent = NOPARENT);
+    CI uid Push_TextureAnimator(const std::list<Texture *> &roads, float duration, TimelineOptions option, const Vec2Int &point,
+                                uid parent = NOPARENT);
     template <typename Container>
     CI uid Push_DropDown(const Container &elements, const Runtime::Vec2Int &point, uid parent = NOPARENT) {
         return Push_DropDown(elements, 0, point, parent);
     }
     template <typename Container>
     CI uid Push_DropDown(const Container &elements, int index, const Runtime::Vec2Int &point, uid parent = NOPARENT) {
-        return Push_DropDown(elements, index, Runtime::Rect(point.x, point.y, defaultMakets.dropdownSize.x, defaultMakets.dropdownSize.y), parent);
+        return Push_DropDown(elements, index,
+                             Runtime::Rect(point.x, point.y, defaultMakets.dropdownSize.x, defaultMakets.dropdownSize.y),
+                             parent);
     }
     template <typename Container>
     CI uid Push_DropDown(const Container &elements, int index, const Runtime::Rect &rect, uid parent = NOPARENT);
 
+    CI uid Push_Slider(float value, const Runtime::Vec2Int &point, event_value_changed *changed = nullptr,
+                       uid parent = NOPARENT) {
+        return Push_Slider(value, 0.f, 1.f, point, changed, parent);
+    }
+
+    CI uid Push_Slider(float value, float min, float max, const Runtime::Vec2Int &point, event_value_changed *changed = nullptr,
+                       uid parent = NOPARENT) {
+        return Push_Slider(value, min, max,
+                           Runtime::Rect(point.x, point.y, defaultMakets.sliderSize.x, defaultMakets.sliderSize.y), changed,
+                           parent);
+    }
+    CI uid Push_Slider(float value, float min, float max, const Runtime::Rect &rect, event_value_changed *changed = nullptr,
+                       uid parent = NOPARENT);
+
     // property-----------------------------------------------------------------------------------------------------------
 
-    CI void *Resources(uid id);
-    CI void Resources(uid id, void *data);
+    CI void *getResources(uid id);
+    CI void setResources(uid id, void *data);
 
     CI RoninEngine::Runtime::Rect getRect(uid id);
     CI void setRect(uid id, const RoninEngine::Runtime::Rect &rect);

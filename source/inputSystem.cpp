@@ -94,9 +94,7 @@ void input::text_start_input() {
     SDL_StartTextInput();
 }
 
-void input::text_stop_input() {
-    SDL_StopTextInput();
-}
+void input::text_stop_input() { SDL_StopTextInput(); }
 
 void input::text_get(std::string& text) {
     text = internalText;
@@ -105,7 +103,7 @@ void input::text_get(std::string& text) {
 
 const bool input::isMouseUp(int button) { return mouseState == 1; }
 
-const bool input::isMouseDown(int button) { return mouseState == 2; }
+const bool input::isMouseDown(int button) { return SDL_GetMouseState(nullptr, nullptr) & SDL_BUTTON_LMASK != 0; }
 
 const bool input::isCapsLock() { return get_key(SDL_SCANCODE_CAPSLOCK); }
 

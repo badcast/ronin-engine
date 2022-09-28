@@ -28,7 +28,10 @@ uid call_register_ui(GUI* gui, uid parent = NOPARENT) throw() {
 }
 inline UIElement& call_get_element(GUI* gui, uid id) { return gui->ui_layer.elements[id - 1]; }
 
-GUI::GUI(Level* level) : m_level(level), hitCast(true), callback(nullptr), callbackData(nullptr), visible(true), _focusedUI(false) { guiInstance = this; }
+GUI::GUI(Level* level)
+    : m_level(level), hitCast(true), callback(nullptr), callbackData(nullptr), visible(true), _focusedUI(false) {
+    guiInstance = this;
+}
 
 GUI::~GUI() { RemoveAll(); }
 
@@ -141,8 +144,11 @@ uid GUI::Push_TextureAnimator(Timeline* timeline, const RoninEngine::Runtime::Re
     data.resources = timeline;
     return id;
 }
-uid GUI::Push_TextureAnimator(Timeline* timeline, const Vec2Int& point, uid parent) { return Push_TextureAnimator(timeline, {point.x, point.y, 0, 0}, parent); }
-uid GUI::Push_TextureAnimator(const std::list<Texture*>& roads, float duration, TimelineOptions option, const RoninEngine::Runtime::Rect& rect, uid parent) {
+uid GUI::Push_TextureAnimator(Timeline* timeline, const Vec2Int& point, uid parent) {
+    return Push_TextureAnimator(timeline, {point.x, point.y, 0, 0}, parent);
+}
+uid GUI::Push_TextureAnimator(const std::list<Texture*>& roads, float duration, TimelineOptions option,
+                              const RoninEngine::Runtime::Rect& rect, uid parent) {
     Timeline* timeline;
     uid id = call_register_ui(this, parent);
     auto& data = getElement(id);
@@ -164,7 +170,8 @@ uid GUI::Push_TextureAnimator(const std::list<Texture*>& roads, float duration, 
 
     return id;
 }
-uid GUI::Push_TextureAnimator(const std::list<Texture*>& roads, float duration, TimelineOptions option, const Vec2Int& point, uid parent) {
+uid GUI::Push_TextureAnimator(const std::list<Texture*>& roads, float duration, TimelineOptions option, const Vec2Int& point,
+                              uid parent) {
     return Push_TextureAnimator(roads, duration, option, {point.x, point.y, 0, 0}, parent);
 }
 
@@ -231,10 +238,25 @@ uid GUI::Push_DropDown(const std::list<std::string>& elements, int index, const 
     return internal_push_dropdown(elements, index, rect, parent);
 }
 
+uid GUI::Push_Slider(float value, float min, float max, const Rect& rect, event_value_changed* changed, uid parent) {
+    uid id = call_register_ui(guiInstance, parent);
+    auto& element = call_get_element(guiInstance, id);
+    element.prototype = CHSLIDER;
+    element.rect = rect;
+    element.resources = factory_resource(element.prototype);
+
+    (*(float*)element.resources) = value;
+    (*(float*)(element.resources+sizeof(float))) = min;
+    (*(float*)(element.resources+sizeof(float)*2)) = max;
+
+    element.event = changed;
+    return id;
+}
+
 // property --------------------------------------------------------------------------------------------------------
 
-void* GUI::Resources(uid id) { return getElement(id).resources; }
-void GUI::Resources(uid id, void* data) { getElement(id).resources = data; }
+void* GUI::getResources(uid id) { return getElement(id).resources; }
+void GUI::setResources(uid id, void* data) { getElement(id).resources = data; }
 
 Rect GUI::getRect(uid id) { return getElement(id).rect; }
 void GUI::setRect(uid id, const RoninEngine::Runtime::Rect& rect) { getElement(id).rect = rect; }
@@ -242,10 +264,14 @@ void GUI::setRect(uid id, const RoninEngine::Runtime::Rect& rect) { getElement(i
 std::string GUI::getText(uid id) { return getElement(id).text; }
 void GUI::setText(uid id, const std::string& text) { getElement(id).text = text; }
 
-void GUI::setVisible(uid id, bool state) { getElement(id).options = (getElement(id).options & ~ElementVisibleMask) | (ElementVisibleMask * (state == true)); }
+void GUI::setVisible(uid id, bool state) {
+    getElement(id).options = (getElement(id).options & ~ElementVisibleMask) | (ElementVisibleMask * (state == true));
+}
 bool GUI::getVisible(uid id) { return (getElement(id).options & ElementVisibleMask) != 0; }
 
-void GUI::setEnable(uid id, bool state) { getElement(id).options = ((getElement(id).options & ~ElementEnableMask)) | (ElementEnableMask * (state == true)); }
+void GUI::setEnable(uid id, bool state) {
+    getElement(id).options = ((getElement(id).options & ~ElementEnableMask)) | (ElementEnableMask * (state == true));
+}
 bool GUI::getEnable(uid id) { return getElement(id).options & ElementEnableMask != 0; }
 
 // grouping-----------------------------------------------------------------------------------------------------------
@@ -349,7 +375,8 @@ void GUI::Do_Present(SDL_Renderer* renderer) {
 }
 void GUI::GUI_SetMainColorRGB(uint32_t RGB) { GUI_SetMainColorRGBA(RGB << 8 | SDL_ALPHA_OPAQUE); }
 void GUI::GUI_SetMainColorRGBA(uint32_t ARGB) {
-    SDL_SetRenderDrawColor(Application::GetRenderer(), (uid)(ARGB >> 24) & 0xFF, (uid)(ARGB >> 16) & 0xFF, (uid)(ARGB >> 8) & 0xFF, (uid)ARGB & 0xFF);
+    SDL_SetRenderDrawColor(Application::GetRenderer(), (uid)(ARGB >> 24) & 0xFF, (uid)(ARGB >> 16) & 0xFF,
+                           (uid)(ARGB >> 8) & 0xFF, (uid)ARGB & 0xFF);
 }
 bool GUI::Focused_UI() { return _focusedUI; }
 

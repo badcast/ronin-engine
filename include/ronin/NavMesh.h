@@ -51,6 +51,7 @@ class NavMesh {
 
     explicit NavMesh(int width, int height);
 
+
     ~NavMesh();
 
     void clear(bool clearLocks = false);

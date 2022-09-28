@@ -23,7 +23,9 @@ NavMesh::NavMesh(int lwidth, int lheight) {
     clear(true);
 }
 
-NavMesh::~NavMesh() { GC::gc_free(this->neurons); }
+NavMesh::~NavMesh() {
+    GC::gc_free(this->neurons);
+}
 
 void NavMesh::randomGenerate(int flagFilter) {
     std::uint32_t lhs, rhs = segmentOffset;
@@ -47,11 +49,11 @@ void NavMesh::stress() {
 void NavMesh::clear(bool clearLocks) {
     std::uint32_t length = widthSpace * heightSpace * NavMeshDataSizeMultiplier;
     std::uint32_t leftOffset;
-    if (!clearLocks) {
-        leftOffset = this->segmentOffset;
-    } else {
+    if (clearLocks) {
         leftOffset = 0;
         length += this->segmentOffset;
+    } else {
+        leftOffset = this->segmentOffset;
     }
     memset(reinterpret_cast<std::uint8_t *>(neurons) + leftOffset, 0, length);
 }
