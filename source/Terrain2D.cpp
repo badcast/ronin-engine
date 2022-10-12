@@ -22,7 +22,6 @@ AIPathFinder::NavMesh *Terrain2D::getNavMesh()
 
 void Terrain2D::load(const TerrainData &terrainData)
 {
-
 }
 
 const bool Terrain2D::isCollider(const Vec2 destination) {

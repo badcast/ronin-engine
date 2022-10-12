@@ -18,7 +18,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 if(UNIX)
         add_library(RoninEngineLibrary SHARED)
 elseif(WIN32)
-        add_library(RoninEngineLibrary SHARED)
+    #AS STATIC LIB
+        add_library(RoninEngineLibrary STATIC)
 
         #set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
         set(LIBS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/third-party/SDL2/")
