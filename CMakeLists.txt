@@ -1,6 +1,9 @@
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.10)
 #SET PROJECT NAME, VERSION
-project(RoninEngineLibrary LANGUAGES CXX VERSION 1.0)
+project(RoninEngineLibrary VERSION 1.0)
+
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 if(CMAKE_SIZEOF_VOID_P STREQUAL "4")
     set(ARCHITECTURE "x86")
@@ -12,29 +15,33 @@ message(STATUS "Architecture select ${ARCHITECTURE}")
 
 set(RONINENGINE_VERSION_MIN 1.0)
 set(RUNTIME_OUTPUT_NAME "across_rgl")
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
 
 if(UNIX)
         add_library(RoninEngineLibrary SHARED)
+        find_package(SDL2 REQUIRED)
+        find_package(SDL2_image REQUIRED)
+        find_package(SDL2_mixer REQUIRED)
+        find_package(SDL2_ttf REQUIRED)
 elseif(WIN32)
     #AS STATIC LIB
-        add_library(RoninEngineLibrary STATIC)
+        add_library(RoninEngineLibrary)
 
         #set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
         set(LIBS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/third-party/SDL2/")
+
         #next use
+
         if(NOT EXISTS "${LIBS_DIR}")
                 message(FATAL_ERROR "directory-libs not found, error binding SDL2")
         endif()
-        set(CMAKE_PREFIX_PATH ${LIBS_DIR})
-        find_package(SDL2_gfx REQUIRED)
-endif()
 
-find_package(SDL2 REQUIRED)
-find_package(SDL2_image REQUIRED)
-find_package(SDL2_mixer REQUIRED)
-find_package(SDL2_ttf REQUIRED)
+        find_package(SDL2_gfx REQUIRED PATHS "${LIBS_DIR}" NO_DEFAULT_PATH)
+        find_package(SDL2 REQUIRED PATHS "${LIBS_DIR}" NO_DEFAULT_PATH)
+        find_package(SDL2_image REQUIRED PATHS "${LIBS_DIR}" NO_DEFAULT_PATH)
+        find_package(SDL2_mixer REQUIRED PATHS "${LIBS_DIR}" NO_DEFAULT_PATH)
+        find_package(SDL2_ttf REQUIRED PATHS "${LIBS_DIR}" NO_DEFAULT_PATH)
+endif()
 
 target_link_libraries(RoninEngineLibrary SDL2::SDL2 SDL2_mixer::SDL2_mixer SDL2_ttf::SDL2_ttf SDL2_gfx SDL2_image::SDL2_image)
 

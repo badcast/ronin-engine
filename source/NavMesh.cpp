@@ -225,7 +225,6 @@ void NavMesh::find(NavResult &navResult, NavMethodRule method, Vec2Int first, Ve
 
     enum : std::uint8_t { FLAG_OPEN_LIST = 1, FLAG_CLOSED_LIST = 2, FLAG_TILED_LIST = 4 };
 
-    // list<Neuron*> closed;
     std::list<Vec2Int> finded;
     decltype(navResult.RelativePaths)::iterator iter, p1, p2;
     navResult.RelativePaths.clear();
