@@ -10,6 +10,7 @@ namespace RoninEngine::Runtime {
          bool visibleBorders;
          bool visibleGrids;
          bool visibleObjects;
+         bool visibleNames;
          Vec2 scale;
 
          Camera2D();
