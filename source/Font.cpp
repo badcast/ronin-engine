@@ -178,8 +178,6 @@ void Render_String(SDL_Renderer *renderer, Rect rect, const char *text, int len,
         if (temp == 1) dst.y += -textWidth / 2;
     }
 
-    char *cc = "Hello";
-
     Vec2Int begin = *(Vec2Int *)&dst;
     int deltax;
     for (pos = 0; pos < len; ++pos) {

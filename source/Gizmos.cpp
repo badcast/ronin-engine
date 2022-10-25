@@ -236,7 +236,6 @@ void RoninEngine::Runtime::Gizmos::DrawTextOnPosition_Legacy(Vec2 origin, const 
     r.x = static_cast<int>(origin.x);
     r.y = static_cast<int>(origin.y);
 
-    UI::Free_Controls();
     UI::Render_String(Application::GetRenderer(), r, text.c_str(), text.length(), 2);
 }
 

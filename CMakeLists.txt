@@ -27,6 +27,8 @@ elseif(WIN32)
     #AS STATIC LIB
         add_library(RoninEngineLibrary)
 
+        #set(CMAKE_GNUtoMS ON)
+
         #set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
         set(LIBS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/third-party/SDL2/")
 
@@ -36,11 +38,11 @@ elseif(WIN32)
                 message(FATAL_ERROR "directory-libs not found, error binding SDL2")
         endif()
 
-        find_package(SDL2_gfx REQUIRED PATHS "${LIBS_DIR}" NO_DEFAULT_PATH)
         find_package(SDL2 REQUIRED PATHS "${LIBS_DIR}" NO_DEFAULT_PATH)
         find_package(SDL2_image REQUIRED PATHS "${LIBS_DIR}" NO_DEFAULT_PATH)
         find_package(SDL2_mixer REQUIRED PATHS "${LIBS_DIR}" NO_DEFAULT_PATH)
         find_package(SDL2_ttf REQUIRED PATHS "${LIBS_DIR}" NO_DEFAULT_PATH)
+        find_package(SDL2_gfx REQUIRED PATHS "${LIBS_DIR}" NO_DEFAULT_PATH)
 endif()
 
 target_link_libraries(RoninEngineLibrary SDL2::SDL2 SDL2_mixer::SDL2_mixer SDL2_ttf::SDL2_ttf SDL2_gfx SDL2_image::SDL2_image)
