@@ -38,6 +38,8 @@ elseif(WIN32)
                 message(FATAL_ERROR "directory-libs not found, error binding SDL2")
         endif()
 
+        set(CMAKE_PREFIX_PATH ${LIBS_DIR})
+
         find_package(SDL2 REQUIRED PATHS "${LIBS_DIR}" NO_DEFAULT_PATH)
         find_package(SDL2_image REQUIRED PATHS "${LIBS_DIR}" NO_DEFAULT_PATH)
         find_package(SDL2_mixer REQUIRED PATHS "${LIBS_DIR}" NO_DEFAULT_PATH)

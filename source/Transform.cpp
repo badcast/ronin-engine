@@ -179,6 +179,7 @@ void Transform::setParent(Transform* parent, bool worldPositionStays) {
     hierarchy_parent_change(this, parent);
     // change position child
     this->parent_notify(lastParentPoint);
+    this->layer = parent->layer+1;
 }
 
 void Transform::hierarchy_parent_change(Transform* from, Transform* newParent) {

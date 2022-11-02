@@ -205,7 +205,9 @@ void NavMesh::load(const NavMeshData &navmeshData) {
 
     this->widthSpace = navmeshData.widthSpace;
     this->heightSpace = navmeshData.heightSpace;
-    this->neurons = navmeshData.neurons;
+    this->neurons = GC::gc_malloc(widthSpace * heightSpace * sizeof(Neuron));
+
+    memcpy(this->neurons, navmeshData.neurons, widthSpace * heightSpace * sizeof(Neuron));
 }
 
 void NavMesh::save(NavMeshData *navmeshData) {

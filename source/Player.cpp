@@ -8,10 +8,10 @@ void Player::OnAwake() {
 }
 Vec2 movementDir = Vec2::up;
 
-void Player::OnStart() { speed = 0.01f; }
+void Player::OnStart() { speed = 0.1f/2; }
 
 void Player::OnUpdate() {
-    float curSpeed = input::get_key(SDL_SCANCODE_LSHIFT) ? (speed * 10) : speed;
+    float curSpeed = input::get_key(SDL_SCANCODE_LSHIFT) ? (speed * 2) : speed;
 
     if (playerCamera) {
         auto cameraPoint = playerCamera->transform()->position();
@@ -24,7 +24,7 @@ void Player::OnUpdate() {
 
         if (axis == Vec2::zero) return;
         movementDir = axis;
-        transform()->LookAtLerp(point + movementDir, .5f);
+        //transform()->LookAtLerp(point + movementDir, .5f);
         transform()->position(Vec2::MoveTowards(point, point + movementDir, curSpeed));
     }
 }
