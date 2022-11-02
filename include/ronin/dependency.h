@@ -23,6 +23,7 @@
 #include <typeinfo>
 #include <unordered_map>
 #include <vector>
+#include <limits>
 
 #include "Color.h"
 #include "Static.h"
