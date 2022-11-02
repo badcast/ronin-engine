@@ -176,15 +176,16 @@ uid GUI::Push_TextureAnimator(const std::list<Texture*>& roads, float duration, 
 }
 
 template <typename Container>
-uid internal_push_dropdown(const Container& container, int index, const Runtime::Rect& rect, uid parent) {
+uid internal_push_dropdown(const Container& container, int index, const Runtime::Rect& rect, event_index_changed* changed,
+                           uid parent) {
     using T = typename std::iterator_traits<decltype(container.cbegin())>::value_type;
 
     uid id = call_register_ui(guiInstance, parent);
     auto& element = call_get_element(guiInstance, id);
     element.prototype = CDROPDOWN;
     element.rect = rect;
-
     element.resources = factory_resource(element.prototype);
+    element.event = changed;
 
     if (!element.resources) Application::fail_OutOfMemory();
 
@@ -209,33 +210,39 @@ uid internal_push_dropdown(const Container& container, int index, const Runtime:
 }
 
 template <>
-uid GUI::Push_DropDown(const std::vector<int>& elements, int index, const Runtime::Rect& rect, uid parent) {
-    return internal_push_dropdown(elements, index, rect, parent);
+uid GUI::Push_DropDown(const std::vector<int>& elements, int index, const Runtime::Rect& rect, event_index_changed* changed,
+                       uid parent) {
+    return internal_push_dropdown(elements, index, rect, changed, parent);
 }
 
 template <>
-uid GUI::Push_DropDown(const std::vector<float>& elements, int index, const Runtime::Rect& rect, uid parent) {
-    return internal_push_dropdown(elements, index, rect, parent);
+uid GUI::Push_DropDown(const std::vector<float>& elements, int index, const Runtime::Rect& rect, event_index_changed* changed,
+                       uid parent) {
+    return internal_push_dropdown(elements, index, rect, changed, parent);
 }
 
 template <>
-uid GUI::Push_DropDown(const std::vector<std::string>& elements, int index, const Runtime::Rect& rect, uid parent) {
-    return internal_push_dropdown(elements, index, rect, parent);
+uid GUI::Push_DropDown(const std::vector<std::string>& elements, int index, const Runtime::Rect& rect,
+                       event_index_changed* changed, uid parent) {
+    return internal_push_dropdown(elements, index, rect, changed, parent);
 }
 
 template <>
-uid GUI::Push_DropDown(const std::list<float>& elements, int index, const Runtime::Rect& rect, uid parent) {
-    return internal_push_dropdown(elements, index, rect, parent);
+uid GUI::Push_DropDown(const std::list<float>& elements, int index, const Runtime::Rect& rect, event_index_changed* changed,
+                       uid parent) {
+    return internal_push_dropdown(elements, index, rect, changed, parent);
 }
 
 template <>
-uid GUI::Push_DropDown(const std::list<int>& elements, int index, const Runtime::Rect& rect, uid parent) {
-    return internal_push_dropdown(elements, index, rect, parent);
+uid GUI::Push_DropDown(const std::list<int>& elements, int index, const Runtime::Rect& rect, event_index_changed* changed,
+                       uid parent) {
+    return internal_push_dropdown(elements, index, rect, changed, parent);
 }
 
 template <>
-uid GUI::Push_DropDown(const std::list<std::string>& elements, int index, const Runtime::Rect& rect, uid parent) {
-    return internal_push_dropdown(elements, index, rect, parent);
+uid GUI::Push_DropDown(const std::list<std::string>& elements, int index, const Runtime::Rect& rect,
+                       event_index_changed* changed, uid parent) {
+    return internal_push_dropdown(elements, index, rect, changed, parent);
 }
 
 uid GUI::Push_Slider(float value, float min, float max, const Rect& rect, event_value_changed* changed, uid parent) {

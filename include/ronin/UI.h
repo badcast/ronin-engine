@@ -84,18 +84,21 @@ class GUI final {
                                 uid parent = NOPARENT);  // 930923840293840
     CI uid Push_TextureAnimator(const std::list<Texture *> &roads, float duration, TimelineOptions option, const Vec2Int &point,
                                 uid parent = NOPARENT);
+
     template <typename Container>
-    CI uid Push_DropDown(const Container &elements, const Runtime::Vec2Int &point, uid parent = NOPARENT) {
-        return Push_DropDown(elements, 0, point, parent);
+    CI uid Push_DropDown(const Container &elements, const Runtime::Vec2Int &point, event_index_changed *changed = nullptr,
+                         uid parent = NOPARENT) {
+        return Push_DropDown(elements, 0, point, changed, parent);
     }
     template <typename Container>
-    CI uid Push_DropDown(const Container &elements, int index, const Runtime::Vec2Int &point, uid parent = NOPARENT) {
+    CI uid Push_DropDown(const Container &elements, int index, const Runtime::Vec2Int &point,event_index_changed *changed = nullptr, uid parent = NOPARENT) {
         return Push_DropDown(elements, index,
                              Runtime::Rect(point.x, point.y, defaultMakets.dropdownSize.x, defaultMakets.dropdownSize.y),
+                             changed,
                              parent);
     }
     template <typename Container>
-    CI uid Push_DropDown(const Container &elements, int index, const Runtime::Rect &rect, uid parent = NOPARENT);
+    CI uid Push_DropDown(const Container &elements, int index, const Runtime::Rect &rect, event_index_changed *changed = nullptr, uid parent = NOPARENT);
 
     CI uid Push_Slider(float value, const Runtime::Vec2Int &point, event_value_changed *changed = nullptr,
                        uid parent = NOPARENT) {

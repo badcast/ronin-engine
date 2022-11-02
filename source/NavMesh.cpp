@@ -167,6 +167,15 @@ const std::uint32_t RoninEngine::AIPathFinder::NavMesh::neuronGetTotal(const Run
 
 const bool RoninEngine::AIPathFinder::NavMesh::neuronEmpty(const Runtime::Vec2Int &range) { return !neuronGetTotal(range); }
 
+bool NavMesh::neuronLocked(const Neuron *neuron) { return neuronLocked(neuronGetPoint(neuron)); }
+std::uint8_t &NavMesh::neuronGetFlag(const Neuron *neuron) { return neuronGetFlag(neuronGetPoint(neuron)); }
+std::uint32_t &NavMesh::neuronGetCost(const Neuron *neuron) { return neuronGetCost(neuronGetPoint(neuron)); }
+std::uint32_t &NavMesh::neuronHeuristic(const Neuron *neuron) { return neuronHeuristic(neuronGetPoint(neuron)); }
+const int NavMesh::neuronGetWeight(const Neuron *neuron) { return neuronGetWeight(neuronGetPoint(neuron)); }
+const std::uint32_t NavMesh::neuronGetTotal(const Neuron *neuron) { return neuronEmpty(neuronGetPoint(neuron)); }
+const bool NavMesh::neuronEmpty(const Neuron *neuron) { return neuronEmpty(neuronGetPoint(neuron)); }
+void NavMesh::neuronLock(const Neuron *neuron, const bool state) { neuronLock(neuronGetPoint(neuron), state); }
+
 const Vec2Int NavMesh::neuronGetPoint(const Neuron *neuron) {
     if (neuron == nullptr) throw std::runtime_error("argument is null");
     auto divide = std::div((reinterpret_cast<std::size_t>(neuron) - reinterpret_cast<std::size_t>(neurons) - segmentOffset) /

@@ -37,6 +37,7 @@ Vec2 SpriteRenderer::getOffset() {
     switch (renderOut) {
         case SpriteRenderOut::Origin:
             outOffset = -size + size / 2 + Vec2::half;
+
             break;
     }
     return outOffset;

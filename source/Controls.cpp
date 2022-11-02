@@ -25,19 +25,19 @@ struct {
 uid _controlId;
 uid _focusedId;
 
-TTF_Font* font;
+TTF_Font* pfont;
 
 void InitalizeControls() {
     TTF_Init();
 
     // std::string path = getDataFrom(FolderKind::GFX) + "interface/arial.ttf";
     auto raw = SDL_RWFromConstMem(raw_arial_font, raw_arial_length);
-    font = TTF_OpenFontRW(raw, 1, 14);
+    pfont = TTF_OpenFontRW(raw, SDL_TRUE, 14);
 }
 
 void Free_Controls() {
     // TODO: free controls?
-    TTF_CloseFont(font);
+    TTF_CloseFont(pfont);
     TTF_Quit();
 }
 
@@ -144,7 +144,7 @@ bool general_render_ui_section(GUI* gui, UIElement& element, SDL_Renderer* rende
 
             // draw main text
             Texture* texture;
-            SDL_Surface* surf = TTF_RenderUTF8_Solid(font, element.text.c_str(), colorSpace.editText);
+            SDL_Surface* surf = TTF_RenderUTF8_Solid(pfont, element.text.c_str(), colorSpace.editText);
             if (GC::gc_alloc_texture_from(&texture, surf) != GCInvalidID) {
                 r = element.rect;
                 r.x += 5;
@@ -309,7 +309,7 @@ bool general_render_ui_section(GUI* gui, UIElement& element, SDL_Renderer* rende
 
             // draw main text
             Texture* texture;
-            SDL_Surface* surf = TTF_RenderUTF8_Solid(font, element.text.c_str(), colorSpace.dropdownText);
+            SDL_Surface* surf = TTF_RenderUTF8_Solid(pfont, element.text.c_str(), colorSpace.dropdownText);
             if (GC::gc_alloc_texture_from(&texture, surf) != GCInvalidID) {
                 r = element.rect;
                 r.x += 5;
@@ -359,7 +359,7 @@ bool general_render_ui_section(GUI* gui, UIElement& element, SDL_Renderer* rende
                         Gizmos::setColor(colorSpace.defaultInteraction.hoverState);
                         // Draw element text
                         surf = TTF_RenderUTF8_Solid(
-                            font, iter->c_str(),
+                            pfont, iter->c_str(),
                             link->first != index ? colorSpace.dropdownText : colorSpace.dropdownSelectedText);
                         GC::gc_alloc_texture_from(&texture, surf);
                         r.h = texture->height();
@@ -405,7 +405,7 @@ void event_action(UIElement* element) {
 void DrawFontAt(SDL_Renderer* renderer, const std::string& text, int fontSize, const Runtime::Vec2Int& screenPoint) {
     Texture* texture;
     SDL_Rect r;
-    SDL_Surface* surf = TTF_RenderUTF8_Solid(font, text.c_str(), Color::white);
+    SDL_Surface* surf = TTF_RenderUTF8_Solid(pfont, text.c_str(), Color::white);
     GC::gc_alloc_texture_from(&texture, surf);
     r.h = texture->height();
     r.w = texture->width();

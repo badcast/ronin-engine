@@ -69,6 +69,9 @@ class NavMesh {
 
     inline bool neuronContains(const Runtime::Vec2Int &point);
 
+    inline const Runtime::Vec2Int neuronGetPoint(const Neuron *neuron);
+
+    //pointer with Point
     inline bool neuronLocked(const Runtime::Vec2Int &point);
     inline std::uint8_t &neuronGetFlag(const Runtime::Vec2Int &point);
     inline std::uint32_t &neuronGetCost(const Runtime::Vec2Int &point);
@@ -76,9 +79,17 @@ class NavMesh {
     inline const int neuronGetWeight(const Runtime::Vec2Int &point);
     inline const std::uint32_t neuronGetTotal(const Runtime::Vec2Int &point);
     inline const bool neuronEmpty(const Runtime::Vec2Int &point);
-    inline const Runtime::Vec2Int neuronGetPoint(const Neuron *neuron);
-
     void neuronLock(const Runtime::Vec2Int &point, const bool state);
+
+    //pointer with pointer
+    inline bool neuronLocked(const Neuron *neuron);
+    inline std::uint8_t &neuronGetFlag(const Neuron *neuron);
+    inline std::uint32_t &neuronGetCost(const Neuron *neuron);
+    inline std::uint32_t &neuronHeuristic(const Neuron *neuron);
+    inline const int neuronGetWeight(const Neuron *neuron);
+    inline const std::uint32_t neuronGetTotal(const Neuron *neuron);
+    inline const bool neuronEmpty(const Neuron *neuron);
+    void neuronLock(const Neuron *neuron, const bool state);
 
     inline const Runtime::Vec2Int WorldPointToPoint(const RoninEngine::Runtime::Vec2 &worldPoint);
 
