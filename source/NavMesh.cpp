@@ -72,6 +72,10 @@ void NavMesh::fill(bool fillLocks) {
     memset(reinterpret_cast<std::uint8_t *>(neurons) + leftoffset, 0xff, length);
 }
 
+Neuron *NavMesh::GetNeuron(int x, int y){
+    return GetNeuron(Vec2Int(x,y));
+}
+
 Neuron *NavMesh::GetNeuron(const Runtime::Vec2Int &range) {
     Neuron *result = nullptr;
     if (neuronContains(range)) result = reinterpret_cast<Neuron *>(MEMORY_DATA);
@@ -216,6 +220,11 @@ void NavMesh::save(NavMeshData *navmeshData) {
     navmeshData->widthSpace = this->widthSpace;
     navmeshData->heightSpace = this->heightSpace;
     navmeshData->neurons = this->neurons;
+}
+
+void NavMesh::find(NavResult &navResult, NavMethodRule method, Neuron* firstNeuron, Neuron* lastNeuron,
+          NavAlgorithm algorithm){
+    find(navResult, method, neuronGetPoint(firstNeuron), neuronGetPoint(lastNeuron), algorithm);
 }
 
 void NavMesh::find(NavResult &navResult, NavMethodRule method, Vec2Int first, Vec2Int last, NavAlgorithm algorithm) {

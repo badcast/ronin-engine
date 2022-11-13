@@ -63,6 +63,7 @@ class NavMesh {
     int getWidth();
     int getHeight();
 
+    Neuron *GetNeuron(int x, int y);
     Neuron *GetNeuron(const Runtime::Vec2Int &point);
     Neuron *GetNeuron(const Runtime::Vec2 &worldPoint);
     Neuron *GetNeuron(const Runtime::Vec2 &worldPoint, Runtime::Vec2Int &outPoint);
@@ -82,12 +83,12 @@ class NavMesh {
     void neuronLock(const Runtime::Vec2Int &point, const bool state);
 
     //pointer with pointer
-    inline bool neuronLocked(const Neuron *neuron);
-    inline std::uint8_t &neuronGetFlag(const Neuron *neuron);
-    inline std::uint32_t &neuronGetCost(const Neuron *neuron);
-    inline std::uint32_t &neuronHeuristic(const Neuron *neuron);
-    inline const int neuronGetWeight(const Neuron *neuron);
-    inline const std::uint32_t neuronGetTotal(const Neuron *neuron);
+    bool neuronLocked(const Neuron *neuron);
+    std::uint8_t &neuronGetFlag(const Neuron *neuron);
+    std::uint32_t &neuronGetCost(const Neuron *neuron);
+    std::uint32_t &neuronHeuristic(const Neuron *neuron);
+    const int neuronGetWeight(const Neuron *neuron);
+    const std::uint32_t neuronGetTotal(const Neuron *neuron);
     inline const bool neuronEmpty(const Neuron *neuron);
     void neuronLock(const Neuron *neuron, const bool state);
 
@@ -95,7 +96,10 @@ class NavMesh {
 
     void find(NavResult &navResult, NavMethodRule method, Runtime::Vec2 worldPointFirst, Runtime::Vec2 worldPointLast);
 
-    void find(NavResult &navResult, NavMethodRule method, Runtime::Vec2Int firstNeuron, Runtime::Vec2Int lastNeuron,
+    void find(NavResult &navResult, NavMethodRule method, Neuron* firstNeuron, Neuron* lastNeuron,
+              NavAlgorithm algorithm);
+
+    void find(NavResult &navResult, NavMethodRule method, Runtime::Vec2Int first, Runtime::Vec2Int last,
               NavAlgorithm algorithm);
 
     const RoninEngine::Runtime::Vec2 PointToWorldPosition(const Runtime::Vec2Int &point);

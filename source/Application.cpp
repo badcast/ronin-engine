@@ -98,8 +98,9 @@ void Application::LoadedLevel() {
         GC::gc_unalloc(destroyableLevel);
 
         destroyableLevel = nullptr;
-        // GC::UnloadUnused();
-        GC::gc_free_source();
+//BUG: DANGER ZONE
+         GC::UnloadUnused();
+        //GC::gc_free_source();
     }
 
     m_levelLoaded = true;
@@ -121,7 +122,7 @@ void Application::LoadLevel(Level* level) {
     if (!level->is_hierarchy()) {
         // init main object
         level->main_object = create_empty_gameobject();
-        level->name() = "Main Object";
+        level->main_object->name("Main Object");
         level->main_object->transform()->name("Root");
     }
 

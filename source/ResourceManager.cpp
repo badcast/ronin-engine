@@ -203,7 +203,7 @@ void GC::LoadImages(const char *filename) {
 void GC::UnloadUnused() { UnloadAll(false); }
 void GC::UnloadAll(bool immediate) {
     // TO-DO: реализовать очистку _assocSingleFile и других
-    return;
+   // return;
 
     for (auto xx = begin(*_assocMultiCacheTextures); xx != end(*_assocMultiCacheTextures); ++xx) {
         for (auto iter = begin(*xx->second); iter != end(*xx->second); ++iter) gc_unalloc(*iter);
