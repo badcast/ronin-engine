@@ -37,6 +37,7 @@ typedef bool jbool;
 enum JNOSerializedFormat { JNOBeautify, JNOCompact };
 
 class jno_object_parser;
+class jno_object_node;
 
 enum JNOType { Unknown = 0, JNOString = 1, JNOBoolean = 2, JNOReal = 3, JNONumber = 4 };
 
