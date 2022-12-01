@@ -48,6 +48,13 @@ class Level {
     void matrix_nature(Runtime::Transform* target, Runtime::Vec2Int lastPoint);
     void matrix_nature(Runtime::Transform* target, const Runtime::Vec2Int& newPoint, const Runtime::Vec2Int& lastPoint);
 
+    virtual void awake();
+    virtual void start();
+    virtual void update();
+    virtual void lateUpdate();
+    virtual void onDrawGizmos();
+    virtual void onUnloading();
+
    public:
     // Main or Root object
     Runtime::GameObject* main_object;
@@ -63,13 +70,6 @@ class Level {
 
     UI::GUI* Get_GUI();
     void Unload();
-
-    virtual void awake();
-    virtual void start();
-    virtual void update();
-    virtual void lateUpdate();
-    virtual void onDrawGizmos();
-    virtual void onUnloading();
 
     static std::list<Runtime::Transform*> matrixCheckDamaged();
     static int matrixRestore();
