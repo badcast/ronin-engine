@@ -43,11 +43,11 @@ typedef void (*event_index_changed)(uid id, int selectedIndex);
 
 typedef void (*event_value_changed)(uid id, float value);
 
-void InitalizeControls();
-void Free_Controls();
-void ResetControls();
+extern void InitalizeControls();
+extern void Free_Controls();
+extern void ResetControls();
 
-void DrawFontAt(SDL_Renderer* renderer, const std::string &text, int fontSize, const Runtime::Vec2Int &screenPoint);
+extern void DrawFontAt(SDL_Renderer* renderer, const std::string &text, int fontSize, const Runtime::Vec2Int &screenPoint);
 
 }  // namespace UI
 }  // namespace RoninEngine

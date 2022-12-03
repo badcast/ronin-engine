@@ -5,7 +5,7 @@
 
 namespace RoninEngine::Runtime
 {
-	class Light : public Component
+     class SHARK Light : public Component
 	{
         Texture* fieldFogTexture;
 	protected:

@@ -7,7 +7,7 @@
 
 
 namespace RoninEngine::Runtime {
-class Transform : public Component {
+class SHARK Transform : public Component {
     friend class RoninEngine::Level;
     friend class GameObject;
     friend class Camera;

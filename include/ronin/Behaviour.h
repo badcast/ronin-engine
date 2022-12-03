@@ -5,7 +5,7 @@
 
 namespace RoninEngine::Runtime {
 
-   class Behaviour :
+   class SHARK Behaviour :
          public Component
    {
       public:

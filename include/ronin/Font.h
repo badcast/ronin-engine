@@ -4,6 +4,9 @@
 
 namespace RoninEngine::UI {
 
+extern unsigned char raw_arial_font[];
+extern unsigned int raw_arial_length;
+
 constexpr int fontWidth = 13;
 constexpr int fontHeight = 18;
 

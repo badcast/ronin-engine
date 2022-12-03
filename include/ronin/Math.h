@@ -4,7 +4,7 @@
 
 namespace RoninEngine::Runtime {
 
-class Random {
+class SHARK Random {
    public:
     static void srand(int seed);
 
@@ -19,7 +19,7 @@ class Random {
     static float randomAngle();
 };
 
-class Math {
+class SHARK Math {
    public:
     static constexpr long double longPI = 3.14159265358979323846264338327950288;
     static constexpr float PI = static_cast<float>(longPI);  // calc PI formula l / d (Length circle div diameter)
@@ -131,8 +131,7 @@ class Math {
 
     static float SmoothDamp(float current, float target, float& currentVelocity, float smoothTime);
 
-    static float SmoothDamp(float current, float target, float& currentVelocity, float smoothTime, float maxSpeed,
-                            float deltaTime);
+    static float SmoothDamp(float current, float target, float& currentVelocity, float smoothTime, float maxSpeed, float deltaTime);
 
     // Celsius to Fahrenheit
     static float cel2far(float celsius);
@@ -143,8 +142,7 @@ class Math {
 
     static float SmoothDampAngle(float current, float target, float& currentVelocity, float smoothTime);
 
-    static float SmoothDampAngle(float current, float target, float& currentVelocity, float smoothTime, float maxSpeed,
-                                 float deltaTime);
+    static float SmoothDampAngle(float current, float target, float& currentVelocity, float smoothTime, float maxSpeed, float deltaTime);
 
     static float SmoothStep(float from, float to, float t);
 };

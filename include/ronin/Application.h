@@ -2,13 +2,13 @@
 #include "dependency.h"
 
 namespace RoninEngine {
-struct Resolution {
+struct SHARK Resolution {
     int width;
     int height;
     // int hz;
 };
 
-class Application {
+class SHARK Application {
     static void LoadGame();
     static void LoadedLevel();
 

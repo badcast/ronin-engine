@@ -1,6 +1,7 @@
-#pragma once
+#ifndef _RONINENGINE_H
+#define _RONINENGINE_H
 
-#include "dependency.h"
+#include "dependency.h"  
 
 // base headers
 #include "Color.h"
@@ -41,3 +42,5 @@
 #include "Application.h"
 #include "ResourceManager.h"
 #include "SystemInformation.h"
+
+#endif

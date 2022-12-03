@@ -2,7 +2,7 @@
 #include "dependency.h"
 
 namespace RoninEngine::Runtime {
-class Player : public Behaviour {
+class SHARK Player : public Behaviour {
    public:
     Camera2D *playerCamera;
     SpriteRenderer *spriteRenderer;

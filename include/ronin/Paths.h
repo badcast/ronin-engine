@@ -20,13 +20,13 @@ enum FolderKind {
     TEXTURES
 };
 
-const char* applicationPath();
+extern const char* applicationPath();
 
-const char* prefDataPath();
+extern const char* prefDataPath();
 
-const std::string dataPath();
+extern const std::string dataPath();
 
-const std::string getDataFrom(FolderKind type);
+extern const std::string getDataFrom(FolderKind type);
 
-void release_sdlpaths();
+extern void release_sdlpaths();
 }  // namespace RoninEngine::Runtime

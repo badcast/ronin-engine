@@ -3,7 +3,7 @@
 #include "dependency.h"
 
 namespace RoninEngine::Runtime {
-struct Color {
+struct SHARK Color {
     std::uint8_t r;
     std::uint8_t g;
     std::uint8_t b;

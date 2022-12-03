@@ -11,7 +11,7 @@ struct Render_info {
     Texture* texture;
 };
 
-class Renderer : public Component {
+class SHARK Renderer : public Component {
    public:
     Renderer();
     Renderer(const std::string& name);

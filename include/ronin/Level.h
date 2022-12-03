@@ -2,7 +2,7 @@
 #include "dependency.h"
 
 namespace RoninEngine {
-class Level {
+class SHARK Level {
     friend class Application;
     friend class UI::GUI;
     friend class Runtime::Object;

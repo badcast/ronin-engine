@@ -5,7 +5,7 @@
 
 namespace RoninEngine::Runtime{
 
-class Particle : public Object {
+class SHARK Particle : public Object {
    public:
       Particle();
       virtual ~Particle();

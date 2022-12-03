@@ -8,20 +8,20 @@ namespace Runtime {
 extern Transform* create_empty_transform();
 extern GameObject* create_empty_gameobject();
 
-GameObject* CreateGameObject();
-GameObject* CreateGameObject(const std::string& name);
+extern GameObject* CreateGameObject();
+extern GameObject* CreateGameObject(const std::string& name);
 
 //Уничтожает объект после рендера.
-void Destroy(Object* obj);
+extern void Destroy(Object* obj);
 
 //Уничтожает объект после прошедшего времени.
-void Destroy(Object* obj, float t);
+extern void Destroy(Object* obj, float t);
 
 //Уничтожает объект принудительно игнорируя все условия его существования.
-void Destroy_Immediate(Object* obj);
+extern void Destroy_Immediate(Object* obj);
 
 //Проверка на существование объекта
-bool instanced(Object* obj);
+extern bool instanced(Object* obj);
 
 // clone a object
 template <typename ObjectType>
@@ -31,7 +31,7 @@ GameObject* Instantiate(GameObject* obj, Vec2 position, float angle = 0);
 //Клонирует объект
 GameObject* Instantiate(GameObject* obj, Vec2 position, Transform* parent, bool worldPositionStay = true);
 
-class Object {
+class SHARK Object {
     template <typename ObjectType>
     friend ObjectType* Instantiate(ObjectType* obj);
     friend GameObject* Instantiate(GameObject* obj);

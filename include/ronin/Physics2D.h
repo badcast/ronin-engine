@@ -4,7 +4,7 @@
 
 namespace RoninEngine::Runtime {
 
-class Physics2D {
+class SHARK Physics2D {
    public:
     static std::list<Transform*> stormCast(const Vec2 &origin, int edges, int layer = -1);
     static std::list<Transform*> rectCast(Vec2 origin, float distance);

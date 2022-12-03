@@ -25,7 +25,7 @@ struct TerrainData{
     TerrainTextured* textured;
 };
 
-class Terrain2D : public Renderer {
+class SHARK Terrain2D : public Renderer {
     RoninEngine::AIPathFinder::NavMesh* nav;
 
    public:

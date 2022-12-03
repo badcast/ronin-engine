@@ -4,7 +4,7 @@
 #include "dependency.h"
 
 namespace RoninEngine::Runtime {
-class Camera : public Component {
+class SHARK Camera : public Component {
     friend RoninEngine::Level;
 
    protected:

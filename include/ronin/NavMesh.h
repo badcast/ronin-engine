@@ -40,7 +40,7 @@ struct NavMeshData {
 
 constexpr std::size_t NavMeshDataSizeMultiplier = sizeof(Neuron);
 
-class NavMesh {
+class SHARK NavMesh {
     void *neurons;
     int segmentOffset;
 
@@ -111,7 +111,7 @@ class NavMesh {
     std::uint32_t getCachedSize();
 };
 
-class AlgorithmUtils {
+class SHARK AlgorithmUtils {
    public:
     ///Определяет дистанцию точки от A до точки B
     ///Используется формула Пифагора "(a^2) + (b^2) = c^2"

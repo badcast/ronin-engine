@@ -25,7 +25,7 @@ enum KeyboardState {
     // The SHIFT key is pressed.
     Shift_Pressed,
 };
-class input {
+class SHARK input {
    private:
     friend class RoninEngine::Application;
     static Vec2Int m_mousePoint;

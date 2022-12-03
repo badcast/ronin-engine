@@ -31,7 +31,7 @@ struct {
     Runtime::Vec2Int sliderSize = Runtime::Vec2Int(240, 30);
 } defaultMakets;
 
-class GUI final {
+class SHARK GUI final {
    private:
     struct {
         // controls

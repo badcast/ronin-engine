@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.10)
 #SET PROJECT NAME, VERSION
 project(RoninEngineLibrary VERSION 1.0)
 
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 if(CMAKE_SIZEOF_VOID_P STREQUAL "4")
@@ -16,19 +16,17 @@ message(STATUS "Architecture select ${ARCHITECTURE}")
 set(RONINENGINE_VERSION_MIN 1.0)
 set(RUNTIME_OUTPUT_NAME "across_rgl")
 
+add_library(RoninEngineLibrary SHARED)
 
 if(UNIX)
-        add_library(RoninEngineLibrary SHARED)
         find_package(SDL2 REQUIRED)
         find_package(SDL2_image REQUIRED)
         find_package(SDL2_mixer REQUIRED)
         find_package(SDL2_ttf REQUIRED)
 elseif(WIN32)
-    #AS STATIC LIB
-        add_library(RoninEngineLibrary)
+        target_compile_definitions(RoninEngineLibrary PRIVATE -DDLLEXPORTING)
 
-        set(CMAKE_GNUtoMS ON)
-        set(CMAKE_GNUtoMS ON)
+        #set(CMAKE_GNUtoMS ON)
 
         #set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
         set(LIBS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/third-party/SDL2/")
@@ -41,7 +39,7 @@ elseif(WIN32)
 
         set(CMAKE_PREFIX_PATH ${LIBS_DIR})
 
-        find_package(SDL2 REQUIRED PATHS "/media/vault_teck/dev/git/znake-casual/RoninEngine/third-party/SDL2/SDL2-2.24.0/" NO_DEFAULT_PATH)
+        find_package(SDL2 REQUIRED PATHS "${LIBS_DIR}" NO_DEFAULT_PATH)
         find_package(SDL2_image REQUIRED PATHS "${LIBS_DIR}" NO_DEFAULT_PATH)
         find_package(SDL2_mixer REQUIRED PATHS "${LIBS_DIR}" NO_DEFAULT_PATH)
         find_package(SDL2_ttf REQUIRED PATHS "${LIBS_DIR}" NO_DEFAULT_PATH)

@@ -24,7 +24,7 @@ enum class SpriteRenderType : char {
     Tile
 };
 
-class SpriteRenderer : public Renderer {
+class SHARK SpriteRenderer : public Renderer {
     Texture* textureCache;
     Sprite* sprite;
 

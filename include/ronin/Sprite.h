@@ -7,7 +7,7 @@
 namespace RoninEngine::Runtime {
 class Atlas;
 
-class Sprite {
+class SHARK Sprite {
     friend class Scene;
     friend class Camera2D;
     friend class Renderer;

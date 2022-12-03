@@ -1,13 +1,27 @@
 #pragma once
 
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_image.h>
-#include <SDL2/SDL_mixer.h>
+//MSVC Compiller 
+#if _MSC_VER || WIN32
+#if DLLEXPORTING
+#define SHARK	__declspec(dllexport)
+#else 
+#define SHARK   __declspec(dllimport)
+#endif 
+#else __linux__
+#define SHARK
+#endif 
+
+
+#include <SDL.h>
+#include <SDL_image.h>
+#include <SDL_mixer.h>
 
 #include <algorithm>
-#include <cassert>
 #include <cstdint>
+#include <cstdlib>
 #include <cstdio>
+#include <limits>
+#include <cassert>
 #include <ctime>
 #include <functional>
 #include <list>
@@ -23,7 +37,6 @@
 #include <typeinfo>
 #include <unordered_map>
 #include <vector>
-#include <limits>
 
 #include "Color.h"
 #include "Static.h"

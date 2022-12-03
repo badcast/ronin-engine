@@ -61,7 +61,7 @@ extern int gc_write_memblock_runtime(GCMemoryStick **ms, const std::uint8_t &typ
 
 extern int gc_native_collect(const int freeID);
 
-class GC {
+class SHARK GC {
     friend class ::RoninEngine::Application;
     friend class Scene;
 

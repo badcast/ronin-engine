@@ -30,7 +30,7 @@ class AttribGetTypeHelper {
     }
 };
 
-class GameObject final : public Object {
+class SHARK GameObject final : public Object {
     friend Camera2D;
     friend Component;
     friend GameObject* Instantiate(GameObject* obj);

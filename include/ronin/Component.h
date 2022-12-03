@@ -3,11 +3,11 @@
 #include "Object.h"
 #include "dependency.h"
 
-namespace RoninEngine {
+namespace  RoninEngine {
 
    namespace Runtime {
 
-      class Component : public Object {
+      class SHARK Component : public Object {
          private:
             friend GameObject;
             friend GameObject* Instantiate(GameObject* obj);
