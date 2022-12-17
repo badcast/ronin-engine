@@ -6,8 +6,8 @@
 #define SHARK	__declspec(dllexport)
 #else 
 #define SHARK   __declspec(dllimport)
-#endif 
-#else __linux__
+#endif
+#elif __linux__ || __unix__
 #define SHARK
 #endif 
 
