@@ -45,6 +45,8 @@ std::string RoninEngine::Levels::getHierarchyString(Transform* target) {
         } else
             target = nullptr;
     }
+
+    return result;
 }
 
 void RoninEngine::Levels::Level_Init() {

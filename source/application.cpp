@@ -6,14 +6,14 @@
 using namespace UI;
 
 namespace RoninEngine {
-Level* destroyableLevel = nullptr;
-SDL_Renderer* renderer = nullptr;
-SDL_Window* window = nullptr;
-bool m_inited = false;
-bool m_levelAccept = false;
-Level* m_level = nullptr;
-bool m_levelLoaded = false;
-bool isQuiting;
+static Level* destroyableLevel = nullptr;
+static SDL_Renderer* renderer = nullptr;
+static SDL_Window* window = nullptr;
+static bool m_inited = false;
+static bool m_levelAccept = false;
+static Level* m_level = nullptr;
+static bool m_levelLoaded = false;
+static bool isQuiting;
 
 void Application::Init(const std::uint32_t& width, const std::uint32_t& height) {
     char errorStr[128];

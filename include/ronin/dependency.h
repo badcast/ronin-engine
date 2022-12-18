@@ -9,12 +9,11 @@
 #endif
 #elif __linux__ || __unix__
 #define SHARK
-#endif 
+#endif
 
-
-#include <SDL.h>
-#include <SDL_image.h>
-#include <SDL_mixer.h>
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_image.h>
+#include <SDL2/SDL_mixer.h>
 
 #include <algorithm>
 #include <cstdint>

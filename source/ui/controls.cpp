@@ -1,5 +1,5 @@
-#include <SDL2_gfxPrimitives.h>
-#include <SDL_ttf.h>
+#include <SDL2/SDL2_gfxPrimitives.h>
+#include <SDL2/SDL_ttf.h>
 
 #include "framework.h"
 #include "inputSystem.h"
