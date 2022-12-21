@@ -5,7 +5,7 @@
 namespace RoninEngine::Runtime {
 
 class SHARK Random {
-   public:
+public:
     static void srand(int seed);
 
     static int range(int min, int max);
@@ -20,9 +20,9 @@ class SHARK Random {
 };
 
 class SHARK Math {
-   public:
+public:
     static constexpr long double longPI = 3.14159265358979323846264338327950288;
-    static constexpr float PI = static_cast<float>(longPI);  // calc PI formula l / d (Length circle div diameter)
+    static constexpr float PI = static_cast<float>(longPI); // calc PI formula l / d (Length circle div diameter)
     static constexpr float Infinity = std::numeric_limits<float>::infinity();
     static constexpr float NegativeInfinity = -Infinity;
     static constexpr float Deg2Rad = 0.01745329;
@@ -44,13 +44,16 @@ class SHARK Math {
     static float Clamp01(float val);
 
     template <typename T>
-    static T map(const T& x, const T& in_min, const T& in_max, const T& out_min, const T& out_max) {
+    static T map(const T& x, const T& in_min, const T& in_max, const T& out_min, const T& out_max)
+    {
         return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
     }
 
     template <typename T>
-    static T outside(T x, T minRange, T maxRange) {
-        if (minRange > maxRange) std::swap(minRange, maxRange);
+    static T outside(T x, T minRange, T maxRange)
+    {
+        if (minRange > maxRange)
+            std::swap(minRange, maxRange);
         if (x >= minRange && x <= maxRange) {
             x = (minRange + maxRange) / 2 <= x ? maxRange : minRange;
         }
@@ -59,16 +62,20 @@ class SHARK Math {
     }
 
     template <typename T>
-    static T Clamp(const T& val, const T& min, const T& max) {
-        return T(val > max ? max : val < min ? min : val);
+    static T Clamp(const T& val, const T& min, const T& max)
+    {
+        return T(val > max ? max : val < min ? min
+                                             : val);
     }
     template <typename T>
-    static const T& max(const T& x, const T& y) {
+    static const T& max(const T& x, const T& y)
+    {
         return x > y ? x : y;
     }
 
     template <typename T>
-    static const T& min(const T& x, const T& y) {
+    static const T& min(const T& x, const T& y)
+    {
         return x < y ? x : y;
     }
 
@@ -146,4 +153,4 @@ class SHARK Math {
 
     static float SmoothStep(float from, float to, float t);
 };
-}  // namespace RoninEngine::Runtime
+} // namespace RoninEngine::Runtime

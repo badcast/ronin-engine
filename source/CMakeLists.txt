@@ -10,6 +10,10 @@ function(libdef libname path)
     list(APPEND RGE_LIBS "${libname}")
     target_compile_options(${libname}
         PRIVATE -fPIC)
+
+    target_compile_definitions(${libname}
+        PRIVATE
+            -DRONIN_COMPILLING)
     set(sources "${sources}" "${SRC}")
 endfunction()
 
@@ -43,15 +47,14 @@ function(find_packages)
 endfunction()
 
 file(GLOB RONIN_ENGINE_HEADERS
-    "${RONIN_INCLUDE_DIR_EXTERNAL}/ronin/*.hpp"
-    "${RONIN_INCLUDE_DIR_EXTERNAL}/ronin/*.h")
+    "${RONIN_INCLUDE_DIR_EXTERNAL}/ronin/*")
 
 #RoninEngine include files
 
 #core sources
 libdef(core "core")
 
-include_directories(core PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include" "${RONIN_INCLUDE_DIR_EXTERNAL}/ronin")
+include_directories("${CMAKE_CURRENT_SOURCE_DIR}/include" "${RONIN_INCLUDE_DIR_EXTERNAL}/ronin")
 
 #simulation sources
 if(RGSIMULATION)

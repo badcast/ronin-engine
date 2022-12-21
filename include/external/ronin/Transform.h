@@ -5,7 +5,6 @@
 #include "Component.h"
 #include "begin.h"
 
-
 namespace RoninEngine::Runtime {
 class SHARK Transform : public Component {
     friend class RoninEngine::Level;
@@ -15,7 +14,8 @@ class SHARK Transform : public Component {
     friend class Physics2D;
     friend GameObject* Instantiate(GameObject* obj);
     friend std::string RoninEngine::Levels::getHierarchyString(Transform* target);
-   protected:
+
+protected:
     std::vector<Transform*> hierarchy;
 
     Transform* m_parent;
@@ -31,7 +31,7 @@ class SHARK Transform : public Component {
     static void hierarchy_append(Transform* from, Transform* off);
     static void hierarchy_sibiling(Transform* from, int index);
 
-   public:
+public:
     int layer;
 
     Transform();
@@ -84,4 +84,4 @@ class SHARK Transform : public Component {
     void localAngle(float value);
 };
 
-}  // namespace RoninEngine::Runtime
+} // namespace RoninEngine::Runtime

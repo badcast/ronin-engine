@@ -1,5 +1,7 @@
 /*This is file part an GameObject*/
 
+#include "GameObject.h"
+
 template <typename T>
 std::enable_if_t<std::is_base_of<Component, T>::value, T*> Runtime::GC::addComponent(){
     T* comp = Runtime::GC::gc_push<T>();
@@ -8,13 +10,13 @@ std::enable_if_t<std::is_base_of<Component, T>::value, T*> Runtime::GC::addCompo
 }
 
 template <typename T>
-T* Runtime::GC::getComponent() {
+T* RoninEngine::Runtime::GC::getComponent() {
     return AttribGetTypeHelper<T>::getType(this->m_components);
 }
 
 template <typename T>
 // std::enable_if<!std::is_same<RoninEngine::Runtime::Transform,T>::value, std::list<T*>>
-std::list<T*> Runtime::GC::getComponents() {
+std::list<T*> RoninEngine::Runtime::GC::getComponents() {
     return AttribGetTypeHelper<T>::getTypes(this->m_components);
 }
 

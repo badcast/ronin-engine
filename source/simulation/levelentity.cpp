@@ -2,7 +2,7 @@
 
 #include <filesystem>
 
-#include "ObjectParser.h"
+#include "just-parser.h"
 #include "ronin.h"
 
 const char extMAP[] = ".map";

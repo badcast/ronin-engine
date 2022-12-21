@@ -9,11 +9,11 @@
 #include "Font.h"
 #include "LevelEntity.h"
 #include "Math.h"
-#include "just-parser.h"
 #include "Paths.h"
 #include "Texture.h"
 #include "Time.h"
 #include "inputSystem.h"
+#include "just-parser.h"
 
 // objects
 #include "Behaviour.h"
@@ -34,13 +34,13 @@
 #include "Transform.h"
 #include "UI.h"
 
-#include "NavMesh.h"
 #include "Gizmos.h"
+#include "NavMesh.h"
 #include "Physics2D.h"
 
 // applications
 #include "Application.h"
-#include "SystemInformation.h"
 #include "ResourceManager.h"
+#include "SystemInformation.h"
 
 #endif

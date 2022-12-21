@@ -45,19 +45,17 @@ add_library(RoninEngineLibrary
     $<TARGET_OBJECTS:resources>
     $<TARGET_OBJECTS:simulation>
     $<TARGET_OBJECTS:user_interface>
-)
 
-target_compile_definitions(RoninEngineLibrary
-    PRIVATE
-        -DRONIN_COMPILLING)
+    #${RONIN_ENGINE_HEADERS}
+)
 
 set_target_properties(RoninEngineLibrary PROPERTIES
     OUTPUT_NAME ${RUNTIME_OUTPUT_NAME})
 
-target_sources(RoninEngineLibrary PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/source/lib.cpp")
-
 #include to #include <ronin/...>
-target_include_directories(RoninEngineLibrary INTERFACE "${RONIN_INCLUDE_DIR_EXTERNAL}" "${RONIN_INCLUDE_DIR_INTERNAL}")
+target_include_directories(RoninEngineLibrary
+    INTERFACE "${RONIN_INCLUDE_DIR_EXTERNAL}/"
+    INTERFACE "${RONIN_INCLUDE_DIR_INTERNAL}/")
 
 find_packages()
 

@@ -4,6 +4,7 @@
 #include "Component.h"
 
 namespace RoninEngine::Runtime {
+
 struct Render_info {
     SDL_Renderer* renderer;
     Rect src;

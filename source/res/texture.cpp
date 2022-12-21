@@ -1,6 +1,6 @@
 #include "Texture.h"
-
 #include "ronin.h"
+
 
 namespace RoninEngine::Runtime {
 Texture::Texture() { m_native = nullptr; }
@@ -16,7 +16,8 @@ const bool Texture::valid() { return !(!m_native || width() <= 0 || height() <= 
 
 const int Texture::width() {
     int w;
-    if (SDL_QueryTexture(m_native, nullptr, nullptr, &w, nullptr)) Application::back_fail();
+    if (SDL_QueryTexture(m_native, nullptr, nullptr, &w, nullptr))
+        Application::back_fail();
     return w;
 }
 const int Texture::height() {
@@ -42,7 +43,7 @@ const void Texture::blendMode(const SDL_BlendMode blendMode) {
     if (SDL_SetTextureBlendMode(m_native, blendMode)) Application::fail("Error unsupported operation");
 }
 const SDL_ScaleMode Texture::scaleMode() {
-    ::SDL_ScaleMode smode;
+    SDL_ScaleMode smode;
 
     if (SDL_GetTextureScaleMode(m_native, &smode)) Application::back_fail();
 
@@ -76,7 +77,7 @@ SDL_Texture* Texture::native() { return m_native; }
 
 const SDL_Texture* Texture::cnative() { return m_native; }
 
-const SDL_Rect Texture::getRect() { return {0, 0, width(), height()}; }
+const Rect Texture::getRect() { return {0, 0, width(), height()}; }
 
 const Texture* Texture::clone() { return clone(Application::GetRenderer()); }
 
@@ -94,5 +95,7 @@ const Texture* Texture::clone(SDL_Renderer* renderer) {
     return _n;
 }
 
-const std::string Texture::name() { return std::string(_name.empty() ? "Unknown" : _name); }
+const std::string Texture::name() {
+    return std::string(_name.empty() ? "Unknown" : _name);
+    }
 }  // namespace RoninEngine::Runtime
