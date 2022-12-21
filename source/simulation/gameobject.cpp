@@ -1,4 +1,4 @@
-#include "framework.h"
+#include "ronin.h"
 
 using namespace RoninEngine;
 using namespace RoninEngine::Runtime;
@@ -7,7 +7,7 @@ using Level = RoninEngine::Level;
 
 //NOTE: Решение многих проблем и времени, объявление
 template RoninEngine::Runtime::Player* GameObject::addComponent<Player>();
-template RoninEngine::Runtime::SpriteRenderer* GameObject::addComponent<RoninEngine::Runtime::SpriteRenderer>();
+template RoninEngine::Runtime::SpriteRenderer* GameObject::addComponent<SpriteRenderer>();
 template RoninEngine::Runtime::Camera2D* GameObject::addComponent<Camera2D>();
 template RoninEngine::Runtime::Spotlight* GameObject::addComponent<Spotlight>();
 

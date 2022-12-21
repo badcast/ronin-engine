@@ -1,7 +1,7 @@
 #include <SDL2/SDL2_gfxPrimitives.h>
 #include <SDL2/SDL_ttf.h>
 
-#include "framework.h"
+#include "ronin.h"
 #include "inputSystem.h"
 
 #define DROPDOWN_RESOURCE std::pair<int, std::list<std::string>>
@@ -77,7 +77,7 @@ void factory_free(UIElement* element) {
     }
 }
 
-bool general_control_default_state() {}
+bool general_control_default_state() { return false; }
 
 bool general_render_ui_section(GUI* gui, UIElement& element, SDL_Renderer* render, const bool uiHover, bool& focus) {
     static float dropDownLinear = 0;

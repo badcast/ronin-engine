@@ -3,9 +3,9 @@
 
 #include "SystemInformation.h"
 
-#include "framework.h"
+#include "ronin.h"
 
-#ifdef __unix__
+#ifdef __linux__
 #include <sys/sysinfo.h>
 #include <sys/types.h>
 #endif
@@ -54,10 +54,11 @@ std::size_t unix_proc_parse(char *line) {
 
 system_info unix_process_info_from_proc() {
     system_info upm;
-    FILE *f = fopen("/proc/self/status", "r");
+    const char *fself = "/proc/self/status";
+    FILE *f = fopen(fself, "r");
 
     char buffer[64];
-    if (f == nullptr) Application::fail("unix: invalid read \"/proc/self/status\" access denied");
+    if (f == nullptr) Application::fail("unix: invalid read \""+std::string(fself)+"\" access denied");
     while (fgets(buffer, static_cast<int>(sizeof(buffer)), f) != nullptr) {
         if (!strncmp(buffer, "VmSize:", 7)) {
             upm.virtualMem = unix_proc_parse(buffer) * 1024;  // read in KB
@@ -101,10 +102,10 @@ TODO: Виртуальная память, используемая в данн�
 
 TODO: Всего доступно RAM
 TODO: RAM в настоящее время используется
-TODO: RAM в настоящее время используется моим процессом
+TODO: RAM в настоящее время используется этим процессом
 
 TODO: % CPU используется в настоящее время
-TODO: % CPU в настоящее время используется моим процессом
+TODO: % CPU в настоящее время используется этим процессом
 
 */
 

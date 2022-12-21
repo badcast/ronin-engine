@@ -1,8 +1,8 @@
-#include "framework.h"
+#include "ronin.h"
 
 namespace RoninEngine {
 
-constexpr auto periodic_fahren = 5.f / 9;
+constexpr auto periodic_fahren = 5.0 / 9;
 
 // get random value
 int getRVal() {

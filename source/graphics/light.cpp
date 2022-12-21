@@ -1,6 +1,6 @@
 #include "Light.h"
 #include "inputSystem.h"
-#include "framework.h"
+#include "ronin.h"
 
 namespace RoninEngine::Runtime {
 Light::Light() : Light(typeid(Light).name()) {}
