@@ -46,15 +46,18 @@ function(find_packages)
 
 endfunction()
 
-file(GLOB RONIN_ENGINE_HEADERS
-    "${RONIN_INCLUDE_DIR_EXTERNAL}/ronin/*")
+file(GLOB_RECURSE RONIN_ENGINE_HEADERS
+    "${PROJECT_SOURCE_DIR}/include/*")
+
+set(RONIN_ENGINE_HEADERS ${RONIN_ENGINE_HEADERS} PARENT_SCOPE)
 
 #RoninEngine include files
+include_directories(
+    "${CMAKE_CURRENT_SOURCE_DIR}/include"
+    "${RONIN_INCLUDE_DIR_EXTERNAL}/ronin")
 
 #core sources
 libdef(core "core")
-
-include_directories("${CMAKE_CURRENT_SOURCE_DIR}/include" "${RONIN_INCLUDE_DIR_EXTERNAL}/ronin")
 
 #simulation sources
 if(RGSIMULATION)
@@ -80,5 +83,3 @@ endif()
 if(RGAI)
     libdef(art_intel "ai")
 endif()
-
-set(RONIN_ENGINE_HEADERS ${RONIN_ENGINE_HEADERS} PARENT_SCOPE)

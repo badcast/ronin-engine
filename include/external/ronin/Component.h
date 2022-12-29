@@ -9,7 +9,7 @@ namespace  RoninEngine {
 
       class SHARK Component : public Object {
          private:
-            friend GameObject;
+            friend class GameObject;
             friend GameObject* Instantiate(GameObject* obj);
 
             GameObject* pin;

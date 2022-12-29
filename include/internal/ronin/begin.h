@@ -22,12 +22,12 @@
 #include <unordered_map>
 #include <vector>
 
-#include <ronin/Namespaces.h>
+#include "Namespaces.h"
 
-#include <ronin/Color.h>
-#include <ronin/Static.h>
-#include <ronin/Vec2.h>
-#include <ronin/Paths.h>
+#include "Color.h"
+#include "Static.h"
+#include "Vec2.h"
+#include "Paths.h"
 
-#include <ronin/Types.h>
-#include <ronin/LevelEntity.h>
+#include "Types.h"
+#include "LevelEntity.h"

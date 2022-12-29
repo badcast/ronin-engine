@@ -27,8 +27,6 @@ set(RUNTIME_OUTPUT_NAME "across_rgl")
 set(RONIN_INCLUDE_DIR_EXTERNAL "${PROJECT_SOURCE_DIR}/include/external")
 set(RONIN_INCLUDE_DIR_INTERNAL "${PROJECT_SOURCE_DIR}/include/internal")
 
-include_directories("${PROJECT_SOURCE_DIR}/include/ronin/")
-
 set(RGE_LIBS "")
 
 #compilling sources
@@ -36,26 +34,47 @@ add_subdirectory(source)
 
 message(STATUS ${RGE_LIBS})
 
+set(TARGETsLibs
+
+    $<TARGET_OBJECTS:core>
+
+)
+
+if(RGIO)
+    set(TARGETsLibs ${TARGETsLibs} $<TARGET_OBJECTS:input_output>)
+endif()
+if(RGGRAPHICS)
+    set(TARGETsLibs ${TARGETsLibs} $<TARGET_OBJECTS:graphics>)
+endif()
+if(RGRESOURCES)
+    set(TARGETsLibs ${TARGETsLibs} $<TARGET_OBJECTS:resources>)
+endif()
+if(RGSIMULATION)
+    set(TARGETsLibs ${TARGETsLibs} $<TARGET_OBJECTS:simulation>)
+endif()
+if(RGGUI)
+    set(TARGETsLibs ${TARGETsLibs} $<TARGET_OBJECTS:user_interface>)
+endif()
+if(RGAI)
+    set(TARGETsLibs ${TARGETsLibs} $<TARGET_OBJECTS:art_intel>)
+endif()
+
 add_library(RoninEngineLibrary
     SHARED
-    $<TARGET_OBJECTS:core>
-    $<TARGET_OBJECTS:art_intel>
-    $<TARGET_OBJECTS:graphics>
-    $<TARGET_OBJECTS:input_output>
-    $<TARGET_OBJECTS:resources>
-    $<TARGET_OBJECTS:simulation>
-    $<TARGET_OBJECTS:user_interface>
-
-    #${RONIN_ENGINE_HEADERS}
+    ${TARGETsLibs}
+    ${RONIN_ENGINE_HEADERS}
 )
 
 set_target_properties(RoninEngineLibrary PROPERTIES
-    OUTPUT_NAME ${RUNTIME_OUTPUT_NAME})
+    OUTPUT_NAME ${RUNTIME_OUTPUT_NAME}
+    #INTERFACE_INCLUDE_DIRECTORIES "${RONIN_INCLUDE_DIR_EXTERNAL}/;${RONIN_INCLUDE_DIR_INTERNAL}/"
+)
 
 #include to #include <ronin/...>
 target_include_directories(RoninEngineLibrary
-    INTERFACE "${RONIN_INCLUDE_DIR_EXTERNAL}/"
-    INTERFACE "${RONIN_INCLUDE_DIR_INTERNAL}/")
+  INTERFACE "${RONIN_INCLUDE_DIR_EXTERNAL}/"
+   INTERFACE "${RONIN_INCLUDE_DIR_INTERNAL}/"
+)
 
 find_packages()
 

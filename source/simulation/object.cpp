@@ -101,7 +101,7 @@ void Destroy_Immediate(Object* obj) {
         if (Level::self()->_firstRunScripts) {
             Level::self()->_firstRunScripts->remove_if([gObj](Behaviour* x) {
                 auto iter = find_if(std::begin(gObj->m_components), std::end(gObj->m_components),
-                                    [x](Component* c) { return (Component*)x == c; });
+                                    [x](const Component* c) { return (Component*)x == c; });
 
                 return iter != end(gObj->m_components);
             });

@@ -2,7 +2,7 @@
 #include "begin.h"
 
 namespace RoninEngine {
-struct SHARK Resolution {
+struct Resolution {
     int width;
     int height;
     // int hz;
