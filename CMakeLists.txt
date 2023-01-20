@@ -24,9 +24,6 @@ message(STATUS "Architecture select ${ARCHITECTURE}")
 set(RONINENGINE_VERSION_MIN 1.0)
 set(RUNTIME_OUTPUT_NAME "across_rgl")
 
-set(RONIN_INCLUDE_DIR_EXTERNAL "${PROJECT_SOURCE_DIR}/include/external")
-set(RONIN_INCLUDE_DIR_INTERNAL "${PROJECT_SOURCE_DIR}/include/internal")
-
 set(RGE_LIBS "")
 
 #compilling sources
@@ -35,9 +32,7 @@ add_subdirectory(source)
 message(STATUS ${RGE_LIBS})
 
 set(TARGETsLibs
-
     $<TARGET_OBJECTS:core>
-
 )
 
 if(RGIO)
@@ -72,8 +67,7 @@ set_target_properties(RoninEngineLibrary PROPERTIES
 
 #include to #include <ronin/...>
 target_include_directories(RoninEngineLibrary
-  INTERFACE "${RONIN_INCLUDE_DIR_EXTERNAL}/"
-   INTERFACE "${RONIN_INCLUDE_DIR_INTERNAL}/"
+    INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/include/"
 )
 
 find_packages()

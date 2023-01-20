@@ -3,6 +3,7 @@
 
 #include "begin.h"
 
+
 namespace RoninEngine {
 class SHARK Time {
     friend Application;

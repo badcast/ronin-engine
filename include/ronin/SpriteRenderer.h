@@ -2,6 +2,7 @@
 
 #include "begin.h"
 
+
 namespace RoninEngine::Runtime {
 enum class SpriteRenderPresentMode : char {
     // Fixed type

@@ -3,17 +3,19 @@
 
 set(RGE_LIBS "")
 set(sources "")
+
 function(libdef libname path)
     file(GLOB SRC "${CMAKE_CURRENT_SOURCE_DIR}/${path}/*.cpp" "${CMAKE_CURRENT_SOURCE_DIR}/${path}/*.h")
     add_library(${libname}
         OBJECT ${SRC})
     list(APPEND RGE_LIBS "${libname}")
+
     target_compile_options(${libname}
         PRIVATE -fPIC)
 
     target_compile_definitions(${libname}
         PRIVATE
-            -DRONIN_COMPILLING)
+        -DRONIN_COMPILLING)
     set(sources "${sources}" "${SRC}")
 endfunction()
 
@@ -54,7 +56,8 @@ set(RONIN_ENGINE_HEADERS ${RONIN_ENGINE_HEADERS} PARENT_SCOPE)
 #RoninEngine include files
 include_directories(
     "${CMAKE_CURRENT_SOURCE_DIR}/include"
-    "${RONIN_INCLUDE_DIR_EXTERNAL}/ronin")
+)
+
 
 #core sources
 libdef(core "core")

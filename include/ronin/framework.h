@@ -1,7 +1,7 @@
 #ifndef _RONINENGINE_H
 #define _RONINENGINE_H
 
-#include <ronin/begin.h>
+#include "begin.h"
 
 // base headers
 #include <ronin/Color.h>

@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Component.h"
-#include "begin.h"
 
 namespace RoninEngine::Runtime {
 class SHARK Camera : public Component {

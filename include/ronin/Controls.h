@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Types.h"
-#include "begin.h"
+
 
 namespace RoninEngine {
 namespace UI {

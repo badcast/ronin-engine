@@ -1,6 +1,5 @@
 #pragma once
 
-#include "begin.h"
 #include "Component.h"
 
 namespace RoninEngine::Runtime {

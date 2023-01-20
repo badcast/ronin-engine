@@ -2,6 +2,7 @@
 
 #include "begin.h"
 
+
 namespace RoninEngine::Runtime {
 
 class SHARK Random {

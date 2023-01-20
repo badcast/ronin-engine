@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Renderer.h"
-#include "begin.h"
 
 namespace RoninEngine::Runtime {
 

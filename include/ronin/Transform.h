@@ -3,7 +3,6 @@
 //#define USE_TRANSFORM_HIERARCHY
 
 #include "Component.h"
-#include "begin.h"
 
 namespace RoninEngine::Runtime {
 class SHARK Transform : public Component {
