@@ -36,7 +36,7 @@ set(TARGETsLibs
 )
 
 if(RGIO)
-    set(TARGETsLibs ${TARGETsLibs} $<TARGET_OBJECTS:input_output>)
+    set(TARGETsLibs ${TARGETsLibs} $<TARGET_OBJECTS:input_output> )
 endif()
 if(RGGRAPHICS)
     set(TARGETsLibs ${TARGETsLibs} $<TARGET_OBJECTS:graphics>)
