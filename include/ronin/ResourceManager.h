@@ -152,45 +152,6 @@ constexpr T *_cut_oop_from(T *m) {
     return m;
 }
 
-template <typename T, typename... Args>
-typename std::enable_if<std::is_base_of<Object, T>::value, T *>::type GC::gc_push(Args &&..._Args) {
-    GCMemoryStick *ms;
-    int id;
-    T *mem;
-
-    id = gc_write_memblock_runtime(&ms, type2index<T>::typeIndex, sizeof(T));
-    if (id == GCInvalidID) throw std::bad_alloc();
-    mem = reinterpret_cast<T *>(ms->memory);
-    _paste_oop_init(mem, std::forward<Args>(_Args)...);
-    return mem;  // result
-}
-
-template <typename T>
-typename std::enable_if<std::is_base_of<Object, T>::value, bool>::type GC::gc_unload(T *pointer) {
-    int id;
-    int released = 0;
-    id = get_id(pointer);
-    if (id != GCInvalidID) released = gc_native_collect(id);
-
-    return released != 0;
-}
-
-template <typename T, typename... Args>
-T *GC::gc_alloc(Args &&..._Args) {
-    T *p = static_cast<T *>(gc_malloc(sizeof(T)));
-    if (p == nullptr) throw std::bad_alloc();
-    memset(p, 0, sizeof(T));
-    _paste_oop_init(p, std::forward<Args &&>(_Args)...);
-    return p;
-}
-
-template <typename T>
-void GC::gc_unalloc(T *p) {
-    if (p == nullptr) throw std::invalid_argument("p");
-
-    _cut_oop_from(p);
-    gc_free(p);
-}
 
 }  // namespace Runtime
 }  // namespace RoninEngine

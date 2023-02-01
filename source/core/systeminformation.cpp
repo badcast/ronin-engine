@@ -1,5 +1,3 @@
-#include "SystemInformation.h"
-
 #include "ronin.h"
 
 #ifdef __linux__

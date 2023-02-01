@@ -73,7 +73,7 @@ function(libdef libname path)
         PRIVATE -DRONIN_COMPILLING)
 
     target_include_directories(${libname} PRIVATE
-        "${CMAKE_SOURCE_DIR}/include/internal/ronin"
+        "${CMAKE_SOURCE_DIR}/include/ronin"
         "${CMAKE_CURRENT_SOURCE_DIR}/include")
 
 

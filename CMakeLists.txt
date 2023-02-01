@@ -44,13 +44,12 @@ set_target_properties(RoninEngineLibrary PROPERTIES
 
 #include to #include <ronin/...>
 target_include_directories(RoninEngineLibrary
-    INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/include/internal"
-    INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/include/external"
+    INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/include"
 )
 
 find_packages()
 
-target_link_libraries(RoninEngineLibrary PRIVATE
+target_link_libraries(RoninEngineLibrary PUBLIC
     SDL2::SDL2
     SDL2_mixer::SDL2_mixer
     SDL2_ttf::SDL2_ttf

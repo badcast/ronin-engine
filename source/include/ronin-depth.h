@@ -4,6 +4,12 @@
 
 namespace RoninEngine::Runtime
 {
+    struct Render_info {
+        SDL_Renderer* renderer;
+        Rect src;
+        Rectf_t dst;
+        Texture* texture;
+    };
 
     struct GCMemoryStick {
         int memoryType;
@@ -63,4 +69,6 @@ namespace RoninEngine::Runtime
     template <typename T>
     struct is_invalid_type : public std::integral_constant<bool, type2index<T>::typeIndex == InvalidType> {
     };
+
+
 } // namespace RoninEngine::Runtime

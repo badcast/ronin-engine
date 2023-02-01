@@ -3,12 +3,7 @@
 
 namespace RoninEngine::Runtime {
 
-struct Render_info {
-    SDL_Renderer* renderer;
-    Rect src;
-    Rectf_t dst;
-    Texture* texture;
-};
+struct Render_info;
 
 class SHARK Renderer : public Component {
    public:

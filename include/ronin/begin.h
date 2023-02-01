@@ -1,5 +1,10 @@
 #pragma once
 
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_image.h>
+#include <SDL2/SDL_mixer.h>
+#include <SDL2/SDL2_gfxPrimitives.h>
+
 #include <algorithm>
 #include <cstdint>
 #include <cstdlib>
@@ -33,3 +38,4 @@
 
 #include "Types.h"
 #include "LevelEntity.h"
+

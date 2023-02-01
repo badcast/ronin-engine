@@ -5,6 +5,12 @@ namespace RoninEngine {
 class Application;
 class Level;
 
+// Internal types
+#ifndef RONIN_COMPILLING
+struct HandRenderer;
+struct HandleSurf;
+#endif
+
 namespace UI {
 struct UIElement;
 class GUI;
