@@ -31,32 +31,9 @@ add_subdirectory(source)
 
 message(STATUS ${RGE_LIBS})
 
-set(TARGETsLibs
-    $<TARGET_OBJECTS:core>
-)
-
-if(RGIO)
-    set(TARGETsLibs ${TARGETsLibs} $<TARGET_OBJECTS:input_output>)
-endif()
-if(RGGRAPHICS)
-    set(TARGETsLibs ${TARGETsLibs} $<TARGET_OBJECTS:graphics>)
-endif()
-if(RGRESOURCES)
-    set(TARGETsLibs ${TARGETsLibs} $<TARGET_OBJECTS:resources>)
-endif()
-if(RGSIMULATION)
-    set(TARGETsLibs ${TARGETsLibs} $<TARGET_OBJECTS:simulation>)
-endif()
-if(RGGUI)
-    set(TARGETsLibs ${TARGETsLibs} $<TARGET_OBJECTS:user_interface>)
-endif()
-if(RGAI)
-    set(TARGETsLibs ${TARGETsLibs} $<TARGET_OBJECTS:art_intel>)
-endif()
-
 add_library(RoninEngineLibrary
     SHARED
-    ${TARGETsLibs}
+    ${ronin_targets}
     ${RONIN_ENGINE_HEADERS}
 )
 
@@ -67,7 +44,8 @@ set_target_properties(RoninEngineLibrary PROPERTIES
 
 #include to #include <ronin/...>
 target_include_directories(RoninEngineLibrary
-    INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/include/"
+    INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/include/internal"
+    INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/include/external"
 )
 
 find_packages()

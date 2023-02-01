@@ -46,5 +46,3 @@ Color Color::operator=(const std::uint32_t &rhs) {
 Color::operator int() const { return *(const int *)(this); }
 
 Color::operator std::uint32_t() const { return *(std::uint32_t *)(this); }
-
-Color::operator SDL_Color() const { return *(SDL_Color *)(this); }

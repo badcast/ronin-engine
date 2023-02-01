@@ -95,15 +95,15 @@ struct SHARK Vec2 {
     static Vec2 SmoothDamp(Vec2 current, Vec2 target, Vec2& currentVelocity, float smoothTime, float maxSpeed, float deltaTime);
     static float Dot(const Vec2& lhs, const Vec2& rhs);
     static float SqrMagnitude(const Vec2& lhs);
-    static bool AreaHasIntersection(const SDL_Rect* A, const SDL_Rect* B);
-    static bool AreaIntersectRect(const SDL_FRect& A, const SDL_FRect& B, SDL_FRect& result);
-    static void Area_UnionRect(const SDL_Rect* A, const SDL_Rect* B, SDL_Rect* result);
+    static bool AreaHasIntersection(const Rect* A, const Rect* B);
+    static bool AreaIntersectRect(const Rectf_t& A, const Rectf_t& B, Rectf_t& result);
+    static void Area_UnionRect(const Rect* A, const Rect* B, Rect* result);
     static Vec2 Round(Vec2 lhs);
     static Runtime::Vec2Int RoundToInt(const Vec2& lhs);
     //	static bool AreaEnclosePoints(const Rectf_t* points, int count, const
     // Rectf_t* clip, Rectf_t* result);
-    static bool AreaPointInRect(const Vec2& p, const SDL_FRect& r);
-    static bool InArea(const Vec2& p, const SDL_FRect& r);
+    static bool AreaPointInRect(const Vec2& p, const Rectf_t& r);
+    static bool InArea(const Vec2& p, const Rectf_t& r);
     static const Vec2 Rotate(Vec2 vec, Vec2 normal, float angleRadian);
     static const Vec2 Rotate(Vec2 position,float angleRadian);
     static const Vec2 RotateClockwise(Vec2 position,float angleRadian);

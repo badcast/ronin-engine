@@ -33,6 +33,8 @@
 
 #include "Defines.h"
 
+#include "ronin-depth.h"
+
 #include "Color.h"
 #include "Static.h"
 #include "Vec2.h"
@@ -40,4 +42,3 @@
 
 #include "Types.h"
 #include "LevelEntity.h"
-#include "ronin-depth.h"

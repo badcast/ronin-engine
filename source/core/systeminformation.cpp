@@ -1,6 +1,3 @@
-//кросплатформенный процесорный информатор
-// TODO: Оптимизировать
-
 #include "SystemInformation.h"
 
 #include "ronin.h"

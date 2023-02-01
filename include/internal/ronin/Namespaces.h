@@ -1,3 +1,5 @@
+#pragma once
+
  // Pre declarations
 namespace RoninEngine {
 class Application;

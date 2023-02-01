@@ -4,6 +4,8 @@
 #include "ronin.h"
 #include "inputSystem.h"
 
+//TODO: Change ALL interface SDL_Color as Color
+
 #define DROPDOWN_RESOURCE std::pair<int, std::list<std::string>>
 
 namespace RoninEngine::UI {
@@ -143,7 +145,7 @@ bool general_render_ui_section(GUI* gui, UIElement& element, SDL_Renderer* rende
 
             // draw main text
             Texture* texture;
-            SDL_Surface* surf = TTF_RenderUTF8_Solid(pfont, element.text.c_str(), colorSpace.editText);
+            SDL_Surface* surf = TTF_RenderUTF8_Solid(pfont, element.text.c_str(), *reinterpret_cast<SDL_Color*>(&colorSpace.editText));
             if (GC::gc_alloc_texture_from(&texture, surf) != GCInvalidID) {
                 r = element.rect;
                 r.x += 5;
@@ -308,7 +310,7 @@ bool general_render_ui_section(GUI* gui, UIElement& element, SDL_Renderer* rende
 
             // draw main text
             Texture* texture;
-            SDL_Surface* surf = TTF_RenderUTF8_Solid(pfont, element.text.c_str(), colorSpace.dropdownText);
+            SDL_Surface* surf = TTF_RenderUTF8_Solid(pfont, element.text.c_str(), *reinterpret_cast<SDL_Color*>(&colorSpace.dropdownText));
             if (GC::gc_alloc_texture_from(&texture, surf) != GCInvalidID) {
                 r = element.rect;
                 r.x += 5;
@@ -359,7 +361,7 @@ bool general_render_ui_section(GUI* gui, UIElement& element, SDL_Renderer* rende
                         // Draw element text
                         surf = TTF_RenderUTF8_Solid(
                             pfont, iter->c_str(),
-                            link->first != index ? colorSpace.dropdownText : colorSpace.dropdownSelectedText);
+                            *reinterpret_cast<SDL_Color*>(&(link->first != index ? colorSpace.dropdownText : colorSpace.dropdownSelectedText)));
                         GC::gc_alloc_texture_from(&texture, surf);
                         r.h = texture->height();
                         r.w = texture->width();
@@ -404,7 +406,7 @@ void event_action(UIElement* element) {
 void DrawFontAt(SDL_Renderer* renderer, const std::string& text, int fontSize, const Runtime::Vec2Int& screenPoint) {
     Texture* texture;
     SDL_Rect r;
-    SDL_Surface* surf = TTF_RenderUTF8_Solid(pfont, text.c_str(), Color::white);
+    SDL_Surface* surf = TTF_RenderUTF8_Solid(pfont, text.c_str(), SDL_Color(*reinterpret_cast<const SDL_Color*>(&Color::white)));
     GC::gc_alloc_texture_from(&texture, surf);
     r.h = texture->height();
     r.w = texture->width();

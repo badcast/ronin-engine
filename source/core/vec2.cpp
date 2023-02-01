@@ -1,5 +1,4 @@
 #include "ronin.h"
-#include "Vec2.h"
 
 using namespace RoninEngine;
 
@@ -182,11 +181,11 @@ Vec2Int Vec2::RoundToInt(const Vec2& lhs) {
     return p;
 }
 
-bool Vec2::AreaPointInRect(const Vec2& p, const SDL_FRect& r) {
+bool Vec2::AreaPointInRect(const Vec2& p, const Rectf_t& r) {
     return ((p.x >= r.x) && (p.x < (r.x + r.w)) && (p.y >= r.y) && (p.y < (r.y + r.h)));
 }
 
-bool Vec2::InArea(const Vec2& p, const SDL_FRect& r) { return p.x >= r.x && p.x <= r.w && p.y >= r.h && p.y <= r.y; }
+bool Vec2::InArea(const Vec2& p, const Rectf_t& r) { return p.x >= r.x && p.x <= r.w && p.y >= r.h && p.y <= r.y; }
 
 const Vec2 Vec2::Rotate(Vec2 vec, Vec2 normal, float angleRadian) {
     normal = Vec2::RotateClockwise(normal,angleRadian * Math::Deg2Rad);

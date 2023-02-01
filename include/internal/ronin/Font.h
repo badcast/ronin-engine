@@ -2,7 +2,6 @@
 
 #include "begin.h"
 
-
 namespace RoninEngine::UI {
 
 extern unsigned char raw_arial_font[];
