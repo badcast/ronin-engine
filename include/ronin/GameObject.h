@@ -2,112 +2,92 @@
 
 #include "begin.h"
 
-namespace RoninEngine {
-namespace Runtime {
-    //[attrib class]
-    template <typename T>
-    class AttribGetTypeHelper {
-    public:
-        static T* getType(const std::list<Component*>& container)
+namespace RoninEngine
+{
+    namespace Runtime
+    {
+        //[attrib class]
+        template <typename T>
+        class GameObjectTypeHelper
         {
-            auto iter = std::find_if(++begin(container), end(container), [](Component* c) {
-                return dynamic_cast<T*>(c) != nullptr;
-            });
+        public:
+            static T* getType(const std::list<Component*>& container)
+            {
+                auto iter = std::find_if(++begin(container), end(container), [](Component* c) { return dynamic_cast<T*>(c) != nullptr; });
 
-            if (iter != end(container))
-                return reinterpret_cast<T*>(*iter);
+                if (iter != end(container))
+                    return reinterpret_cast<T*>(*iter);
 
-            return nullptr;
-        }
-
-        static std::list<T*> getTypes(const std::list<Component*>& container)
-        {
-            std::list<T*> types;
-            T* cast;
-            for (auto iter = std::begin(container); iter != std::end(container);
-                 ++iter) {
-                if ((cast = dynamic_cast<T*>(*iter))) {
-                    types.emplace_back(cast);
-                }
+                return nullptr;
             }
 
-            return types;
-        }
-    };
+            static std::list<T*> getTypes(const std::list<Component*>& container)
+            {
+                std::list<T*> types;
+                T* cast;
+                for (auto iter = std::begin(container); iter != std::end(container); ++iter) {
+                    if ((cast = dynamic_cast<T*>(*iter))) {
+                        types.emplace_back(cast);
+                    }
+                }
 
-    class SHARK GameObject final : public Object {
-        friend class Camera2D;
-        friend class Component;
-        friend GameObject* Instantiate(GameObject* obj);
-        friend GameObject* Instantiate(GameObject* obj, Vec2 position, float angle);
-        friend GameObject* Instantiate(GameObject* obj, Vec2 position,
-            Transform* parent, bool worldPositionState);
-        friend void Destroy(Object* obj);
-        friend void Destroy(Object* obj, float t);
-        friend void Destroy_Immediate(Object* obj);
+                return types;
+            }
+        };
 
-    private:
-        std::list<Component*> m_components;
-        // TODO: Реализовать компонент m_active, для объектов GameObject
-        bool m_active;
+        class SHARK GameObject final : public Object
+        {
+            friend class Camera2D;
+            friend class Component;
+            friend GameObject* Instantiate(GameObject* obj);
+            friend GameObject* Instantiate(GameObject* obj, Vec2 position, float angle);
+            friend GameObject* Instantiate(GameObject* obj, Vec2 position, Transform* parent, bool worldPositionState);
+            friend void Destroy(Object* obj);
+            friend void Destroy(Object* obj, float t);
+            friend void Destroy_Immediate(Object* obj);
 
-    public:
-        GameObject();
+        private:
+            std::list<Component*> m_components;
+            // TODO: Реализовать компонент m_active, для объектов GameObject
+            bool m_active;
 
-        GameObject(const std::string&);
+        public:
+            GameObject();
 
-        GameObject(const GameObject&) = delete;
+            GameObject(const std::string&);
 
-        ~GameObject();
+            GameObject(const GameObject&) = delete;
 
-        bool isActive();
-        bool isActiveHierarchy();
-        void setActive(bool state);
-        void setActiveRecursivelly(bool state);
+            ~GameObject();
 
-        Transform* transform();
+            bool isActive();
+            bool isActiveHierarchy();
+            void setActive(bool state);
+            void setActiveRecursivelly(bool state);
 
-        Component* addComponent(Component* component);
+            Transform* transform();
 
-        SpriteRenderer* spriteRenderer() { return getComponent<SpriteRenderer>(); }
+            Component* addComponent(Component* component);
 
-        Camera2D* camera2D() { return getComponent<Camera2D>(); }
+            template <typename T>
+            std::enable_if_t<std::is_base_of<Component, T>::value, T*> addComponent();
 
-        Terrain2D* terraind2D() { return getComponent<Terrain2D>(); }
+            SpriteRenderer* spriteRenderer() { return getComponent<SpriteRenderer>(); }
 
-        template <typename T>
-        std::enable_if_t<std::is_base_of<Component, T>::value, T*> addComponent();
+            Camera2D* camera2D() { return getComponent<Camera2D>(); }
 
-        template <typename T>
-        T* getComponent();
-        template <typename T>
-        // std::enable_if<!std::is_same<RoninEngine::Runtime::Transform,T>::value,
-        // std::list<T*>>
-        std::list<T*> getComponents();
+            Terrain2D* terraind2D() { return getComponent<Terrain2D>(); }
 
-        // Transform* getComponent();
-    };
+            template <typename T>
+            T* getComponent();
 
-    template <typename T>
-    std::enable_if_t<std::is_base_of<Component, T>::value, T*> GameObject::addComponent()
-    {
-       // T* comp = GC::gc_push<T>();
-        //this->addComponent(static_cast<Component*>(comp));
-        //return comp;
-    }
+            template <typename T>
+            // std::enable_if<!std::is_same<RoninEngine::Runtime::Transform,T>::value,
+            // std::list<T*>>
+            std::list<T*> getComponents();
 
-    template <typename T>
-    T* GameObject::getComponent()
-    {
-        return AttribGetTypeHelper<T>::getType(this->m_components);
-    }
+            // Transform* getComponent();
+        };
 
-    template <typename T>
-    // std::enable_if<!std::is_same<RoninEngine::Runtime::Transform,T>::value, std::list<T*>>
-    std::list<T*> GameObject::getComponents()
-    {
-        return AttribGetTypeHelper<T>::getTypes(this->m_components);
-    }
-
-} // namespace Runtime
+    } // namespace Runtime
 } // namespace RoninEngine

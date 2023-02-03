@@ -10,6 +10,7 @@ template RoninEngine::Runtime::Player* GameObject::addComponent<Player>();
 template RoninEngine::Runtime::SpriteRenderer* GameObject::addComponent<SpriteRenderer>();
 template RoninEngine::Runtime::Camera2D* GameObject::addComponent<Camera2D>();
 template RoninEngine::Runtime::Spotlight* GameObject::addComponent<Spotlight>();
+template RoninEngine::Runtime::Terrain2D* GameObject::addComponent<Terrain2D>();
 
 GameObject::GameObject()
     : GameObject(typeid(*this).name())
@@ -43,6 +44,8 @@ void GameObject::setActive(bool state)
     m_active = state;
     transform()->parent_notify_activeState(this);
 }
+
+void GameObject::setActiveRecursivelly(bool state) { this->setActive(false); }
 
 inline Transform* GameObject::transform()
 {
@@ -79,6 +82,7 @@ Component* GameObject::addComponent(Component* component)
 // Transform* GameObject::getComponent() {
 //     return transform();
 // }
+
 
 template <>
 Transform* GameObject::getComponent<Transform>()

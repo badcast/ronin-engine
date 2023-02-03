@@ -11,7 +11,12 @@
 #include "Paths.h"
 #include "Texture.h"
 #include "Time.h"
-#include "inputSystem.h"
+#include "InputSystem.h"
+
+// applications
+#include "Application.h"
+#include "SystemInformation.h"
+#include "ResourceManager.h"
 
 // objects
 #include "Behaviour.h"
@@ -19,6 +24,7 @@
 #include "Camera2D.h"
 #include "Component.h"
 #include "GameObject.h"
+#include "GameObject_impl.h"
 #include "Level.h"
 #include "Light.h"
 #include "Object.h"
@@ -35,10 +41,5 @@
 #include "NavMesh.h"
 #include "Gizmos.h"
 #include "Physics2D.h"
-
-// applications
-#include "Application.h"
-#include "SystemInformation.h"
-#include "ResourceManager.h"
 
 #endif
