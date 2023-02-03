@@ -72,30 +72,29 @@ namespace RoninEngine
     {
         GC::gc_lock();
 
-        GC::CheckResources();
-
         // initialize GC
         GC::gc_init();
 
-        std::string path = getDataFrom(FolderKind::LOADER);
-        std::string temp = path + "graphics.conf";
-        GC::LoadImages(temp.c_str());
+        if (true) {
+            GC::CheckResources();
+            std::string path = getDataFrom(FolderKind::LOADER);
+            std::string temp = path + "graphics.conf";
+            GC::LoadImages(temp.c_str());
 
-        // load textures
-        path = getDataFrom(FolderKind::LOADER);
-        temp = path + "textures.conf";
-        GC::LoadImages(temp.c_str());
+            // load textures
+            path = getDataFrom(FolderKind::LOADER);
+            temp = path + "textures.conf";
+            GC::LoadImages(temp.c_str());
 
-        //Загрузк шрифта и оптимизация дэффектов
-        UI::Initialize_Fonts(true);
-
+            //Загрузк шрифта и оптимизация дэффектов
+            UI::Initialize_Fonts(true);
+            Levels::Level_Init();
+        }
         //Инициализация инструментов
         UI::InitalizeControls();
 
         // Set cursor
         // SDL_SetCursor(GC::GetCursor("cursor", {1, 1}));
-
-        Levels::Level_Init();
     }
 
     void Application::LoadedLevel()

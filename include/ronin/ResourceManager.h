@@ -22,7 +22,7 @@ namespace RoninEngine
             static void gc_collect();
 
             static void UnloadAll(bool immediate);
-            static void CheckResources();
+            [[deprecated]]static void CheckResources();
 
             static void suspend_gc();
             static void continue_gc();
