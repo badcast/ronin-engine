@@ -6,7 +6,6 @@
 // base headers
 #include "Color.h"
 #include "Controls.h"
-#include "Font.h"
 #include "LevelEntity.h"
 #include "Math.h"
 #include "Paths.h"
@@ -33,13 +32,13 @@
 #include "Transform.h"
 #include "UI.h"
 
-#include <ronin/NavMesh.h>
-#include <ronin/Gizmos.h>
-#include <ronin/Physics2D.h>
+#include "NavMesh.h"
+#include "Gizmos.h"
+#include "Physics2D.h"
 
 // applications
-#include <ronin/Application.h>
-#include <ronin/SystemInformation.h>
-#include <ronin/ResourceManager.h>
+#include "Application.h"
+#include "SystemInformation.h"
+#include "ResourceManager.h"
 
 #endif

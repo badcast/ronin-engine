@@ -1,8 +1,5 @@
 #include "ronin.h"
 
-#include "Component.h"
-#include "GameObject.h"
-
 namespace RoninEngine {
 namespace Runtime {
 // base component

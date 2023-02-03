@@ -16,9 +16,6 @@ namespace RoninEngine::Runtime
         void* memory;
     };
 
-    extern int gc_write_memblock_runtime(GCMemoryStick** ms, const std::uint8_t& typeIndex, const std::size_t size);
-    extern int gc_native_collect(const int freeID);
-
     constexpr std::uint8_t SDL_TYPE_MAX_INDEX = 31;
     constexpr std::uint8_t InvalidType = 0xff;
 
@@ -70,5 +67,7 @@ namespace RoninEngine::Runtime
     struct is_invalid_type : public std::integral_constant<bool, type2index<T>::typeIndex == InvalidType> {
     };
 
+    extern int gc_write_memblock_runtime(GCMemoryStick** ms, const std::uint8_t typeIndex, const std::size_t size);
+    extern int gc_native_collect(const int freeID);
 
 } // namespace RoninEngine::Runtime

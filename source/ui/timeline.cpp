@@ -1,5 +1,4 @@
 #include "ronin.h"
-#include "begin.h"
 
 namespace RoninEngine::UI
 {

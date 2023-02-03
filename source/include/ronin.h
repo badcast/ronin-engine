@@ -1,11 +1,9 @@
-#ifndef _RONINENGINE_H
-#define _RONINENGINE_H
-
-#include "ronin-depth.h"
+#ifndef RONINENGINE_H_
+#define RONINENGINE_H_
 
 // base headers
 #include "just-parser.h"
-#include "Font.h"
+
 #include "../../include/ronin/Controls.h"
 #include "../../include/ronin/LevelEntity.h"
 #include "../../include/ronin/Math.h"
@@ -32,14 +30,16 @@
 #include "../../include/ronin/TimeLine.h"
 #include "../../include/ronin/Transform.h"
 #include "../../include/ronin/UI.h"
-
 #include "../../include/ronin/Gizmos.h"
 #include "../../include/ronin/NavMesh.h"
 #include "../../include/ronin/Physics2D.h"
+#include "../../include/ronin/Atlas.h"
 
 // applications
 #include "../../include/ronin/Application.h"
 #include "../../include/ronin/ResourceManager.h"
 #include "../../include/ronin/SystemInformation.h"
+
+#include "Font.h"
 
 #endif

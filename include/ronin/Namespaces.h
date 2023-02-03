@@ -1,64 +1,62 @@
 #pragma once
 
- // Pre declarations
-namespace RoninEngine {
-class Application;
-class Level;
+// Pre declarations
+namespace RoninEngine
+{
+    class Application;
+    class Level;
 
-// Internal types
-#ifndef RONIN_COMPILLING
-struct HandRenderer;
-struct HandleSurf;
-#endif
+    namespace UI
+    {
+        struct UIElement;
+        class GUI;
+    } // namespace UI
 
-namespace UI {
-struct UIElement;
-class GUI;
-}  // namespace UI
+    namespace AIPathFinder
+    {
+        class Neuron;
+        class NavMesh;
+    } // namespace AIPathFinder
 
-namespace AIPathFinder {
-class Neuron;
-class NavMesh;
-}  // namespace AIPathFinder
+    namespace Runtime
+    {
 
-namespace Runtime {
+        struct Vec2;
 
-struct Vec2;
+        struct Vec2Int;
 
-struct Vec2Int;
+        struct Render_info;
 
-struct Render_info;
+        template <typename T>
+        class xRect;
 
-template <typename T>
-class xRect;
+        typedef xRect<int> Rect;
+        typedef xRect<float> Rectf_t;
 
-typedef xRect<int> Rect;
-typedef xRect<float> Rectf_t;
+        class GC;
 
-class GC;
+        // base
+        class Math;
+        class Object;
+        class Component;
+        class Physics2D;
 
-// base
-class Math;
-class Object;
-class Component;
-class Physics2D;
+        // factory
+        class Transform;
+        class Camera;
+        class Camera2D;
+        class Texture;
+        class Atlas;
+        class Sprite;
+        class Behaviour;
+        class Terrain2D;
+        class SpriteRenderer;
+        class Spotlight;
+        class GameObject;
+        class Light;
+        class Renderer;
 
-// factory
-class Transform;
-class Camera;
-class Camera2D;
-class Texture;
-class Atlas;
-class Sprite;
-class Behaviour;
-class Terrain2D;
-class SpriteRenderer;
-class Spotlight;
-class GameObject;
-class Light;
-class Renderer;
+        struct Color;
 
-struct Color;
-
-}  // namespace Runtime
-}  // namespace RoninEngine
+    } // namespace Runtime
+} // namespace RoninEngine

@@ -2,7 +2,6 @@
 #include <SDL2/SDL_ttf.h>
 
 #include "ronin.h"
-#include "inputSystem.h"
 
 //TODO: Change ALL interface SDL_Color as Color
 

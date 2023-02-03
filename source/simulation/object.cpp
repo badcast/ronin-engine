@@ -1,5 +1,3 @@
-#include "Object.h"
-
 #include "ronin.h"
 
 using namespace RoninEngine;

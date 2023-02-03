@@ -32,6 +32,7 @@ set(sources "")
 #region: excluding and ordering (internal,external) headers
 file(GLOB_RECURSE RONIN_ENGINE_HEADERS
     "${PROJECT_SOURCE_DIR}/include/*")
+
 set(RONIN_ENGINE_HEADERS "${RONIN_ENGINE_HEADERS}" PARENT_SCOPE)
 
 #region: excluding and ordering (internal,external) headers
@@ -63,6 +64,10 @@ set(RONIN_ENGINE_HEADERS "${RONIN_ENGINE_HEADERS}" PARENT_SCOPE)
 function(libdef libname path)
     file(GLOB SRC "${CMAKE_CURRENT_SOURCE_DIR}/${path}/*.cpp" "${CMAKE_CURRENT_SOURCE_DIR}/${path}/*.h")
 
+    if("${SRC}" STREQUAL "")
+        return()
+    endif()
+
     add_library(${libname}
         OBJECT ${SRC})
 
@@ -76,44 +81,41 @@ function(libdef libname path)
         "${CMAKE_SOURCE_DIR}/include/ronin"
         "${CMAKE_CURRENT_SOURCE_DIR}/include")
 
+#    if(NOT "${libname}" STREQUAL "ronin")
+#        target_link_libraries(ronin PRIVATE ${libname})
+#    endif()
 
-    list(APPEND RGE_LIBS "${libname}")
-    list(APPEND sources "${SRC}")
+    set(ronin_targets "${ronin_targets}" "$<TARGET_OBJECTS:${libname}>" PARENT_SCOPE)
+    set(RGE_LIBS "${RGE_LIBS}" "${libname}" PARENT_SCOPE)
+    set(sources ${sources} "${SRC}" PARENT_SCOPE)
 endfunction()
 
 #core sources
 libdef(ronin "core")
 
-set(ronin_targets
-    $<TARGET_OBJECTS:ronin> PARENT_SCOPE)
-
 #simulation sources
 if(RGSIMULATION)
     libdef(ronin_simulation "simulation")
-    list(APPEND ronin_targets $<TARGET_OBJECTS:ronin_simulation>)
 endif()
 #res sources
 if(RGRESOURCES)
     libdef(ronin_resources "res")
-    list(APPEND ronin_targets $<TARGET_OBJECTS:ronin_resources>)
 endif()
 #io sources
 if(RGIO)
     libdef(ronin_input_output "io")
-    list(APPEND ronin_targets $<TARGET_OBJECTS:ronin_input_output>)
 endif()
 #graphics sources
 if(RGGRAPHICS)
     libdef(ronin_graphics "graphics")
-    list(APPEND ronin_targets $<TARGET_OBJECTS:ronin_graphics>)
 endif()
 #gui sources
 if(RGGUI)
     libdef(ronin_user_interface "ui")
-    list(APPEND ronin_targets $<TARGET_OBJECTS:ronin_user_interface>)
 endif()
 #ai sources
 if(RGAI)
     libdef(ronin_art_intel "ai")
-    list(APPEND ronin_targets $<TARGET_OBJECTS:ronin_art_intel>)
 endif()
+
+ set(ronin_targets "${ronin_targets}"  PARENT_SCOPE)

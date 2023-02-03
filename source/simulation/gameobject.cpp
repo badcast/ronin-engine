@@ -5,22 +5,28 @@ using namespace RoninEngine::Runtime;
 
 using Level = RoninEngine::Level;
 
-//NOTE: Решение многих проблем и времени, объявление
+// NOTE: Решение многих проблем и времени, объявление
 template RoninEngine::Runtime::Player* GameObject::addComponent<Player>();
 template RoninEngine::Runtime::SpriteRenderer* GameObject::addComponent<SpriteRenderer>();
 template RoninEngine::Runtime::Camera2D* GameObject::addComponent<Camera2D>();
 template RoninEngine::Runtime::Spotlight* GameObject::addComponent<Spotlight>();
 
-GameObject::GameObject() : GameObject(typeid(*this).name()) {}
+GameObject::GameObject()
+    : GameObject(typeid(*this).name())
+{
+}
 
-GameObject::GameObject(const std::string& name) : Object(name) {
+GameObject::GameObject(const std::string& name)
+    : Object(name)
+{
     m_components.push_back(create_empty_transform());
     m_components.front()->pin = this;
     m_active = true;
     Level::self()->_gameObjects.emplace_back(this);
 }
 
-GameObject::~GameObject() {
+GameObject::~GameObject()
+{
     return;
     for (auto x : m_components) {
         GC::gc_unload(x);
@@ -29,26 +35,31 @@ GameObject::~GameObject() {
 
 bool GameObject::isActive() { return m_active; }
 
-void GameObject::setActive(bool state) {
-    if (m_active == state) return;
+void GameObject::setActive(bool state)
+{
+    if (m_active == state)
+        return;
 
     m_active = state;
     transform()->parent_notify_activeState(this);
 }
 
-inline Transform* GameObject::transform() {
+inline Transform* GameObject::transform()
+{
     // NOTE: transform всегда первый объект из контейнера m_components
     return reinterpret_cast<Transform*>(m_components.front());
 }
 
-Component* GameObject::addComponent(Component* component) {
-    if (!component) throw std::exception();
+Component* GameObject::addComponent(Component* component)
+{
+    if (!component)
+        throw std::exception();
 
-    if (end(m_components) ==
-        std::find_if(begin(m_components), end(m_components), [component](Component* ref) { return component == ref; })) {
+    if (end(m_components) == std::find_if(begin(m_components), end(m_components), [component](Component* ref) { return component == ref; })) {
         this->m_components.emplace_back(component);
 
-        if (component->pin) throw std::bad_exception();
+        if (component->pin)
+            throw std::bad_exception();
 
         component->pin = this;
 
@@ -65,11 +76,12 @@ Component* GameObject::addComponent(Component* component) {
     return component;
 }
 
-//Transform* GameObject::getComponent() {
-//    return transform();
-//}
+// Transform* GameObject::getComponent() {
+//     return transform();
+// }
 
 template <>
-Transform* GameObject::getComponent<Transform>() {
+Transform* GameObject::getComponent<Transform>()
+{
     return transform();
 }

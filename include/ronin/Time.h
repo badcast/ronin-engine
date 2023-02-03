@@ -1,5 +1,5 @@
-#ifndef _TIME_H_____
-#define _TIME_H_____
+#ifndef _TIME_H_
+#define _TIME_H_
 
 #include "begin.h"
 

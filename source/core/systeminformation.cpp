@@ -53,7 +53,7 @@ system_info unix_process_info_from_proc() {
     FILE *f = fopen(fself, "r");
 
     char buffer[64];
-    if (f == nullptr) Application::fail("unix: invalid read \""+std::string(fself)+"\" access denied");
+    if (f == nullptr) RoninEngine::Application::fail("unix: invalid read \""+std::string(fself)+"\" access denied");
     while (fgets(buffer, static_cast<int>(sizeof(buffer)), f) != nullptr) {
         if (!strncmp(buffer, "VmSize:", 7)) {
             upm.virtualMem = unix_proc_parse(buffer) * 1024;  // read in KB

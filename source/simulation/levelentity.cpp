@@ -1,9 +1,8 @@
-#include "LevelEntity.h"
+#include "ronin.h"
 
 #include <filesystem>
 
 #include "just-parser.h"
-#include "ronin.h"
 
 const char extMAP[] = ".map";
 const char extNAV[] = ".nav";
@@ -23,7 +22,8 @@ std::vector<Level_t> m_levels;
 
 using namespace RoninEngine;
 
-std::string RoninEngine::Levels::getHierarchyString(Transform* target) {
+std::string RoninEngine::Levels::getHierarchyString(Transform* target)
+{
     static char delim = 0x32;
     std::string delims;
     std::string result;
@@ -49,8 +49,10 @@ std::string RoninEngine::Levels::getHierarchyString(Transform* target) {
     return result;
 }
 
-void RoninEngine::Levels::Level_Init() {
-    if (!m_levels.empty()) throw std::bad_exception();
+void RoninEngine::Levels::Level_Init()
+{
+    if (!m_levels.empty())
+        throw std::bad_exception();
 
     jno::jno_object_parser parser;
     Level_t levl;
@@ -68,7 +70,8 @@ void RoninEngine::Levels::Level_Init() {
                 levl.levelName = file.path().filename().generic_string();
 
             node = parser.find_node("map/level_description");
-            if (node) levl.levelDescription = node->toString();
+            if (node)
+                levl.levelDescription = node->toString();
 
             node = parser.find_node("map/level_mission");
             if (node)
@@ -77,10 +80,12 @@ void RoninEngine::Levels::Level_Init() {
                 levl.levelMisson = static_cast<decltype(levl.levelMisson)>(m_levels.size() + 1);
 
             node = parser.find_node("map/level_mission_text");
-            if (node) levl.levelMissonText = node->toString();
+            if (node)
+                levl.levelMissonText = node->toString();
 
             node = parser.find_node("map/level_terrain2D/navScalePerNeuron");
-            if (node) levl.level_terrain2D.navScalePerNeuron = static_cast<float>(node->toReal());
+            if (node)
+                levl.level_terrain2D.navScalePerNeuron = static_cast<float>(node->toReal());
 
             m_levels.emplace_back(levl);
             levl = {};
@@ -88,18 +93,19 @@ void RoninEngine::Levels::Level_Init() {
     }
 }
 
-int RoninEngine::Levels::Load_Level(std::string levelName, Terrain2D* terrain2d) {
+int RoninEngine::Levels::Load_Level(std::string levelName, Terrain2D* terrain2d)
+{
     int id = -1;
-    for (auto& v : m_levels) {
-    }
+    for (auto& v : m_levels) { }
     return id;
 }
 
 const char* RoninEngine::Levels::Get_LevelName(int levelId) { return {}; }
 
-void RoninEngine::Levels::Unload_Level(int levelId) {}
+void RoninEngine::Levels::Unload_Level(int levelId) { }
 
-void RoninEngine::Levels::Level_Free() {
+void RoninEngine::Levels::Level_Free()
+{
     m_levels.clear();
     m_levels.shrink_to_fit();
 }

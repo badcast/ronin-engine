@@ -60,7 +60,7 @@ namespace RoninEngine::Runtime
         return id;
     }
 
-    int gc_write_memblock_runtime(GCMemoryStick** ms, const std::uint8_t& typeIndex, const std::size_t size)
+    int gc_write_memblock_runtime(GCMemoryStick** ms, const uint8_t typeIndex, const std::size_t size)
     {
         if (ms == nullptr)
             throw std::invalid_argument("ms");
@@ -419,33 +419,6 @@ namespace RoninEngine::Runtime
 
     bool GC::gc_is_lock() { return memoryCapture == MemoryCapture::SystemManagement; }
 
-    template <typename T, typename... Args>
-    typename std::enable_if<std::is_base_of<Object, T>::value, T*>::type GC::gc_push(Args&&... _Args)
-    {
-        GCMemoryStick* ms;
-        int id;
-        T* mem;
-
-        id = gc_write_memblock_runtime(&ms, type2index<T>::typeIndex, sizeof(T));
-        if (id == GCInvalidID)
-            throw std::bad_alloc();
-        mem = reinterpret_cast<T*>(ms->memory);
-        _paste_oop_init(mem, std::forward<Args>(_Args)...);
-        return mem; // result
-    }
-
-    template <typename T>
-    typename std::enable_if<std::is_base_of<Object, T>::value, bool>::type GC::gc_unload(T* pointer)
-    {
-        int id;
-        int released = 0;
-        id = get_id(pointer);
-        if (id != GCInvalidID)
-            released = gc_native_collect(id);
-
-        return released != 0;
-    }
-
     // GC Resources   ---------------------------------------------------
     int GC::resource_bitmap(const std::string& resourceName, FolderKind pathOn, SDL_Surface** sdlsurfacePtr)
     {
@@ -677,27 +650,6 @@ namespace RoninEngine::Runtime
         }
 
         return id;
-    }
-
-    template <typename T, typename... Args>
-    T* GC::gc_alloc(Args&&... _Args)
-    {
-        T* p = static_cast<T*>(gc_malloc(sizeof(T)));
-        if (p == nullptr)
-            throw std::bad_alloc();
-        memset(p, 0, sizeof(T));
-        _paste_oop_init(p, std::forward<Args&&>(_Args)...);
-        return p;
-    }
-
-    template <typename T>
-    void GC::gc_unalloc(T* p)
-    {
-        if (p == nullptr)
-            throw std::invalid_argument("p");
-
-        _cut_oop_from(p);
-        gc_free(p);
     }
 
     // ------------------------------------------------------- GC Stats (Total N)

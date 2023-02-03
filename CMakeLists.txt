@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.11)
+cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
 #SET PROJECT NAME, VERSION
 project(RoninEngineLibrary VERSION 1.0)
 
@@ -24,12 +24,8 @@ message(STATUS "Architecture select ${ARCHITECTURE}")
 set(RONINENGINE_VERSION_MIN 1.0)
 set(RUNTIME_OUTPUT_NAME "across_rgl")
 
-set(RGE_LIBS "")
-
 #compilling sources
 add_subdirectory(source)
-
-message(STATUS ${RGE_LIBS})
 
 add_library(RoninEngineLibrary
     SHARED
@@ -54,4 +50,5 @@ target_link_libraries(RoninEngineLibrary PUBLIC
     SDL2_mixer::SDL2_mixer
     SDL2_ttf::SDL2_ttf
     SDL2_gfx
-    SDL2_image::SDL2_image)
+    SDL2_image::SDL2_image
+)
