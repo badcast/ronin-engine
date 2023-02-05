@@ -12,13 +12,13 @@ namespace RoninEngine::Runtime
         '/'
 #endif
         ;
-    constexpr char data_path[] = "data";
-    constexpr char gfx_path[] = "gfx";
-    constexpr char sound_path[] = "sound";
-    constexpr char music_path[] = "music";
-    constexpr char loader_path[] = "loader";
-    constexpr char levels_path[] = "levels";
-    constexpr char textures_path[] = "textures";
+    static char data_path[] = "data";
+    static char gfx_path[] = "gfx";
+    static char sound_path[] = "sound";
+    static char music_path[] = "music";
+    static char loader_path[] = "loader";
+    static char levels_path[] = "levels";
+    static char textures_path[] = "textures";
 
     const char* applicationPath()
     {

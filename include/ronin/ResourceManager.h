@@ -16,14 +16,8 @@ namespace RoninEngine
             friend class Scene;
 
         protected:
-            static void gc_init();
-            static void gc_free();
-            static void gc_free_source();
-            static void gc_collect();
-
             static void UnloadAll(bool immediate);
-            [[deprecated]]static void CheckResources();
-
+            static void gc_release();
             static void suspend_gc();
             static void continue_gc();
 
@@ -190,7 +184,7 @@ namespace RoninEngine
             id = gc_write_memblock_runtime(&ms, type2index<T>::typeIndex, sizeof(T));
             if (id == GCInvalidID)
                 throw std::bad_alloc();
-            mem = reinterpret_cast<T*>(ms->memory);
+            mem = static_cast<T*>(ms->memory);
             _paste_oop_init(mem, std::forward<Args>(_Args)...);
             return mem; // result
         }

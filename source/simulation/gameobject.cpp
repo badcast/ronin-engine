@@ -21,7 +21,7 @@ GameObject::GameObject(const std::string& name)
     : Object(name)
 {
     m_components.push_back(create_empty_transform());
-    m_components.front()->pin = this;
+    m_components.front()->_owner = this;
     m_active = true;
     Level::self()->_gameObjects.emplace_back(this);
 }
@@ -50,7 +50,7 @@ void GameObject::setActiveRecursivelly(bool state) { this->setActive(false); }
 inline Transform* GameObject::transform()
 {
     // NOTE: transform всегда первый объект из контейнера m_components
-    return reinterpret_cast<Transform*>(m_components.front());
+    return static_cast<Transform*>(m_components.front());
 }
 
 Component* GameObject::addComponent(Component* component)
@@ -61,10 +61,10 @@ Component* GameObject::addComponent(Component* component)
     if (end(m_components) == std::find_if(begin(m_components), end(m_components), [component](Component* ref) { return component == ref; })) {
         this->m_components.emplace_back(component);
 
-        if (component->pin)
+        if (component->_owner)
             throw std::bad_exception();
 
-        component->pin = this;
+        component->_owner = this;
 
         if (Behaviour* behav = dynamic_cast<Behaviour*>(component)) {
             Level::self()->PinScript(behav);
@@ -82,7 +82,6 @@ Component* GameObject::addComponent(Component* component)
 // Transform* GameObject::getComponent() {
 //     return transform();
 // }
-
 
 template <>
 Transform* GameObject::getComponent<Transform>()

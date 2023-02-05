@@ -11,21 +11,18 @@ namespace RoninEngine
 
     class SHARK Application
     {
-        static void LoadGame();
-        static void LoadedLevel();
-
     public:
-        static void Init(const std::uint32_t& width, const std::uint32_t& height);
+        static void init(const std::uint32_t& width, const std::uint32_t& height);
         static void Quit();
 
-        static void LoadLevel(Level* level);
-        static bool Simulate();
-        static void ScreenShot(const char* filename);
-        static SDL_Surface* ScreenShot();
+        static void loadLevel(Level* level);
+        static bool simulate();
+        static void getScreen(const char* filename);
+        static SDL_Surface* getScreen();
         static SDL_DisplayMode getDisplayMode();
-        static void RequestQuit();
-        static SDL_Window* GetWindow();
-        static SDL_Renderer* GetRenderer();
+        static void requestQuit();
+        static SDL_Window* getWindow();
+        static SDL_Renderer* getRenderer();
         static Resolution getResolution();
 
         static void back_fail(void);

@@ -144,7 +144,7 @@ const Vec2 Camera::ScreenToWorldPoint(Vec2 screenPoint) {
     Resolution res = Application::getResolution();
     Vec2 offset = _main->transform()->position();
     Vec2 scale;
-    SDL_RenderGetScale(Application::GetRenderer(), &scale.x, &scale.y);
+    SDL_RenderGetScale(Application::getRenderer(), &scale.x, &scale.y);
     scale *= pixelsPerPoint;
     screenPoint.x = ((res.width / 2.f - screenPoint.x) * -1) / scale.x;
     screenPoint.y = (res.height / 2.f - screenPoint.y) / scale.y;
@@ -155,7 +155,7 @@ const Vec2 Camera::WorldToScreenPoint(Vec2 worldPoint) {
     Resolution res = Application::getResolution();
     Vec2 scale;
     Vec2 offset = _main->transform()->position();
-    SDL_RenderGetScale(Application::GetRenderer(), &scale.x, &scale.y);
+    SDL_RenderGetScale(Application::getRenderer(), &scale.x, &scale.y);
     scale *= pixelsPerPoint;
     //Horizontal position
     worldPoint.x = (res.width / 2.f - (offset.x - worldPoint.x) * scale.x);
@@ -167,7 +167,7 @@ const Vec2 Camera::WorldToScreenPoint(Vec2 worldPoint) {
 const Vec2 Camera::ViewportToWorldPoint(Vec2 viewportPoint) {
     Resolution res = Application::getResolution();
     Vec2 scale, offset = _main->transform()->position();
-    SDL_RenderGetScale(Application::GetRenderer(), &scale.x, &scale.y);
+    SDL_RenderGetScale(Application::getRenderer(), &scale.x, &scale.y);
     scale *= pixelsPerPoint;
     // Horizontal position
     viewportPoint.x = (res.width / 2.f - res.width * viewportPoint.x) * -1 / scale.x;
@@ -181,7 +181,7 @@ const Vec2 Camera::WorldToViewport(Vec2 worldPoint) {
     Resolution res = Application::getResolution();
     Vec2 scale;
     Vec2 offset = _main->transform()->position();
-    SDL_RenderGetScale(Application::GetRenderer(), &scale.x, &scale.y);
+    SDL_RenderGetScale(Application::getRenderer(), &scale.x, &scale.y);
     scale *= pixelsPerPoint;
     // Horizontal position
     worldPoint.x = (res.width / 2.0f - (offset.x - worldPoint.x) * scale.x) / res.width;

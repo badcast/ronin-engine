@@ -98,7 +98,7 @@ namespace RoninEngine::Runtime
 
     const Rect Texture::getRect() { return { 0, 0, width(), height() }; }
 
-    const Texture* Texture::clone() { return clone(Application::GetRenderer()); }
+    const Texture* Texture::clone() { return clone(Application::getRenderer()); }
 
     const Texture* Texture::clone(SDL_Renderer* renderer)
     {

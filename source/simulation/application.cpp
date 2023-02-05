@@ -2,6 +2,10 @@
 
 namespace RoninEngine
 {
+    namespace Runtime
+    {
+        extern void gc_init();
+    }
     static Level* destroyableLevel = nullptr;
     static SDL_Renderer* renderer = nullptr;
     static SDL_Window* window = nullptr;
@@ -11,7 +15,9 @@ namespace RoninEngine
     static bool m_levelLoaded = false;
     static bool isQuiting;
 
-    void Application::Init(const std::uint32_t& width, const std::uint32_t& height)
+    extern void gc_collect();
+
+    void Application::init(const std::uint32_t& width, const std::uint32_t& height)
     {
         char errorStr[128];
         if (m_inited)
@@ -43,19 +49,42 @@ namespace RoninEngine
         // Brightness - Яркость
         SDL_SetWindowBrightness(window, 1);
 
-        LoadGame();
+        GC::gc_lock();
+
+        // initialize GC
+        gc_init();
+
+        if (true) {
+            std::string path = getDataFrom(FolderKind::LOADER);
+            std::string temp = path + "graphics.conf";
+            GC::LoadImages(temp.c_str());
+
+            // load textures
+            path = getDataFrom(FolderKind::LOADER);
+            temp = path + "textures.conf";
+            GC::LoadImages(temp.c_str());
+
+            //Загрузка шрифта и оптимизация дэффектов
+            UI::Initialize_Fonts(true);
+            Levels::Level_Init();
+        }
+        //Инициализация инструментов
+        UI::InitalizeControls();
+
+        // Set cursor
+        // SDL_SetCursor(GC::GetCursor("cursor", {1, 1}));
         m_inited = true;
         isQuiting = false;
     }
 
-    void Application::RequestQuit() { isQuiting = true; }
+    void Application::requestQuit() { isQuiting = true; }
 
     void Application::Quit()
     {
         if (!m_inited)
             return;
 
-        GC::gc_free();
+        GC::gc_release();
         SDL_DestroyRenderer(renderer);
         SDL_DestroyWindow(window);
 
@@ -68,57 +97,7 @@ namespace RoninEngine
         m_inited = false;
     }
 
-    void Application::LoadGame()
-    {
-        GC::gc_lock();
-
-        // initialize GC
-        GC::gc_init();
-
-        if (true) {
-            GC::CheckResources();
-            std::string path = getDataFrom(FolderKind::LOADER);
-            std::string temp = path + "graphics.conf";
-            GC::LoadImages(temp.c_str());
-
-            // load textures
-            path = getDataFrom(FolderKind::LOADER);
-            temp = path + "textures.conf";
-            GC::LoadImages(temp.c_str());
-
-            //Загрузк шрифта и оптимизация дэффектов
-            UI::Initialize_Fonts(true);
-            Levels::Level_Init();
-        }
-        //Инициализация инструментов
-        UI::InitalizeControls();
-
-        // Set cursor
-        // SDL_SetCursor(GC::GetCursor("cursor", {1, 1}));
-    }
-
-    void Application::LoadedLevel()
-    {
-        if (destroyableLevel) {
-            destroyableLevel->onUnloading();
-
-            GC::gc_unalloc(destroyableLevel);
-
-            destroyableLevel = nullptr;
-            // BUG: DANGER ZONE
-            GC::UnloadUnused();
-            // GC::gc_free_source();
-        }
-
-        m_levelLoaded = true;
-
-        // capture memory as GC
-        GC::gc_unlock();
-
-        m_level->awake();
-    }
-
-    void Application::LoadLevel(Level* level)
+    void Application::loadLevel(Level* level)
     {
         if (!level || m_level == level)
             throw std::bad_cast();
@@ -140,7 +119,7 @@ namespace RoninEngine
         m_levelLoaded = false;
     }
 
-    SDL_Surface* Application::ScreenShot()
+    SDL_Surface* Application::getScreen()
     {
         SDL_Rect rect;
         void* pixels;
@@ -156,9 +135,9 @@ namespace RoninEngine
         return su;
     }
 
-    void Application::ScreenShot(const char* filename)
+    void Application::getScreen(const char* filename)
     {
-        SDL_Surface* surf = ScreenShot();
+        SDL_Surface* surf = getScreen();
         IMG_SavePNG(surf, filename);
         SDL_FreeSurface(surf);
     }
@@ -180,7 +159,7 @@ namespace RoninEngine
         return res;
     }
 
-    bool Application::Simulate()
+    bool Application::simulate()
     {
         char windowTitle[128];
         float fps;
@@ -203,7 +182,7 @@ namespace RoninEngine
             // update events
             input::Reset();
             delayed = Time::tickMillis();
-            wndFlags = static_cast<SDL_WindowFlags>(SDL_GetWindowFlags(Application::GetWindow()));
+            wndFlags = static_cast<SDL_WindowFlags>(SDL_GetWindowFlags(Application::getWindow()));
             while (SDL_PollEvent(&event)) {
                 input::Update_Input(&event);
                 if (event.type == SDL_QUIT)
@@ -221,7 +200,23 @@ namespace RoninEngine
 
                 if (!m_levelLoaded) {
                     // free cache
-                    LoadedLevel();
+                    if (destroyableLevel) {
+                        destroyableLevel->onUnloading();
+
+                        GC::gc_unalloc(destroyableLevel);
+
+                        destroyableLevel = nullptr;
+                        // BUG: DANGER ZONE
+                        GC::UnloadUnused();
+                        // GC::gc_free_source();
+                    }
+
+                    m_levelLoaded = true;
+
+                    // capture memory as GC
+                    GC::gc_unlock();
+
+                    m_level->awake();
                     m_levelLoaded = true;
                 } else {
                     // update level
@@ -264,7 +259,7 @@ namespace RoninEngine
                     "Ronin Engine (Debug) FPS:%d Memory:%luMiB, "
                     "GC_Allocated:%lu, SDL_Allocated:%d",
                     static_cast<int>(fps), get_process_sizeMemory() / 1024 / 1024, GC::gc_total_allocated(), SDL_GetNumAllocations());
-                SDL_SetWindowTitle(Application::GetWindow(), windowTitle);
+                SDL_SetWindowTitle(Application::getWindow(), windowTitle);
                 // fpsRound = Time::startUpTime() + 1;  // updater per 1 seconds
             }
 
@@ -280,9 +275,9 @@ namespace RoninEngine
         return isQuiting;
     }
 
-    SDL_Window* Application::GetWindow() { return window; }
+    SDL_Window* Application::getWindow() { return window; }
 
-    SDL_Renderer* Application::GetRenderer() { return renderer; }
+    SDL_Renderer* Application::getRenderer() { return renderer; }
 
     void Application::back_fail(void) { exit(EXIT_FAILURE); }
 

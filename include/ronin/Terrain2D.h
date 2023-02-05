@@ -34,7 +34,7 @@ class SHARK Terrain2D : public Renderer {
     Terrain2D(const Terrain2D& source);
     ~Terrain2D();
 
-    RoninEngine::AIPathFinder::NavMesh* getNavMesh();
+    RoninEngine::AIPathFinder::NavMesh* surfaceMesh();
 
     void load(const TerrainData& terrainData);
 

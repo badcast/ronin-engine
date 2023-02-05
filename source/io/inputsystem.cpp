@@ -13,8 +13,6 @@ namespace RoninEngine
         mouseWheels = 0;
     }
 
-    void input::Init_Input() { }
-
     void input::movement_update()
     {
         const uint8_t* s = SDL_GetKeyboardState(nullptr);

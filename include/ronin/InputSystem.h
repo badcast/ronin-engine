@@ -37,8 +37,6 @@ class SHARK input {
     static void Reset();
 
    public:
-    static void Init_Input();
-
     static void Update_Input(SDL_Event*);
 
     static void movement_update();

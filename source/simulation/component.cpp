@@ -12,19 +12,19 @@ namespace RoninEngine
 
         Component::Component(const std::string& name)
             : Object(name)
-            , pin(nullptr)
+            , _owner(nullptr)
         {
         }
 
-        const bool Component::isBind() { return pin != nullptr; }
+        const bool Component::isBind() { return _owner != nullptr; }
 
-        GameObject* Component::gameObject() { return pin; }
+        GameObject* Component::gameObject() { return _owner; }
 
         Transform* Component::transform()
         {
             if (!isBind())
                 throw std::runtime_error("This component isn't binded");
-            return pin->getComponent<Transform>();
+            return _owner->getComponent<Transform>();
         }
     } // namespace Runtime
 } // namespace RoninEngine

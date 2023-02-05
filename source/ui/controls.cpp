@@ -287,7 +287,7 @@ bool general_render_ui_section(GUI* gui, UIElement& element, SDL_Renderer* rende
                 }
             }
 
-            Render_String(Application::GetRenderer(), element.rect, element.text.c_str(), element.text.size());
+            Render_String(Application::getRenderer(), element.rect, element.text.c_str(), element.text.size());
 
             break;
         }

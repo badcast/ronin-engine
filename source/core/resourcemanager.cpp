@@ -80,6 +80,8 @@ namespace RoninEngine::Runtime
         return gc->size() - 1;
     }
 
+    void gc_collect();
+
     bool gc_native_free(GCMemoryStick* stick)
     {
         bool result = true;
@@ -138,12 +140,12 @@ namespace RoninEngine::Runtime
         return _freed;
     }
 
-    void GC::gc_init()
+    void gc_init()
     {
         constexpr int bufferSize = sizeof(*_assocMultiFiles) + sizeof(*_assocMultiLoadedImages) + sizeof(*_assocMultiCacheTextures) + sizeof(*_assocSingleFile) + sizeof(*_resourceLoaded_surfaces) + sizeof(*_assocCacheTextures)
             + sizeof(*_assocCacheCursors) + sizeof(*_assocLoadedMusic) + sizeof(*gc_fast_lock);
 
-        void* buffer = gc_malloc(bufferSize);
+        void* buffer = GC::gc_malloc(bufferSize);
         memset(buffer, 0, bufferSize);
         _assocMultiFiles = (decltype(_assocMultiFiles))buffer;
         _paste_oop_init(_assocMultiFiles);
@@ -165,11 +167,12 @@ namespace RoninEngine::Runtime
         _paste_oop_init(gc_fast_lock);
         lastId = 0;
     }
-    void GC::gc_free()
+    void GC::gc_release()
     {
         if (_assocMultiFiles == nullptr)
             return;
-        UnloadAll(true);
+
+        GC::UnloadAll(true);
 
         _cut_oop_from(_assocMultiFiles);
         _cut_oop_from(_assocMultiLoadedImages);
@@ -180,16 +183,11 @@ namespace RoninEngine::Runtime
         _cut_oop_from(_assocCacheCursors);
         _cut_oop_from(_assocLoadedMusic);
 
-        gc_free(_assocMultiFiles);
+        GC::gc_free(_assocMultiFiles);
         _assocMultiFiles = nullptr;
     }
 
-    void GC::gc_free_source()
-    {
-        gc_native_collect();
-        gc_collect();
-    }
-    void GC::gc_collect() { release_sdlpaths(); }
+    void gc_collect() { release_sdlpaths(); }
 
     void GC::LoadImages(const char* filename)
     {
@@ -248,18 +246,6 @@ namespace RoninEngine::Runtime
         }
     }
 
-    void GC::CheckResources()
-    {
-        std::string p = dataPath();
-        char* membuf = (char*)GC::gc_malloc(256);
-        *membuf = '\0';
-        if (!std::filesystem::exists(p)) {
-            SDL_strlcat(membuf, "\"Data\" is not found", 256);
-            Application::fail(membuf);
-        }
-        GC::gc_free(membuf);
-    }
-
     //Для автоматического уничтожения ресурса, обязательно его нужно скинуть на
     // ResourceManager::Unload()
     std::list<SDL_Surface*>* GC::LoadSurfaces(const std::string& packName)
@@ -301,7 +287,7 @@ namespace RoninEngine::Runtime
         if (iter == end(*_assocMultiCacheTextures)) {
             GC::gc_alloc_lval(_textures);
             for (auto i = begin(*surfaces); i != end(*surfaces); ++i) {
-                gc_alloc_texture_from(&p, SDL_CreateTextureFromSurface(Application::GetRenderer(), *i));
+                gc_alloc_texture_from(&p, SDL_CreateTextureFromSurface(Application::getRenderer(), *i));
                 _textures->emplace_back(p);
             }
             _assocMultiCacheTextures->emplace(make_pair(surfaces, _textures));
@@ -523,7 +509,7 @@ namespace RoninEngine::Runtime
         GCMemoryStick* mem;
 
         id = gc_write_memblock_runtime<SDL_Texture>(&mem);
-        auto&& gc_ptr = reinterpret_cast<SDL_Texture*>(mem->memory = SDL_CreateTexture(Application::GetRenderer(), format, access, w, h));
+        auto&& gc_ptr = reinterpret_cast<SDL_Texture*>(mem->memory = SDL_CreateTexture(Application::getRenderer(), format, access, w, h));
 
         if (sdltexturePtr != nullptr)
             (*sdltexturePtr) = gc_ptr;
@@ -537,7 +523,7 @@ namespace RoninEngine::Runtime
         GCMemoryStick* mem;
 
         id = gc_write_memblock_runtime<SDL_Texture>(&mem);
-        mem->memory = SDL_CreateTextureFromSurface(Application::GetRenderer(), from);
+        mem->memory = SDL_CreateTextureFromSurface(Application::getRenderer(), from);
         auto gc_ptr = reinterpret_cast<SDL_Texture*>(mem->memory);
 
         if (gc_ptr == nullptr)
@@ -585,7 +571,7 @@ namespace RoninEngine::Runtime
         // alloc empty ptr
         // and create SDL_CreateTextureFromSurface
         id = gc_write_memblock_runtime<SDL_Texture>(&mem);
-        mem->memory = SDL_CreateTextureFromSurface(Application::GetRenderer(), from);
+        mem->memory = SDL_CreateTextureFromSurface(Application::getRenderer(), from);
         if (!mem->memory) {
             return GCInvalidID;
         }
@@ -639,7 +625,7 @@ namespace RoninEngine::Runtime
         GCMemoryStick* ms;
 
         id = gc_write_memblock_runtime<Sprite>(&ms);
-        auto gc_ptr = reinterpret_cast<Sprite*>(ms->memory);
+        auto gc_ptr = static_cast<Sprite*>(ms->memory);
 
         gc_ptr->texture = texture;
         gc_ptr->m_center = center;

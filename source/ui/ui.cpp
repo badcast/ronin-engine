@@ -391,7 +391,7 @@ void GUI::Do_Present(SDL_Renderer* renderer) {
 }
 void GUI::GUI_SetMainColorRGB(uint32_t RGB) { GUI_SetMainColorRGBA(RGB << 8 | SDL_ALPHA_OPAQUE); }
 void GUI::GUI_SetMainColorRGBA(uint32_t ARGB) {
-    SDL_SetRenderDrawColor(Application::GetRenderer(), (uid)(ARGB >> 24) & 0xFF, (uid)(ARGB >> 16) & 0xFF,
+    SDL_SetRenderDrawColor(Application::getRenderer(), (uid)(ARGB >> 24) & 0xFF, (uid)(ARGB >> 16) & 0xFF,
                            (uid)(ARGB >> 8) & 0xFF, (uid)ARGB & 0xFF);
 }
 bool GUI::Focused_UI() { return _focusedUI; }

@@ -25,7 +25,7 @@ Terrain2D::~Terrain2D()
     GC::gc_free(nav);
 }
 
-AIPathFinder::NavMesh* Terrain2D::getNavMesh()
+AIPathFinder::NavMesh* Terrain2D::surfaceMesh()
 {
     return this->nav;
 }
