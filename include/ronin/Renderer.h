@@ -14,6 +14,8 @@ class SHARK Renderer : public Component {
     virtual Vec2 getSize() = 0;
     virtual Vec2 getOffset() = 0;
 
+    virtual Rect getFactical() = 0;
+
     virtual void Render(Render_info* render_info) = 0;
 };
 }  // namespace RoninEngine::Runtime

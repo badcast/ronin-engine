@@ -19,7 +19,6 @@ public:
 
     const int width();
     const int height();
-#ifdef RONIN_COMPILLING
     const SDL_PixelFormatEnum format();
 
     const SDL_BlendMode blendMode();
@@ -32,14 +31,10 @@ public:
     const SDL_Texture* cnative();
     // Create identity texture
     const Texture* clone(SDL_Renderer* renderer);
-#else
-    void* native();
-    const void* cnative();
-#endif
     const Color color();
     const void color(const Color value);
 
-    void lockTexture(const SDL_Rect* rect, void** pixels, int* pitch);
+    int lockTexture(const SDL_Rect* rect, void** pixels, int* pitch);
     void unlockTexture();
 
     const Rect getRect();

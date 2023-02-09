@@ -2,16 +2,13 @@
 
 namespace RoninEngine
 {
-    Vec2Int input::m_mousePoint;
-    std::uint8_t input::mouseState = 0, input::lastMouseState, input::mouseWheels = 0;
-    Vec2 input::m_axis;
+    extern Runtime::Vec2Int m_mousePoint;
+    extern std::uint8_t mouseState;
+    extern std::uint8_t lastMouseState;
+    extern std::uint8_t mouseWheels;
+    extern Runtime::Vec2 m_axis;
+    extern bool text_inputState;
     std::string internalText;
-
-    void input::Reset()
-    {
-        mouseState = 0;
-        mouseWheels = 0;
-    }
 
     void input::movement_update()
     {

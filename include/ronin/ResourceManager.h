@@ -28,8 +28,6 @@ namespace RoninEngine
             [[deprecated]] static std::list<SDL_Surface*>* LoadSurfaces(const std::string& packName);
             [[deprecated]] static std::list<Runtime::Texture*>* LoadTextures(const std::string& packName, bool autoUnload = true);
             [[deprecated]] static SDL_Surface* GetSurface(const std::string& surfaceName);
-            [[deprecated]] static SDL_Surface* GetSurface(const std::string& surfaceName, FolderKind pathOn);
-            [[deprecated]] static Texture* GetTexture(const std::string& resourceName, FolderKind pathOn, bool autoUnload = true);
             [[deprecated]] static Texture* GetTexture(const std::string& resourceName, bool autoUnload = true);
             [[deprecated]] static Texture* GetTexture(const int w, const int h);
             [[deprecated]] static Texture* GetTexture(const int w, const int h, const ::SDL_PixelFormatEnum format);
@@ -95,9 +93,9 @@ namespace RoninEngine
 
             static std::tuple<int, int> gc_countn();
 
-            static int resource_bitmap(const std::string& resourceName, FolderKind folderKind, SDL_Surface** sdlsurfacePtr);
+            static int resource_bitmap(const std::string& resourceName, SDL_Surface** sdlsurfacePtr);
 
-            static SDL_Surface* resource_bitmap(const std::string& resourceName, FolderKind folderKind);
+            static SDL_Surface* resource_bitmap(const std::string& resourceName);
 
             static int gc_alloc_sdl_surface(SDL_Surface** sdlsurfacePtr, const int& w, const int& h);
 
@@ -129,13 +127,13 @@ namespace RoninEngine
 
             static int gc_alloc_sprite_empty(Sprite** spritePtr, const Rect& rect);
 
-            static int gc_alloc_sprite_with(Sprite** spritePtr, Texture* texture);
+            static int gc_alloc_sprite_with(Sprite** spritePtr, SDL_Surface* src);
 
-            static int gc_alloc_sprite_with(Sprite** spritePtr, Texture* texture, const Vec2& center);
+            static int gc_alloc_sprite_with(Sprite** spritePtr, SDL_Surface* src, const Vec2& center);
 
-            static int gc_alloc_sprite_with(Sprite** spritePtr, Texture* texture, const Rect& rect, const Vec2& center = Vec2::half);
+            static int gc_alloc_sprite_with(Sprite** spritePtr, SDL_Surface *src, const Rect& rect, const Vec2& center = Vec2::half);
 
-            static int gc_alloc_cursor(SDL_Cursor** cursorPtr, SDL_Surface* surface, int hotspot_x, int hotspot_y);
+            static int gc_alloc_cursor(SDL_Cursor** cursorPtr, SDL_Surface* src, int hotspot_x, int hotspot_y);
 
             static std::size_t gc_total_allocated();
         };

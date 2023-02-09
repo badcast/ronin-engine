@@ -106,7 +106,7 @@ namespace RoninEngine::UI
                         for (y = rect_point.h - 1; y >= 0; --y) {
                             cx = rect_point.x + x;
                             cy = rect_point.y + y;
-                            //Формула Y Offset * (Pitch/BytesPerPixel) + X Offset
+                            //NOTE: Формула пикселей для SDL :: Y Offset * (Pitch/BytesPerPixel) + X Offset
                             pixel = (SDL_Color*)pLegacyFont->surfNormal->pixels + (cy * (model->pitch / model->format->BytesPerPixel) + cx);
                             if (pixel->a) // isn't transparent
                                 break;
@@ -116,7 +116,7 @@ namespace RoninEngine::UI
                         else
                             flagBreaker |= 1;
                     }
-                    //оптимизация с права до лева
+                    //оптимизация с права на лева
                     if (!(flagBreaker & 2)) {
                         for (y = rect_point.h - 1; y >= 0; --y) {
                             //Формула Y Offset * (Pitch/BytesPerPixel) + X Offset

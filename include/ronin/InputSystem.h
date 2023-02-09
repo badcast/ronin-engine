@@ -26,14 +26,6 @@ enum KeyboardState {
 };
 class SHARK input {
    private:
-    friend class RoninEngine::Application;
-    static Vec2Int m_mousePoint;
-    static std::uint8_t mouseState;
-    static std::uint8_t lastMouseState;
-    static std::uint8_t mouseWheels;
-    static Vec2 m_axis;
-    static bool text_inputState;
-
     static void Reset();
 
    public:

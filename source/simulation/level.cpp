@@ -170,15 +170,16 @@ namespace RoninEngine
         return &parent->hierarchy;
     }
 
-    void Level::PinScript(Behaviour* behav)
+    void Level::intenal_bind_script(Behaviour* script)
     {
         if (!_firstRunScripts)
             GC::gc_alloc_lval(_firstRunScripts);
-        if (std::find_if(begin(*this->_firstRunScripts), end(*this->_firstRunScripts), [behav](Behaviour* ref) { return behav == ref; }) == end(*_firstRunScripts)) {
-            if (_realtimeScripts && std::find_if(begin(*this->_realtimeScripts), end(*this->_realtimeScripts), [behav](Behaviour* ref) { return behav == ref; }) != end(*_realtimeScripts))
+
+        if (std::find_if(begin(*this->_firstRunScripts), end(*this->_firstRunScripts), std::bind2nd(std::equal_to<Behaviour*>(), script)) == end(*_firstRunScripts)) {
+            if (_realtimeScripts && std::find_if(begin(*_realtimeScripts), end(*_realtimeScripts), std::bind2nd(std::equal_to<Behaviour*>(), script)) != end(*_realtimeScripts))
                 return;
 
-            _firstRunScripts->emplace_back(behav);
+            _firstRunScripts->emplace_back(script);
         }
     }
 

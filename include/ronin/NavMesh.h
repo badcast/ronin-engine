@@ -70,18 +70,18 @@ namespace RoninEngine::AIPathFinder
         Neuron* GetNeuron(const Runtime::Vec2& worldPoint);
         Neuron* GetNeuron(const Runtime::Vec2& worldPoint, Runtime::Vec2Int& outPoint);
 
-        inline bool neuronContains(const Runtime::Vec2Int& point);
+        bool neuronContains(const Runtime::Vec2Int& point);
 
-        inline const Runtime::Vec2Int neuronGetPoint(const Neuron* neuron);
+        const Runtime::Vec2Int neuronGetPoint(const Neuron* neuron);
 
         // pointer with Point
-        inline bool neuronLocked(const Runtime::Vec2Int& point);
-        inline std::uint8_t& neuronGetFlag(const Runtime::Vec2Int& point);
-        inline std::uint32_t& neuronGetCost(const Runtime::Vec2Int& point);
-        inline std::uint32_t& neuronHeuristic(const Runtime::Vec2Int& point);
-        inline const int neuronGetWeight(const Runtime::Vec2Int& point);
-        inline const std::uint32_t neuronGetTotal(const Runtime::Vec2Int& point);
-        inline const bool neuronEmpty(const Runtime::Vec2Int& point);
+        bool neuronLocked(const Runtime::Vec2Int& point);
+        std::uint8_t& neuronGetFlag(const Runtime::Vec2Int& point);
+        std::uint32_t& neuronGetCost(const Runtime::Vec2Int& point);
+        std::uint32_t& neuronHeuristic(const Runtime::Vec2Int& point);
+        const int neuronGetWeight(const Runtime::Vec2Int& point);
+        const std::uint32_t neuronGetTotal(const Runtime::Vec2Int& point);
+        const bool neuronEmpty(const Runtime::Vec2Int& point);
         void neuronLock(const Runtime::Vec2Int& point, const bool state);
 
         // pointer with pointer
@@ -91,10 +91,10 @@ namespace RoninEngine::AIPathFinder
         std::uint32_t& neuronHeuristic(const Neuron* neuron);
         const int neuronGetWeight(const Neuron* neuron);
         const std::uint32_t neuronGetTotal(const Neuron* neuron);
-        inline const bool neuronEmpty(const Neuron* neuron);
+        const bool neuronEmpty(const Neuron* neuron);
         void neuronLock(const Neuron* neuron, const bool state);
 
-        inline const Runtime::Vec2Int WorldPointToPoint(const RoninEngine::Runtime::Vec2& worldPoint);
+        const Runtime::Vec2Int WorldPointToPoint(const RoninEngine::Runtime::Vec2& worldPoint);
 
         void find(NavResult& navResult, NavMethodRule method, Runtime::Vec2 worldPointFirst, Runtime::Vec2 worldPointLast);
 

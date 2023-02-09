@@ -1,32 +1,28 @@
 #include "ronin.h"
 
-namespace RoninEngine {
-float Time::timeScale, Time::_lastTime, Time::m_time, Time::m_deltaTime;
-uint32_t Time::m_frames;
-float _startedTime = 0;
+namespace RoninEngine
+{
 
-void Time::Init_TimeEngine() {
-    m_time = 0;
-    _lastTime = 0;
-    timeScale = 1;
-    _startedTime = 0;
-    _startedTime = startUpTime();
-}
+    extern float timeScale, _lastTime, internal_time, intenal_delta_time;
+    extern std::uint32_t intenal_frames; // framecounter
+    extern std::uint32_t _startedTime;
 
-float Time::time() { return m_time; }
+    float Time::time() { return internal_time; }
 
-float Time::startUpTime() { return static_cast<float>(tickMillis() - _startedTime)/1000; }
+    float Time::startUpTime() { return static_cast<float>(tickMillis() - _startedTime) / 1000; }
 
-float Time::deltaTime() { return m_deltaTime; }
+    float Time::deltaTime() { return intenal_delta_time; }
 
-bool Time::is_paused() { return timeScale == 0; }
+    bool Time::is_paused() { return timeScale == 0; }
 
-float Time::get_time_scale() { return Time::timeScale; }
+    bool Time::is_playing() { return timeScale != 0; }
 
-void Time::set_time_scale(float scale) { Time::timeScale = Math::min(Math::max(scale, 0.F), 1.f); }
+    float Time::get_time_scale() { return timeScale; }
 
-std::uint32_t Time::frame() { return m_frames; }
+    void Time::set_time_scale(float scale) { timeScale = Math::min(Math::max(scale, 0.F), 1.f); }
 
-std::uint32_t Time::tickMillis() { return SDL_GetTicks(); }
+    std::uint32_t Time::frame() { return intenal_frames; }
 
-}  // namespace RoninEngine
+    std::uint32_t Time::tickMillis() { return SDL_GetTicks(); }
+
+} // namespace RoninEngine

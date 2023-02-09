@@ -88,7 +88,7 @@ namespace RoninEngine::Runtime
             Application::back_fail();
     }
 
-    void Texture::lockTexture(const SDL_Rect* rect, void** pixels, int* pitch) { SDL_LockTexture(m_native, rect, pixels, pitch); }
+    int Texture::lockTexture(const SDL_Rect* rect, void** pixels, int* pitch) { return SDL_LockTexture(m_native, rect, pixels, pitch); }
 
     void Texture::unlockTexture() { SDL_UnlockTexture(m_native); }
 

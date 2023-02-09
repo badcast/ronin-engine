@@ -35,7 +35,7 @@ namespace RoninEngine
         std::map<Runtime::Object*, float> _objects;
         std::list<Runtime::GameObject*> _gameObjects;
 
-        void PinScript(Runtime::Behaviour* obj);
+        void intenal_bind_script(Runtime::Behaviour* obj);
         void CC_Render_Push(Runtime::Renderer* rend);
         void CC_Light_Push(Runtime::Light* light);
         void ObjectPush(Runtime::Object* obj);

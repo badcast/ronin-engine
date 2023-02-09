@@ -13,7 +13,7 @@ namespace RoninEngine
         enum Align { Left, Right, Center };
 
         template <typename T>
-        class SHARK xRect
+        class xRect
         {
         public:
             T x, y, w, h;

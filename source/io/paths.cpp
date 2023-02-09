@@ -13,12 +13,11 @@ namespace RoninEngine::Runtime
 #endif
         ;
     static char data_path[] = "data";
-    static char gfx_path[] = "gfx";
     static char sound_path[] = "sound";
     static char music_path[] = "music";
     static char loader_path[] = "loader";
     static char levels_path[] = "levels";
-    static char textures_path[] = "textures";
+    static char sprites_path[] = "sprites";
 
     const char* applicationPath()
     {
@@ -30,7 +29,7 @@ namespace RoninEngine::Runtime
     const char* prefDataPath()
     {
         if (!prefPath)
-            prefPath = SDL_GetPrefPath("RoninEngine", "prefDir");
+            prefPath = SDL_GetPrefPath("RoninEngine", "application");
         return prefPath;
     }
 
@@ -46,9 +45,6 @@ namespace RoninEngine::Runtime
         std::string p = dataPath();
         p += seperator;
         switch (type) {
-        case FolderKind::GFX:
-            p += gfx_path;
-            break;
         case FolderKind::SOUND:
             p += sound_path;
             break;
@@ -61,8 +57,8 @@ namespace RoninEngine::Runtime
         case FolderKind::LEVELS:
             p += levels_path;
             break;
-        case FolderKind::TEXTURES:
-            p += textures_path;
+        case FolderKind::SPRITES:
+            p += sprites_path;
             break;
         }
         return p += seperator;

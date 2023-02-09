@@ -52,6 +52,15 @@ namespace RoninEngine::Runtime
         return outOffset;
     }
 
+    Rect SpriteRenderer::getFactical()
+    {
+        Rect rect;
+        if (sprite) {
+            rect = sprite->realityRect();
+        }
+        return rect;
+    }
+
     void SpriteRenderer::setSprite(Sprite* sprite)
     {
         if (this->sprite == nullptr && (!this->size.x || !this->size.y)) {
@@ -60,10 +69,10 @@ namespace RoninEngine::Runtime
         this->sprite = sprite;
     }
 
-    void SpriteRenderer::setSpriteFromTextureToGC(Texture* texture)
+    void SpriteRenderer::setSpriteFromTextureToGC(SDL_Surface* src)
     {
         Sprite* spr;
-        GC::gc_alloc_sprite_with(&spr, texture);
+        GC::gc_alloc_sprite_with(&spr, src);
         setSprite(spr);
     }
     Sprite* SpriteRenderer::getSprite() { return this->sprite; }
@@ -89,7 +98,7 @@ namespace RoninEngine::Runtime
             switch (this->renderType) {
             case SpriteRenderType::Simple:
                 if (!textureCache) {
-                    textureCache = sprite->texture;
+                    GC::gc_alloc_texture_from(&textureCache, sprite->source);
                 }
                 _srcRect.w = sprite->width();
                 _srcRect.h = sprite->height();
@@ -133,6 +142,8 @@ namespace RoninEngine::Runtime
                     _srcRect.x = _srcRect.w / dest.w;
                     _srcRect.y = _srcRect.h / dest.h;
 
+                    SDL_Texture* _texture = SDL_CreateTextureFromSurface(Application::getRenderer(), sprite->source);
+
                     // render tile
                     switch (this->renderPresentMode) {
                     case SpriteRenderPresentMode::Fixed: {
@@ -140,7 +151,7 @@ namespace RoninEngine::Runtime
                             for (y = 0; y < _srcRect.y; ++y) {
                                 dest.x = x * dest.w;
                                 dest.y = y * dest.h;
-                                SDL_RenderCopy(render->renderer, sprite->texture->native(), (SDL_Rect*)&sprite->m_rect, (SDL_Rect*)&dest);
+                                SDL_RenderCopy(render->renderer, _texture, (SDL_Rect*)&sprite->m_rect, (SDL_Rect*)&dest);
                             }
                         }
                         break;
@@ -151,22 +162,23 @@ namespace RoninEngine::Runtime
                                 dest.x = x * dest.w;
                                 dest.y = y * dest.h;
 
-                                SDL_RenderCopy(render->renderer, sprite->texture->native(), (SDL_Rect*)&sprite->m_rect, (SDL_Rect*)&dest);
+                                SDL_RenderCopy(render->renderer, _texture, (SDL_Rect*)&sprite->m_rect, (SDL_Rect*)&dest);
                             }
                         }
                         // place remained
                         for (x = 0, dest.y = _srcRect.h / dest.h * dest.h, dest.h = size.y - dest.y; x < _srcRect.x; ++x) {
                             dest.x = x * dest.w;
-                            SDL_RenderCopy(render->renderer, sprite->texture->native(), (SDL_Rect*)&sprite->m_rect, (SDL_Rect*)&dest);
+                            SDL_RenderCopy(render->renderer, _texture, (SDL_Rect*)&sprite->m_rect, (SDL_Rect*)&dest);
                         }
                         ++_srcRect.y;
                         for (y = 0, dest.x = _srcRect.w / dest.w * dest.w, dest.h = sprite->height(), dest.w = size.x - dest.x; y < _srcRect.y; ++y) {
                             dest.y = y * dest.h;
-                            SDL_RenderCopy(render->renderer, sprite->texture->native(), (SDL_Rect*)&sprite->m_rect, (SDL_Rect*)&dest);
+                            SDL_RenderCopy(render->renderer, _texture, (SDL_Rect*)&sprite->m_rect, (SDL_Rect*)&dest);
                         }
 
                         break;
                     }
+                        SDL_DestroyTexture(_texture);
                     }
                     SDL_SetRenderTarget(render->renderer, nullptr);
                 }

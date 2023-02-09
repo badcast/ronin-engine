@@ -146,7 +146,7 @@ void Gizmos::Draw2DWorldSpace(const Vec2& origin, int depth) {
   setColor(lastColor);
 }
 
-void Gizmos::DrawNavMesh(AIPathFinder::NavMesh* navMesh, bool drawText) {
+void Gizmos::DrawNavMesh(AIPathFinder::NavMesh* mesh, bool drawText) {
   Vec2 lastPoint;
   Vec2 a, b;
   AIPathFinder::Neuron* p;
@@ -159,21 +159,21 @@ void Gizmos::DrawNavMesh(AIPathFinder::NavMesh* navMesh, bool drawText) {
   res = Application::getResolution();
   prev = getColor();
   setColor(next = 0xfff6f723);
-  navMesh->GetNeuron(Camera::ScreenToWorldPoint(Vec2::zero), p1);
-  navMesh->GetNeuron(Camera::ScreenToWorldPoint(Vec2(res.width, res.height)),
+  mesh->GetNeuron(Camera::ScreenToWorldPoint(Vec2::zero), p1);
+  mesh->GetNeuron(Camera::ScreenToWorldPoint(Vec2(res.width, res.height)),
                      p2);
   yDefault = p1.y;
   while (p1.x <= p2.x) {
     while (p1.y <= p2.y) {
-      p = navMesh->GetNeuron(p1);
-      lastPoint = navMesh->PointToWorldPosition(p1);
-      if (!p || navMesh->neuronLocked(p1)) {
+      p = mesh->GetNeuron(p1);
+      lastPoint = mesh->PointToWorldPosition(p1);
+      if (!p || mesh->neuronLocked(p1)) {
         next.r = 255;
         next.g = 0;
         next.b = 0;
       } else {
         next.r = 53;
-        next.g = navMesh->neuronGetTotal(p1) ? 200 : 0;
+        next.g = mesh->neuronGetTotal(p1) ? 200 : 0;
         next.b = 246;
       }
       setColor(next);
@@ -192,7 +192,7 @@ void Gizmos::DrawNavMesh(AIPathFinder::NavMesh* navMesh, bool drawText) {
       maxTotal = 0;
       upplow = Time::time() + 1;
     }
-    std::uint32_t totalC = navMesh->getCachedSize();
+    std::uint32_t totalC = mesh->getCachedSize();
     maxTotal = std::max(maxTotal, totalC);
 
     Gizmos::DrawTextOnPosition(Camera::ScreenToWorldPoint(Vec2::zero),

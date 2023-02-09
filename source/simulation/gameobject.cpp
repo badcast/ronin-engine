@@ -47,7 +47,7 @@ void GameObject::setActive(bool state)
 
 void GameObject::setActiveRecursivelly(bool state) { this->setActive(false); }
 
-inline Transform* GameObject::transform()
+Transform* GameObject::transform()
 {
     // NOTE: transform всегда первый объект из контейнера m_components
     return static_cast<Transform*>(m_components.front());
@@ -58,7 +58,7 @@ Component* GameObject::addComponent(Component* component)
     if (!component)
         throw std::exception();
 
-    if (end(m_components) == std::find_if(begin(m_components), end(m_components), [component](Component* ref) { return component == ref; })) {
+    if (end(m_components) == std::find_if(begin(m_components), end(m_components), std::bind2nd(std::equal_to<Component*>(),component))){
         this->m_components.emplace_back(component);
 
         if (component->_owner)
@@ -66,9 +66,9 @@ Component* GameObject::addComponent(Component* component)
 
         component->_owner = this;
 
-        if (Behaviour* behav = dynamic_cast<Behaviour*>(component)) {
-            Level::self()->PinScript(behav);
-            behav->OnAwake();
+        if (Behaviour* script = dynamic_cast<Behaviour*>(component)) {
+            Level::self()->intenal_bind_script(script);
+            script->OnAwake();
         } else if (Renderer* rend = dynamic_cast<Renderer*>(component)) {
             Level::self()->CC_Render_Push(rend);
         } else if (Light* light = dynamic_cast<Light*>(component)) {

@@ -15,7 +15,32 @@ namespace RoninEngine
     static bool m_levelLoaded = false;
     static bool isQuiting;
 
+    Runtime::Vec2Int m_mousePoint;
+    std::uint8_t mouseState;
+    std::uint8_t lastMouseState;
+    std::uint8_t mouseWheels;
+    Runtime::Vec2 m_axis;
+    bool text_inputState;
+    float timeScale, _lastTime, internal_time, intenal_delta_time;
+    std::uint32_t _startedTime;
+    std::uint32_t intenal_frames; // framecounter
+
     extern void gc_collect();
+
+    void Init_TimeEngine()
+    {
+        internal_time = 0;
+        _lastTime = 0;
+        timeScale = 1;
+        _startedTime = 0;
+        _startedTime = Time::startUpTime();
+    }
+
+    void input_reset()
+    {
+        mouseState = 0;
+        mouseWheels = 0;
+    }
 
     void Application::init(const std::uint32_t& width, const std::uint32_t& height)
     {
@@ -61,14 +86,14 @@ namespace RoninEngine
 
             // load textures
             path = getDataFrom(FolderKind::LOADER);
-            temp = path + "textures.conf";
+            temp = path + "sprites.conf";
             GC::LoadImages(temp.c_str());
 
-            //Загрузка шрифта и оптимизация дэффектов
+            // Загрузка шрифта и оптимизация дэффектов
             UI::Initialize_Fonts(true);
             Levels::Level_Init();
         }
-        //Инициализация инструментов
+        // Инициализация инструментов
         UI::InitalizeControls();
 
         // Set cursor
@@ -161,6 +186,7 @@ namespace RoninEngine
 
     bool Application::simulate()
     {
+
         char windowTitle[128];
         float fps;
         int delayed;
@@ -174,13 +200,13 @@ namespace RoninEngine
             return false;
         }
 
-        Time::Init_TimeEngine();
+        Init_TimeEngine();
 
         displayMode = Application::getDisplayMode();
         secPerFrame = 1000.f / displayMode.refresh_rate; // refresh screen from Monitor Settings
         while (!isQuiting) {
             // update events
-            input::Reset();
+            input_reset();
             delayed = Time::tickMillis();
             wndFlags = static_cast<SDL_WindowFlags>(SDL_GetWindowFlags(Application::getWindow()));
             while (SDL_PollEvent(&event)) {
@@ -247,13 +273,13 @@ namespace RoninEngine
 
             delayed = Time::tickMillis() - delayed;
 
-            ++Time::m_frames; // framecounter
-            if (Time::m_frames == 0)
-                Time::m_frames = 1;
-
             // if (Time::startUpTime() > fpsRound)
             {
-                fps = (Time::m_frames) / Time::startUpTime();
+                fps = intenal_frames / (Time::startUpTime());
+                if (fps > 2000000) {
+                    fps = 0;
+                }
+
                 std::sprintf(
                     windowTitle,
                     "Ronin Engine (Debug) FPS:%d Memory:%luMiB, "
@@ -263,13 +289,14 @@ namespace RoninEngine
                 // fpsRound = Time::startUpTime() + 1;  // updater per 1 seconds
             }
 
-            Time::m_deltaTime = delayed / secPerFrame; // get deltas
-            Time::m_deltaTime = Math::Clamp01(Time::m_deltaTime);
+            intenal_delta_time = delayed / secPerFrame; // get deltas
+            intenal_delta_time = Math::Clamp01(intenal_delta_time);
 
-            Time::m_time += 0.001f * Math::ceil(secPerFrame);
+            internal_time += 0.001f * Math::ceil(secPerFrame);
 
             // delay elapsed
             SDL_Delay(Math::max(0, static_cast<int>(secPerFrame - delayed)));
+            ++intenal_frames;
         }
 
         return isQuiting;

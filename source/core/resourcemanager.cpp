@@ -251,7 +251,7 @@ namespace RoninEngine::Runtime
     std::list<SDL_Surface*>* GC::LoadSurfaces(const std::string& packName)
     {
         std::list<SDL_Surface*>* surfs = nullptr;
-        std::string path = getDataFrom(FolderKind::GFX);
+        std::string path = getDataFrom(FolderKind::SPRITES);
         std::string cat;
         int hash = jno::jno_string_to_hash(packName.c_str());
         auto iter = _assocMultiLoadedImages->find(hash);
@@ -300,17 +300,16 @@ namespace RoninEngine::Runtime
 
     //Для автоматического уничтожения ресурса, обязательно его нужно скинуть на
     // ResourceManager::Unload()
-    SDL_Surface* GC::GetSurface(const std::string& surfaceName, FolderKind pathOn) { return resource_bitmap(surfaceName, pathOn); }
-    SDL_Surface* GC::GetSurface(const std::string& surfaceName) { return GetSurface(surfaceName, FolderKind::GFX); }
+    SDL_Surface* GC::GetSurface(const std::string& surfaceName) { return resource_bitmap(surfaceName); }
 
     //Для автоматического уничтожения ресурса, обязательно его нужно скинуть на
     // ResourceManager::Unload()
-    Texture* GC::GetTexture(const std::string& resourceName, FolderKind pathOn, bool autoUnload)
+    Texture* GC::GetTexture(const std::string& resourceName, bool autoUnload)
     {
         SDL_Surface* surf;
         Texture* texture;
 
-        surf = resource_bitmap(resourceName, pathOn);
+        surf = resource_bitmap(resourceName);
 
         if (!surf)
             return nullptr;
@@ -325,7 +324,6 @@ namespace RoninEngine::Runtime
 
         return texture;
     }
-    Texture* GC::GetTexture(const std::string& resourceName, bool autoUnload) { return GetTexture(resourceName, FolderKind::TEXTURES, autoUnload); }
 
     // Create texture format RGBA 8888
     Texture* GC::GetTexture(const int w, const int h) { return GetTexture(w, h, SDL_PixelFormatEnum::SDL_PIXELFORMAT_RGBA8888); }
@@ -406,10 +404,10 @@ namespace RoninEngine::Runtime
     bool GC::gc_is_lock() { return memoryCapture == MemoryCapture::SystemManagement; }
 
     // GC Resources   ---------------------------------------------------
-    int GC::resource_bitmap(const std::string& resourceName, FolderKind pathOn, SDL_Surface** sdlsurfacePtr)
+    int GC::resource_bitmap(const std::string& resourceName, SDL_Surface** sdlsurfacePtr)
     {
         SDL_Surface* surf = nullptr;
-        std::string path = getDataFrom(pathOn);
+        std::string path = getDataFrom(FolderKind::SPRITES);
         std::string cat;
         GCMemoryStick* mem;
         int id;
@@ -450,10 +448,10 @@ namespace RoninEngine::Runtime
         return id;
     }
 
-    SDL_Surface* GC::resource_bitmap(const std::string& resourceName, FolderKind folderKind)
+    SDL_Surface* GC::resource_bitmap(const std::string& resourceName)
     {
         SDL_Surface* sdlsurf;
-        auto gcid = resource_bitmap(resourceName, folderKind, &sdlsurf);
+        auto gcid = resource_bitmap(resourceName, &sdlsurf);
         if (gcid == GCInvalidID) {
             sdlsurf = nullptr;
             Application::fail("Surface name " + resourceName + " not registered");
@@ -524,7 +522,7 @@ namespace RoninEngine::Runtime
 
         id = gc_write_memblock_runtime<SDL_Texture>(&mem);
         mem->memory = SDL_CreateTextureFromSurface(Application::getRenderer(), from);
-        auto gc_ptr = reinterpret_cast<SDL_Texture*>(mem->memory);
+        auto gc_ptr = static_cast<SDL_Texture*>(mem->memory);
 
         if (gc_ptr == nullptr)
             Application::fail_OutOfMemory();
@@ -571,13 +569,14 @@ namespace RoninEngine::Runtime
         // alloc empty ptr
         // and create SDL_CreateTextureFromSurface
         id = gc_write_memblock_runtime<SDL_Texture>(&mem);
+
         mem->memory = SDL_CreateTextureFromSurface(Application::getRenderer(), from);
         if (!mem->memory) {
             return GCInvalidID;
         }
         auto gc_ptr = static_cast<SDL_Texture*>(mem->memory);
-
         gc_alloc_texture_from(texturePtr, gc_ptr);
+
         return id;
     }
 
@@ -587,13 +586,13 @@ namespace RoninEngine::Runtime
         GCMemoryStick* mem;
 
         id = gc_write_memblock_runtime<Texture>(&mem);
-        auto gc_ptr = reinterpret_cast<Texture*>(mem->memory);
+        auto gc_ptr = static_cast<Texture*>(mem->memory);
 
         _paste_oop_init(gc_ptr);
         gc_ptr->m_native = sdltexture;
 
         if (texturePtr != nullptr)
-            (*texturePtr) = reinterpret_cast<Texture*>(gc_ptr);
+            (*texturePtr) = static_cast<Texture*>(gc_ptr);
 
         return id;
     }
@@ -604,22 +603,22 @@ namespace RoninEngine::Runtime
 
     int GC::gc_alloc_sprite_empty(Sprite** spritePtr, const Rect& rect) { return gc_alloc_sprite_with(spritePtr, nullptr, rect, Vec2::half); }
 
-    int GC::gc_alloc_sprite_with(Sprite** spritePtr, Texture* texture) { return gc_alloc_sprite_with(spritePtr, texture, Vec2::half); }
+    int GC::gc_alloc_sprite_with(Sprite** spritePtr, SDL_Surface* src) { return gc_alloc_sprite_with(spritePtr, src, Vec2::half); }
 
-    int GC::gc_alloc_sprite_with(Sprite** spritePtr, Texture* texture, const Vec2& center)
+    int GC::gc_alloc_sprite_with(Sprite** spritePtr, SDL_Surface* src, const Vec2& center)
     {
         Rect rect {};
-        if (texture == nullptr) {
-            static_assert(true, "texture arg is null");
+        if (src == nullptr) {
+            static_assert(true, "soruce arg is null");
         } else {
-            rect.w = texture->width();
-            rect.h = texture->height();
+            rect.w = src->w;
+            rect.h = src->h;
         }
 
-        return gc_alloc_sprite_with(spritePtr, texture, rect, center);
+        return gc_alloc_sprite_with(spritePtr, src, rect, center);
     }
 
-    int GC::gc_alloc_sprite_with(Sprite** spritePtr, Texture* texture, const Rect& rect, const Vec2& center)
+    int GC::gc_alloc_sprite_with(Sprite** spritePtr, SDL_Surface* src, const Rect& rect, const Vec2& center)
     {
         int id;
         GCMemoryStick* ms;
@@ -627,7 +626,7 @@ namespace RoninEngine::Runtime
         id = gc_write_memblock_runtime<Sprite>(&ms);
         auto gc_ptr = static_cast<Sprite*>(ms->memory);
 
-        gc_ptr->texture = texture;
+        gc_ptr->source = src;
         gc_ptr->m_center = center;
         gc_ptr->m_rect = rect;
 

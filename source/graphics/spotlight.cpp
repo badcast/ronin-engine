@@ -8,7 +8,7 @@ Spotlight::Spotlight(const std::string &name) : Light(name) {
     range = 1.f;
     intensity = 1.f;
     if (!spotlightMask) {
-        spotlightMask = GC::resource_bitmap("spotlight", FolderKind::TEXTURES);
+        spotlightMask = GC::resource_bitmap("spotlight");
     }
 }
 
