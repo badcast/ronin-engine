@@ -17,7 +17,7 @@ namespace RoninEngine::Runtime
         , flip(Vec2::one)
         , renderType(SpriteRenderType::Simple)
         , renderOut(SpriteRenderOut::Centering)
-        , renderPresentMode(SpriteRenderPresentMode::Place)
+        , renderPresentMode(SpriteRenderPresentMode::Fixed)
         , color(Color::white)
     {
     }
