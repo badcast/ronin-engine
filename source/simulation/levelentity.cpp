@@ -54,6 +54,7 @@ void RoninEngine::Levels::Level_Init()
     if (!m_levels.empty())
         throw std::bad_exception();
 
+return;
     jno::jno_object_parser parser;
     Level_t levl;
     jno::jno_object_node* node;
