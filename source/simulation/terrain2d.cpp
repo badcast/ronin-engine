@@ -20,7 +20,7 @@ namespace RoninEngine::Runtime
         GC::gc_alloc_lval(surface, width, length);
     }
 
-    Terrain2D::Terrain2D(const Terrain2D& source) { GC::gc_alloc_lval(surface, source.surface->getWidth(), source.surface->getHeight()); }
+    Terrain2D::Terrain2D(const Terrain2D& source) { GC::gc_alloc_lval(surface, source.surface->Width(), source.surface->Height()); }
     Terrain2D::~Terrain2D() { GC::gc_free(surface); }
 
     AIPathFinder::NavMesh* Terrain2D::surfaceMesh() { return this->surface; }
@@ -41,8 +41,8 @@ namespace RoninEngine::Runtime
         Rect rect;
 
         if(surface){
-            rect.w = surface->getWidth();
-            rect.h = surface->getHeight();
+            rect.w = surface->Width();
+            rect.h = surface->Height();
         }
 
         return rect;

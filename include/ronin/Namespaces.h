@@ -16,6 +16,7 @@ namespace RoninEngine
     {
         class Neuron;
         class NavMesh;
+        class NavContainer;
     } // namespace AIPathFinder
 
     namespace Runtime
