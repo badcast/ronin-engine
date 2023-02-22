@@ -19,6 +19,7 @@
 
 // objects
 #include "../../include/ronin/Behaviour.h"
+#include "../../include/ronin/Object.h"
 #include "../../include/ronin/Camera.h"
 #include "../../include/ronin/Camera2D.h"
 #include "../../include/ronin/Component.h"
@@ -26,7 +27,6 @@
 #include "../../include/ronin/GameObject_impl.h"
 #include "../../include/ronin/Level.h"
 #include "../../include/ronin/Light.h"
-#include "../../include/ronin/Object.h"
 #include "../../include/ronin/Player.h"
 #include "../../include/ronin/Renderer.h"
 #include "../../include/ronin/Spotlight.h"

@@ -7,20 +7,16 @@
 namespace RoninEngine::AIPathFinder
 {
 
+    class Neuron;
+    class NavContainer;
     class NavMesh;
 
-    class Neuron;
+    enum class NavStatus { Undefined, Locked, Closed, Opened };
 
-    enum NavStatus { Undefined, Locked, Closed, Opened };
-
-    // TODO: Дополнить список алгоритмов поиска путей
-    enum NavAlgorithm { AStar };
-
-    enum NavMethodRule { NavigationIntelegency, PlusMethod, SquareMethod, CrossMethod };
+    enum class NavMethodRule { NavigationIntelegency, PlusMethod, SquareMethod, CrossMethod };
 
     struct NavResult {
         NavStatus status;
-        NavAlgorithm algorithm;
         Runtime::Vec2Int firstNeuron;
         Runtime::Vec2Int lastNeuron;
         std::list<Runtime::Vec2Int> RelativePaths;
@@ -39,15 +35,9 @@ namespace RoninEngine::AIPathFinder
         void* neurons;
     };
 
-    constexpr std::size_t NavMeshDataSizeMultiplier = sizeof(Neuron);
-
     class SHARK NavMesh
     {
-        void* neurons;
-        int segmentOffset;
-
-    protected:
-        int widthSpace, heightSpace;
+        NavContainer* container;
 
     public:
         Runtime::Vec2 worldScale;
@@ -57,13 +47,13 @@ namespace RoninEngine::AIPathFinder
 
         ~NavMesh();
 
-        void clear(bool clearLocks = false);
-        void fill(bool fillLocks = false);
-        void randomGenerate(int flagFilter = 0xffffff);
+        void Clear(bool clearLocks = false);
+        void Fill(bool fillLocks = false);
+        void Randomize(int flagFilter = 0xffffff);
         void stress();
 
-        int getWidth();
-        int getHeight();
+        int Width();
+        int Height();
 
         Neuron* GetNeuron(int x, int y);
         Neuron* GetNeuron(const Runtime::Vec2Int& point);
@@ -96,11 +86,11 @@ namespace RoninEngine::AIPathFinder
 
         const Runtime::Vec2Int WorldPointToPoint(const RoninEngine::Runtime::Vec2& worldPoint);
 
-        void find(NavResult& navResult, NavMethodRule method, Runtime::Vec2 worldPointFirst, Runtime::Vec2 worldPointLast);
+        void Find(NavResult& navResult, NavMethodRule method, Runtime::Vec2 worldPointFirst, Runtime::Vec2 worldPointLast);
 
-        void find(NavResult& navResult, NavMethodRule method, Neuron* firstNeuron, Neuron* lastNeuron, NavAlgorithm algorithm);
+        void Find(NavResult& navResult, NavMethodRule method, Neuron* firstNeuron, Neuron* lastNeuron);
 
-        void find(NavResult& navResult, NavMethodRule method, Runtime::Vec2Int first, Runtime::Vec2Int last, NavAlgorithm algorithm);
+        void Find(NavResult& navResult, NavMethodRule method, Runtime::Vec2Int first, Runtime::Vec2Int last);
 
         const RoninEngine::Runtime::Vec2 PointToWorldPosition(const Runtime::Vec2Int& point);
         const RoninEngine::Runtime::Vec2 PointToWorldPosition(Neuron* neuron);
