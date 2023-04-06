@@ -17,7 +17,14 @@ namespace RoninEngine
         {
         public:
             T x, y, w, h;
-
+            template <typename V>
+            xRect(const V& xy, const V& wh)
+                : x(xy.x)
+                , y(xy.y)
+                , w(wh.x)
+                , h(wh.y)
+            {
+            }
             xRect() { x = y = w = h = 0; }
             xRect(const T& x, const T& y, const T& w, const T& h)
             {
