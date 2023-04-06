@@ -226,7 +226,7 @@ namespace RoninEngine::Runtime
     void RoninEngine::Runtime::Gizmos::DrawTextOnPosition(Vec2 origin, const std::string& text)
     {
         origin = Camera::WorldToScreenPoint(origin);
-        RoninEngine::UI::DrawFontAt(Application::getRenderer(), text, 11, Vec2::RoundToInt(origin));
+        RoninEngine::UI::DrawFontAt(Application::getRenderer(), text, 11, Vec2::RoundToInt(origin), getColor());
     }
     void RoninEngine::Runtime::Gizmos::DrawTextOnPosition_Legacy(Vec2 origin, const std::string& text)
     {

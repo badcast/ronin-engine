@@ -12,7 +12,7 @@ namespace RoninEngine
     class SHARK Application
     {
     public:
-        static void init(const std::uint32_t& width, const std::uint32_t& height);
+        static void init(const std::uint32_t& width, const std::uint32_t& height, bool initResources = true);
         static void Quit();
 
         static void loadLevel(Level* level);

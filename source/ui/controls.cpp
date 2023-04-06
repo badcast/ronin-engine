@@ -402,10 +402,10 @@ void event_action(UIElement* element) {
     }
 }
 
-void DrawFontAt(SDL_Renderer* renderer, const std::string& text, int fontSize, const Runtime::Vec2Int& screenPoint) {
+void DrawFontAt(SDL_Renderer* renderer, const std::string& text, int fontSize, const Runtime::Vec2Int& screenPoint, const Color color) {
     Texture* texture;
     SDL_Rect r;
-    SDL_Surface* surf = TTF_RenderUTF8_Solid(pfont, text.c_str(), SDL_Color(*reinterpret_cast<const SDL_Color*>(&Color::white)));
+    SDL_Surface* surf = TTF_RenderUTF8_Solid(pfont, text.c_str(), SDL_Color(*reinterpret_cast<const SDL_Color*>(&color)));
     GC::gc_alloc_texture_from(&texture, surf);
     r.h = texture->height();
     r.w = texture->width();

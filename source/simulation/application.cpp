@@ -42,7 +42,7 @@ namespace RoninEngine
         mouseWheels = 0;
     }
 
-    void Application::init(const std::uint32_t& width, const std::uint32_t& height)
+    void Application::init(const std::uint32_t& width, const std::uint32_t& height, bool initResources)
     {
         char errorStr[128];
         if (m_inited)
@@ -79,7 +79,7 @@ namespace RoninEngine
         // initialize GC
         gc_init();
 
-        if (true) {
+        if (initResources) {
             std::string path = getDataFrom(FolderKind::LOADER);
             std::string temp = path + "graphics.conf";
             GC::LoadImages(temp.c_str());
@@ -289,10 +289,13 @@ namespace RoninEngine
                 // fpsRound = Time::startUpTime() + 1;  // updater per 1 seconds
             }
 
-            intenal_delta_time = delayed / secPerFrame; // get deltas
-            intenal_delta_time = Math::Clamp01(intenal_delta_time);
-
-            internal_time += 0.001f * Math::ceil(secPerFrame);
+            intenal_delta_time = delayed;
+            if (intenal_delta_time > 1)
+            {
+                intenal_delta_time -= 1;
+                intenal_delta_time = Math::Clamp01(intenal_delta_time);
+            }
+            internal_time += 0.001f * secPerFrame;
 
             // delay elapsed
             SDL_Delay(Math::max(0, static_cast<int>(secPerFrame - delayed)));
