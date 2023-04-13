@@ -4,7 +4,7 @@
 
 namespace RoninEngine::Runtime {
 
-   class SHARK Behaviour :
+   class RONIN_API Behaviour :
          public Component
    {
       public:

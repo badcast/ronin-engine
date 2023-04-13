@@ -3,6 +3,7 @@
 
 // base headers
 #include "begin.h"
+#include "Time.h"
 #include "Controls.h"
 #include "Math.h"
 #include "Paths.h"
@@ -14,7 +15,6 @@
 #include "SystemInformation.h"
 #include "ResourceManager.h"
 
-#include "Time.h"
 // objects
 #include "Behaviour.h"
 #include "Camera.h"

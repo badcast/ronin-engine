@@ -3,6 +3,7 @@
 #include "begin.h"
 
 // TODO: Добавить Storm алгоритм в NavMesh для поиска свободного места
+// TODO: Добавить BiDirectional двунаправленный поиск
 
 namespace RoninEngine::AIPathFinder
 {
@@ -35,7 +36,7 @@ namespace RoninEngine::AIPathFinder
         void* neurons;
     };
 
-    class SHARK NavMesh
+    class RONIN_API NavMesh
     {
         NavContainer* container;
 
@@ -84,17 +85,15 @@ namespace RoninEngine::AIPathFinder
         const bool neuronEmpty(const Neuron* neuron);
         void neuronLock(const Neuron* neuron, const bool state);
 
-        const Runtime::Vec2Int WorldPointToPoint(const RoninEngine::Runtime::Vec2& worldPoint);
 
         void Find(NavResult& navResult, NavMethodRule method, Runtime::Vec2 worldPointFirst, Runtime::Vec2 worldPointLast);
-
         void Find(NavResult& navResult, NavMethodRule method, Neuron* firstNeuron, Neuron* lastNeuron);
-
         void Find(NavResult& navResult, NavMethodRule method, Runtime::Vec2Int first, Runtime::Vec2Int last);
 
-        const RoninEngine::Runtime::Vec2 PointToWorldPosition(const Runtime::Vec2Int& point);
-        const RoninEngine::Runtime::Vec2 PointToWorldPosition(Neuron* neuron);
-        const RoninEngine::Runtime::Vec2 PointToWorldPosition(const int& x, const int& y);
+        const Runtime::Vec2Int WorldPointToPoint(const Runtime::Vec2& worldPoint);
+        const Runtime::Vec2 PointToWorldPosition(const Runtime::Vec2Int& point);
+        const Runtime::Vec2 PointToWorldPosition(Neuron* neuron);
+        const Runtime::Vec2 PointToWorldPosition(const int& x, const int& y);
         void load(const NavMeshData& navmeshData);
         void save(NavMeshData* navmeshData);
 

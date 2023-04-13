@@ -24,7 +24,7 @@ namespace RoninEngine::Runtime
         TerrainTextured* textured;
     };
 
-    class SHARK Terrain2D : public Renderer
+    class RONIN_API Terrain2D : public Renderer
     {
         RoninEngine::AIPathFinder::NavMesh* surface;
 

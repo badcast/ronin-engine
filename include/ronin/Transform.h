@@ -5,7 +5,7 @@
 #include "Component.h"
 
 namespace RoninEngine::Runtime {
-class SHARK Transform : public Component {
+class RONIN_API Transform : public Component {
     friend class RoninEngine::Level;
     friend class GameObject;
     friend class Camera;

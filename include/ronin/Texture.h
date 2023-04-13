@@ -3,7 +3,7 @@
 #include "begin.h"
 
 namespace RoninEngine::Runtime {
-class SHARK Texture {
+class RONIN_API Texture {
     friend class Camera;
     friend class GC;
 

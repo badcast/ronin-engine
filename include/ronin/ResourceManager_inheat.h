@@ -67,7 +67,7 @@ namespace RoninEngine::Runtime
     struct is_invalid_type : public std::integral_constant<bool, type2index<T>::typeIndex == InvalidType> {
     };
 
-    extern int gc_write_memblock_runtime(GCMemoryStick** ms, const std::uint8_t typeIndex, const std::size_t size);
-    extern int gc_native_collect(const int freeID);
+    extern RONIN_API int gc_write_memblock_runtime(GCMemoryStick** ms, const std::uint8_t typeIndex, const std::size_t size);
+    extern RONIN_API int gc_native_collect(const int freeID);
 
 } // namespace RoninEngine::Runtime

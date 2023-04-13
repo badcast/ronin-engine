@@ -7,7 +7,7 @@ namespace RoninEngine
     namespace Runtime
     {
 
-        struct Vec2Int {
+        struct RONIN_API Vec2Int {
         public:
             int x;
             int y;
@@ -63,7 +63,7 @@ namespace RoninEngine
             }
         };
 
-        struct Vec2 {
+        struct RONIN_API Vec2 {
             float x;
             float y;
 
@@ -79,94 +79,94 @@ namespace RoninEngine
             Vec2 normalized();
             void Normalize();
 
-            static const Vec2 one;
-            static const Vec2 half;
-            static const Vec2 minusOne;
-            static const Vec2 zero;
-            static const Vec2 down;
-            static const Vec2 left;
-            static const Vec2 right;
-            static const Vec2 up;
-            static const Vec2 infinity;
-            static const Vec2 negativeInfinity;
+            RONIN_API static const Vec2 one;
+            RONIN_API static const Vec2 half;
+            RONIN_API static const Vec2 minusOne;
+            RONIN_API static const Vec2 zero;
+            RONIN_API static const Vec2 down;
+            RONIN_API static const Vec2 left;
+            RONIN_API static const Vec2 right;
+            RONIN_API static const Vec2 up;
+            RONIN_API static const Vec2 infinity;
+            RONIN_API static const Vec2 negativeInfinity;
 
-            static const Vec2 Abs(const Vec2& value);
-            static const Vec2 NAbs(const Vec2& value);
-            static Vec2 Slerp(const Vec2& a, const Vec2& b, float t);
-            static Vec2 SlerpUnclamped(const Vec2& a, const Vec2& b, float t);
-            static Vec2 Lerp(const Vec2& a, const Vec2& b, float t);
-            static Vec2 LerpUnclamped(const Vec2& a, const Vec2& b, float t);
-            static Vec2 Max(const Vec2& lhs, const Vec2& rhs);
-            static Vec2 Min(const Vec2& lhs, const Vec2& rhs);
-            static Vec2 MoveTowards(const Vec2& current, const Vec2& target, float maxDistanceDelta);
-            static Vec2 Reflect(const Vec2& inDirection, const Vec2& inNormal);
-            static Vec2 Scale(const Vec2& a, const Vec2& b);
-            static float Distance(const Vec2& lhs, const Vec2& rhs);
-            static float DistanceSqr(const Vec2& lhs, const Vec2& rhs);
-            static float Angle(Vec2 from, Vec2 to);
-            static float SignedAngle(Vec2 from, Vec2 to);
-            static Vec2 ClampMagnitude(Vec2 vector, float maxLength);
-            static Vec2 SmoothDamp(Vec2 current, Vec2 target, Vec2& currentVelocity, float smoothTime, float maxSpeed, float deltaTime);
-            static float Dot(const Vec2& lhs, const Vec2& rhs);
-            static float SqrMagnitude(const Vec2& lhs);
-            static Vec2 Round(Vec2 lhs);
-            static Runtime::Vec2Int RoundToInt(const Vec2& lhs);
+            RONIN_API static const Vec2 Abs(const Vec2& value);
+            RONIN_API static const Vec2 NAbs(const Vec2& value);
+            RONIN_API static Vec2 Slerp(const Vec2& a, const Vec2& b, float t);
+            RONIN_API static Vec2 SlerpUnclamped(const Vec2& a, const Vec2& b, float t);
+            RONIN_API static Vec2 Lerp(const Vec2& a, const Vec2& b, float t);
+            RONIN_API static Vec2 LerpUnclamped(const Vec2& a, const Vec2& b, float t);
+            RONIN_API static Vec2 Max(const Vec2& lhs, const Vec2& rhs);
+            RONIN_API static Vec2 Min(const Vec2& lhs, const Vec2& rhs);
+            RONIN_API static Vec2 MoveTowards(const Vec2& current, const Vec2& target, float maxDistanceDelta);
+            RONIN_API static Vec2 Reflect(const Vec2& inDirection, const Vec2& inNormal);
+            RONIN_API static Vec2 Scale(const Vec2& a, const Vec2& b);
+            RONIN_API static float Distance(const Vec2& lhs, const Vec2& rhs);
+            RONIN_API static float DistanceSqr(const Vec2& lhs, const Vec2& rhs);
+            RONIN_API static float Angle(Vec2 from, Vec2 to);
+            RONIN_API static float SignedAngle(Vec2 from, Vec2 to);
+            RONIN_API static Vec2 ClampMagnitude(Vec2 vector, float maxLength);
+            RONIN_API static Vec2 SmoothDamp(Vec2 current, Vec2 target, Vec2& currentVelocity, float smoothTime, float maxSpeed, float deltaTime);
+            RONIN_API static float Dot(const Vec2& lhs, const Vec2& rhs);
+            RONIN_API static float SqrMagnitude(const Vec2& lhs);
+            RONIN_API static Vec2 Round(Vec2 lhs);
+            RONIN_API static Runtime::Vec2Int RoundToInt(const Vec2& lhs);
             //	static bool AreaEnclosePoints(const Rectf_t* points, int count, const
             // Rectf_t* clip, Rectf_t* result);
-            static bool AreaPointInRect(const Vec2& p, const Rectf_t& r);
-            static bool HasIntersection(const Rectf_t& lhs, const Rectf_t& rhs);
-            static bool InArea(const Vec2& p, const Rectf_t& r);
-            static const Vec2 Rotate(Vec2 vec, Vec2 normal, float angleRadian);
-            static const Vec2 Rotate(Vec2 position, float angleRadian);
-            static const Vec2 RotateClockwise(Vec2 position, float angleRadian);
-            static const Vec2 RotateAround(Vec2 center, Vec2 localPosition, float angleRadian);
+            RONIN_API static bool AreaPointInRect(const Vec2& p, const Rectf_t& r);
+            RONIN_API static bool HasIntersection(const Rectf_t& lhs, const Rectf_t& rhs);
+            RONIN_API static bool InArea(const Vec2& p, const Rectf_t& r);
+            RONIN_API static const Vec2 Rotate(Vec2 vec, Vec2 normal, float angleRadian);
+            RONIN_API static const Vec2 Rotate(Vec2 position, float angleRadian);
+            RONIN_API static const Vec2 RotateClockwise(Vec2 position, float angleRadian);
+            RONIN_API static const Vec2 RotateAround(Vec2 center, Vec2 localPosition, float angleRadian);
 
-            static const Vec2 Perpendicular(Vec2 inDirection);
+            RONIN_API static const Vec2 Perpendicular(Vec2 inDirection);
 
-            Vec2& operator+=(const Vec2& rhs);
-            Vec2& operator-=(const Vec2& rhs);
-            Vec2& operator*=(const float& d);
-            Vec2& operator/=(const float& d);
-            Vec2& operator=(const Vec2& rhs);
+            RONIN_API Vec2& operator+=(const Vec2& rhs);
+            RONIN_API Vec2& operator-=(const Vec2& rhs);
+            RONIN_API Vec2& operator*=(const float& d);
+            RONIN_API Vec2& operator/=(const float& d);
+            RONIN_API Vec2& operator=(const Vec2& rhs);
 
-            Vec2 operator-() const;
+            RONIN_API Vec2 operator-() const;
         };
 
         // NOTE: Я не считаю это лучшим способом инициализировать переменные статических членов.
         // TODO: Перевести строки ниже на функий get constexpr для предотвращения пре-инициализаций, пре-проверки
-        inline const Vec2 Vec2::one(1, 1);
-        inline const Vec2 Vec2::half(0.5f, 0.5f);
-        inline const Vec2 Vec2::minusOne(-1, -1);
-        inline const Vec2 Vec2::zero(0, 0);
-        inline const Vec2 Vec2::down(0, -1);
-        inline const Vec2 Vec2::left(-1, 0);
-        inline const Vec2 Vec2::right(1, 0);
-        inline const Vec2 Vec2::up(0, 1);
-        inline const Vec2 Vec2::infinity(std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity());
-        inline const Vec2 Vec2::negativeInfinity(-std::numeric_limits<float>::infinity(), -std::numeric_limits<float>::infinity());
+        API_EXPORT inline const Vec2 Vec2::one(1, 1);
+        API_EXPORT inline const Vec2 Vec2::half(0.5f, 0.5f);
+        API_EXPORT inline const Vec2 Vec2::minusOne(-1, -1);
+        API_EXPORT inline const Vec2 Vec2::zero(0, 0);
+        API_EXPORT inline const Vec2 Vec2::down(0, -1);
+        API_EXPORT inline const Vec2 Vec2::left(-1, 0);
+        API_EXPORT inline const Vec2 Vec2::right(1, 0);
+        API_EXPORT inline const Vec2 Vec2::up(0, 1);
+        API_EXPORT inline const Vec2 Vec2::infinity(std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity());
+        API_EXPORT inline const Vec2 Vec2::negativeInfinity(-std::numeric_limits<float>::infinity(), -std::numeric_limits<float>::infinity());
 
-        Vec2Int operator+(const Vec2Int& lhs, const Vec2Int& rhs);
-        Vec2Int operator-(const Vec2Int& lhs, const Vec2Int& rhs);
-        bool operator==(const Vec2Int& lhs, const Vec2Int& rhs);
-        bool operator!=(const Vec2Int& lhs, const Vec2Int& rhs);
-        Vec2Int operator*(const float& d, const Vec2Int& rhs);
-        Vec2Int operator/(const float& d, const Vec2Int& rhs);
-        Vec2Int operator*(const Vec2Int& rhs, const float& d);
-        Vec2Int operator/(const Vec2Int& rhs, const float& d);
+        RONIN_API Vec2Int operator+(const Vec2Int& lhs, const Vec2Int& rhs);
+        RONIN_API Vec2Int operator-(const Vec2Int& lhs, const Vec2Int& rhs);
+        RONIN_API bool operator==(const Vec2Int& lhs, const Vec2Int& rhs);
+        RONIN_API bool operator!=(const Vec2Int& lhs, const Vec2Int& rhs);
+        RONIN_API Vec2Int operator*(const float& d, const Vec2Int& rhs);
+        RONIN_API Vec2Int operator/(const float& d, const Vec2Int& rhs);
+        RONIN_API Vec2Int operator*(const Vec2Int& rhs, const float& d);
+        RONIN_API Vec2Int operator/(const Vec2Int& rhs, const float& d);
 
-        bool operator==(const Vec2Int& lhs, const Vec2& rhs);
-        bool operator!=(const Vec2Int& lhs, const Vec2& rhs);
+        RONIN_API bool operator==(const Vec2Int& lhs, const Vec2& rhs);
+        RONIN_API bool operator!=(const Vec2Int& lhs, const Vec2& rhs);
 
-        Vec2 operator+(const Vec2& lhs, const Vec2& rhs);
-        Vec2 operator-(const Vec2& lhs, const Vec2& rhs);
-        Vec2 operator+(const Vec2& lhs, const Vec2Int& rhs);
-        Vec2 operator-(const Vec2& lhs, const Vec2Int& rhs);
-        bool operator==(const Vec2& lhs, const Vec2& rhs);
-        bool operator!=(const Vec2& lhs, const Vec2& rhs);
-        Vec2 operator*(const float& d, const Vec2& rhs);
-        Vec2 operator/(const float& d, const Vec2& rhs);
-        Vec2 operator*(const Vec2& rhs, const float& d);
-        Vec2 operator/(const Vec2& rhs, const float& d);
+        RONIN_API Vec2 operator+(const Vec2& lhs, const Vec2& rhs);
+        RONIN_API Vec2 operator-(const Vec2& lhs, const Vec2& rhs);
+        RONIN_API Vec2 operator+(const Vec2& lhs, const Vec2Int& rhs);
+        RONIN_API Vec2 operator-(const Vec2& lhs, const Vec2Int& rhs);
+        RONIN_API bool operator==(const Vec2& lhs, const Vec2& rhs);
+        RONIN_API bool operator!=(const Vec2& lhs, const Vec2& rhs);
+        RONIN_API Vec2 operator*(const float& d, const Vec2& rhs);
+        RONIN_API Vec2 operator/(const float& d, const Vec2& rhs);
+        RONIN_API Vec2 operator*(const Vec2& rhs, const float& d);
+        RONIN_API Vec2 operator/(const Vec2& rhs, const float& d);
 
     } // namespace Runtime
 } // namespace RoninEngine

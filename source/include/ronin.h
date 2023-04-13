@@ -6,6 +6,7 @@
 
 
 // applications
+#include "../../include/ronin/Time.h"
 #include "../../include/ronin/Application.h"
 #include "../../include/ronin/ResourceManager.h"
 #include "../../include/ronin/SystemInformation.h"
@@ -17,7 +18,6 @@
 #include "../../include/ronin/InputSystem.h"
 
 // objects
-#include "../../include/ronin/Time.h"
 #include "../../include/ronin/Behaviour.h"
 #include "../../include/ronin/Object.h"
 #include "../../include/ronin/Camera.h"

@@ -8,7 +8,7 @@ namespace RoninEngine
         int height;
     };
 
-    class SHARK Application
+    class RONIN_API Application
     {
     public:
         static void init(const std::uint32_t& width, const std::uint32_t& height, bool initResources = true);

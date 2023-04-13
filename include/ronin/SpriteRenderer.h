@@ -25,7 +25,7 @@ namespace RoninEngine::Runtime
         Tile
     };
 
-    class SHARK SpriteRenderer : public Renderer
+    class RONIN_API SpriteRenderer : public Renderer
     {
         Texture* textureCache;
         Sprite* sprite;

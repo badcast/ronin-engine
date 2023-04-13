@@ -23,7 +23,7 @@ namespace RoninEngine
             Runtime::Vec2Int sliderSize = Runtime::Vec2Int(240, 30);
         } defaultMakets;
 
-        class SHARK GUI final
+        class RONIN_API GUI final
         {
         private:
             struct {

@@ -82,9 +82,3 @@ Component* GameObject::addComponent(Component* component)
 // Transform* GameObject::getComponent() {
 //     return transform();
 // }
-
-template <>
-Transform* GameObject::getComponent<Transform>()
-{
-    return transform();
-}

@@ -3,7 +3,7 @@
 
 namespace RoninEngine
 {
-    class SHARK Level
+    class RONIN_API Level
     {
         friend class Application;
         friend class UI::GUI;

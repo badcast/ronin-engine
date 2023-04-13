@@ -18,7 +18,7 @@ namespace RoninEngine::UI
 		LinearReverse
 	};
 
-     class SHARK Timeline
+     class RONIN_API Timeline
 	{
 	private:
 		TimelineOptions _option;

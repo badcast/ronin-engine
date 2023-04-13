@@ -5,7 +5,7 @@ namespace RoninEngine::Runtime {
 
 struct Render_info;
 
-class SHARK Renderer : public Component {
+class RONIN_API Renderer : public Component {
    public:
     Renderer();
     Renderer(const std::string& name);

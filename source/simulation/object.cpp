@@ -76,9 +76,9 @@ namespace RoninEngine
         template SpriteRenderer* CreateObject<SpriteRenderer>(const string&);
         -------------------------------------------------------------------*/
 
-        GameObject* CreateGameObject() { return factory_base<GameObject>(true, nullptr, nullptr); }
+        RONIN_API GameObject* CreateGameObject() { return factory_base<GameObject>(true, nullptr, nullptr); }
 
-        GameObject* CreateGameObject(const std::string& name) { return factory_base<GameObject>(true, nullptr, name.data()); }
+        RONIN_API GameObject* CreateGameObject(const std::string& name) { return factory_base<GameObject>(true, nullptr, name.data()); }
 
         void Destroy(Object* obj) { Destroy(obj, 0); }
 

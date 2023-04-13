@@ -1,6 +1,7 @@
 #include "ronin.h"
 
 using namespace RoninEngine;
+using namespace RoninEngine::Runtime;
 
 constexpr auto periodic_fahren = 5.0 / 9;
 

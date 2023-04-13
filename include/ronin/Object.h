@@ -31,7 +31,7 @@ GameObject* Instantiate(GameObject* obj, Vec2 position, float angle = 0);
 //Клонирует объект
 GameObject* Instantiate(GameObject* obj, Vec2 position, Transform* parent, bool worldPositionStay = true);
 
-class SHARK Object {
+class RONIN_API Object {
     template <typename ObjectType>
     friend ObjectType* Instantiate(ObjectType* obj);
     friend GameObject* Instantiate(GameObject* obj);

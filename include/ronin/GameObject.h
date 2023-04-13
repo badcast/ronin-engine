@@ -13,7 +13,7 @@ namespace RoninEngine
         public:
             static T* getType(const std::list<Component*>& container)
             {
-                auto iter = std::find_if(++begin(container), end(container), [](Component* c) { return dynamic_cast<T*>(c) != nullptr; });
+                auto iter = std::find_if(begin(container), end(container), [](Component* c) { return dynamic_cast<T*>(c) != nullptr; });
 
                 if (iter != end(container))
                     return reinterpret_cast<T*>(*iter);
@@ -35,7 +35,7 @@ namespace RoninEngine
             }
         };
 
-        class SHARK GameObject final : public Object
+        class RONIN_API GameObject final : public Object
         {
             friend class Camera2D;
             friend class Component;
@@ -82,11 +82,7 @@ namespace RoninEngine
             T* getComponent();
 
             template <typename T>
-            // std::enable_if<!std::is_same<RoninEngine::Runtime::Transform,T>::value,
-            // std::list<T*>>
             std::list<T*> getComponents();
-
-            // Transform* getComponent();
         };
 
     } // namespace Runtime

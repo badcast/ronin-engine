@@ -2,7 +2,7 @@
 #include "begin.h"
 
 namespace RoninEngine::Runtime {
-class SHARK Gizmos {
+class RONIN_API Gizmos {
    public:
     static float angle;
     static Color getColor();

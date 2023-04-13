@@ -24,7 +24,7 @@ enum KeyboardState {
     // The SHIFT key is pressed.
     Shift_Pressed,
 };
-class SHARK input {
+class RONIN_API input {
    private:
     static void Reset();
 

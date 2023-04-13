@@ -2,7 +2,7 @@
 #include "begin.h"
 
 namespace RoninEngine::Runtime {
-class SHARK Spotlight final : public Light {
+class RONIN_API Spotlight final : public Light {
    public:
     //Диапозон
     float range;

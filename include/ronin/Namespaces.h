@@ -33,7 +33,9 @@ namespace RoninEngine
         typedef xRect<int> Rect;
         typedef xRect<float> Rectf_t;
 
+        // core
         class GC;
+        class TimeEngine;
 
         // base
         class Math;
@@ -56,8 +58,5 @@ namespace RoninEngine
         class Light;
         class Renderer;
         struct Color;
-
-        class TimeEngine;
-
     } // namespace Runtime
 } // namespace RoninEngine

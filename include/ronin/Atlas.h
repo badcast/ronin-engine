@@ -4,7 +4,7 @@
 
 namespace RoninEngine::Runtime {
 
-   class SHARK Atlas {
+   class RONIN_API Atlas {
          friend GC;
          Texture* texture;
          std::map<std::string, Sprite> _sprites;

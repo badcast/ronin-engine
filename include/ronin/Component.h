@@ -6,7 +6,7 @@ namespace  RoninEngine {
 
    namespace Runtime {
 
-      class SHARK Component : public Object {
+      class RONIN_API Component : public Object {
          private:
             friend class GameObject;
             friend GameObject* Instantiate(GameObject* obj);
