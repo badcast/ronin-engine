@@ -4,6 +4,10 @@ namespace RoninEngine
 {
     namespace Runtime
     {
+        float timeScale, _lastTime, internal_time, intenal_delta_time;
+        std::uint32_t _startedTime;
+        std::uint32_t intenal_frames; // framecounter
+
         extern void gc_init();
     }
     static Level* destroyableLevel = nullptr;
@@ -21,9 +25,6 @@ namespace RoninEngine
     std::uint8_t mouseWheels;
     Runtime::Vec2 m_axis;
     bool text_inputState;
-    float timeScale, _lastTime, internal_time, intenal_delta_time;
-    std::uint32_t _startedTime;
-    std::uint32_t intenal_frames; // framecounter
 
     extern void gc_collect();
 
@@ -33,7 +34,7 @@ namespace RoninEngine
         _lastTime = 0;
         timeScale = 1;
         _startedTime = 0;
-        _startedTime = Time::startUpTime();
+        _startedTime = TimeEngine::startUpTime();
     }
 
     void input_reset()
@@ -207,7 +208,7 @@ namespace RoninEngine
         while (!isQuiting) {
             // update events
             input_reset();
-            delayed = Time::tickMillis();
+            delayed = TimeEngine::tickMillis();
             wndFlags = static_cast<SDL_WindowFlags>(SDL_GetWindowFlags(Application::getWindow()));
             while (SDL_PollEvent(&event)) {
                 input::Update_Input(&event);
@@ -271,11 +272,11 @@ namespace RoninEngine
                 }
             }
 
-            delayed = Time::tickMillis() - delayed;
+            delayed = TimeEngine::tickMillis() - delayed;
 
             // if (Time::startUpTime() > fpsRound)
             {
-                fps = intenal_frames / (Time::startUpTime());
+                fps = intenal_frames / (TimeEngine::startUpTime());
                 if (fps > 2000000) {
                     fps = 0;
                 }
@@ -290,8 +291,7 @@ namespace RoninEngine
             }
 
             intenal_delta_time = delayed;
-            if (intenal_delta_time > 1)
-            {
+            if (intenal_delta_time > 1) {
                 intenal_delta_time -= 1;
                 intenal_delta_time = Math::Clamp01(intenal_delta_time);
             }

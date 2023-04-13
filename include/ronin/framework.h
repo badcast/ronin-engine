@@ -1,16 +1,12 @@
 #ifndef _RONINENGINE_H
 #define _RONINENGINE_H
 
-#include "begin.h"
-
 // base headers
-#include "Color.h"
+#include "begin.h"
 #include "Controls.h"
-#include "LevelEntity.h"
 #include "Math.h"
 #include "Paths.h"
 #include "Texture.h"
-#include "Time.h"
 #include "InputSystem.h"
 
 // applications
@@ -18,6 +14,7 @@
 #include "SystemInformation.h"
 #include "ResourceManager.h"
 
+#include "Time.h"
 // objects
 #include "Behaviour.h"
 #include "Camera.h"

@@ -7,7 +7,7 @@ namespace RoninEngine
     namespace Runtime
     {
 
-        struct SHARK Vec2Int {
+        struct Vec2Int {
         public:
             int x;
             int y;
@@ -63,7 +63,7 @@ namespace RoninEngine
             }
         };
 
-        struct SHARK Vec2 {
+        struct Vec2 {
             float x;
             float y;
 

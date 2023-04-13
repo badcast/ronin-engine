@@ -1,11 +1,12 @@
 #include "ronin.h"
 
-namespace RoninEngine {
+using namespace RoninEngine;
 
 constexpr auto periodic_fahren = 5.0 / 9;
 
 // get random value
-int getRVal() {
+int getRVal()
+{
     int value;
     char* p = reinterpret_cast<char*>(&value);
     p[0] = (char)rand() % 0xff;
@@ -17,17 +18,20 @@ int getRVal() {
 
 void Random::srand(int seed) { std::srand(static_cast<uint32_t>(seed)); }
 
-int Random::range(int min, int max) {
+int Random::range(int min, int max)
+{
     int result = Math::number(value() * (max - min)) + min;
     return result;
 }
 
-float Random::range(float min, float max) {
+float Random::range(float min, float max)
+{
     float result = value() * (max - min) + min;
     return result;
 }
 
-float Random::value() {
+float Random::value()
+{
     float result = getRVal() * static_cast<float>(4.6566128752458E-10);
     return result;
 }
@@ -88,7 +92,8 @@ float Math::sqrt(float x) { return std::sqrt(x); }
 
 float Math::repeat(float t, float length) { return Clamp(t - floor(t / length) * length, 0.f, length); }
 
-float Math::DeltaAngle(float current, float target) {
+float Math::DeltaAngle(float current, float target)
+{
     float num = repeat(target - current, 360);
     if (num > 180) {
         num -= 360;
@@ -96,7 +101,8 @@ float Math::DeltaAngle(float current, float target) {
     return num;
 }
 
-float Math::Gamma(float value, float absmax, float gamma) {
+float Math::Gamma(float value, float absmax, float gamma)
+{
     bool flag = false;
     if (value < 0) {
         flag = true;
@@ -112,7 +118,8 @@ float Math::Gamma(float value, float absmax, float gamma) {
     return result;
 }
 
-float Math::InverseLerp(float a, float b, float value) {
+float Math::InverseLerp(float a, float b, float value)
+{
     float result;
     if (a != b) {
         result = Clamp01((value - a) / (b - a));
@@ -124,7 +131,8 @@ float Math::InverseLerp(float a, float b, float value) {
 
 float Math::Lerp(float a, float b, float t) { return a + (b - a) * Clamp01(t); }
 
-float Math::LerpAngle(float a, float b, float t) {
+float Math::LerpAngle(float a, float b, float t)
+{
     float num = repeat(b - a, 360);
     if (num > 180) {
         num -= 360;
@@ -134,7 +142,8 @@ float Math::LerpAngle(float a, float b, float t) {
 
 float Math::LerpUnclamped(float a, float b, float t) { return a + (b - a) * t; }
 
-bool Math::LineIntersection(Vec2 p1, Vec2 p2, Vec2 p3, Vec2 p4, Vec2& result) {
+bool Math::LineIntersection(Vec2 p1, Vec2 p2, Vec2 p3, Vec2 p4, Vec2& result)
+{
     float num = p2.x - p1.x;
     float num2 = p2.y - p1.y;
     float num3 = p4.x - p3.x;
@@ -153,7 +162,8 @@ bool Math::LineIntersection(Vec2 p1, Vec2 p2, Vec2 p3, Vec2 p4, Vec2& result) {
     return result2;
 }
 
-float Math::MoveTowards(float current, float target, float maxDelta) {
+float Math::MoveTowards(float current, float target, float maxDelta)
+{
     float result;
     if (abs(target - current) <= maxDelta) {
         result = target;
@@ -163,7 +173,8 @@ float Math::MoveTowards(float current, float target, float maxDelta) {
     return result;
 }
 
-bool Math::LineSegmentIntersection(Vec2 p1, Vec2 p2, Vec2 p3, Vec2 p4, Vec2& result) {
+bool Math::LineSegmentIntersection(Vec2 p1, Vec2 p2, Vec2 p3, Vec2 p4, Vec2& result)
+{
     float num = p2.x - p1.x;
     float num2 = p2.y - p1.y;
     float num3 = p4.x - p3.x;
@@ -191,18 +202,16 @@ bool Math::LineSegmentIntersection(Vec2 p1, Vec2 p2, Vec2 p3, Vec2 p4, Vec2& res
     return result2;
 }
 
-float Math::SmoothDamp(float current, float target, float& currentVelocity, float smoothTime, float maxSpeed) {
-    float deltaTime = RoninEngine::Time::deltaTime();
-    return Math::SmoothDamp(current, target, currentVelocity, smoothTime, maxSpeed, deltaTime);
-}
+float Math::SmoothDamp(float current, float target, float& currentVelocity, float smoothTime, float maxSpeed) { return Math::SmoothDamp(current, target, currentVelocity, smoothTime, maxSpeed, TimeEngine::deltaTime()); }
 
-float Math::SmoothDamp(float current, float target, float& currentVelocity, float smoothTime) {
-    float deltaTime = RoninEngine::Time::deltaTime();
+float Math::SmoothDamp(float current, float target, float& currentVelocity, float smoothTime)
+{
     float maxSpeed = Infinity;
-    return Math::SmoothDamp(current, target, currentVelocity, smoothTime, maxSpeed, deltaTime);
+    return Math::SmoothDamp(current, target, currentVelocity, smoothTime, maxSpeed, TimeEngine::deltaTime());
 }
 
-float Math::SmoothDamp(float current, float target, float& currentVelocity, float smoothTime, float maxSpeed, float deltaTime) {
+float Math::SmoothDamp(float current, float target, float& currentVelocity, float smoothTime, float maxSpeed, float deltaTime)
+{
     smoothTime = max(0.f, max(1.f, smoothTime));
     float num = 2 / smoothTime;
     float num2 = num * deltaTime;
@@ -226,27 +235,23 @@ float Math::cel2far(float celsius) { return celsius * 1.8f + 32; }
 
 float Math::far2cel(float fahrenheit) { return (fahrenheit - 32) * periodic_fahren; }
 
-float Math::SmoothDampAngle(float current, float target, float& currentVelocity, float smoothTime, float maxSpeed) {
-    float deltaTime = Time::deltaTime();
-    return SmoothDampAngle(current, target, currentVelocity, smoothTime, maxSpeed, deltaTime);
-}
+float Math::SmoothDampAngle(float current, float target, float& currentVelocity, float smoothTime, float maxSpeed) { return SmoothDampAngle(current, target, currentVelocity, smoothTime, maxSpeed, TimeEngine::deltaTime()); }
 
-float Math::SmoothDampAngle(float current, float target, float& currentVelocity, float smoothTime) {
-    float deltaTime = Time::deltaTime();
+float Math::SmoothDampAngle(float current, float target, float& currentVelocity, float smoothTime)
+{
     float maxSpeed = Infinity;
-    return SmoothDampAngle(current, target, currentVelocity, smoothTime, maxSpeed, deltaTime);
+    return SmoothDampAngle(current, target, currentVelocity, smoothTime, maxSpeed, TimeEngine::deltaTime());
 }
 
-float Math::SmoothDampAngle(float current, float target, float& currentVelocity, float smoothTime, float maxSpeed,
-                            float deltaTime) {
+float Math::SmoothDampAngle(float current, float target, float& currentVelocity, float smoothTime, float maxSpeed, float deltaTime)
+{
     target = current + DeltaAngle(current, target);
     return SmoothDamp(current, target, currentVelocity, smoothTime, maxSpeed, deltaTime);
 }
 
-float Math::SmoothStep(float from, float to, float t) {
+float Math::SmoothStep(float from, float to, float t)
+{
     t = Clamp01(t);
     t = -2 * t * t * t + 3 * t * t;
     return to * t + from * (1 - t);
 }
-
-}  // namespace RoninEngine

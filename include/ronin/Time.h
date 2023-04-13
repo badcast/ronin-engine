@@ -3,9 +3,9 @@
 
 #include "begin.h"
 
-namespace RoninEngine
+namespace RoninEngine::Runtime
 {
-    class SHARK Time
+    class SHARK TimeEngine final
     {
     public:
         static float time();

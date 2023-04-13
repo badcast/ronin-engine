@@ -4,20 +4,20 @@
 // base headers
 #include "just-parser.h"
 
+
 // applications
 #include "../../include/ronin/Application.h"
 #include "../../include/ronin/ResourceManager.h"
 #include "../../include/ronin/SystemInformation.h"
 
 #include "../../include/ronin/Controls.h"
-#include "../../include/ronin/LevelEntity.h"
 #include "../../include/ronin/Math.h"
 #include "../../include/ronin/Paths.h"
 #include "../../include/ronin/Texture.h"
-#include "../../include/ronin/Time.h"
 #include "../../include/ronin/InputSystem.h"
 
 // objects
+#include "../../include/ronin/Time.h"
 #include "../../include/ronin/Behaviour.h"
 #include "../../include/ronin/Object.h"
 #include "../../include/ronin/Camera.h"
@@ -41,6 +41,7 @@
 #include "../../include/ronin/Physics2D.h"
 #include "../../include/ronin/Atlas.h"
 
+#include "levelentity.h"
 #include "Font.h"
 
 #endif

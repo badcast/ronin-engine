@@ -83,7 +83,5 @@ namespace RoninEngine
             static const xRect<T> zero;
             static const xRect<T> one;
         };
-
-        double Get_Angle(Vec2 lhs, Vec2 rhs);
     } // namespace Runtime
 } // namespace RoninEngine

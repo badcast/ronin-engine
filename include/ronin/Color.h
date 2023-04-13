@@ -4,7 +4,7 @@
 
 namespace RoninEngine::Runtime
 {
-    struct SHARK Color {
+    struct Color {
         std::uint8_t r;
         std::uint8_t g;
         std::uint8_t b;

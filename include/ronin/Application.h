@@ -6,7 +6,6 @@ namespace RoninEngine
     struct Resolution {
         int width;
         int height;
-        // int hz;
     };
 
     class SHARK Application

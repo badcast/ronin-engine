@@ -21,7 +21,6 @@ namespace RoninEngine
 
     namespace Runtime
     {
-
         struct Vec2;
 
         struct Vec2Int;
@@ -56,8 +55,9 @@ namespace RoninEngine
         class GameObject;
         class Light;
         class Renderer;
-
         struct Color;
+
+        class TimeEngine;
 
     } // namespace Runtime
 } // namespace RoninEngine

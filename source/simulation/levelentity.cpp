@@ -24,29 +24,29 @@ using namespace RoninEngine;
 
 std::string RoninEngine::Levels::getHierarchyString(Transform* target)
 {
-    static char delim = 0x32;
-    std::string delims;
-    std::string result;
+//    static char delim = 0x32;
+//    std::string delims;
+//    std::string result;
 
-    std::list<Transform*> stack;
+//    std::list<Transform*> stack;
 
-    while (target) {
-        for (auto& c : target->hierarchy) {
-            stack.emplace_back(c);
-        }
+//    while (target) {
+//        for (auto& c : target->hierarchy) {
+//            stack.emplace_back(c);
+//        }
 
-        result += delims;
-        result += target->name();
-        result += "\n";
+//        result += delims;
+//        result += target->name();
+//        result += "\n";
 
-        if (!stack.empty()) {
-            target = stack.front();
-            stack.pop_front();
-        } else
-            target = nullptr;
-    }
+//        if (!stack.empty()) {
+//            target = stack.front();
+//            stack.pop_front();
+//        } else
+//            target = nullptr;
+//    }
 
-    return result;
+//    return result;
 }
 
 void RoninEngine::Levels::Level_Init()
@@ -94,19 +94,3 @@ return;
     }
 }
 
-int RoninEngine::Levels::Load_Level(std::string levelName, Terrain2D* terrain2d)
-{
-    int id = -1;
-    for (auto& v : m_levels) { }
-    return id;
-}
-
-const char* RoninEngine::Levels::Get_LevelName(int levelId) { return {}; }
-
-void RoninEngine::Levels::Unload_Level(int levelId) { }
-
-void RoninEngine::Levels::Level_Free()
-{
-    m_levels.clear();
-    m_levels.shrink_to_fit();
-}

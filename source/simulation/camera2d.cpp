@@ -1,6 +1,7 @@
 #include "ronin.h"
 
 // TODO: how to create shadow ? for all sprite renderer component
+using namespace RoninEngine;
 
 namespace RoninEngine::Runtime {
 Camera2D::Camera2D() : Camera(typeid(*this).name()), scale(Vec2::one) {
@@ -106,8 +107,8 @@ void Camera2D::render(SDL_Renderer* renderer, Rect rect, GameObject* root) {
     }
 
     if (visibleBorders) {
-        float offset = 25 * std::max(1 - Time::deltaTime(), 0.5f);
-        float height = 200 * Time::deltaTime();
+        float offset = 25 * std::max(1 - TimeEngine::deltaTime(), 0.5f);
+        float height = 200 * TimeEngine::deltaTime();
 
         wrapper.dst.x = ((rect.w) / 2.0f);
         wrapper.dst.y = ((rect.h) / 2.0f);

@@ -18,11 +18,10 @@ function(find_packages)
 
         set(CMAKE_PREFIX_PATH ${LIBS_DIR})
 
-        find_package(SDL2 REQUIRED PATHS "${LIBS_DIR}" NO_DEFAULT_PATH)
-        find_package(SDL2_image REQUIRED PATHS "${LIBS_DIR}" NO_DEFAULT_PATH)
-        find_package(SDL2_mixer REQUIRED PATHS "${LIBS_DIR}" NO_DEFAULT_PATH)
-        find_package(SDL2_ttf REQUIRED PATHS "${LIBS_DIR}" NO_DEFAULT_PATH)
-        find_package(SDL2_gfx REQUIRED PATHS "${LIBS_DIR}" NO_DEFAULT_PATH)
+        find_package(SDL2          REQUIRED )
+        find_package(SDL2_mixer    REQUIRED )
+        find_package(SDL2_ttf      REQUIRED )
+        find_package(SDL2_image    REQUIRED )
     endif()
 endfunction()
 

@@ -12,7 +12,6 @@ class SHARK Transform : public Component {
     friend class Camera2D;
     friend class Physics2D;
     friend GameObject* Instantiate(GameObject* obj);
-    friend std::string RoninEngine::Levels::getHierarchyString(Transform* target);
 
 protected:
     std::vector<Transform*> hierarchy;

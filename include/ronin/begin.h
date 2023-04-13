@@ -27,9 +27,9 @@
 #include <unordered_map>
 #include <vector>
 
-#include "Namespaces.h"
-
 #include "Defines.h"
+
+#include "Namespaces.h"
 
 #include "Color.h"
 #include "Static.h"
@@ -37,4 +37,3 @@
 #include "Paths.h"
 
 #include "Types.h"
-#include "LevelEntity.h"

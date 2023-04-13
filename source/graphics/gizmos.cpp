@@ -186,9 +186,9 @@ namespace RoninEngine::Runtime
         if (drawText) {
             static std::uint32_t maxTotal = 0;
             static float upplow = 0;
-            if (Time::time() > upplow) {
+            if (TimeEngine::time() > upplow) {
                 maxTotal = 0;
-                upplow = Time::time() + 1;
+                upplow = TimeEngine::time() + 1;
             }
             std::uint32_t totalC = mesh->getCachedSize();
             maxTotal = std::max(maxTotal, totalC);

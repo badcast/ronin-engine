@@ -257,7 +257,7 @@ bool general_render_ui_section(GUI* gui, UIElement& element, SDL_Renderer* rende
         }
         case CIMAGEANIMATOR: {
             Timeline* timeline = (Timeline*)element.resources;
-            Texture* texture = timeline->Evaluate(Time::time())->texture;
+            Texture* texture = timeline->Evaluate(TimeEngine::time())->texture;
             SDL_RenderCopy(render, texture->native(), nullptr, (SDL_Rect*)&element.rect);
             break;
         }
@@ -270,8 +270,8 @@ bool general_render_ui_section(GUI* gui, UIElement& element, SDL_Renderer* rende
             element.text.resize(15);
             size_t i;
 
-            if (Time::time() > lasttime) {
-                lasttime = Time::time() + 0.1f;
+            if (TimeEngine::time() > lasttime) {
+                lasttime = TimeEngine::time() + 0.1f;
                 switch (format) {
                     case TextRandomizer_Format::OnlyNumber:
                         for (i = 0; i < element.text.length(); ++i) {
@@ -333,7 +333,7 @@ bool general_render_ui_section(GUI* gui, UIElement& element, SDL_Renderer* rende
                 r.y += r.h;
 
                 r.h = dropDownLinear =
-                    Math::ceil(Math::LerpUnclamped(dropDownLinear, link->second.size() * sz, 2 * Time::deltaTime()));
+                    Math::ceil(Math::LerpUnclamped(dropDownLinear, link->second.size() * sz, 2 * TimeEngine::deltaTime()));
 
                 Gizmos::setColor(colorSpace.defaultInteraction.hoverState);
                 // draw background

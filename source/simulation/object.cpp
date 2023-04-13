@@ -1,6 +1,6 @@
 #include "ronin.h"
 
-using namespace RoninEngine;
+
 namespace RoninEngine
 {
     namespace Runtime
@@ -97,7 +97,7 @@ namespace RoninEngine
             if (iter != std::end(*ref))
                 std::runtime_error("Object is destroyed state");
 
-            ref->push_back(std::make_pair(const_cast<Object*>(obj), Time::time() + t));
+            ref->push_back(std::make_pair(const_cast<Object*>(obj), TimeEngine::time() + t));
         }
 
         void Destroy_Immediate(Object* obj)

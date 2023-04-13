@@ -5,7 +5,7 @@
 #include <sys/types.h>
 #endif
 
-#ifdef _MSC_VER
+#if WIN32
 typedef struct _PROCESS_MEMORY_COUNTERS_EX {
     unsigned long cb;
     unsigned long PageFaultCount;
@@ -19,12 +19,11 @@ typedef struct _PROCESS_MEMORY_COUNTERS_EX {
     size_t PeakPagefileUsage;
     size_t PrivateUsage;
 } PROCESS_MEMORY_COUNTERS_EX;
-typedef PROCESS_MEMORY_COUNTERS_EX *PPROCESS_MEMORY_COUNTERS_EX;
+typedef PROCESS_MEMORY_COUNTERS_EX* PPROCESS_MEMORY_COUNTERS_EX;
 
 extern "C" {
-__declspec(dllimport) void *__stdcall GetCurrentProcess(void);
-__declspec(dllimport) int __stdcall K32GetProcessMemoryInfo(void *Process, PROCESS_MEMORY_COUNTERS_EX *ppsmemCounters,
-                                                            unsigned long cb);
+__declspec(dllimport) void* __stdcall GetCurrentProcess(void);
+__declspec(dllimport) int __stdcall K32GetProcessMemoryInfo(void* Process, PROCESS_MEMORY_COUNTERS_EX* ppsmemCounters, unsigned long cb);
 }
 #elif __unix__
 
@@ -37,30 +36,34 @@ typedef struct {
     char cpuName[32];
 } system_info;
 
-std::size_t unix_proc_parse(char *line) {
+std::size_t unix_proc_parse(char* line)
+{
     // This assumes that a digit will be found and the line ends in " Kb".
     std::size_t i;
-    const char *p = line;
-    while (*p < '0' || *p > '9') p++;
+    const char* p = line;
+    while (*p < '0' || *p > '9')
+        p++;
     //  line[i - 3] = '\0';
     i = atoi(p);
     return i;
 }
 
-system_info unix_process_info_from_proc() {
+system_info unix_process_info_from_proc()
+{
     system_info upm;
-    const char *fself = "/proc/self/status";
-    FILE *f = fopen(fself, "r");
+    const char* fself = "/proc/self/status";
+    FILE* f = fopen(fself, "r");
 
     char buffer[64];
-    if (f == nullptr) RoninEngine::Application::fail("unix: invalid read \""+std::string(fself)+"\" access denied");
+    if (f == nullptr)
+        RoninEngine::Application::fail("unix: invalid read \"" + std::string(fself) + "\" access denied");
     while (fgets(buffer, static_cast<int>(sizeof(buffer)), f) != nullptr) {
         if (!strncmp(buffer, "VmSize:", 7)) {
-            upm.virtualMem = unix_proc_parse(buffer) * 1024;  // read in KB
+            upm.virtualMem = unix_proc_parse(buffer) * 1024; // read in KB
             continue;
         }
         if (!strncmp(buffer, "VmRSS:", 6)) {
-            upm.physicalMem = unix_proc_parse(buffer) * 1024;  // read in KB
+            upm.physicalMem = unix_proc_parse(buffer) * 1024; // read in KB
             break;
         }
     }
@@ -69,7 +72,8 @@ system_info unix_process_info_from_proc() {
 
     return upm;
 }
-system_info unix_process_info() {
+system_info unix_process_info()
+{
     system_info upm;
     struct sysinfo s;
 
@@ -104,7 +108,8 @@ TODO: % CPU в настоящее время используется этим �
 
 */
 
-const size_t get_process_privateMemory() {
+const size_t get_process_privateMemory()
+{
     size_t total;
 #ifdef _MSC_VER
     PROCESS_MEMORY_COUNTERS_EX pm;
@@ -116,7 +121,8 @@ const size_t get_process_privateMemory() {
     return total;
 }
 
-const size_t get_process_sizeMemory() {
+const size_t get_process_sizeMemory()
+{
     size_t total = 0;
 #ifdef _MSC_VER
     PROCESS_MEMORY_COUNTERS_EX pm;
@@ -127,4 +133,3 @@ const size_t get_process_sizeMemory() {
 #endif
     return total;
 }
-
