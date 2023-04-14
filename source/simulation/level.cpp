@@ -216,7 +216,6 @@ void Level::RenderLevel(SDL_Renderer* renderer)
         // Рисуем в соотношение окна...
         cam->render(renderer, { 0, 0, res.width, res.height }, main_object);
     }
-
     if (_realtimeScripts) {
         for (auto n : *_realtimeScripts) {
             n->OnGizmos();

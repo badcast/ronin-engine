@@ -19,13 +19,13 @@ namespace RoninEngine::Runtime
         LEVELS
     };
 
-    extern const char* applicationPath();
+    RONIN_API const char* applicationPath();
 
-    extern const char* prefDataPath();
+    RONIN_API const char* prefDataPath();
 
-    extern const std::string dataPath();
+    RONIN_API const std::string dataPath();
 
-    extern const std::string getDataFrom(FolderKind type);
+    RONIN_API const std::string getDataFrom(FolderKind type);
 
-    extern void release_sdlpaths();
+    RONIN_API void release_sdlpaths();
 } // namespace RoninEngine::Runtime

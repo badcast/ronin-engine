@@ -36,7 +36,6 @@ namespace RoninEngine::Runtime
             Gizmos::Draw2DWorldSpace(Vec2::zero);
             Gizmos::DrawPosition(transform()->position());
         }
-
         // get from matrix selection
         auto filter = matrixSelection();
 

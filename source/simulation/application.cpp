@@ -187,7 +187,6 @@ namespace RoninEngine
 
     bool Application::simulate()
     {
-
         char windowTitle[128];
         float fps;
         int delayed;
@@ -296,7 +295,6 @@ namespace RoninEngine
                 intenal_delta_time = Math::Clamp01(intenal_delta_time);
             }
             internal_time += 0.001f * secPerFrame;
-
             // delay elapsed
             SDL_Delay(Math::max(0, static_cast<int>(secPerFrame - delayed)));
             ++intenal_frames;
