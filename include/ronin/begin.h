@@ -32,7 +32,6 @@
 #include "Namespaces.h"
 
 #include "Color.h"
-#include "Static.h"
 #include "Vec2.h"
 #include "Paths.h"
 

@@ -131,14 +131,14 @@ namespace RoninEngine::Runtime
         setColor(0xaa575757);
 
         // Draw H and V position
-        DrawPosition(std::move(origin));
+        DrawPosition(std::move(origin), maxWorldScalar);
 
         for (i = 0; i < depth; ++i) {
             dest1 += Vec2::one;
-            DrawPosition(std::move(dest1));
+            DrawPosition(std::move(dest1), maxWorldScalar);
 
             dest2 += Vec2::minusOne;
-            DrawPosition(std::move(dest2));
+            DrawPosition(std::move(dest2), maxWorldScalar);
         }
 
         setColor(lastColor);

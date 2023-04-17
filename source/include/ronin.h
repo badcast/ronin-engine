@@ -4,7 +4,6 @@
 // base headers
 #include "just-parser.h"
 
-
 // applications
 #include "../../include/ronin/Time.h"
 #include "../../include/ronin/Application.h"
@@ -41,7 +40,7 @@
 #include "../../include/ronin/Physics2D.h"
 #include "../../include/ronin/Atlas.h"
 
+#include "static.h"
 #include "levelentity.h"
 #include "Font.h"
-
 #endif

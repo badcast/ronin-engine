@@ -34,7 +34,7 @@ namespace RoninEngine::Runtime
 
         if (visibleGrids) {
             Gizmos::Draw2DWorldSpace(Vec2::zero);
-            Gizmos::DrawPosition(transform()->position());
+            Gizmos::DrawPosition(transform()->position(), maxWorldScalar);
         }
         // get from matrix selection
         auto filter = matrixSelection();
