@@ -11,7 +11,7 @@ namespace RoninEngine
 
         enum { NOPARENT = 0 };
 
-        ///Тип идентификатора GUI
+        /// Тип идентификатора GUI
         typedef std::uint8_t uid;
 
         enum TextRandomizer_Format { All = -1, OnlyText = 0, OnlyNumber = 1, OnlyReal = 3, MaskText = 2, MaskNumber = 4, MaskReal = 8, MaskUpperChar = 16, MaskLowwerChar = 32 };
@@ -86,7 +86,7 @@ namespace RoninEngine
                 return Push_DropDown(elements, index, Runtime::Rect(point.x, point.y, defaultMakets.dropdownSize.x, defaultMakets.dropdownSize.y), changed, parent);
             }
             template <typename Container>
-            CI uid Push_DropDown(const Container& elements, int index, const Runtime::Rect& rect, event_index_changed* changed = nullptr, uid parent = NOPARENT);
+            CI API_EXPORT uid Push_DropDown(const Container& elements, int index, const Runtime::Rect& rect, event_index_changed* changed = nullptr, uid parent = NOPARENT);
 
             CI uid Push_Slider(float value, const Runtime::Vec2Int& point, event_value_changed* changed = nullptr, uid parent = NOPARENT) { return Push_Slider(value, 0.f, 1.f, point, changed, parent); }
 
@@ -138,7 +138,7 @@ namespace RoninEngine
             CI bool Focused_UI();
         };
 
-        extern GUI* guiInstance;
+        extern RONIN_API GUI* guiInstance;
 
 #undef CI
     } // namespace RoninEngine::UI

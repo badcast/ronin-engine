@@ -9,7 +9,7 @@ class RONIN_API Gizmos {
     static void setColor(const Color &newColor);
 
     static void DrawLine(Vec2 a, Vec2 b);
-    static void DrawPosition(const Vec2& origin, float scalar = maxWorldScalar);
+    static void DrawPosition(const Vec2& origin, float scalar);
     static void DrawSquare(Vec2 origin, float width);
     static void DrawRectangle(Vec2 origin, float width, float height);
     static void DrawSquareRounded(Vec2 origin, float width, std::uint16_t radius);

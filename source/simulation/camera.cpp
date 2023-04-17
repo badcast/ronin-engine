@@ -106,14 +106,14 @@ namespace RoninEngine::Runtime
                  ' * * * * * * * * *'
         */
 //BUG: STORM CAST GET
-        if (false && renders.empty()) {
+        if (renders.empty()) {
             Resolution res = Application::getResolution();
             Vec2Int wpLeftTop = Vec2::RoundToInt(ScreenToWorldPoint(Vec2::zero));
             Vec2Int wpRightBottom = Vec2::RoundToInt(ScreenToWorldPoint(Vec2(res.width, res.height)));
             // RUN STORM CAST
-
+            Application::show_message("1");
             std::list<Transform*> result = Physics2D::stormCast(transform()->p, Math::number(Math::max(wpRightBottom.x - transform()->p.x, wpRightBottom.y - transform()->p.y)) + 1 + distanceEvcall);
-
+Application::show_message("2");
             std::list<Renderer*> _removes;
             // собираем оставшиеся которые прикреплены к видимости
             for (auto x = std::begin(prev); x != std::end(prev); ++x) {

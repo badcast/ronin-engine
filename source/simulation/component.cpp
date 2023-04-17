@@ -24,7 +24,7 @@ namespace RoninEngine
         {
             if (!isBind())
                 throw std::runtime_error("This component isn't binded");
-            return _owner->getComponent<Transform>();
+            return static_cast<Transform*>(_owner->m_components.front());
         }
     } // namespace Runtime
 } // namespace RoninEngine
