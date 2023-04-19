@@ -3,6 +3,12 @@
 
 namespace RoninEngine::Runtime
 {
+    std::uint32_t const_storm_dimensions = 0xFFFFFF;
+    std::uint32_t const_storm_steps_flag = std::numeric_limits<std::uint32_t>::max();
+    std::uint32_t const_storm_xDeterminant = 0xF000000;
+    std::uint32_t const_storm_yDeterminant = 0xF0000000;
+    std::uint32_t const_storm_yDeterminant_start = 0x20000000;
+    std::uint32_t const_storm_yDeterminant_inverse = 0x30000000;
 
     std::list<Transform*> Physics2D::stormCast(const Vec2& origin, int edges, int layer)
     {
@@ -40,11 +46,15 @@ namespace RoninEngine::Runtime
                  ' * * * * * * * * *'
 
         */
+        /*        char msg_info[156];
 
+                std::sprintf(msg_info, "origin=(x)%f (y)%f edges=%d layer=%d", origin.x, origin.y, edges, layer);
+                Application::show_message(msg_info);
+        */
         auto& mx = Level::self()->matrixWorld;
         Vec2Int ray = Vec2::RoundToInt(origin);
         std::uint64_t stormMember = 0;
-        std::int32_t stormFlags = 1;
+        std::uint64_t stormFlags = 1;
         std::list<Transform*> grubbed;
 
         if (edges > 0)
@@ -79,6 +89,9 @@ namespace RoninEngine::Runtime
                         }
                     }
                 }
+
+                // std::sprintf(msg_info, "grubbed=%d steps=%d maxSteps=%d edges=%d const_storm_steps_flag=%d stormMember=%d", grubbed.size(), steps, maxSteps, edges, const_storm_steps_flag, stormMember);
+                // Application::show_message(msg_info);
 
                 char xDeter = (stormFlags >> 24 & 0xf);
                 char yDeter = stormFlags >> 28;

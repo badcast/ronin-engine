@@ -218,41 +218,17 @@ namespace RoninEngine::UI
         return id;
     }
 
-    template <>
-    uid GUI::Push_DropDown(const std::vector<int>& elements, int index, const Runtime::Rect& rect, event_index_changed* changed, uid parent)
-    {
-        return internal_push_dropdown(elements, index, rect, changed, parent);
-    }
+    uid GUI::Push_DropDown(const std::vector<int>& elements, int index, const Runtime::Rect& rect, event_index_changed* changed, uid parent) { return internal_push_dropdown(elements, index, rect, changed, parent); }
 
-    template <>
-    uid GUI::Push_DropDown(const std::vector<float>& elements, int index, const Runtime::Rect& rect, event_index_changed* changed, uid parent)
-    {
-        return internal_push_dropdown(elements, index, rect, changed, parent);
-    }
+    uid GUI::Push_DropDown(const std::vector<float>& elements, int index, const Runtime::Rect& rect, event_index_changed* changed, uid parent) { return internal_push_dropdown(elements, index, rect, changed, parent); }
 
-    template <>
-    uid GUI::Push_DropDown(const std::vector<std::string>& elements, int index, const Runtime::Rect& rect, event_index_changed* changed, uid parent)
-    {
-        return internal_push_dropdown(elements, index, rect, changed, parent);
-    }
+    uid GUI::Push_DropDown(const std::vector<std::string>& elements, int index, const Runtime::Rect& rect, event_index_changed* changed, uid parent) { return internal_push_dropdown(elements, index, rect, changed, parent); }
 
-    template <>
-    uid GUI::Push_DropDown(const std::list<float>& elements, int index, const Runtime::Rect& rect, event_index_changed* changed, uid parent)
-    {
-        return internal_push_dropdown(elements, index, rect, changed, parent);
-    }
+    uid GUI::Push_DropDown(const std::list<float>& elements, int index, const Runtime::Rect& rect, event_index_changed* changed, uid parent) { return internal_push_dropdown(elements, index, rect, changed, parent); }
 
-    template <>
-    uid GUI::Push_DropDown(const std::list<int>& elements, int index, const Runtime::Rect& rect, event_index_changed* changed, uid parent)
-    {
-        return internal_push_dropdown(elements, index, rect, changed, parent);
-    }
+    uid GUI::Push_DropDown(const std::list<int>& elements, int index, const Runtime::Rect& rect, event_index_changed* changed, uid parent) { return internal_push_dropdown(elements, index, rect, changed, parent); }
 
-    template <>
-    uid GUI::Push_DropDown(const std::list<std::string>& elements, int index, const Runtime::Rect& rect, event_index_changed* changed, uid parent)
-    {
-        return internal_push_dropdown(elements, index, rect, changed, parent);
-    }
+    uid GUI::Push_DropDown(const std::list<std::string>& elements, int index, const Runtime::Rect& rect, event_index_changed* changed, uid parent) { return internal_push_dropdown(elements, index, rect, changed, parent); }
 
     uid GUI::Push_Slider(float value, float min, float max, const Rect& rect, event_value_changed* changed, uid parent)
     {
