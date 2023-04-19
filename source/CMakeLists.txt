@@ -19,9 +19,9 @@ function(find_packages)
         set(CMAKE_PREFIX_PATH ${LIBS_DIR})
 
         find_package(SDL2          REQUIRED )
+        find_package(SDL2_image    REQUIRED )
         find_package(SDL2_mixer    REQUIRED )
         find_package(SDL2_ttf      REQUIRED )
-        find_package(SDL2_image    REQUIRED )
     endif()
 endfunction()
 
@@ -34,34 +34,9 @@ file(GLOB_RECURSE RONIN_ENGINE_HEADERS
 
 set(RONIN_ENGINE_HEADERS "${RONIN_ENGINE_HEADERS}" PARENT_SCOPE)
 
-#region: excluding and ordering (internal,external) headers
-#file(GLOB_RECURSE RGE_HEADERS
-#    "${CMAKE_CURRENT_SOURCE_DIR}/include/*")
-
-#set(EXCLUDE_OF
-#    "begin.h"
-#)
-
-#message(STATUS Excluding:)
-#foreach(F IN LISTS RONIN_ENGINE_HEADERS)
-#    if("${F}" MATCHES "${EXCLUDE_OF}$")
-#        message(STATUS "${F} excluded")
-#    else()
-#        list(APPEND RGE_HEADERS "${F}")
-#    endif()
-#endforeach()
-
-#message(FATAL_ERROR "${RGE_HEADERS}")
-#RoninEngine include files
-#include_directories(
-#external include
-#    "${PROJECT_SOURCE_DIR}/include/ronin"
-#internal include
-#    "${CMAKE_CURRENT_SOURCE_DIR}/include"
-#
-
 function(libdef libname path)
-    file(GLOB SRC "${CMAKE_CURRENT_SOURCE_DIR}/${path}/*.cpp" "${CMAKE_CURRENT_SOURCE_DIR}/${path}/*.h")
+    set(path "${CMAKE_CURRENT_SOURCE_DIR}/${path}")
+    file(GLOB SRC "${path}/*.cpp" "${path}/*.hpp" "${path}/*.h")
 
     if("${SRC}" STREQUAL "")
         return()

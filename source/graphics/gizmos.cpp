@@ -6,6 +6,13 @@
 namespace RoninEngine::Runtime
 {
 
+    extern std::uint32_t const_storm_dimensions;
+    extern std::uint32_t const_storm_steps_flag;
+    extern std::uint32_t const_storm_xDeterminant;
+    extern std::uint32_t const_storm_yDeterminant;
+    extern std::uint32_t const_storm_yDeterminant_start;
+    extern std::uint32_t const_storm_yDeterminant_inverse;
+
     float Gizmos::angle;
 
     void internal_drawLine(Vec2 a, Vec2 b)
@@ -281,7 +288,7 @@ namespace RoninEngine::Runtime
         stormMember low bits == steps
         stormMember high bits == maxSteps
 
-        stormFlags = int 4 байта (32 бита)
+        stormFlags = int 8 байта (64 бита)
         первые 3 байта (24 бита) = dimensions, от 0 до 0xFFFFFF значений
         остаток 1 байт (8 бит) stormFlags >> 24 = determinants (определители
         направлений луча) 0xF000000    xDeterminant = stormFlags >> 24 & 0xF -
@@ -291,7 +298,7 @@ namespace RoninEngine::Runtime
 
         Vec2 last = ray;
         std::uint64_t stormMember = 0;
-        std::int32_t stormFlags = 1;
+        std::uint64_t stormFlags = 1;
 
         // draw current point
 

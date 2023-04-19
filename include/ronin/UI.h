@@ -85,8 +85,14 @@ namespace RoninEngine
             {
                 return Push_DropDown(elements, index, Runtime::Rect(point.x, point.y, defaultMakets.dropdownSize.x, defaultMakets.dropdownSize.y), changed, parent);
             }
-            template <typename Container>
-            CI API_EXPORT uid Push_DropDown(const Container& elements, int index, const Runtime::Rect& rect, event_index_changed* changed = nullptr, uid parent = NOPARENT);
+            //         template <typename Container>
+            //        CI uid Push_DropDown(const Container& elements, int index, const Runtime::Rect& rect, event_index_changed* changed = nullptr, uid parent = NOPARENT);
+            CI uid Push_DropDown(const std::vector<int>& elements, int index, const Runtime::Rect& rect, event_index_changed* changed, uid parent);
+            CI uid Push_DropDown(const std::vector<float>& elements, int index, const Runtime::Rect& rect, event_index_changed* changed, uid parent);
+            CI uid Push_DropDown(const std::vector<std::string>& elements, int index, const Runtime::Rect& rect, event_index_changed* changed, uid parent);
+            CI uid Push_DropDown(const std::list<float>& elements, int index, const Runtime::Rect& rect, event_index_changed* changed, uid parent);
+            CI uid Push_DropDown(const std::list<int>& elements, int index, const Runtime::Rect& rect, event_index_changed* changed, uid parent);
+            CI uid Push_DropDown(const std::list<std::string>& elements, int index, const Runtime::Rect& rect, event_index_changed* changed, uid parent);
 
             CI uid Push_Slider(float value, const Runtime::Vec2Int& point, event_value_changed* changed = nullptr, uid parent = NOPARENT) { return Push_Slider(value, 0.f, 1.f, point, changed, parent); }
 

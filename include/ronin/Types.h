@@ -27,11 +27,11 @@ namespace RoninEngine
             }
             xRect() { x = y = w = h = 0; }
             xRect(const T& x, const T& y, const T& w, const T& h)
+                : x(x)
+                , y(y)
+                , w(w)
+                , h(h)
             {
-                this->x = x;
-                this->y = y;
-                this->w = w;
-                this->h = h;
             }
 
             bool empty() const { return x == 0 && y == 0 && w == 0 && h == 0; }
