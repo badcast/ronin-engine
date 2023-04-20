@@ -11,17 +11,12 @@ namespace RoninEngine
         public:
             int x;
             int y;
-            Vec2Int()
-                : x(0)
-                , y(0)
-            {
-            }
-            Vec2Int(const int _x, const int _y)
+            Vec2Int() = default;
+            Vec2Int(const int& _x, const int& _y)
                 : x(_x)
                 , y(_y)
             {
             }
-
             Vec2Int(const Vec2Int&) = default;
 
             bool operator==(const Vec2Int& rhs) { return this->x == rhs.x && this->y == rhs.y; }

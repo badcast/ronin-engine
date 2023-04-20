@@ -381,8 +381,6 @@ namespace across
     template <typename Tp, typename TpNeuron>
     const Tp basic_across_map<Tp, TpNeuron>::neuronGetPoint(const TpNeuron* neuron)
     {
-        if (neuron == nullptr)
-            throw std::runtime_error("argument is null");
         auto divide = std::div((std::size_t(neuron) - std::size_t(neurons) - segmentOffset) / sizeof(TpNeuron), heightSpace);
         return { divide.quot, divide.rem };
     }
@@ -390,7 +388,7 @@ namespace across
     void basic_across_map<Tp, TpNeuron>::neuronLock(const Tp& range, const bool state)
     {
         auto divide = std::div(range.x * heightSpace + range.y, 8);
-        auto&& pointer = (reinterpret_cast<std::uint8_t*>(neurons) + segmentOffset) + divide.quot;
+        auto pointer = (reinterpret_cast<std::uint8_t*>(neurons) + segmentOffset) + divide.quot;
         divide.quot = (1 << divide.rem);
         // TODO: Optimized to ~divide.quout (xor)
         (*pointer) ^= (*pointer) & (divide.quot);
