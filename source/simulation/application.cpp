@@ -5,18 +5,20 @@ namespace RoninEngine
     namespace Runtime
     {
         float timeScale, _lastTime, internal_time, intenal_delta_time;
+
         std::uint32_t _startedTime;
         std::uint32_t intenal_frames; // framecounter
 
         extern void gc_init();
     }
+
+    static bool m_inited = false;
+    static bool m_levelLoaded = false;
+    static bool m_levelAccept = false;
     static Level* destroyableLevel = nullptr;
     static SDL_Renderer* renderer = nullptr;
-    static SDL_Window* window = nullptr;
-    static bool m_inited = false;
-    static bool m_levelAccept = false;
+    static SDL_Window* windowOwner = nullptr;
     static Level* m_level = nullptr;
-    static bool m_levelLoaded = false;
     static bool isQuiting;
 
     Runtime::Vec2Int m_mousePoint;
@@ -28,7 +30,7 @@ namespace RoninEngine
 
     extern void gc_collect();
 
-    void Init_TimeEngine()
+    void internal_init_TimeEngine()
     {
         internal_time = 0;
         _lastTime = 0;
@@ -43,7 +45,7 @@ namespace RoninEngine
         mouseWheels = 0;
     }
 
-    void Application::init(const std::uint32_t& width, const std::uint32_t& height, bool initResources)
+    void Application::init()
     {
         char errorStr[128];
         if (m_inited)
@@ -63,24 +65,12 @@ namespace RoninEngine
         if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 1024))
             fail("Fail open audio.");
 
-        window = SDL_CreateWindow("Ronin Engine", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, SDL_WINDOW_SHOWN);
-
-        if (!window)
-            fail(SDL_GetError());
-
-        renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED /*| SDL_RENDERER_PRESENTVSYNC*/);
-        if (!renderer)
-            fail(SDL_GetError());
-
-        // Brightness - Яркость
-        SDL_SetWindowBrightness(window, 1);
-
         GC::gc_lock();
 
         // initialize GC
         gc_init();
 
-        if (initResources) {
+        /*if (initResources) {
             std::string path = getDataFrom(FolderKind::LOADER);
             std::string temp = path + "graphics.conf";
             GC::LoadImages(temp.c_str());
@@ -93,7 +83,7 @@ namespace RoninEngine
             // Загрузка шрифта и оптимизация дэффектов
             UI::Initialize_Fonts(true);
             Levels::Level_Init();
-        }
+        }*/
         // Инициализация инструментов
         UI::InitalizeControls();
 
@@ -101,6 +91,38 @@ namespace RoninEngine
         // SDL_SetCursor(GC::GetCursor("cursor", {1, 1}));
         m_inited = true;
         isQuiting = false;
+    }
+
+    void Application::createWindow(const int& width, const int& height, bool fullscreen)
+    {
+        if (!m_inited || windowOwner)
+            Application::fail("Application not Inited");
+        std::uint32_t __flags = SDL_WINDOW_SHOWN;
+
+        if (fullscreen)
+            __flags |= SDL_WINDOW_FULLSCREEN;
+
+        windowOwner = SDL_CreateWindow("Ronin Engine", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, __flags);
+        if (!windowOwner)
+            fail(SDL_GetError());
+
+        renderer = SDL_CreateRenderer(windowOwner, -1, SDL_RENDERER_ACCELERATED /*| SDL_RENDERER_PRESENTVSYNC*/);
+        if (!renderer)
+            fail(SDL_GetError());
+
+        // Brightness - Яркость
+        SDL_SetWindowBrightness(windowOwner, 1);
+    }
+
+    void Application::closeWindow()
+    {
+        if (windowOwner) {
+            requestQuit();
+            SDL_DestroyWindow(windowOwner);
+            SDL_DestroyRenderer(renderer);
+            renderer = nullptr;
+            windowOwner = nullptr;
+        }
     }
 
     void Application::requestQuit() { isQuiting = true; }
@@ -112,7 +134,7 @@ namespace RoninEngine
 
         GC::gc_release();
         SDL_DestroyRenderer(renderer);
-        SDL_DestroyWindow(window);
+        SDL_DestroyWindow(windowOwner);
 
         UI::Free_Controls();
         // sdl quit
@@ -125,7 +147,7 @@ namespace RoninEngine
 
     void Application::loadLevel(Level* level)
     {
-        if (!level || m_level == level)
+        if (!level || m_level == level || windowOwner == nullptr)
             throw std::bad_cast();
 
         if (m_level) {
@@ -171,7 +193,7 @@ namespace RoninEngine
     SDL_DisplayMode Application::getDisplayMode()
     {
         SDL_DisplayMode display;
-        SDL_GetWindowDisplayMode(window, &display);
+        SDL_GetWindowDisplayMode(windowOwner, &display);
         return display;
     }
 
@@ -181,7 +203,7 @@ namespace RoninEngine
         SDL_RendererInfo rf;
         SDL_GetRendererInfo(renderer, &rf);
 
-        SDL_GetWindowSize(window, &res.width, &res.height);
+        SDL_GetWindowSize(windowOwner, &res.width, &res.height);
         return res;
     }
 
@@ -200,7 +222,12 @@ namespace RoninEngine
             return false;
         }
 
-        Init_TimeEngine();
+        if (windowOwner == nullptr) {
+            show_message("Window not inited");
+            return false;
+        }
+
+        internal_init_TimeEngine();
 
         displayMode = Application::getDisplayMode();
         secPerFrame = 1000.f / displayMode.refresh_rate; // refresh screen from Monitor Settings
@@ -303,7 +330,7 @@ namespace RoninEngine
         return isQuiting;
     }
 
-    SDL_Window* Application::getWindow() { return window; }
+    SDL_Window* Application::getWindow() { return windowOwner; }
 
     SDL_Renderer* Application::getRenderer() { return renderer; }
 
@@ -313,7 +340,7 @@ namespace RoninEngine
     {
         SDL_LogMessage(SDL_LogCategory::SDL_LOG_CATEGORY_APPLICATION, SDL_LogPriority::SDL_LOG_PRIORITY_VERBOSE, "%s", message.c_str());
         printf("%s\n", message.c_str());
-        SDL_ShowSimpleMessageBox(SDL_MessageBoxFlags::SDL_MESSAGEBOX_INFORMATION, nullptr, message.c_str(), window);
+        SDL_ShowSimpleMessageBox(SDL_MessageBoxFlags::SDL_MESSAGEBOX_INFORMATION, nullptr, message.c_str(), windowOwner);
     }
 
     void Application::fail(const std::string& message)
@@ -332,7 +359,7 @@ namespace RoninEngine
         fprintf(stderr, "%s", _template.data());
 
         SDL_LogMessage(SDL_LogCategory::SDL_LOG_CATEGORY_APPLICATION, SDL_LogPriority::SDL_LOG_PRIORITY_CRITICAL, "%s", _template.c_str());
-        SDL_ShowSimpleMessageBox(SDL_MessageBoxFlags::SDL_MESSAGEBOX_INFORMATION, "Ronin Engine: failed", _template.c_str(), window);
+        SDL_ShowSimpleMessageBox(SDL_MessageBoxFlags::SDL_MESSAGEBOX_INFORMATION, "Ronin Engine: failed", _template.c_str(), windowOwner);
         back_fail();
     }
 

@@ -35,7 +35,6 @@ add_library(RoninEngineLibrary
 
 set_target_properties(RoninEngineLibrary PROPERTIES
     OUTPUT_NAME ${RUNTIME_OUTPUT_NAME}
-    #INTERFACE_INCLUDE_DIRECTORIES "${RONIN_INCLUDE_DIR_EXTERNAL}/;${RONIN_INCLUDE_DIR_INTERNAL}/"
 )
 
 #include to #include <ronin/...>

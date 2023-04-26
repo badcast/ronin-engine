@@ -11,9 +11,12 @@ namespace RoninEngine
     class RONIN_API Application
     {
     public:
-        static void init(const std::uint32_t& width, const std::uint32_t& height, bool initResources = true);
+        static void init();
+
         static void Quit();
 
+        static void createWindow(const int& width, const int& height, bool fullscreen = false);
+        static void closeWindow();
         static void loadLevel(Level* level);
         static bool simulate();
         static void getScreen(const char* filename);
