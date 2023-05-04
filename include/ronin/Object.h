@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Namespaces.h"
+#include "Vec2.h"
 #include "begin.h"
 
 namespace RoninEngine
@@ -76,5 +78,11 @@ namespace RoninEngine
         {
             return std::is_base_of<base, _derived>();
         }
+
+        class RONIN_API Primitive {
+        public:
+            static GameObject* CreateEmptyGameObject(Vec2 position);
+            static Camera2D* CreateCamera2D(Vec2 position);
+        };
     } // namespace Runtime
 } // namespace RoninEngine
