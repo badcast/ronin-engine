@@ -15,28 +15,28 @@ namespace jno
     template <typename T>
     [[deprecated]] T* jalloc()
     {
-        return RoninEngine::Runtime::GC::gc_alloc<T>();
+        return RoninMemory::alloc<T>();
     }
 
     template <typename T>
     [[deprecated]] T* jalloc(T* copy)
     {
-        return RoninEngine::Runtime::GC::gc_alloc<T>(copy);
+        return RoninMemory::alloc<T>(copy);
     }
 
     template <typename T>
     [[deprecated]] T* jalloc(const T& copy)
     {
-        return RoninEngine::Runtime::GC::gc_alloc<T>(copy);
+        return RoninMemory::alloc<T>(copy);
     }
 
     template <typename T>
     [[deprecated]] void jfree(T* t)
     {
-        RoninEngine::Runtime::GC::gc_unalloc(t);
+        RoninMemory::free(t);
     }
 
-    void jfree(void* t) { RoninEngine::Runtime::GC::gc_free(t); }
+    void jfree(void* t) { RoninMemory::mfree(t); }
 
     void jno_evaluate(jno_evaluted* file) { }
 
@@ -381,7 +381,7 @@ namespace jno
         JNOType valueType;
         jno_object_node current_jno_node;
 
-        //Базовый случаи
+        // Базовый случаи
         if (!len)
             return 0;
 

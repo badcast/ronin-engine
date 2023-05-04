@@ -9,7 +9,7 @@ namespace  RoninEngine {
       class RONIN_API Component : public Object {
          private:
             friend class GameObject;
-            friend GameObject* Instantiate(GameObject* obj);
+            friend GameObject* instantiate(GameObject* obj);
 
             GameObject* _owner;
 

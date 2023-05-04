@@ -1,7 +1,15 @@
 #ifndef RONINENGINE_H_
 #define RONINENGINE_H_
 
+#include <typeindex>
+#include <typeinfo>
+
 // base headers
+#include "../../include/ronin/begin.h"
+
+#include "basic_ronin.h"
+
+#include "ronin_memory.h"
 #include "just-parser.h"
 
 // applications
@@ -23,7 +31,6 @@
 #include "../../include/ronin/Camera2D.h"
 #include "../../include/ronin/Component.h"
 #include "../../include/ronin/GameObject.h"
-#include "../../include/ronin/GameObject_impl.h"
 #include "../../include/ronin/Level.h"
 #include "../../include/ronin/Light.h"
 #include "../../include/ronin/Player.h"

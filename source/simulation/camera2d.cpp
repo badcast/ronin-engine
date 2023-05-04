@@ -6,7 +6,7 @@ using namespace RoninEngine;
 namespace RoninEngine::Runtime
 {
     Camera2D::Camera2D()
-        : Camera(typeid(*this).name())
+        : Camera(DESCRIBE_TYPE(Camera2D))
         , scale(Vec2::one)
     {
         this->visibleBorders = false;

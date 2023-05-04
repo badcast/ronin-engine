@@ -107,45 +107,42 @@ namespace RoninEngine
             CI void* getResources(uid id);
             CI void setResources(uid id, void* data);
 
-            CI RoninEngine::Runtime::Rect getRect(uid id);
-            CI void setRect(uid id, const RoninEngine::Runtime::Rect& rect);
+            CI RoninEngine::Runtime::Rect get_rect(uid id);
+            CI void set_rect(uid id, const RoninEngine::Runtime::Rect& rect);
 
-            CI std::string getText(uid id);
-            CI void setText(uid id, const std::string& text);
+            CI std::string get_text(uid id);
+            CI void set_text(uid id, const std::string& text);
 
-            CI void setVisible(uid id, bool state);
-            CI bool getVisible(uid id);
+            CI void set_visible(uid id, bool state);
+            CI bool get_visible(uid id);
 
-            CI void setEnable(uid id, bool state);
-            CI bool getEnable(uid id);
+            CI void set_enable(uid id, bool state);
+            CI bool get_enable(uid id);
 
             // grouping-----------------------------------------------------------------------------------------------------------
 
-            CI bool Is_Group(uid id);
-            CI void Show_GroupUnique(uid id) throw();
-            CI void Show_Group(uid id) throw();
-            CI bool Close_Group(uid id) throw();
+            CI bool is_group(uid id);
+            CI void show_group_unique(uid id) throw();
+            CI void show_group(uid id) throw();
+            CI bool close_group(uid id) throw();
 
             // other--------------------------------------------------------------------------------------------------------------
 
-            CI void setCast(bool state);
-            CI bool getCast();
+            CI void set_cast(bool state);
+            CI bool get_cast();
 
-            CI void Register_Callback(ui_callback callback, void* userData);
+            CI void register_callback(ui_callback callback, void* userData);
 
-            CI bool Pop_Element(uid id);
-            CI void RemoveAll();
+            CI bool pop_element(uid id);
+            CI void remove_all();
 
-            CI void Do_Present(SDL_Renderer* renderer);
+            CI void native_draw_render(SDL_Renderer* renderer);
 
-            CI void GUI_SetMainColorRGB(uint32_t RGB);
-            CI void GUI_SetMainColorRGBA(uint32_t ARGB);
+            CI void set_color_rgb(uint32_t RGB);
+            CI void set_color_rgba(uint32_t ARGB);
 
-            CI bool Focused_UI();
+            CI bool has_focused_ui();
         };
-
-        extern RONIN_API GUI* guiInstance;
-
 #undef CI
     } // namespace RoninEngine::UI
 }

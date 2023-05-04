@@ -2,9 +2,9 @@
 namespace RoninEngine::Runtime {
 
 void Player::OnAwake() {
-    playerCamera = gameObject()->addComponent<Camera2D>();
-    spriteRenderer = gameObject()->addComponent<SpriteRenderer>();
-    spotlight = gameObject()->addComponent<Spotlight>();
+    playerCamera = gameObject()->add_component<Camera2D>();
+    spriteRenderer = gameObject()->add_component<SpriteRenderer>();
+    spotlight = gameObject()->add_component<Spotlight>();
 }
 Vec2 movementDir = Vec2::up;
 

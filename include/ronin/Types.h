@@ -83,5 +83,14 @@ namespace RoninEngine
             static const xRect<T> zero;
             static const xRect<T> one;
         };
+
+        struct Render_info {
+            SDL_Renderer* renderer;
+            Rect src;
+            Rectf_t dst;
+            Texture* texture;
+        };
+
     } // namespace Runtime
+
 } // namespace RoninEngine

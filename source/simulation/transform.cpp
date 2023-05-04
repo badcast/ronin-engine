@@ -4,7 +4,7 @@ namespace RoninEngine::Runtime
 {
 
     Transform::Transform()
-        : Transform(typeid(*this).name())
+        : Transform(DESCRIBE_TYPE(Transform))
     {
     }
 
@@ -19,12 +19,7 @@ namespace RoninEngine::Runtime
     }
 
     Transform::~Transform()
-    {
-        if (m_parent) {
-            hierarchy_remove(m_parent, this);
-        }
-        hierarchy_removeAll(this);
-    }
+    {}
 
     int Transform::child_count() { return hierarchy.size(); }
 
@@ -136,34 +131,36 @@ namespace RoninEngine::Runtime
     const Vec2 Transform::transformDirection(float x, float y) { return transformDirection(Vec2(x, y)); }
 
     Vec2 Transform::localPosition() { return p; }
-    void Transform::localPosition(const Vec2& value)
+    const Vec2& Transform::localPosition(const Vec2& value)
     {
-        if (value == p)
-            return;
-        Vec2Int lastPoint = Vec2::RoundToInt(position());
-        p = value;
-        if (gameObject()->isActive())
-            Level::self()->matrix_nature(this, lastPoint);
+        if (value != p) {
+            Vec2Int lastPoint = Vec2::RoundToInt(position());
+            p = value;
+            if (gameObject()->is_active())
+                Level::self()->matrix_nature(this, lastPoint);
+        }
+        return value;
     }
 
     Vec2 Transform::position() { return (this->m_parent) ? this->m_parent->position() + p : p; }
 
-    void Transform::position(const Vec2& value)
+    const Vec2& Transform::position(const Vec2& value)
     {
-        if (value == position())
-            return;
-        Vec2 lastPoint = position();
-        p = (this->m_parent) ? this->m_parent->position() + value : value; // set the position
-        if (gameObject()->isActive())
-            Level::self()->matrix_nature(this, Vec2::RoundToInt(lastPoint));
-        for (Transform* chlid : hierarchy)
-            chlid->parent_notify(lastPoint);
+        if (value != position()) {
+            Vec2 lastPoint = position();
+            p = (this->m_parent) ? this->m_parent->position() + value : value; // set the position
+            if (gameObject()->is_active())
+                Level::self()->matrix_nature(this, Vec2::RoundToInt(lastPoint));
+            for (Transform* chlid : hierarchy)
+                chlid->parent_notify(lastPoint);
+        }
+        return value;
     }
 
     void Transform::parent_notify(Vec2 lastParentPoint)
     {
         Vec2 lastPoint = lastParentPoint + p; // world cordinates
-        if (gameObject()->isActive())
+        if (gameObject()->is_active())
             Level::self()->matrix_nature(this, Vec2::RoundToInt(lastPoint));
         for (Transform* chlid : hierarchy)
             chlid->parent_notify(lastPoint);
@@ -172,7 +169,7 @@ namespace RoninEngine::Runtime
     void Transform::parent_notify_activeState(GameObject* from)
     {
         Vec2Int pos = Vec2::RoundToInt(this->position());
-        if (!from->isActive()) {
+        if (!from->is_active()) {
             decltype(Level::self()->matrixWorld)::iterator iter = Level::self()->matrixWorld.find(pos);
             // Delete from matrix
             if (iter != std::end(Level::self()->matrixWorld)) {

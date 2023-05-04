@@ -6,7 +6,7 @@ namespace RoninEngine::Runtime
     // FIXME: OPTIMIZING SPRITE RENDERER COMPONENT
 
     SpriteRenderer::SpriteRenderer()
-        : SpriteRenderer(typeid(*this).name())
+        : SpriteRenderer(DESCRIBE_TYPE(SpriteRenderer))
     {
     }
 
@@ -72,7 +72,7 @@ namespace RoninEngine::Runtime
     void SpriteRenderer::setSpriteFromTextureToGC(SDL_Surface* src)
     {
         Sprite* spr;
-        GC::gc_alloc_sprite_with(&spr, src);
+        ResourceManager::gc_alloc_sprite_with(&spr, src);
         setSprite(spr);
     }
     Sprite* SpriteRenderer::getSprite() { return this->sprite; }
@@ -98,7 +98,7 @@ namespace RoninEngine::Runtime
             switch (this->renderType) {
             case SpriteRenderType::Simple:
                 if (!textureCache) {
-                    GC::gc_alloc_texture_from(&textureCache, sprite->source);
+                    ResourceManager::gc_alloc_texture_from(&textureCache, sprite->source);
                 }
                 _srcRect.w = sprite->width();
                 _srcRect.h = sprite->height();
@@ -130,7 +130,7 @@ namespace RoninEngine::Runtime
 
                 // generate tiles
                 if (!textureCache) {
-                    GC::gc_alloc_texture(&textureCache, _srcRect.w, _srcRect.h, SDL_PIXELFORMAT_RGBA8888, SDL_TextureAccess::SDL_TEXTUREACCESS_TARGET);
+                    ResourceManager::gc_alloc_texture(&textureCache, _srcRect.w, _srcRect.h, SDL_PIXELFORMAT_RGBA8888, SDL_TextureAccess::SDL_TEXTUREACCESS_TARGET);
                     if (textureCache == nullptr)
                         Application::fail("Texture create fail");
 

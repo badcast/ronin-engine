@@ -38,7 +38,7 @@ namespace RoninEngine::AIPathFinder
 
     class RONIN_API NavMesh
     {
-        NavContainer* container;
+        NavContainer* shedule;
 
     public:
         Runtime::Vec2 worldScale;

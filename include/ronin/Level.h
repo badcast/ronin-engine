@@ -16,19 +16,21 @@ namespace RoninEngine
         friend class Runtime::Physics2D;
 
         friend bool Runtime::instanced(Runtime::Object* obj);
-        friend void Runtime::Destroy(Runtime::Object* obj);
-        friend void Runtime::Destroy(Runtime::Object* obj, float t);
-        friend void Runtime::Destroy_Immediate(Runtime::Object* obj);
+        friend void Runtime::destroy(Runtime::Object* obj);
+        friend void Runtime::destroy(Runtime::Object* obj, float t);
+        friend void Runtime::destroy_immediate(Runtime::Object* obj);
 
     private:
         int globalID;
         bool m_isUnload;
+        int _destroyed;
         std::string m_name;
         std::list<Runtime::Behaviour*>* _firstRunScripts;
         std::list<Runtime::Behaviour*>* _realtimeScripts;
-        std::list<std::pair<Runtime::Object*, float>>* _destructions;
 
+        std::map<float, std::set<Runtime::Object*>>* _destructTasks;
         std::unordered_map<Runtime::Vec2Int, std::set<Runtime::Transform*>> matrixWorld;
+
         std::list<Runtime::Renderer*> _assoc_renderers;
         std::list<Runtime::Light*> _assoc_lightings;
 
@@ -36,19 +38,22 @@ namespace RoninEngine
         std::list<Runtime::GameObject*> _gameObjects;
 
         void intenal_bind_script(Runtime::Behaviour* obj);
-        void CC_Render_Push(Runtime::Renderer* rend);
-        void CC_Light_Push(Runtime::Light* light);
-        void ObjectPush(Runtime::Object* obj);
+        void push_render_object(Runtime::Renderer* rend);
+        void push_light_object(Runtime::Light* light);
+        void push_object(Runtime::Object* obj);
 
-        std::vector<Runtime::Transform*>* getHierarchy(Runtime::Transform* parent);
+        std::vector<Runtime::Transform*>* get_hierarchy(Runtime::Transform* parent);
 
     protected:
         UI::GUI* ui;
-        virtual void RenderLevel(SDL_Renderer* renderer);
-        virtual void RenderUI(SDL_Renderer* renderer);
-        virtual void RenderSceneLate(SDL_Renderer* renderer);
+        virtual void destructs();
+
+        virtual void level_render_world(SDL_Renderer* renderer);
+        virtual void level_render_ui(SDL_Renderer* renderer);
+        virtual void level_render_world_late(SDL_Renderer* renderer);
         void matrix_nature(Runtime::Transform* target, Runtime::Vec2Int lastPoint);
         void matrix_nature(Runtime::Transform* target, const Runtime::Vec2Int& newPoint, const Runtime::Vec2Int& lastPoint);
+        void matrix_nature_pickup(Runtime::Transform *target);
 
         virtual void awake();
         virtual void start();
@@ -70,14 +75,16 @@ namespace RoninEngine
 
         bool is_hierarchy();
 
-        UI::GUI* Get_GUI();
-        void Unload();
+        UI::GUI* gui();
+        void unload();
+
+        int get_destroyed_frames();
 
         static std::list<Runtime::Transform*> matrixCheckDamaged();
-        static int matrixRestore();
-        static int matrixRestore(const std::list<Runtime::Transform*>& damaged_content);
+        static int matrix_restore();
+        static int matrix_restore(const std::list<Runtime::Transform*>& damaged_content);
 
-        static void render_info(int* culled, int* fullobjects);
+        static void get_render_info(int* culled, int* fullobjects);
 
         static Level* self();
     };

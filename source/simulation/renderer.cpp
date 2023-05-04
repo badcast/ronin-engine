@@ -2,7 +2,7 @@
 namespace RoninEngine::Runtime {
 
 
-Renderer::Renderer() : Renderer("Renderer Component") {}
+Renderer::Renderer() : Renderer(DESCRIBE_TYPE(Renderer)) {}
 
 Renderer::Renderer(const std::string& name) : Component(name) {}
 }  // namespace RoninEngine::Runtime

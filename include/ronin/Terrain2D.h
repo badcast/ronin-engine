@@ -26,7 +26,7 @@ namespace RoninEngine::Runtime
 
     class RONIN_API Terrain2D : public Renderer
     {
-        RoninEngine::AIPathFinder::NavMesh* surface;
+        RoninEngine::AIPathFinder::NavMesh* navigation;
 
     public:
         Terrain2D();

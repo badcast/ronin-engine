@@ -9,7 +9,9 @@ namespace RoninEngine
         std::uint32_t _startedTime;
         std::uint32_t intenal_frames; // framecounter
 
-        extern void gc_init();
+        extern GameObject* create_empty_gameobject();
+
+        extern void manager_init();
     }
 
     static bool m_inited = false;
@@ -27,8 +29,6 @@ namespace RoninEngine
     std::uint8_t mouseWheels;
     Runtime::Vec2 m_axis;
     bool text_inputState;
-
-    extern void gc_collect();
 
     void internal_init_TimeEngine()
     {
@@ -64,11 +64,6 @@ namespace RoninEngine
 
         if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 1024))
             fail("Fail open audio.");
-
-        GC::gc_lock();
-
-        // initialize GC
-        gc_init();
 
         /*if (initResources) {
             std::string path = getDataFrom(FolderKind::LOADER);
@@ -132,7 +127,6 @@ namespace RoninEngine
         if (!m_inited)
             return;
 
-        GC::gc_release();
         SDL_DestroyRenderer(renderer);
         SDL_DestroyWindow(windowOwner);
 
@@ -152,7 +146,7 @@ namespace RoninEngine
 
         if (m_level) {
             destroyableLevel = m_level;
-            m_level->Unload();
+            m_level->unload();
         }
 
         if (!level->is_hierarchy()) {
@@ -256,19 +250,13 @@ namespace RoninEngine
                     if (destroyableLevel) {
                         destroyableLevel->onUnloading();
 
-                        GC::gc_unalloc(destroyableLevel);
+                        RoninMemory::free(destroyableLevel);
 
                         destroyableLevel = nullptr;
-                        // BUG: DANGER ZONE
-                        GC::UnloadUnused();
-                        // GC::gc_free_source();
                     }
 
-                    m_levelLoaded = true;
-
-                    // capture memory as GC
-                    GC::gc_unlock();
-
+                    m_levelLoaded = false;
+                    // Start first init
                     m_level->awake();
                     m_levelLoaded = true;
                 } else {
@@ -281,19 +269,19 @@ namespace RoninEngine
                         m_level->update();
                     }
 
-                    m_level->RenderLevel(renderer);
+                    m_level->level_render_world(renderer);
                     if (Camera::mainCamera())
                         m_level->onDrawGizmos(); // Draw gizmos
 
                     // Set scale as default
                     SDL_RenderSetScale(renderer, 1, 1);
 
-                    m_level->RenderUI(renderer);
+                    m_level->level_render_ui(renderer);
 
                     if (!destroyableLevel) {
                         SDL_RenderPresent(renderer);
                         m_level->lateUpdate();
-                        m_level->RenderSceneLate(renderer);
+                        m_level->level_render_world_late(renderer);
                     }
                 }
             }
@@ -309,9 +297,9 @@ namespace RoninEngine
 
                 std::sprintf(
                     windowTitle,
-                    "Ronin Engine (Debug) FPS:%d Memory:%luMiB, "
-                    "GC_Allocated:%lu, SDL_Allocated:%d",
-                    static_cast<int>(fps), get_process_sizeMemory() / 1024 / 1024, GC::gc_total_allocated(), SDL_GetNumAllocations());
+                    "FPS:%d Memory:%luMiB, "
+                    "Ronin_Allocated:%lu, SDL_Allocated:%d",
+                    static_cast<int>(fps), get_process_sizeMemory() / 1024 / 1024, RoninMemory::total_allocated(), SDL_GetNumAllocations());
                 SDL_SetWindowTitle(Application::getWindow(), windowTitle);
                 // fpsRound = Time::startUpTime() + 1;  // updater per 1 seconds
             }

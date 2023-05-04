@@ -41,7 +41,7 @@ namespace RoninEngine::UI
         guiInstance = this;
     }
 
-    GUI::~GUI() { RemoveAll(); }
+    GUI::~GUI() { remove_all(); }
 
     // private--------------------------------------
 
@@ -50,7 +50,7 @@ namespace RoninEngine::UI
         std::list<uid> __;
 
         for (auto& iter : ui_layer.elements) {
-            if (this->Is_Group(iter.id))
+            if (this->is_group(iter.id))
                 __.push_back(iter.id);
         };
 
@@ -252,67 +252,67 @@ namespace RoninEngine::UI
 
     void GUI::setResources(uid id, void* data) { getElement(id).resources = data; }
 
-    Rect GUI::getRect(uid id) { return getElement(id).rect; }
-    void GUI::setRect(uid id, const ::Rect& rect) { getElement(id).rect = rect; }
+    Rect GUI::get_rect(uid id) { return getElement(id).rect; }
+    void GUI::set_rect(uid id, const ::Rect& rect) { getElement(id).rect = rect; }
 
-    std::string GUI::getText(uid id) { return getElement(id).text; }
-    void GUI::setText(uid id, const std::string& text) { getElement(id).text = text; }
+    std::string GUI::get_text(uid id) { return getElement(id).text; }
+    void GUI::set_text(uid id, const std::string& text) { getElement(id).text = text; }
 
-    void GUI::setVisible(uid id, bool state) { getElement(id).options = (getElement(id).options & ~ElementVisibleMask) | (ElementVisibleMask * (state == true)); }
-    bool GUI::getVisible(uid id) { return (getElement(id).options & ElementVisibleMask) != 0; }
+    void GUI::set_visible(uid id, bool state) { getElement(id).options = (getElement(id).options & ~ElementVisibleMask) | (ElementVisibleMask * (state == true)); }
+    bool GUI::get_visible(uid id) { return (getElement(id).options & ElementVisibleMask) != 0; }
 
-    void GUI::setEnable(uid id, bool state) { getElement(id).options = ((getElement(id).options & ~ElementEnableMask)) | (ElementEnableMask * (state == true)); }
-    bool GUI::getEnable(uid id) { return getElement(id).options & ElementEnableMask != 0; }
+    void GUI::set_enable(uid id, bool state) { getElement(id).options = ((getElement(id).options & ~ElementEnableMask)) | (ElementEnableMask * (state == true)); }
+    bool GUI::get_enable(uid id) { return getElement(id).options & ElementEnableMask != 0; }
 
     // grouping-----------------------------------------------------------------------------------------------------------
 
-    bool GUI::Is_Group(uid id) { return getElement(id).options & ElementGroupMask != 0; }
+    bool GUI::is_group(uid id) { return getElement(id).options & ElementGroupMask != 0; }
 
-    void GUI::Show_GroupUnique(uid id) throw()
+    void GUI::show_group_unique(uid id) throw()
     {
-        if (!Is_Group(id))
+        if (!is_group(id))
             throw std::runtime_error("Is't group");
 
-        this->ui_layer.layers.remove_if([this](auto v) { return this->Is_Group(v); });
+        this->ui_layer.layers.remove_if([this](auto v) { return this->is_group(v); });
 
-        Show_Group(id);
+        show_group(id);
     }
-    void GUI::Show_Group(uid id) throw()
+    void GUI::show_group(uid id) throw()
     {
-        if (!Is_Group(id))
+        if (!is_group(id))
             throw std::runtime_error("Is't group");
 
         auto iter = find_if(begin(ui_layer.layers), end(ui_layer.layers), [&id](auto& _id) { return _id == id; });
 
         if (iter == end(ui_layer.layers)) {
             ui_layer.layers.emplace_back(id);
-            setVisible(id, true);
+            set_visible(id, true);
         }
     }
 
-    bool GUI::Close_Group(uid id) throw()
+    bool GUI::close_group(uid id) throw()
     {
-        if (!Is_Group(id))
+        if (!is_group(id))
             throw std::runtime_error("Is't group");
         ui_layer.layers.remove(id);
-        setVisible(id, false);
+        set_visible(id, false);
     }
 
-    void GUI::setCast(bool state) { hitCast = state; }
-    bool GUI::getCast() { return hitCast; }
+    void GUI::set_cast(bool state) { hitCast = state; }
+    bool GUI::get_cast() { return hitCast; }
 
-    void GUI::Register_Callback(ui_callback callback, void* userData)
+    void GUI::register_callback(ui_callback callback, void* userData)
     {
         this->callback = callback;
         this->callbackData = userData;
     }
-    bool GUI::Pop_Element(uid id)
+    bool GUI::pop_element(uid id)
     {
         // TODO: мда. Тут проблема. ID которое удаляется может задеть так же и другие. Нужно исправить и найти способ! T``T
 
         return false;
     }
-    void GUI::RemoveAll()
+    void GUI::remove_all()
     {
         for (int x = 0; x < ui_layer.elements.size(); ++x) {
             factory_free(&ui_layer.elements[x]);
@@ -320,7 +320,7 @@ namespace RoninEngine::UI
         ui_layer.layers.clear();
         ui_layer.elements.clear();
     }
-    void GUI::Do_Present(SDL_Renderer* renderer)
+    void GUI::native_draw_render(SDL_Renderer* renderer)
     {
         if (!visible)
             return;
@@ -389,8 +389,8 @@ namespace RoninEngine::UI
                 drain.emplace_back(*iter + 1);
         }
     }
-    void GUI::GUI_SetMainColorRGB(uint32_t RGB) { GUI_SetMainColorRGBA(RGB << 8 | SDL_ALPHA_OPAQUE); }
-    void GUI::GUI_SetMainColorRGBA(uint32_t ARGB) { SDL_SetRenderDrawColor(Application::getRenderer(), (uid)(ARGB >> 24) & 0xFF, (uid)(ARGB >> 16) & 0xFF, (uid)(ARGB >> 8) & 0xFF, (uid)ARGB & 0xFF); }
-    bool GUI::Focused_UI() { return _focusedUI; }
+    void GUI::set_color_rgb(uint32_t RGB) { set_color_rgba(RGB << 8 | SDL_ALPHA_OPAQUE); }
+    void GUI::set_color_rgba(uint32_t ARGB) { SDL_SetRenderDrawColor(Application::getRenderer(), (uid)(ARGB >> 24) & 0xFF, (uid)(ARGB >> 16) & 0xFF, (uid)(ARGB >> 8) & 0xFF, (uid)ARGB & 0xFF); }
+    bool GUI::has_focused_ui() { return _focusedUI; }
 
 } // namespace RoninEngine::UI

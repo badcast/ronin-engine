@@ -5,7 +5,7 @@
 namespace RoninEngine::Runtime {
 class RONIN_API Texture {
     friend class Camera;
-    friend class GC;
+    friend class ResourceManager;
 
 private:
     ::SDL_Texture* m_native;

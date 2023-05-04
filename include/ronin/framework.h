@@ -21,7 +21,6 @@
 #include "Camera2D.h"
 #include "Component.h"
 #include "GameObject.h"
-#include "GameObject_impl.h"
 #include "Level.h"
 #include "Light.h"
 #include "Object.h"

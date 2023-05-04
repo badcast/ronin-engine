@@ -50,7 +50,7 @@ namespace RoninEngine::Runtime
         Rect getFactical();
 
         void setSprite(Sprite* sprite);
-        void setSpriteFromTextureToGC(SDL_Surface *src);
+        void setSpriteFromTextureToGC(SDL_Surface* src);
         Sprite* getSprite();
 
         void offsetFromLocalPosition(Vec2 localPosition);

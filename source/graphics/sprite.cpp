@@ -1,7 +1,5 @@
 #include "ronin.h"
 
-Sprite* _empty = nullptr;
-
 namespace RoninEngine::Runtime
 {
     const RoninEngine::Runtime::Rect Sprite::rect() { return this->m_rect; }
@@ -24,7 +22,7 @@ namespace RoninEngine::Runtime
         if (source) {
             Color* pixels = static_cast<Color*>(source->pixels);
             Color* argb;
-            //pitch /= SDL_BYTESPERPIXEL(texture->format());
+            // pitch /= SDL_BYTESPERPIXEL(texture->format());
             for (; !_place[0] || !_place[1];) {
                 if (!_place[0]) {
                     argb = pixels + (rect.y * source->pitch + rect.x);
@@ -63,12 +61,8 @@ namespace RoninEngine::Runtime
         return rect;
     }
 
-    Sprite* Sprite::empty()
-    {
-        if (!_empty) {
-            // todo: for empty sprite. The pixel 1x1 and fill solid color
-        }
-        return _empty;
-    }
+    Sprite* Sprite::spriteEmpty() { return Primitive::CreateSprite2D(Vec2Int::one, Color::black); }
+    Sprite* Sprite::spriteBlack() { return Primitive::CreateSprite2D(Vec2Int::one * 100, Color::black); }
+    Sprite* Sprite::spriteWhite() { return Primitive::CreateSprite2D(Vec2Int::one, Color::white); }
 
 } // namespace RoninEngine::Runtime

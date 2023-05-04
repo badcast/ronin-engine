@@ -1,12 +1,12 @@
-#ifndef _FONT_H_
-#define _FONT_H_
+#ifndef _FONT__H_
+#define _FONT__H_
 
 #include "ronin.h"
 
 namespace RoninEngine::UI
 {
-    extern unsigned char raw_arial_font[];
-    extern unsigned int raw_arial_length;
+    extern const unsigned char raw_arial_font[];
+    extern const unsigned int raw_arial_length;
 
     constexpr int fontWidth = 13;
     constexpr int fontHeight = 18;

@@ -102,17 +102,16 @@ namespace RoninEngine::Runtime
 
     const Texture* Texture::clone(SDL_Renderer* renderer)
     {
-        SDL_Texture* __t = SDL_GetRenderTarget(renderer);
-        Texture* _n;
-        GC::gc_alloc_texture(&_n, width(), height(), format(), access());
-        _n->blendMode(blendMode());
-        _n->scaleMode(scaleMode());
-        _n->color(color());
-        SDL_CreateTextureFromSurface(renderer, nullptr);
-        SDL_SetRenderTarget(renderer, _n->m_native);
+        SDL_Texture* lastTarget = SDL_GetRenderTarget(renderer);
+        Texture* newTexture;
+        ResourceManager::gc_alloc_texture(&newTexture, width(), height(), format(), access());
+        newTexture->blendMode(blendMode());
+        newTexture->scaleMode(scaleMode());
+        newTexture->color(color());
+        SDL_SetRenderTarget(renderer, newTexture->m_native);
         SDL_RenderCopy(renderer, m_native, nullptr, nullptr);
-        SDL_SetRenderTarget(renderer, __t);
-        return _n;
+        SDL_SetRenderTarget(renderer, lastTarget);
+        return newTexture;
     }
 
     const std::string Texture::name() { return std::string(_name.empty() ? "Unknown" : _name); }

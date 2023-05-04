@@ -6,7 +6,7 @@ namespace RoninEngine
     {
         // base component
         Component::Component()
-            : Component(typeid(Component).name())
+            : Component(DESCRIBE_TYPE(Component))
         {
         }
 

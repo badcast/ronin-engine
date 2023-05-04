@@ -15,22 +15,22 @@ namespace RoninEngine::Runtime
     }
 
     Terrain2D::Terrain2D(int width, int length)
-        : Terrain2D(typeid(*this).name())
+        : Terrain2D(DESCRIBE_TYPE(Terrain2D))
     {
-        GC::gc_alloc_lval(surface, width, length);
+        RoninMemory::alloc_self(navigation, width, length);
     }
 
-    Terrain2D::Terrain2D(const Terrain2D& source) { GC::gc_alloc_lval(surface, source.surface->Width(), source.surface->Height()); }
-    Terrain2D::~Terrain2D() { GC::gc_free(surface); }
+    Terrain2D::Terrain2D(const Terrain2D& source) { RoninMemory::alloc_self(navigation, source.navigation->Width(), source.navigation->Height()); }
+    Terrain2D::~Terrain2D() { RoninMemory::free(navigation); }
 
-    AIPathFinder::NavMesh* Terrain2D::surfaceMesh() { return this->surface; }
+    AIPathFinder::NavMesh* Terrain2D::surfaceMesh() { return this->navigation; }
 
     void Terrain2D::load(const TerrainData& terrainData) { }
 
     const bool Terrain2D::isCollider(const Vec2 destination)
     {
-        auto n = this->surface->GetNeuron(destination);
-        return n && surface->neuronLocked(surface->neuronGetPoint(n));
+        auto n = this->navigation->GetNeuron(destination);
+        return n && navigation->neuronLocked(navigation->neuronGetPoint(n));
     }
 
     Vec2 Terrain2D::getSize() { return {}; }
@@ -40,9 +40,9 @@ namespace RoninEngine::Runtime
     {
         Rect rect;
 
-        if(surface){
-            rect.w = surface->Width();
-            rect.h = surface->Height();
+        if (navigation) {
+            rect.w = navigation->Width();
+            rect.h = navigation->Height();
         }
 
         return rect;

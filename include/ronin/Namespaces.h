@@ -34,7 +34,7 @@ namespace RoninEngine
         typedef xRect<float> Rectf_t;
 
         // core
-        class GC;
+        class ResourceManager;
         class TimeEngine;
 
         // base

@@ -6,7 +6,7 @@ namespace RoninEngine::Runtime
 {
 
     Camera::Camera()
-        : Camera(typeid(*this).name())
+        : Camera(DESCRIBE_TYPE(Camera))
     {
     }
     Camera::Camera(const std::string& name)
@@ -72,13 +72,13 @@ namespace RoninEngine::Runtime
     }
     */
 
-    std::set<Renderer*> prev;
     inline bool areaCast(Renderer* target, const Vec2Int& wpLeftTop, const Vec2Int& wpRightBottom)
     {
         Vec2 rSz = target->getSize();
         Vec2 pos = target->transform()->position();
         return (pos.x + rSz.x >= wpLeftTop.x && pos.x - rSz.x <= wpRightBottom.x) && (pos.y - rSz.y <= wpLeftTop.y && pos.y + rSz.y >= wpRightBottom.y);
     }
+    std::set<Renderer*> prev;
     std::tuple<std::map<int, std::set<Renderer*>>*, std::set<Light*>*> Camera::matrixSelection()
     {
         /*       This is projection: Algorithm storm member used.
@@ -115,7 +115,7 @@ namespace RoninEngine::Runtime
             std::list<Renderer*> _removes;
             // собираем оставшиеся которые прикреплены к видимости
             for (auto x = std::begin(prev); x != std::end(prev); ++x) {
-                if (areaCast(*x, wpLeftTop, wpRightBottom)) {
+                if ((*x)->exists() && areaCast(*x, wpLeftTop, wpRightBottom)) {
                     renders[(*x)->transform()->layer].insert((*x));
                 } else {
                     _removes.emplace_back((*x));
@@ -128,7 +128,7 @@ namespace RoninEngine::Runtime
             // order by layer component
 
             for (auto iter = std::begin(result); iter != std::end(result); ++iter) {
-                std::list<Renderer*> rends = (*iter)->gameObject()->getComponents<Renderer>();
+                std::list<Renderer*> rends = (*iter)->gameObject()->get_components<Renderer>();
                 if (!rends.empty()) {
                     for (auto x : rends) {
                         renders[x->transform()->layer].insert(x);

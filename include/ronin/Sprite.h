@@ -14,7 +14,7 @@ namespace RoninEngine::Runtime
         friend class Renderer;
         friend class SpriteRenderer;
         friend class Atlas;
-        friend class GC;
+        friend class ResourceManager;
 
     protected:
         Vec2 m_center;
@@ -22,6 +22,9 @@ namespace RoninEngine::Runtime
 
     public:
         SDL_Surface* source;
+
+        Sprite() = default;
+
         Sprite(const Sprite&) = default;
 
         const Rect rect();
@@ -37,7 +40,9 @@ namespace RoninEngine::Runtime
 
         Rect realityRect(float&& opaque = 1.f);
 
-        static Sprite* empty();
+        static Sprite* spriteEmpty();
+        static Sprite* spriteBlack();
+        static Sprite* spriteWhite();
     };
 
 } // namespace RoninEngine::Runtime

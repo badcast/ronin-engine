@@ -3,12 +3,12 @@
 namespace RoninEngine::Runtime {
 static SDL_Surface *spotlightMask = nullptr;
 
-Spotlight::Spotlight() : Spotlight(typeid(Spotlight).name()) {}
+Spotlight::Spotlight() : Spotlight(DESCRIBE_TYPE(Spotlight)) {}
 Spotlight::Spotlight(const std::string &name) : Light(name) {
     range = 1.f;
     intensity = 1.f;
     if (!spotlightMask) {
-        spotlightMask = GC::resource_bitmap("spotlight");
+        spotlightMask = ResourceManager::resource_bitmap("spotlight");
     }
 }
 

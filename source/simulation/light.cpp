@@ -3,7 +3,7 @@
 namespace RoninEngine::Runtime
 {
     Light::Light()
-        : Light(typeid(Light).name())
+        : Light(DESCRIBE_TYPE(Light))
     {
     }
     Light::Light(const std::string& name)
@@ -22,7 +22,7 @@ namespace RoninEngine::Runtime
         // TODO: not a work light sources
         return;
         if (!fieldFogTexture) {
-            GC::gc_alloc_texture(&fieldFogTexture, res.width, res.height, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING);
+            ResourceManager::gc_alloc_texture(&fieldFogTexture, res.width, res.height, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING);
             fieldFogTexture->blendMode(SDL_BlendMode::SDL_BLENDMODE_BLEND);
 
             c = fieldFogTexture->color();
