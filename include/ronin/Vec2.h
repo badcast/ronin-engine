@@ -19,6 +19,14 @@ namespace RoninEngine
             }
             Vec2Int(const Vec2Int&) = default;
 
+            RONIN_API static const Vec2Int one;
+            RONIN_API static const Vec2Int minusOne;
+            RONIN_API static const Vec2Int zero;
+            RONIN_API static const Vec2Int down;
+            RONIN_API static const Vec2Int left;
+            RONIN_API static const Vec2Int right;
+            RONIN_API static const Vec2Int up;
+
             bool operator==(const Vec2Int& rhs) { return this->x == rhs.x && this->y == rhs.y; }
 
             bool operator!=(const Vec2Int& rhs) { return !this->operator==(rhs); }
@@ -141,6 +149,14 @@ namespace RoninEngine
         API_EXPORT inline const Vec2 Vec2::up(0, 1);
         API_EXPORT inline const Vec2 Vec2::infinity(std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity());
         API_EXPORT inline const Vec2 Vec2::negativeInfinity(-std::numeric_limits<float>::infinity(), -std::numeric_limits<float>::infinity());
+
+        API_EXPORT inline const Vec2Int Vec2Int::one(1, 1);
+        API_EXPORT inline const Vec2Int Vec2Int::minusOne(-1, -1);
+        API_EXPORT inline const Vec2Int Vec2Int::zero(0, 0);
+        API_EXPORT inline const Vec2Int Vec2Int::down(0, -1);
+        API_EXPORT inline const Vec2Int Vec2Int::left(-1, 0);
+        API_EXPORT inline const Vec2Int Vec2Int::right(1, 0);
+        API_EXPORT inline const Vec2Int Vec2Int::up(0, 1);
 
         RONIN_API Vec2Int operator+(const Vec2Int& lhs, const Vec2Int& rhs);
         RONIN_API Vec2Int operator-(const Vec2Int& lhs, const Vec2Int& rhs);

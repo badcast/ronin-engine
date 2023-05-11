@@ -37,7 +37,9 @@ namespace RoninEngine::Runtime
 
         Rect realityRect(float&& opaque = 1.f);
 
-        static Sprite* empty();
+        static Sprite* spriteEmpty();
+        static Sprite* spriteBlack();
+        static Sprite* spriteWhite();
     };
 
 } // namespace RoninEngine::Runtime

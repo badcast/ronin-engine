@@ -83,6 +83,7 @@ namespace RoninEngine
         public:
             static GameObject* CreateEmptyGameObject(Vec2 position);
             static Camera2D* CreateCamera2D(Vec2 position);
+            static Sprite* CreateSprite2D(Vec2Int size, Color fillColor);
         };
     } // namespace Runtime
 } // namespace RoninEngine
