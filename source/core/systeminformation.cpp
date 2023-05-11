@@ -110,26 +110,25 @@ TODO: % CPU в настоящее время используется этим �
 
 const size_t get_process_privateMemory()
 {
-    size_t total;
-#ifdef _MSC_VER
+
+#ifdef WIN32
     PROCESS_MEMORY_COUNTERS_EX pm;
     K32GetProcessMemoryInfo(GetCurrentProcess(), &pm, sizeof(pm));
-    total = pm.PrivateUsage;
+    size_t total = pm.PrivateUsage;
 #elif __unix__
-    total = unix_process_info_from_proc().virtualMem;
+    size_t total = unix_process_info_from_proc().virtualMem;
 #endif
     return total;
 }
 
 const size_t get_process_sizeMemory()
 {
-    size_t total = 0;
-#ifdef _MSC_VER
+#ifdef WIN32
     PROCESS_MEMORY_COUNTERS_EX pm;
     K32GetProcessMemoryInfo(GetCurrentProcess(), &pm, sizeof(pm));
-    total = pm.PeakWorkingSetSize;
+    size_t total = pm.PeakWorkingSetSize;
 #elif __unix__
-    total = unix_process_info_from_proc().physicalMem;
+    size_t total = unix_process_info_from_proc().physicalMem;
 #endif
     return total;
 }
