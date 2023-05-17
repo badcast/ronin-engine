@@ -1,6 +1,7 @@
 #include "ronin.h"
 
 using namespace RoninEngine;
+using namespace RoninEngine::Runtime;
 
 // TODO: optimze MatrixSelection USE TRANSFORM::LAYER component for selection (as INDEX)
 
@@ -177,7 +178,7 @@ void Level::push_light_object(Light* light) { _assoc_lightings.emplace_front(lig
 
 void Level::push_object(Object* obj) { _objects.insert(std::make_pair(obj, TimeEngine::time())); }
 
-std::vector<RoninEngine::Runtime::Transform*>* RoninEngine::Level::get_hierarchy(Runtime::Transform* parent)
+std::vector<RoninEngine::Runtime::Transform*>* Level::get_hierarchy(Runtime::Transform* parent)
 {
     if (!parent) {
         Application::fail("Argument is null");
@@ -296,6 +297,20 @@ UI::GUI* Level::gui() { return this->ui; }
 void Level::unload() { this->m_isUnload = true; }
 
 int Level::get_destroyed_frames() { return _destroyed; }
+
+bool Level::has_destruction_state(Object* obj)
+{
+    if (Level::self()->_destructTasks) {
+        for (std::pair<float, std::set<Object*>> mapIter : *Level::self()->_destructTasks) {
+            auto _set = mapIter.second;
+
+            if (_set.find(obj) != std::end(_set)) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
 
 void Level::awake() { }
 

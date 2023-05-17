@@ -24,6 +24,8 @@ namespace RoninEngine
         extern RONIN_API bool instanced(Object* obj);
 
         // Клонирует объект
+        extern RONIN_API GameObject* instantiate(GameObject* obj);
+        // Клонирует объект
         extern RONIN_API GameObject* instantiate(GameObject* obj, Vec2 position, float angle = 0);
         // Клонирует объект
         extern RONIN_API GameObject* instantiate(GameObject* obj, Vec2 position, Transform* parent, bool worldPositionStay = true);
@@ -53,6 +55,8 @@ namespace RoninEngine
             virtual ~Object() = default;
 
             void destroy();
+
+            const bool is_destruction();
 
             const bool exists();
 

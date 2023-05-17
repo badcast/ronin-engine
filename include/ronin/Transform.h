@@ -9,7 +9,7 @@ namespace RoninEngine::Runtime
     class RONIN_API Transform : public Component
     {
     private:
-        friend class RoninEngine::Level;
+        friend class Level;
         friend class GameObject;
         friend class Camera;
         friend class Camera2D;

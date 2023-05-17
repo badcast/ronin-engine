@@ -40,10 +40,10 @@ namespace RoninEngine
 
             if constexpr (std::is_same<T, GameObject>::value) {
                 if (initInHierarchy) {
-                    if (RoninEngine::Level::self() == nullptr)
+                    if (Level::self() == nullptr)
                         throw std::runtime_error("pCurrentScene is null");
 
-                    if (!RoninEngine::Level::self()->is_hierarchy())
+                    if (!Level::self()->is_hierarchy())
                         throw std::runtime_error("pCurrentScene->mainObject is null");
 
                     auto mainObj = Level::self()->main_object;
@@ -238,6 +238,8 @@ namespace RoninEngine
         const bool Object::exists() { return (this->operator bool()); }
 
         void Object::destroy() { RoninEngine::Runtime::destroy(this); }
+
+        const bool Object::is_destruction() { return Level::self()->has_destruction_state(this); }
 
         std::string& Object::name(const std::string& newName) { return (m_name = newName); }
 

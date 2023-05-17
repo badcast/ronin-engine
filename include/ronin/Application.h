@@ -17,7 +17,7 @@ namespace RoninEngine
 
         static void createWindow(const int& width, const int& height, bool fullscreen = false);
         static void closeWindow();
-        static void loadLevel(Level* level);
+        static void loadLevel(Runtime::Level* level);
         static bool simulate();
         static void getScreen(const char* filename);
         static SDL_Surface* getScreen();

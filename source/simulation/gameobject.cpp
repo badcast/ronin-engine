@@ -4,8 +4,6 @@
 using namespace RoninEngine;
 using namespace RoninEngine::Runtime;
 
-using Level = RoninEngine::Level;
-
 namespace RoninEngine::Runtime
 {
     extern Transform* create_empty_transform();

@@ -6,7 +6,7 @@ namespace RoninEngine::Runtime
 {
     class RONIN_API Camera : public Component
     {
-        friend RoninEngine::Level;
+        friend class Level;
 
     protected:
         bool targetClear;
@@ -28,12 +28,12 @@ namespace RoninEngine::Runtime
 
         std::tuple<std::map<int, std::set<Renderer*>>*, std::set<Light*>*> matrixSelection();
 
-        RONIN_API static const Vec2 ScreenToWorldPoint(Vec2 screenPoint);
-        RONIN_API static const Vec2 WorldToScreenPoint(Vec2 worldPoint);
-        RONIN_API static const Vec2 ViewportToWorldPoint(Vec2 viewportPoint);
-        RONIN_API static const Vec2 WorldToViewport(Vec2 worldPoint);
-        RONIN_API static const Vec2 WorldToViewportClamp(Vec2 worldPoint);
-        RONIN_API static Camera* mainCamera();
+        static const Vec2 ScreenToWorldPoint(Vec2 screenPoint);
+        static const Vec2 WorldToScreenPoint(Vec2 worldPoint);
+        static const Vec2 ViewportToWorldPoint(Vec2 viewportPoint);
+        static const Vec2 WorldToViewport(Vec2 worldPoint);
+        static const Vec2 WorldToViewportClamp(Vec2 worldPoint);
+        static Camera* mainCamera();
     };
 
 } // namespace RoninEngine::Runtime

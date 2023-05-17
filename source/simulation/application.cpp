@@ -1,5 +1,7 @@
 #include "ronin.h"
 
+using namespace RoninEngine::Runtime;
+
 namespace RoninEngine
 {
     namespace Runtime
@@ -17,10 +19,10 @@ namespace RoninEngine
     static bool m_inited = false;
     static bool m_levelLoaded = false;
     static bool m_levelAccept = false;
-    static Level* destroyableLevel = nullptr;
+    static Runtime::Level* destroyableLevel = nullptr;
     static SDL_Renderer* renderer = nullptr;
     static SDL_Window* windowOwner = nullptr;
-    static Level* m_level = nullptr;
+    static Runtime::Level* m_level = nullptr;
     static bool isQuiting;
 
     Runtime::Vec2Int m_mousePoint;

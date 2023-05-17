@@ -4,7 +4,6 @@
 namespace RoninEngine
 {
     class Application;
-    class Level;
 
     namespace UI
     {
@@ -21,6 +20,8 @@ namespace RoninEngine
 
     namespace Runtime
     {
+        class Level;
+
         struct Vec2;
 
         struct Vec2Int;
