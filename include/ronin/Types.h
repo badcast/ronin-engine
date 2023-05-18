@@ -5,9 +5,6 @@
 namespace RoninEngine
 {
 
-    // This is control (GUI, UI) identifier type
-    typedef std::uint8_t uid;
-
     namespace Runtime
     {
         enum Align { Left, Right, Center };
@@ -76,21 +73,27 @@ namespace RoninEngine
                 return *this;
             }
 
-            Vec2 getXY() const;
-
-            Vec2 getWH() const;
-
+            constexpr auto getXY() const
+            {
+                if constexpr (std::is_same<T, int>::value) {
+                    return Vec2Int(x, y);
+                } else if constexpr (std::is_same<T, float>::value) {
+                    return Vec2(x, y);
+                } else
+                    throw std::bad_exception();
+            }
+            constexpr auto getWH() const
+            {
+                if constexpr (std::is_same<T, int>::value) {
+                    return Vec2Int(w, h);
+                } else if constexpr (std::is_same<T, float>::value) {
+                    return Vec2(w, h);
+                } else
+                    throw std::bad_exception();
+            }
             static const xRect<T> zero;
             static const xRect<T> one;
         };
-
-        struct Render_info {
-            SDL_Renderer* renderer;
-            Rect src;
-            Rectf_t dst;
-            Texture* texture;
-        };
-
     } // namespace Runtime
 
 } // namespace RoninEngine

@@ -16,7 +16,7 @@ namespace RoninEngine::Runtime
 
     void Light::GetLightSource(Render_info* render)
     {
-        auto res = Application::getResolution();
+        auto res = Application::get_resolution();
         Color c;
         SDL_Texture *target, *lastTarget;
         // TODO: not a work light sources

@@ -2,11 +2,15 @@
 
 namespace RoninEngine::Runtime
 {
-    Texture::Texture() { m_native = nullptr; }
+    Texture::Texture(SDL_Texture *native) { m_native = native; }
 
     Texture::~Texture()
     {
         if (m_native != nullptr) {
+            int x = width();
+            x = height();
+            x = valid();
+
             SDL_DestroyTexture(m_native);
             m_native = nullptr;
         }
@@ -98,7 +102,7 @@ namespace RoninEngine::Runtime
 
     const Rect Texture::getRect() { return { 0, 0, width(), height() }; }
 
-    const Texture* Texture::clone() { return clone(Application::getRenderer()); }
+    const Texture* Texture::clone() { return clone(Application::get_renderer()); }
 
     const Texture* Texture::clone(SDL_Renderer* renderer)
     {

@@ -86,7 +86,9 @@ namespace RoninEngine::Runtime
                     wrapper.dst.y = arranged.y + ((rect.h - wrapper.dst.h) / 2.0f + (point.y - sourcePoint.y) * pixelsPerPoint);
 
                     // native renderer component
-                    SDL_RenderCopyExF(renderer, wrapper.texture->native(), (SDL_Rect*)&wrapper.src, reinterpret_cast<SDL_FRect*>(&wrapper.dst), renderSource->transform()->angle(), nullptr, SDL_RendererFlip::SDL_FLIP_NONE);
+                    SDL_RenderCopyExF(renderer, wrapper.texture, (SDL_Rect*)&wrapper.src, reinterpret_cast<SDL_FRect*>(&wrapper.dst), renderSource->transform()->angle(), nullptr, SDL_RendererFlip::SDL_FLIP_NONE);
+
+                    SDL_DestroyTexture(wrapper.texture);
                 }
             }
         // Render Lights
@@ -112,7 +114,7 @@ namespace RoninEngine::Runtime
                 wrapper.dst.y += ((rect.h - wrapper.dst.h) / 2.0f + (point->y - sourcePoint.y) * pixelsPerPoint);
 
                 SDL_RenderCopyExF(
-                    renderer, wrapper.texture->native(), reinterpret_cast<SDL_Rect*>(&wrapper.src), reinterpret_cast<SDL_FRect*>(&wrapper.dst), lightSource->transform()->_angle - transform()->_angle, nullptr, SDL_RendererFlip::SDL_FLIP_NONE);
+                    renderer, wrapper.texture, reinterpret_cast<SDL_Rect*>(&wrapper.src), reinterpret_cast<SDL_FRect*>(&wrapper.dst), lightSource->transform()->_angle - transform()->_angle, nullptr, SDL_RendererFlip::SDL_FLIP_NONE);
             }
         }
 
@@ -149,7 +151,7 @@ namespace RoninEngine::Runtime
                 for (Renderer* face : layer.second) {
                     Rect factSz = face->getFactical();
                     Vec2 p = face->transform()->position() + face->getOffset();
-                    Vec2 sz = Vec2::Scale(face->getSize(), factSz.getWH() / pixelsPerPoint);
+                    Vec2 sz = Vec2::Scale(face->getSize(), Vec2(factSz.getWH()) / pixelsPerPoint);
                     Gizmos::setColor(Color::blue);
                     Gizmos::DrawRectangleRounded(p, sz.x, sz.y, 10);
                     Gizmos::setColor(Color::black);

@@ -10,7 +10,7 @@ namespace RoninEngine::Runtime
     std::uint32_t const_storm_yDeterminant_start = 0x20000000;
     std::uint32_t const_storm_yDeterminant_inverse = 0x30000000;
 
-    std::list<Transform*> Physics2D::stormCast(const Vec2& origin, int edges, int layer)
+    std::list<Transform*> Physics2D::storm_cast(const Vec2& origin, int edges, int layer)
     {
         /*
         Описание данных stormMember
@@ -151,7 +151,7 @@ namespace RoninEngine::Runtime
 
     std::list<Transform*> Physics2D::sphereCast(Vec2 origin, float distance, int layer)
     {
-        std::list<Transform*> _cont = stormCast(origin, Math::number(Math::ceil(distance)), layer);
+        std::list<Transform*> _cont = storm_cast(origin, Math::number(Math::ceil(distance)), layer);
 
         _cont.remove_if([&](Transform* lhs) { return Vec2::Distance(lhs->p, origin) > distance; });
 

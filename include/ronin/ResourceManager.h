@@ -28,16 +28,6 @@ namespace RoninEngine
             [[deprecated]] static SDL_Cursor* GetCursor(const std::string& resourceName, const Vec2Int& hotspot, bool autoUnload = true);
             [[deprecated]] static SDL_Cursor* GetCursor(SDL_Surface* texture, const Vec2Int& hotspot);
 
-            [[deprecated]] static Atlas* GetAtlas(const std::string& atlasName);
-
-            static Texture* gc_get_texture(int id);
-
-            static SDL_Texture* gc_get_sdl_texture(int id);
-
-            static SDL_Surface* gc_get_sdl_surface(int id);
-
-            static const Sprite* gc_get_sprite(int id);
-
             static int resource_bitmap(const std::string& resourceName, SDL_Surface** sdlsurfacePtr);
 
             static SDL_Surface* resource_bitmap(const std::string& resourceName);

@@ -21,7 +21,7 @@ namespace RoninEngine::Runtime
         {
             std::free(memory);
             if (--__ronin_allocated < 0)
-                Application::fail_OutOfMemory();
+                Application::fail_oom_kill();
         }
 
         std::uint64_t total_allocated() { return __ronin_allocated; }

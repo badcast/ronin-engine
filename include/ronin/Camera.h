@@ -11,6 +11,7 @@ namespace RoninEngine::Runtime
     protected:
         bool targetClear;
         std::map<int, std::set<Renderer*>> renders;
+        std::set<Renderer*> prev;
         std::set<Light*> __lightsOutResults;
         virtual void render(SDL_Renderer* renderer, Rect rect, GameObject* root) = 0;
 
@@ -33,7 +34,7 @@ namespace RoninEngine::Runtime
         static const Vec2 ViewportToWorldPoint(Vec2 viewportPoint);
         static const Vec2 WorldToViewport(Vec2 worldPoint);
         static const Vec2 WorldToViewportClamp(Vec2 worldPoint);
-        static Camera* mainCamera();
+        static Camera* main_camera();
     };
 
 } // namespace RoninEngine::Runtime

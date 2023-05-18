@@ -55,7 +55,7 @@ namespace RoninEngine
             virtual ~Object() = default;
 
             void destroy();
-
+            const bool destroy_cancel();
             const bool is_destruction();
 
             const bool exists();

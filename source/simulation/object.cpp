@@ -36,7 +36,7 @@ namespace RoninEngine
             }
 
             if (clone == nullptr)
-                Application::fail_OutOfMemory();
+                Application::fail_oom_kill();
 
             if constexpr (std::is_same<T, GameObject>::value) {
                 if (initInHierarchy) {
@@ -142,8 +142,6 @@ namespace RoninEngine
                     }
                     Transform::hierarchy_removeAll(t);
                     Level::self()->matrix_nature_pickup(t);
-                } else if ((r = dynamic_cast<Renderer*>(obj))) {
-                    Level::self()->_assoc_renderers.remove(r);
                 }
             }
 
@@ -165,12 +163,9 @@ namespace RoninEngine
 
         GameObject* instantiate(GameObject* obj)
         {
-            GameObject* clone = create_game_object();
-            clone->m_name = obj->m_name;
+            GameObject* clone;
 
-            if (clone->m_name.find(_cloneStr) == std::string::npos)
-                clone->m_name += _cloneStr;
-
+            clone = create_game_object((obj->m_name.find(_cloneStr) == std::string::npos ? obj->m_name + _cloneStr : obj->m_name));
             for (auto iter = begin(obj->m_components); iter != end(obj->m_components); ++iter) {
                 Component* replacement = *iter;
                 if (Transform* t = dynamic_cast<Transform*>(replacement)) {
@@ -239,7 +234,9 @@ namespace RoninEngine
 
         void Object::destroy() { RoninEngine::Runtime::destroy(this); }
 
-        const bool Object::is_destruction() { return Level::self()->has_destruction_state(this); }
+        const bool Object::destroy_cancel() { return Level::self()->object_desctruction_cancel(this); }
+
+        const bool Object::is_destruction() { return Level::self()->object_destruction_state(this); }
 
         std::string& Object::name(const std::string& newName) { return (m_name = newName); }
 

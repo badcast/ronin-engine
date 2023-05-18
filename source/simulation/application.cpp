@@ -90,7 +90,7 @@ namespace RoninEngine
         isQuiting = false;
     }
 
-    void Application::createWindow(const int& width, const int& height, bool fullscreen)
+    void Application::create_window(const int& width, const int& height, bool fullscreen)
     {
         if (!m_inited || windowOwner)
             Application::fail("Application not Inited");
@@ -111,10 +111,10 @@ namespace RoninEngine
         SDL_SetWindowBrightness(windowOwner, 1);
     }
 
-    void Application::closeWindow()
+    void Application::close_window()
     {
         if (windowOwner) {
-            requestQuit();
+            request_quit();
             SDL_DestroyWindow(windowOwner);
             SDL_DestroyRenderer(renderer);
             renderer = nullptr;
@@ -122,9 +122,9 @@ namespace RoninEngine
         }
     }
 
-    void Application::requestQuit() { isQuiting = true; }
+    void Application::request_quit() { isQuiting = true; }
 
-    void Application::Quit()
+    void Application::quit()
     {
         if (!m_inited)
             return;
@@ -141,7 +141,7 @@ namespace RoninEngine
         m_inited = false;
     }
 
-    void Application::loadLevel(Level* level)
+    void Application::load_level(Level* level)
     {
         if (!level || m_level == level || windowOwner == nullptr)
             throw std::bad_cast();
@@ -156,6 +156,8 @@ namespace RoninEngine
             level->main_object = create_empty_gameobject();
             level->main_object->name("Main Object");
             level->main_object->transform()->name("Root");
+            //pickup from renders
+            level->matrix_nature_pickup(level->main_object->transform());
         }
 
         m_level = level;
@@ -163,7 +165,7 @@ namespace RoninEngine
         m_levelLoaded = false;
     }
 
-    SDL_Surface* Application::getScreen()
+    SDL_Surface* Application::get_screen()
     {
         SDL_Rect rect;
         void* pixels;
@@ -179,21 +181,21 @@ namespace RoninEngine
         return su;
     }
 
-    void Application::getScreen(const char* filename)
+    void Application::get_screen(const char* filename)
     {
-        SDL_Surface* surf = getScreen();
+        SDL_Surface* surf = get_screen();
         IMG_SavePNG(surf, filename);
         SDL_FreeSurface(surf);
     }
 
-    SDL_DisplayMode Application::getDisplayMode()
+    SDL_DisplayMode Application::get_display_mode()
     {
         SDL_DisplayMode display;
         SDL_GetWindowDisplayMode(windowOwner, &display);
         return display;
     }
 
-    RoninEngine::Resolution RoninEngine::Application::getResolution()
+    RoninEngine::Resolution RoninEngine::Application::get_resolution()
     {
         Resolution res;
         SDL_RendererInfo rf;
@@ -225,13 +227,13 @@ namespace RoninEngine
 
         internal_init_TimeEngine();
 
-        displayMode = Application::getDisplayMode();
+        displayMode = Application::get_display_mode();
         secPerFrame = 1000.f / displayMode.refresh_rate; // refresh screen from Monitor Settings
         while (!isQuiting) {
             // update events
             input_reset();
             delayed = TimeEngine::tickMillis();
-            wndFlags = static_cast<SDL_WindowFlags>(SDL_GetWindowFlags(Application::getWindow()));
+            wndFlags = static_cast<SDL_WindowFlags>(SDL_GetWindowFlags(Application::get_window()));
             while (SDL_PollEvent(&event)) {
                 input::Update_Input(&event);
                 if (event.type == SDL_QUIT)
@@ -272,7 +274,7 @@ namespace RoninEngine
                     }
 
                     m_level->level_render_world(renderer);
-                    if (Camera::mainCamera())
+                    if (Camera::main_camera())
                         m_level->onDrawGizmos(); // Draw gizmos
 
                     // Set scale as default
@@ -302,7 +304,7 @@ namespace RoninEngine
                     "FPS:%d Memory:%luMiB, "
                     "Ronin_Allocated:%lu, SDL_Allocated:%d",
                     static_cast<int>(fps), get_process_sizeMemory() / 1024 / 1024, RoninMemory::total_allocated(), SDL_GetNumAllocations());
-                SDL_SetWindowTitle(Application::getWindow(), windowTitle);
+                SDL_SetWindowTitle(Application::get_window(), windowTitle);
                 // fpsRound = Time::startUpTime() + 1;  // updater per 1 seconds
             }
 
@@ -320,9 +322,9 @@ namespace RoninEngine
         return isQuiting;
     }
 
-    SDL_Window* Application::getWindow() { return windowOwner; }
+    SDL_Window* Application::get_window() { return windowOwner; }
 
-    SDL_Renderer* Application::getRenderer() { return renderer; }
+    SDL_Renderer* Application::get_renderer() { return renderer; }
 
     void Application::back_fail(void) { exit(EXIT_FAILURE); }
 
@@ -353,5 +355,5 @@ namespace RoninEngine
         back_fail();
     }
 
-    void Application::fail_OutOfMemory() { fail("Out of memory!"); }
+    void Application::fail_oom_kill() throw() { fail("Out of memory!"); }
 } // namespace RoninEngine

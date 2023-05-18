@@ -13,7 +13,6 @@ namespace RoninEngine::Runtime
     SpriteRenderer::SpriteRenderer(const std::string& name)
         : Renderer(name)
         , sprite(nullptr)
-        , textureCache(nullptr)
         , flip(Vec2::one)
         , renderType(SpriteRenderType::Simple)
         , renderOut(SpriteRenderOut::Centering)
@@ -24,7 +23,6 @@ namespace RoninEngine::Runtime
 
     SpriteRenderer::SpriteRenderer(const SpriteRenderer& proto)
         : Renderer(proto.m_name)
-        , textureCache(proto.textureCache)
         , sprite(proto.sprite)
         , size(proto.size)
         , renderType(proto.renderType)
@@ -89,17 +87,16 @@ namespace RoninEngine::Runtime
     {
         static std::uint16_t x, y;
         static SDL_Rect dest;
-#define _srcRect (render->src)
-#define _dstRect (render->dst)
+        SDL_Texture* textureCache = nullptr;
+        auto&& _srcRect = (render->src);
+        auto&& _dstRect = (render->dst);
         //    auto& _srcRect = (render->src);
         //    auto& _dstRect = (render->dst);
 
         if (sprite && sprite->width() && sprite->height()) {
             switch (this->renderType) {
             case SpriteRenderType::Simple:
-                if (!textureCache) {
-                    ResourceManager::gc_alloc_texture_from(&textureCache, sprite->source);
-                }
+                textureCache = SDL_CreateTextureFromSurface(render->renderer, sprite->source);
                 _srcRect.w = sprite->width();
                 _srcRect.h = sprite->height();
                 _dstRect.w = sprite->width() * abs(this->size.x) / pixelsPerPoint;
@@ -129,59 +126,59 @@ namespace RoninEngine::Runtime
                 // }
 
                 // generate tiles
-                if (!textureCache) {
-                    ResourceManager::gc_alloc_texture(&textureCache, _srcRect.w, _srcRect.h, SDL_PIXELFORMAT_RGBA8888, SDL_TextureAccess::SDL_TEXTUREACCESS_TARGET);
-                    if (textureCache == nullptr)
-                        Application::fail("Texture create fail");
 
-                    SDL_SetRenderTarget(render->renderer, textureCache->native());
+                textureCache = SDL_CreateTexture(render->renderer, sdl_default_pixelformat, SDL_TextureAccess::SDL_TEXTUREACCESS_TARGET, _srcRect.w, _srcRect.h);
+                if (textureCache == nullptr)
+                    Application::fail("Texture create fail");
 
-                    dest.w = sprite->width();
-                    dest.h = sprite->height();
+                SDL_SetRenderTarget(render->renderer, textureCache);
 
-                    _srcRect.x = _srcRect.w / dest.w;
-                    _srcRect.y = _srcRect.h / dest.h;
+                dest.w = sprite->width();
+                dest.h = sprite->height();
 
-                    SDL_Texture* _texture = SDL_CreateTextureFromSurface(Application::getRenderer(), sprite->source);
+                _srcRect.x = _srcRect.w / dest.w;
+                _srcRect.y = _srcRect.h / dest.h;
 
-                    // render tile
-                    switch (this->renderPresentMode) {
-                    case SpriteRenderPresentMode::Fixed: {
-                        for (x = 0; x < _srcRect.x; ++x) {
-                            for (y = 0; y < _srcRect.y; ++y) {
-                                dest.x = x * dest.w;
-                                dest.y = y * dest.h;
-                                SDL_RenderCopy(render->renderer, _texture, (SDL_Rect*)&sprite->m_rect, (SDL_Rect*)&dest);
-                            }
-                        }
-                        break;
-                    }
-                    case SpriteRenderPresentMode::Place: {
-                        for (x = 0; x < _srcRect.x; ++x) {
-                            for (y = 0; y < _srcRect.y; ++y) {
-                                dest.x = x * dest.w;
-                                dest.y = y * dest.h;
+                SDL_Texture* _texture = SDL_CreateTextureFromSurface(Application::get_renderer(), sprite->source);
 
-                                SDL_RenderCopy(render->renderer, _texture, (SDL_Rect*)&sprite->m_rect, (SDL_Rect*)&dest);
-                            }
-                        }
-                        // place remained
-                        for (x = 0, dest.y = _srcRect.h / dest.h * dest.h, dest.h = size.y - dest.y; x < _srcRect.x; ++x) {
+                // render tile
+                switch (this->renderPresentMode) {
+                case SpriteRenderPresentMode::Fixed: {
+                    for (x = 0; x < _srcRect.x; ++x) {
+                        for (y = 0; y < _srcRect.y; ++y) {
                             dest.x = x * dest.w;
-                            SDL_RenderCopy(render->renderer, _texture, (SDL_Rect*)&sprite->m_rect, (SDL_Rect*)&dest);
-                        }
-                        ++_srcRect.y;
-                        for (y = 0, dest.x = _srcRect.w / dest.w * dest.w, dest.h = sprite->height(), dest.w = size.x - dest.x; y < _srcRect.y; ++y) {
                             dest.y = y * dest.h;
                             SDL_RenderCopy(render->renderer, _texture, (SDL_Rect*)&sprite->m_rect, (SDL_Rect*)&dest);
                         }
-
-                        break;
                     }
-                        SDL_DestroyTexture(_texture);
-                    }
-                    SDL_SetRenderTarget(render->renderer, nullptr);
+                    break;
                 }
+                case SpriteRenderPresentMode::Place: {
+                    for (x = 0; x < _srcRect.x; ++x) {
+                        for (y = 0; y < _srcRect.y; ++y) {
+                            dest.x = x * dest.w;
+                            dest.y = y * dest.h;
+
+                            SDL_RenderCopy(render->renderer, _texture, (SDL_Rect*)&sprite->m_rect, (SDL_Rect*)&dest);
+                        }
+                    }
+                    // place remained
+                    for (x = 0, dest.y = _srcRect.h / dest.h * dest.h, dest.h = size.y - dest.y; x < _srcRect.x; ++x) {
+                        dest.x = x * dest.w;
+                        SDL_RenderCopy(render->renderer, _texture, (SDL_Rect*)&sprite->m_rect, (SDL_Rect*)&dest);
+                    }
+                    ++_srcRect.y;
+                    for (y = 0, dest.x = _srcRect.w / dest.w * dest.w, dest.h = sprite->height(), dest.w = size.x - dest.x; y < _srcRect.y; ++y) {
+                        dest.y = y * dest.h;
+                        SDL_RenderCopy(render->renderer, _texture, (SDL_Rect*)&sprite->m_rect, (SDL_Rect*)&dest);
+                    }
+
+                    break;
+                }
+                    SDL_DestroyTexture(_texture);
+                }
+                SDL_SetRenderTarget(render->renderer, nullptr);
+
             } break;
             }
         }
@@ -193,7 +190,5 @@ namespace RoninEngine::Runtime
         _dstRect.y -= offset.y;
 
         render->texture = textureCache;
-#undef _dstRect
-#undef _srcRect
     }
 } // namespace RoninEngine::Runtime

@@ -1,6 +1,4 @@
 #include <SDL2/SDL2_gfxPrimitives.h>
-#include <SDL2/SDL_ttf.h>
-
 #include "ronin.h"
 
 // TODO: Change ALL interface SDL_Color as Color
@@ -46,18 +44,18 @@ namespace RoninEngine::UI
 
     void ResetControls() { _controlId = 0; }
 
-    void* factory_resource(ControlType type)
+    void* factory_resource(GUIControlPresents type)
     {
         void* resources;
 
         switch (type) {
-        case CDROPDOWN:
+        case RGUI_DROPDOWN:
             resources = RoninMemory::alloc<DROPDOWN_RESOURCE>();
             break;
-        case CIMAGEANIMATOR:
+        case RGUI_IMAGEANIMATOR:
             resources = RoninMemory::alloc<Timeline>();
             break;
-        case CHSLIDER:
+        case RGUI_HSLIDER:
             // value, min, max members
             resources = RoninMemory::malloc(sizeof(float) * 3);
             break;
@@ -71,13 +69,13 @@ namespace RoninEngine::UI
     void factory_free(UIElement* element)
     {
         switch (element->prototype) {
-        case CDROPDOWN:
+        case RGUI_DROPDOWN:
             RoninMemory::free(static_cast<DROPDOWN_RESOURCE*>(element->resources));
             break;
-        case CIMAGEANIMATOR:
+        case RGUI_IMAGEANIMATOR:
             RoninMemory::free(static_cast<Timeline*>(element->resources));
             break;
-        case CHSLIDER:
+        case RGUI_HSLIDER:
             RoninMemory::mfree(element->resources);
             break;
         }
@@ -104,12 +102,12 @@ namespace RoninEngine::UI
         switch (element.prototype) {
         case RoninEngine::UI::_UC:
             break;
-        case CTEXT: {
+        case RGUI_TEXT: {
             Render_String(render, element.rect, element.text.c_str(), element.text.size());
             break;
         }
 
-        case CBUTTON: {
+        case RGUI_BUTTON: {
             static uint8_t pSize = 2; // pen size
             static Rect inside = Rect(pSize, pSize, -pSize * 2, -pSize * 2);
             Rect rect;
@@ -124,13 +122,14 @@ namespace RoninEngine::UI
             SDL_RenderFillRect(render, (SDL_Rect*)&rect);
 
             // render text
-            Render_String(render, element.rect, element.text.c_str(), element.text.size(), 13, TextAlign::MiddleCenter, true, uiHover);
+            //Render_String(render, element.rect, element.text.c_str(), element.text.size(), 13, TextAlign::MiddleCenter, true, uiHover);
+            DrawFontAt(render, element.text, 12, element.rect.getXY(), Color::white);
             bool msClick = input::isMouseUp();
             result = uiHover && msClick;
             break;
         }
 
-        case CEDIT: {
+        case RGUI_EDIT: {
             // uielement background
             static const int thickness = 2;
             static const Rect thick = { thickness, thickness, -thickness, -thickness };
@@ -179,7 +178,7 @@ namespace RoninEngine::UI
             break;
         }
 
-        case CHSLIDER: {
+        case RGUI_HSLIDER: {
             float ratio;
             SDL_Rect rect;
             float* value = (float*)element.resources;
@@ -236,7 +235,7 @@ namespace RoninEngine::UI
             break;
         }
 
-        case CVSLIDER: {
+        case RGUI_VSLIDER: {
             float* value = (float*)element.resources;
             float* min = value + 1;
             float* max = min + 1;
@@ -247,7 +246,7 @@ namespace RoninEngine::UI
             break;
         }
 
-        case CIMAGE: {
+        case RGUI_IMAGE: {
             SDL_Rect sdlr;
             Texture* tex = reinterpret_cast<Texture*>(element.resources);
             if (tex) {
@@ -260,13 +259,13 @@ namespace RoninEngine::UI
             }
             break;
         }
-        case CIMAGEANIMATOR: {
+        case RGUI_IMAGEANIMATOR: {
             Timeline* timeline = (Timeline*)element.resources;
             Texture* texture = timeline->Evaluate(TimeEngine::time())->texture;
             SDL_RenderCopy(render, texture->native(), nullptr, (SDL_Rect*)&element.rect);
             break;
         }
-        case CTEXTRAND: {
+        case RGUI_TEXTRAND: {
             static float lasttime = 0;
 
             // todo: Доработать рандомайзера!
@@ -292,11 +291,11 @@ namespace RoninEngine::UI
                 }
             }
 
-            Render_String(Application::getRenderer(), element.rect, element.text.c_str(), element.text.size());
+            Render_String(Application::get_renderer(), element.rect, element.text.c_str(), element.text.size());
 
             break;
         }
-        case CDROPDOWN: {
+        case RGUI_DROPDOWN: {
             static const int thickness = 2;
             static const Rect thick = { thickness, thickness, -thickness, -thickness };
             bool msClick = uiHover && input::isMouseUp();
@@ -400,7 +399,7 @@ namespace RoninEngine::UI
             return;
 
         switch (element->prototype) {
-        case CDROPDOWN:
+        case RGUI_DROPDOWN:
 
             ((event_index_changed)(element->event))(element->id, ((DROPDOWN_RESOURCE*)element->resources)->first);
             break;

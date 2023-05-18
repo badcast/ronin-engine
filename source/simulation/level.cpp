@@ -18,6 +18,7 @@ Level::Level(const std::string& name)
     , _destructTasks(nullptr)
     , _destroyed(0)
     , globalID(0)
+    , _destroy_delay_time(0)
     , m_isUnload(false)
     , m_name(name)
 {
@@ -123,17 +124,17 @@ int Level::matrix_restore(const std::list<Runtime::Transform*>& damaged_content)
 
 void Level::get_render_info(int* culled, int* fullobjects)
 {
-    Camera* curCamera = Camera::mainCamera();
+    Camera* curCamera = Camera::main_camera();
 
     if (!curCamera)
         return;
 
     if (culled) {
-        (*culled) = selfLevel->_assoc_renderers.size() - curCamera->renders.size();
+        (*culled) = -1;
     }
 
     if (fullobjects) {
-        (*fullobjects) = selfLevel->_assoc_renderers.size();
+        (*fullobjects) = -1;
     }
 }
 
@@ -172,8 +173,6 @@ void Level::matrix_nature_pickup(Runtime::Transform* target)
     }
 }
 
-void Level::push_render_object(Renderer* rend) { _assoc_renderers.emplace_front(rend); }
-
 void Level::push_light_object(Light* light) { _assoc_lightings.emplace_front(light); }
 
 void Level::push_object(Object* obj) { _objects.insert(std::make_pair(obj, TimeEngine::time())); }
@@ -203,13 +202,15 @@ void Level::destructs()
 {
     _destroyed = 0;
     // Destroy req objects
-    if (_destructTasks) {
+    if (_destructTasks && _destroy_delay_time < TimeEngine::time()) {
         float time = TimeEngine::time();
         std::map<float, std::set<Object*>>::iterator xiter = std::end(*_destructTasks), yiter = std::end(*_destructTasks);
         for (auto pair : *_destructTasks) {
-            if (pair.first > time)
-                // The time for the destruction of the object has not yet come
+            // The time for the destruction of the object has not yet come
+            if (pair.first > time) {
+                _destroy_delay_time = pair.first;
                 break;
+            }
             if (xiter == std::end(*_destructTasks))
                 xiter = yiter = std::begin(*_destructTasks);
 
@@ -257,9 +258,9 @@ void Level::level_render_world(SDL_Renderer* renderer)
     }
 
     // Render on main camera
-    Camera* cam = Camera::mainCamera(); // Draw level
+    Camera* cam = Camera::main_camera(); // Draw level
     if (cam) {
-        Resolution res = Application::getResolution();
+        Resolution res = Application::get_resolution();
         // FlushCache last result
         if (cam->targetClear)
             cam->renders.clear();
@@ -298,18 +299,58 @@ void Level::unload() { this->m_isUnload = true; }
 
 int Level::get_destroyed_frames() { return _destroyed; }
 
-bool Level::has_destruction_state(Object* obj)
+const bool Level::object_desctruction_cancel(Object* obj)
 {
+    if (!obj || !obj->exists()) {
+        Application::fail_oom_kill();
+        return false;
+    }
+
     if (Level::self()->_destructTasks) {
         for (std::pair<float, std::set<Object*>> mapIter : *Level::self()->_destructTasks) {
             auto _set = mapIter.second;
-
-            if (_set.find(obj) != std::end(_set)) {
-                return true;
+            auto iter = _set.find(obj);
+            if (iter != std::end(_set)) {
+                _set.erase(iter);
+                return true; // canceled
             }
         }
     }
     return false;
+}
+
+const int Level::object_destruction_cost(Object* obj)
+{
+    int x;
+    if (!obj || !obj->exists()) {
+        Application::fail_oom_kill();
+        return false;
+    }
+    if (Level::self()->_destructTasks) {
+        x = 0;
+        for (std::pair<float, std::set<Object*>> mapIter : *Level::self()->_destructTasks) {
+            ++x;
+            auto _set = mapIter.second;
+            if (_set.find(obj) != std::end(_set)) {
+                return x;
+            }
+        }
+    }
+
+    return -1;
+}
+
+const bool Level::object_destruction_state(Object* obj) { return object_destruction_cost(obj) > 0; }
+
+const int Level::object_destruction_count()
+{
+    int x = 0;
+    if (Level::self()->_destructTasks) {
+        for (std::pair<float, std::set<Object*>> mapIter : *Level::self()->_destructTasks) {
+            x += mapIter.second.size();
+        }
+    }
+    return x;
 }
 
 void Level::awake() { }

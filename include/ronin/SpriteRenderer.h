@@ -27,7 +27,7 @@ namespace RoninEngine::Runtime
 
     class RONIN_API SpriteRenderer : public Renderer
     {
-        Texture* textureCache;
+        //Texture* textureCache;
         Sprite* sprite;
 
     public:

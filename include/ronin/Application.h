@@ -13,24 +13,24 @@ namespace RoninEngine
     public:
         static void init();
 
-        static void Quit();
+        static void quit();
 
-        static void createWindow(const int& width, const int& height, bool fullscreen = false);
-        static void closeWindow();
-        static void loadLevel(Runtime::Level* level);
+        static void create_window(const int& width, const int& height, bool fullscreen = false);
+        static void close_window();
+        static void load_level(Runtime::Level* level);
         static bool simulate();
-        static void getScreen(const char* filename);
-        static SDL_Surface* getScreen();
-        static SDL_DisplayMode getDisplayMode();
-        static void requestQuit();
-        static SDL_Window* getWindow();
-        static SDL_Renderer* getRenderer();
-        static Resolution getResolution();
+        static void get_screen(const char* filename);
+        static SDL_Surface* get_screen();
+        static SDL_DisplayMode get_display_mode();
+        static void request_quit();
+        static SDL_Window* get_window();
+        static SDL_Renderer* get_renderer();
+        static Resolution get_resolution();
 
         static void back_fail(void);
         static void show_message(const std::string& message);
         static void fail(const std::string& message);
-        static void fail_OutOfMemory();
+        static void fail_oom_kill() throw();
     };
 
 } // namespace RoninEngine

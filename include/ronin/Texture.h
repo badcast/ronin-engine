@@ -12,7 +12,8 @@ private:
     std::string _name;
 
 public:
-    Texture();
+    Texture() = default;
+    Texture(SDL_Texture* native);
     ~Texture();
 
     const bool valid();

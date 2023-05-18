@@ -25,7 +25,7 @@ namespace RoninEngine::UI
         }
 
         if (RoninMemory::alloc_self(pLegacyFont) == nullptr)
-            Application::fail_OutOfMemory();
+            Application::fail_oom_kill();
 
         if ((pLegacyFont->surfNormal = ResourceManager::GetSurface("font-arealike")) == nullptr)
             throw std::bad_alloc();

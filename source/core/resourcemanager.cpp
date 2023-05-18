@@ -141,7 +141,7 @@ namespace RoninEngine::Runtime
         if (iter == end(*_assocMultiCacheTextures)) {
             RoninMemory::alloc_self(_textures);
             for (auto i = begin(*surfaces); i != end(*surfaces); ++i) {
-                gc_alloc_texture_from(&p, SDL_CreateTextureFromSurface(Application::getRenderer(), *i));
+                gc_alloc_texture_from(&p, SDL_CreateTextureFromSurface(Application::get_renderer(), *i));
                 _textures->emplace_back(p);
             }
             _assocMultiCacheTextures->emplace(make_pair(surfaces, _textures));
@@ -275,10 +275,6 @@ namespace RoninEngine::Runtime
         return id;
     }
 
-    Texture* ResourceManager::gc_get_texture(int id) { return nullptr; }
-
-    const Sprite* ResourceManager::gc_get_sprite(int id) { return nullptr; }
-
     // GC Texture---------------------
 
     int ResourceManager::gc_alloc_sdl_texture(SDL_Texture** sdltexturePtr, const int& w, const int& h) { return gc_alloc_sdl_texture(sdltexturePtr, w, h, SDL_PixelFormatEnum::SDL_PIXELFORMAT_RGBA8888); }
@@ -289,7 +285,7 @@ namespace RoninEngine::Runtime
     {
         int id;
 
-        auto&& gc_ptr = reinterpret_cast<SDL_Texture*>(SDL_CreateTexture(Application::getRenderer(), format, access, w, h));
+        auto&& gc_ptr = reinterpret_cast<SDL_Texture*>(SDL_CreateTexture(Application::get_renderer(), format, access, w, h));
 
         if (sdltexturePtr != nullptr)
             (*sdltexturePtr) = gc_ptr;
@@ -305,10 +301,10 @@ namespace RoninEngine::Runtime
             Application::fail("init");
         }
 
-        texture = SDL_CreateTextureFromSurface(Application::getRenderer(), from);
+        texture = SDL_CreateTextureFromSurface(Application::get_renderer(), from);
 
         if (texture == nullptr)
-            Application::fail_OutOfMemory();
+            Application::fail_oom_kill();
 
         (*sdltexturePtr) = texture;
 
@@ -343,7 +339,7 @@ namespace RoninEngine::Runtime
             Application::fail("init");
         }
 
-        SDL_Texture* texture = SDL_CreateTextureFromSurface(Application::getRenderer(), from);
+        SDL_Texture* texture = SDL_CreateTextureFromSurface(Application::get_renderer(), from);
         gc_alloc_texture_from(texturePtr, texture);
 
         return 1;

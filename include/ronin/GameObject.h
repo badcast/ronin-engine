@@ -29,7 +29,7 @@ namespace RoninEngine
                 std::list<T*> types;
                 T* cast;
                 for (auto iter = std::begin(container); iter != std::end(container); ++iter) {
-                    if ((cast = dynamic_cast<T*>(*iter))) {
+                    if ((cast = dynamic_cast<T*>(*iter)) != nullptr) {
                         types.emplace_back(cast);
                     }
                 }
@@ -78,7 +78,7 @@ namespace RoninEngine
 
             Camera2D* camera2D() { return get_component<Camera2D>(); }
 
-            Terrain2D* terraind2D() { return get_component<Terrain2D>(); }
+            Terrain2D* terrain2D() { return get_component<Terrain2D>(); }
 
             template <typename T>
             T* get_component();

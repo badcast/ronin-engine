@@ -6,7 +6,7 @@ namespace RoninEngine::UI
 {
     GUI* guiInstance;
 
-    extern void* factory_resource(ControlType type);
+    extern void* factory_resource(GUIControlPresents type);
     extern void factory_free(UIElement* element);
     extern bool general_render_ui_section(GUI* gui, UIElement& element, SDL_Renderer* render, const bool hovering, bool& focus);
     extern void event_action(UIElement* element);
@@ -79,7 +79,7 @@ namespace RoninEngine::UI
         auto& data = getElement(id);
         data.text = text;
         data.rect = rect;
-        data.prototype = CTEXT;
+        data.prototype = RGUI_TEXT;
         return id;
     }
     uid GUI::Push_Label(const std::string& text, const Vec2Int& point, const int& fontWidth, uid parent) { return Push_Label(text, { point.x, point.y, 0, 0 }, fontWidth, parent); }
@@ -90,7 +90,7 @@ namespace RoninEngine::UI
         auto& data = getElement(id);
         data.rect = rect;
         data.text = text;
-        data.prototype = CBUTTON;
+        data.prototype = RGUI_BUTTON;
         return id;
     }
     uid GUI::Push_Button(const std::string& text, const Vec2Int& point, uid parent) { return Push_Button(text, { point.x, point.y, defaultMakets.buttonSize.x, defaultMakets.buttonSize.y }, parent); }
@@ -103,7 +103,7 @@ namespace RoninEngine::UI
 
         element.text = text;
         element.rect = rect;
-        element.prototype = CEDIT;
+        element.prototype = RGUI_EDIT;
         return id;
     }
 
@@ -114,7 +114,7 @@ namespace RoninEngine::UI
         auto& data = getElement(id);
 
         data.resources = reinterpret_cast<void*>(format);
-        data.prototype = CTEXTRAND;
+        data.prototype = RGUI_TEXTRAND;
         return id;
     }
     uid GUI::Push_DisplayRandomizer(TextRandomizer_Format format, uid parent) { return Push_DisplayRandomizer(format, Vec2Int(std::numeric_limits<int>::max(), std::numeric_limits<int>::max()), parent); }
@@ -137,7 +137,7 @@ namespace RoninEngine::UI
         uid id = call_register_ui(this, parent);
 
         auto& data = getElement(id);
-        data.prototype = CIMAGE;
+        data.prototype = RGUI_IMAGE;
         data.rect = rect;
         data.resources = texture;
         return id;
@@ -148,7 +148,7 @@ namespace RoninEngine::UI
         uid id = call_register_ui(this, parent);
 
         auto& data = getElement(id);
-        data.prototype = CIMAGE;
+        data.prototype = RGUI_IMAGE;
         data.rect = rect;
         data.resources = timeline;
         return id;
@@ -159,7 +159,7 @@ namespace RoninEngine::UI
         Timeline* timeline;
         uid id = call_register_ui(this, parent);
         auto& data = getElement(id);
-        data.prototype = CIMAGEANIMATOR;
+        data.prototype = RGUI_IMAGEANIMATOR;
         data.rect = rect;
         data.resources = timeline = (Timeline*)factory_resource(data.prototype);
         timeline->SetOptions(option);
@@ -190,13 +190,13 @@ namespace RoninEngine::UI
 
         uid id = call_register_ui(guiInstance, parent);
         auto& element = call_get_element(guiInstance, id);
-        element.prototype = CDROPDOWN;
+        element.prototype = RGUI_DROPDOWN;
         element.rect = rect;
         element.resources = factory_resource(element.prototype);
         element.event = changed;
 
         if (!element.resources)
-            Application::fail_OutOfMemory();
+            Application::fail_oom_kill();
 
         auto link = static_cast<std::pair<int, std::list<std::string>>*>(element.resources);
         link->first = index;
@@ -234,7 +234,7 @@ namespace RoninEngine::UI
     {
         uid id = call_register_ui(guiInstance, parent);
         auto& element = call_get_element(guiInstance, id);
-        element.prototype = CHSLIDER;
+        element.prototype = RGUI_HSLIDER;
         element.rect = rect;
         element.resources = factory_resource(element.prototype);
 
@@ -390,7 +390,7 @@ namespace RoninEngine::UI
         }
     }
     void GUI::set_color_rgb(uint32_t RGB) { set_color_rgba(RGB << 8 | SDL_ALPHA_OPAQUE); }
-    void GUI::set_color_rgba(uint32_t ARGB) { SDL_SetRenderDrawColor(Application::getRenderer(), (uid)(ARGB >> 24) & 0xFF, (uid)(ARGB >> 16) & 0xFF, (uid)(ARGB >> 8) & 0xFF, (uid)ARGB & 0xFF); }
+    void GUI::set_color_rgba(uint32_t ARGB) { SDL_SetRenderDrawColor(Application::get_renderer(), (uid)(ARGB >> 24) & 0xFF, (uid)(ARGB >> 16) & 0xFF, (uid)(ARGB >> 8) & 0xFF, (uid)ARGB & 0xFF); }
     bool GUI::has_focused_ui() { return _focusedUI; }
 
 } // namespace RoninEngine::UI

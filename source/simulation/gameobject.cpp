@@ -15,7 +15,12 @@ namespace RoninEngine::Runtime
     template RONIN_API Spotlight* GameObject::add_component<Spotlight>();
     template RONIN_API Terrain2D* GameObject::add_component<Terrain2D>();
 
-    template Transform* GameObject::get_component<Transform>();
+    template RONIN_API Player* GameObject::get_component<Player>();
+    template RONIN_API SpriteRenderer* GameObject::get_component<SpriteRenderer>();
+    template RONIN_API Camera2D* GameObject::get_component<Camera2D>();
+    template RONIN_API Spotlight* GameObject::get_component<Spotlight>();
+    template RONIN_API Terrain2D* GameObject::get_component<Terrain2D>();
+    template RONIN_API Transform* GameObject::get_component<Transform>();
 
     GameObject::GameObject()
         : GameObject(DESCRIBE_TYPE(GameObject))
@@ -90,7 +95,7 @@ namespace RoninEngine::Runtime
                 Level::self()->intenal_bind_script(script);
                 script->OnAwake();
             } else if (Renderer* rend = dynamic_cast<Renderer*>(component)) {
-                Level::self()->push_render_object(rend);
+                // awake on renderer
             } else if (Light* light = dynamic_cast<Light*>(component)) {
                 Level::self()->push_light_object(light);
             }
@@ -99,5 +104,5 @@ namespace RoninEngine::Runtime
         return component;
     }
 
-   // template Transform* GameObject::get_component() { return transform(); }
+    // template Transform* GameObject::get_component() { return transform(); }
 }

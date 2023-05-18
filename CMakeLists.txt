@@ -22,7 +22,7 @@ endif()
 message(STATUS "Architecture select ${ARCHITECTURE}")
 
 set(RONINENGINE_VERSION_MIN 1.0)
-set(RUNTIME_OUTPUT_NAME "RoninEngine")
+set(RUNTIME_OUTPUT_NAME "badrge")
 
 # compilling sources
 add_subdirectory(source)

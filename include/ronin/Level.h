@@ -24,6 +24,7 @@ namespace RoninEngine::Runtime
         int globalID;
         bool m_isUnload;
         int _destroyed;
+        float _destroy_delay_time;
         std::string m_name;
         std::list<Behaviour*>* _firstRunScripts;
         std::list<Behaviour*>* _realtimeScripts;
@@ -31,14 +32,12 @@ namespace RoninEngine::Runtime
         std::map<float, std::set<Object*>>* _destructTasks;
         std::unordered_map<Vec2Int, std::set<Transform*>> matrixWorld;
 
-        std::list<Renderer*> _assoc_renderers;
         std::list<Light*> _assoc_lightings;
 
         std::map<Object*, float> _objects;
         std::list<GameObject*> _gameObjects;
 
         void intenal_bind_script(Behaviour* obj);
-        void push_render_object(Renderer* rend);
         void push_light_object(Light* light);
         void push_object(Object* obj);
 
@@ -53,7 +52,7 @@ namespace RoninEngine::Runtime
         virtual void level_render_world_late(SDL_Renderer* renderer);
         void matrix_nature(Transform* target, Vec2Int lastPoint);
         void matrix_nature(Transform* target, const Vec2Int& newPoint, const Vec2Int& lastPoint);
-        void matrix_nature_pickup(Transform *target);
+        void matrix_nature_pickup(Transform* target);
 
         virtual void awake();
         virtual void start();
@@ -80,7 +79,10 @@ namespace RoninEngine::Runtime
 
         int get_destroyed_frames();
 
-        bool has_destruction_state(Object* obj);
+        const bool object_desctruction_cancel(Object* obj);
+        const int object_destruction_cost(Object* obj);
+        const bool object_destruction_state(Object* obj);
+        const int object_destruction_count();
 
         static std::list<Transform*> matrixCheckDamaged();
         static int matrix_restore();
