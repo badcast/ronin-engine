@@ -36,7 +36,7 @@ namespace jno
         RoninMemory::free(t);
     }
 
-    void jfree(void* t) { RoninMemory::mfree(t); }
+    void jfree(void* t) { RoninMemory::ronin_memory_free(t); }
 
     void jno_evaluate(jno_evaluted* file) { }
 

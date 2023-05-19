@@ -105,7 +105,7 @@ namespace RoninEngine::Runtime
 
     void Gizmos::DrawRectangle(Vec2 origin, float width, float height)
     {
-        origin = Camera::main_camera()->WorldToScreenPoint(origin);
+        origin = Camera::main_camera()->world_2_screen(origin);
         std::uint16_t x, y;
         width *= pixelsPerPoint;
         height *= pixelsPerPoint;
@@ -119,7 +119,7 @@ namespace RoninEngine::Runtime
 
     void Gizmos::DrawRectangleRounded(Vec2 origin, float width, float height, std::uint16_t radius)
     {
-        origin = Camera::main_camera()->WorldToScreenPoint(origin);
+        origin = Camera::main_camera()->world_2_screen(origin);
         std::uint16_t x, y;
         width *= pixelsPerPoint;
         height *= pixelsPerPoint;
@@ -165,8 +165,8 @@ namespace RoninEngine::Runtime
         res = Application::get_resolution();
         prev = getColor();
         setColor(next = 0xfff6f723);
-        mesh->GetNeuron(Camera::ScreenToWorldPoint(Vec2::zero), p1);
-        mesh->GetNeuron(Camera::ScreenToWorldPoint(Vec2(res.width, res.height)), p2);
+        mesh->GetNeuron(Camera::screen_2_world(Vec2::zero), p1);
+        mesh->GetNeuron(Camera::screen_2_world(Vec2(res.width, res.height)), p2);
         yDefault = p1.y;
         while (p1.x <= p2.x) {
             while (p1.y <= p2.y) {
@@ -200,7 +200,7 @@ namespace RoninEngine::Runtime
             std::uint32_t totalC = mesh->getCachedSize();
             maxTotal = std::max(maxTotal, totalC);
 
-            Gizmos::DrawTextOnPosition(Camera::ScreenToWorldPoint(Vec2::zero), "Cached " + std::to_string(totalC) + " (" + std::to_string(maxTotal) + ")");
+            Gizmos::DrawTextOnPosition(Camera::screen_2_world(Vec2::zero), "Cached " + std::to_string(totalC) + " (" + std::to_string(maxTotal) + ")");
         }
     }
 
@@ -232,7 +232,7 @@ namespace RoninEngine::Runtime
     }
     void RoninEngine::Runtime::Gizmos::DrawTextOnPosition(Vec2 origin, const std::string& text)
     {
-        origin = Camera::WorldToScreenPoint(origin);
+        origin = Camera::world_2_screen(origin);
         RoninEngine::UI::DrawFontAt(Application::get_renderer(), text, 11, Vec2::RoundToInt(origin), getColor());
     }
     void RoninEngine::Runtime::Gizmos::DrawTextOnPosition_Legacy(Vec2 origin, const std::string& text)
@@ -240,7 +240,7 @@ namespace RoninEngine::Runtime
         Rect r;
         auto cam = Camera::main_camera();
         // relative to
-        origin = cam->WorldToScreenPoint(origin);
+        origin = cam->world_2_screen(origin);
         r.x = static_cast<int>(origin.x);
         r.y = static_cast<int>(origin.y);
 
@@ -249,7 +249,7 @@ namespace RoninEngine::Runtime
 
     void Gizmos::DrawCircle(Vec2 origin, float distance)
     {
-        origin = Camera::main_camera()->WorldToScreenPoint(origin);
+        origin = Camera::main_camera()->world_2_screen(origin);
         std::uint16_t x, y, r;
         x = Math::number(origin.x);
         y = Math::number(origin.y);
@@ -262,7 +262,7 @@ namespace RoninEngine::Runtime
 
     void Gizmos::DrawFillRect(Vec2 center, float width, float height)
     {
-        center = Camera::WorldToScreenPoint(center);
+        center = Camera::world_2_screen(center);
         width *= pixelsPerPoint;
         height *= pixelsPerPoint;
         Rectf_t rect { center.x - width / 2, center.y - height / 2, width, height };
@@ -272,7 +272,7 @@ namespace RoninEngine::Runtime
 
     void Gizmos::DrawFillSquare(Vec2 center, float width)
     {
-        center = Camera::WorldToScreenPoint(center);
+        center = Camera::world_2_screen(center);
         width *= pixelsPerPoint;
         Rectf_t rect { center.x - width / 2, center.y - width / 2, width, width };
 

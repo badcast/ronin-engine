@@ -14,7 +14,8 @@ namespace RoninEngine::Runtime {
          Vec2 scale;
 
          Camera2D();
-         Camera2D(const std::string& name) : Camera(name){}
+         Camera2D(const std::string& name);
          Camera2D(const Camera2D&);
    };
-}  // namespace RoninEngine::Runtime
+
+   }  // namespace RoninEngine::Runtime

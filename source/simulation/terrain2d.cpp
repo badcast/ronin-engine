@@ -9,15 +9,15 @@ namespace RoninEngine::Runtime
     {
     }
 
+    Terrain2D::Terrain2D(int width, int length)
+        : Terrain2D(DESCRIBE_TYPE(Terrain2D, this, &t))
+    {
+        RoninMemory::alloc_self(navigation, width, length);
+    }
+
     Terrain2D::Terrain2D(const std::string& name)
         : Renderer(name)
     {
-    }
-
-    Terrain2D::Terrain2D(int width, int length)
-        : Terrain2D(DESCRIBE_TYPE(Terrain2D))
-    {
-        RoninMemory::alloc_self(navigation, width, length);
     }
 
     Terrain2D::Terrain2D(const Terrain2D& source) { RoninMemory::alloc_self(navigation, source.navigation->Width(), source.navigation->Height()); }
@@ -33,10 +33,10 @@ namespace RoninEngine::Runtime
         return n && navigation->neuronLocked(navigation->neuronGetPoint(n));
     }
 
-    Vec2 Terrain2D::getSize() { return {}; }
-    Vec2 Terrain2D::getOffset() { return {}; }
+    Vec2 Terrain2D::get_size() { return {}; }
+    Vec2 Terrain2D::get_offset() { return {}; }
 
-    Rect Terrain2D::getFactical()
+    Rect Terrain2D::get_relative_size()
     {
         Rect rect;
 
@@ -48,5 +48,5 @@ namespace RoninEngine::Runtime
         return rect;
     }
 
-    void Terrain2D::Render(Render_info* render_info) { }
+    void Terrain2D::render(Rendering* render_info) { }
 } // namespace RoninEngine::Runtime

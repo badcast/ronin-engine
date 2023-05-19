@@ -6,7 +6,7 @@ namespace RoninEngine::Runtime
     // FIXME: OPTIMIZING SPRITE RENDERER COMPONENT
 
     SpriteRenderer::SpriteRenderer()
-        : SpriteRenderer(DESCRIBE_TYPE(SpriteRenderer))
+        : SpriteRenderer(DESCRIBE_TYPE(SpriteRenderer,this,&t))
     {
     }
 
@@ -36,9 +36,9 @@ namespace RoninEngine::Runtime
 
     SpriteRenderer::~SpriteRenderer() { }
 
-    Vec2 SpriteRenderer::getSize() { return Vec2::Abs(this->size); }
+    Vec2 SpriteRenderer::get_size() { return Vec2::Abs(this->size); }
 
-    Vec2 SpriteRenderer::getOffset()
+    Vec2 SpriteRenderer::get_offset()
     {
         Vec2 outOffset;
         switch (renderOut) {
@@ -50,7 +50,7 @@ namespace RoninEngine::Runtime
         return outOffset;
     }
 
-    Rect SpriteRenderer::getFactical()
+    Rect SpriteRenderer::get_relative_size()
     {
         Rect rect;
         if (sprite) {
@@ -59,7 +59,7 @@ namespace RoninEngine::Runtime
         return rect;
     }
 
-    void SpriteRenderer::setSprite(Sprite* sprite)
+    void SpriteRenderer::set_sprite(Sprite* sprite)
     {
         if (this->sprite == nullptr && (!this->size.x || !this->size.y)) {
             this->size = Vec2::one;
@@ -67,36 +67,36 @@ namespace RoninEngine::Runtime
         this->sprite = sprite;
     }
 
-    void SpriteRenderer::setSpriteFromTextureToGC(SDL_Surface* src)
+    void SpriteRenderer::set_sprite_from_surface(SDL_Surface* src)
     {
         Sprite* spr;
         ResourceManager::gc_alloc_sprite_with(&spr, src);
-        setSprite(spr);
+        set_sprite(spr);
     }
-    Sprite* SpriteRenderer::getSprite() { return this->sprite; }
+    Sprite* SpriteRenderer::get_sprite() { return this->sprite; }
 
-    void SpriteRenderer::offsetFromLocalPosition(Vec2 localPosition) { offsetFromWorldPosition(transform()->position() + localPosition); }
+    void SpriteRenderer::offset_from_local_position(Vec2 localPosition) { offset_from_world_position(transform()->position() + localPosition); }
 
-    void SpriteRenderer::offsetFromWorldPosition(Vec2 position)
+    void SpriteRenderer::offset_from_world_position(Vec2 position)
     {
         // Convert world position to Screen Point
-        offset = Camera::WorldToScreenPoint(transform()->position()) - Camera::WorldToScreenPoint(position);
+        offset = Camera::world_2_screen(transform()->position()) - Camera::world_2_screen(position);
     }
 
-    void SpriteRenderer::Render(Render_info* render)
+    void SpriteRenderer::render(Rendering* rendering)
     {
         static std::uint16_t x, y;
         static SDL_Rect dest;
         SDL_Texture* textureCache = nullptr;
-        auto&& _srcRect = (render->src);
-        auto&& _dstRect = (render->dst);
+        auto&& _srcRect = (rendering->src);
+        auto&& _dstRect = (rendering->dst);
         //    auto& _srcRect = (render->src);
         //    auto& _dstRect = (render->dst);
 
         if (sprite && sprite->width() && sprite->height()) {
             switch (this->renderType) {
             case SpriteRenderType::Simple:
-                textureCache = SDL_CreateTextureFromSurface(render->renderer, sprite->source);
+                textureCache = SDL_CreateTextureFromSurface(rendering->renderer, sprite->source);
                 _srcRect.w = sprite->width();
                 _srcRect.h = sprite->height();
                 _dstRect.w = sprite->width() * abs(this->size.x) / pixelsPerPoint;
@@ -127,11 +127,11 @@ namespace RoninEngine::Runtime
 
                 // generate tiles
 
-                textureCache = SDL_CreateTexture(render->renderer, sdl_default_pixelformat, SDL_TextureAccess::SDL_TEXTUREACCESS_TARGET, _srcRect.w, _srcRect.h);
+                textureCache = SDL_CreateTexture(rendering->renderer, sdl_default_pixelformat, SDL_TextureAccess::SDL_TEXTUREACCESS_TARGET, _srcRect.w, _srcRect.h);
                 if (textureCache == nullptr)
                     Application::fail("Texture create fail");
 
-                SDL_SetRenderTarget(render->renderer, textureCache);
+                SDL_SetRenderTarget(rendering->renderer, textureCache);
 
                 dest.w = sprite->width();
                 dest.h = sprite->height();
@@ -148,7 +148,7 @@ namespace RoninEngine::Runtime
                         for (y = 0; y < _srcRect.y; ++y) {
                             dest.x = x * dest.w;
                             dest.y = y * dest.h;
-                            SDL_RenderCopy(render->renderer, _texture, (SDL_Rect*)&sprite->m_rect, (SDL_Rect*)&dest);
+                            SDL_RenderCopy(rendering->renderer, _texture, (SDL_Rect*)&sprite->m_rect, (SDL_Rect*)&dest);
                         }
                     }
                     break;
@@ -159,25 +159,25 @@ namespace RoninEngine::Runtime
                             dest.x = x * dest.w;
                             dest.y = y * dest.h;
 
-                            SDL_RenderCopy(render->renderer, _texture, (SDL_Rect*)&sprite->m_rect, (SDL_Rect*)&dest);
+                            SDL_RenderCopy(rendering->renderer, _texture, (SDL_Rect*)&sprite->m_rect, (SDL_Rect*)&dest);
                         }
                     }
                     // place remained
                     for (x = 0, dest.y = _srcRect.h / dest.h * dest.h, dest.h = size.y - dest.y; x < _srcRect.x; ++x) {
                         dest.x = x * dest.w;
-                        SDL_RenderCopy(render->renderer, _texture, (SDL_Rect*)&sprite->m_rect, (SDL_Rect*)&dest);
+                        SDL_RenderCopy(rendering->renderer, _texture, (SDL_Rect*)&sprite->m_rect, (SDL_Rect*)&dest);
                     }
                     ++_srcRect.y;
                     for (y = 0, dest.x = _srcRect.w / dest.w * dest.w, dest.h = sprite->height(), dest.w = size.x - dest.x; y < _srcRect.y; ++y) {
                         dest.y = y * dest.h;
-                        SDL_RenderCopy(render->renderer, _texture, (SDL_Rect*)&sprite->m_rect, (SDL_Rect*)&dest);
+                        SDL_RenderCopy(rendering->renderer, _texture, (SDL_Rect*)&sprite->m_rect, (SDL_Rect*)&dest);
                     }
 
                     break;
                 }
                     SDL_DestroyTexture(_texture);
                 }
-                SDL_SetRenderTarget(render->renderer, nullptr);
+                SDL_SetRenderTarget(rendering->renderer, nullptr);
 
             } break;
             }
@@ -189,6 +189,6 @@ namespace RoninEngine::Runtime
         _dstRect.x -= offset.x;
         _dstRect.y -= offset.y;
 
-        render->texture = textureCache;
+        rendering->texture = textureCache;
     }
 } // namespace RoninEngine::Runtime

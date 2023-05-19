@@ -3,7 +3,7 @@
 
 namespace RoninEngine::Runtime {
 
-struct Render_info;
+struct Rendering;
 
 class RONIN_API Renderer : public Component {
    public:
@@ -11,11 +11,11 @@ class RONIN_API Renderer : public Component {
     Renderer(const std::string& name);
     Renderer(const Renderer&) = delete;
 
-    virtual Vec2 getSize() = 0;
-    virtual Vec2 getOffset() = 0;
+    virtual Vec2 get_size() = 0;
+    virtual Vec2 get_offset() = 0;
 
-    virtual Rect getFactical() = 0;
+    virtual Rect get_relative_size() = 0;
 
-    virtual void Render(Render_info* render_info) = 0;
+    virtual void render(Rendering* rendering) = 0;
 };
 }  // namespace RoninEngine::Runtime

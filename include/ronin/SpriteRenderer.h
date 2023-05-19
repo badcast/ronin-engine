@@ -45,18 +45,18 @@ namespace RoninEngine::Runtime
         SpriteRenderer(const SpriteRenderer&);
         virtual ~SpriteRenderer();
 
-        Vec2 getSize();
-        Vec2 getOffset();
-        Rect getFactical();
+        Vec2 get_size();
+        Vec2 get_offset();
+        Rect get_relative_size();
 
-        void setSprite(Sprite* sprite);
-        void setSpriteFromTextureToGC(SDL_Surface* src);
-        Sprite* getSprite();
+        void set_sprite(Sprite* sprite);
+        void set_sprite_from_surface(SDL_Surface* src);
+        Sprite* get_sprite();
 
-        void offsetFromLocalPosition(Vec2 localPosition);
-        void offsetFromWorldPosition(Vec2 worldPosition);
+        void offset_from_local_position(Vec2 localPosition);
+        void offset_from_world_position(Vec2 worldPosition);
 
-        void Render(Render_info* render_info);
+        void render(Rendering* rendering);
     };
 
 } // namespace RoninEngine::Runtime

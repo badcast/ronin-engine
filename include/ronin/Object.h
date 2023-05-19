@@ -32,6 +32,7 @@ namespace RoninEngine
 
         class RONIN_API Object
         {
+        private:
             friend RONIN_API GameObject* instantiate(GameObject* obj);
             friend RONIN_API GameObject* instantiate(GameObject* obj, Vec2 position, float angle);
             friend RONIN_API GameObject* instantiate(GameObject* obj, Vec2 position, Transform* parent, bool worldPositionStay);
@@ -39,20 +40,27 @@ namespace RoninEngine
             friend RONIN_API void destroy(Object* obj);
             friend RONIN_API void destroy(Object* obj, float t);
             friend RONIN_API void destroy_immediate(Object* obj);
-            std::size_t id;
 
         protected:
+            // unique type (static)
+            long t;
+            // unique id (realtime)
+            std::size_t id;
+            // object name (realtime)
             std::string m_name;
 
         public:
+            Object();
+            Object(const std::string& name);
+            virtual ~Object() = default;
+
             std::string& name(const std::string& newName);
+
             const std::string& name();
 
             std::size_t get_id();
 
-            Object();
-            Object(const std::string& name);
-            virtual ~Object() = default;
+            const int get_type() const;
 
             void destroy();
             const bool destroy_cancel();
@@ -64,24 +72,13 @@ namespace RoninEngine
             operator bool();
         };
 
-        template <typename base, typename _derived>
-        constexpr bool object_base_of()
-        {
-            return std::is_base_of<base, _derived>();
-        }
-
-        template <typename base, typename _derived>
-        constexpr bool object_base_of(base* obj, _derived* compare)
-        {
-            return std::is_base_of<base, _derived>();
-        }
-
         class RONIN_API Primitive
         {
         public:
-            static GameObject* CreateEmptyGameObject(Vec2 position = Vec2::zero);
-            static Camera2D* CreateCamera2D(Vec2 position = Vec2::zero);
-            static Sprite* CreateSprite2D(Vec2Int size = Vec2Int::zero, Color fillColor = Color::white);
+            static GameObject* create_empty_game_object(Vec2 position = Vec2::zero);
+            static GameObject* create_box2d(Vec2 positoin = Vec2::zero, float angle = 0);
+            static Camera2D* create_camera2D(Vec2 position = Vec2::zero);
+            static Sprite* create_sprite2D(Vec2Int size = { 5, 5 }, Color fillColor = Color::white);
         };
     } // namespace Runtime
 } // namespace RoninEngine

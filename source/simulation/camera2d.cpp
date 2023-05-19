@@ -6,12 +6,18 @@ using namespace RoninEngine;
 namespace RoninEngine::Runtime
 {
     Camera2D::Camera2D()
-        : Camera(DESCRIBE_TYPE(Camera2D))
+        : Camera(DESCRIBE_TYPE(Camera2D, this, &t))
         , scale(Vec2::one)
     {
         this->visibleBorders = false;
         this->visibleGrids = false;
         this->visibleObjects = false;
+    }
+
+    Camera2D::Camera2D(const std::string& name)
+        : Camera(name)
+    {
+
     }
 
     RoninEngine::Runtime::Camera2D::Camera2D(const Camera2D& proto)
@@ -25,7 +31,7 @@ namespace RoninEngine::Runtime
 
     void Camera2D::render(SDL_Renderer* renderer, Rect rect, GameObject* root)
     {
-        Render_info wrapper;
+        Rendering wrapper;
         Vec2* point;
         Vec2 sourcePoint;
         // Vec2 _scale;
@@ -37,7 +43,7 @@ namespace RoninEngine::Runtime
             Gizmos::DrawPosition(transform()->position(), maxWorldScalar);
         }
         // get from matrix selection
-        auto filter = matrixSelection();
+        auto filter = matrix_select();
 
         // scale.x = Mathf::Min(Mathf::Max(scale.x, -10.f), 10.f);
         // scale.y = Mathf::Min(Mathf::Max(scale.y, -10.f), 10.f);
@@ -52,7 +58,7 @@ namespace RoninEngine::Runtime
                 wrapper = {};
                 wrapper.renderer = renderer;
 
-                renderSource->Render(&wrapper); // draw
+                renderSource->render(&wrapper); // draw
                 if (wrapper.texture) {
                     // FIXME: point (transform()->position) ? wtf?
                     Vec2 point = transform()->p;
@@ -76,7 +82,7 @@ namespace RoninEngine::Runtime
                     if (arranged != Vec2::zero)
                         arranged = Vec2::RotateAround(sourcePoint, arranged, renderSource->transform()->angle() * Math::Deg2Rad);
 
-                    sourcePoint += renderSource->getOffset();
+                    sourcePoint += renderSource->get_offset();
 
                     // convert world to screen
 
@@ -113,8 +119,7 @@ namespace RoninEngine::Runtime
                 // v
                 wrapper.dst.y += ((rect.h - wrapper.dst.h) / 2.0f + (point->y - sourcePoint.y) * pixelsPerPoint);
 
-                SDL_RenderCopyExF(
-                    renderer, wrapper.texture, reinterpret_cast<SDL_Rect*>(&wrapper.src), reinterpret_cast<SDL_FRect*>(&wrapper.dst), lightSource->transform()->_angle - transform()->_angle, nullptr, SDL_RendererFlip::SDL_FLIP_NONE);
+                SDL_RenderCopyExF(renderer, wrapper.texture, reinterpret_cast<SDL_Rect*>(&wrapper.src), reinterpret_cast<SDL_FRect*>(&wrapper.dst), lightSource->transform()->_angle - transform()->_angle, nullptr, SDL_RendererFlip::SDL_FLIP_NONE);
             }
         }
 
@@ -149,9 +154,9 @@ namespace RoninEngine::Runtime
         if (visibleObjects) {
             for (const auto& layer : (*std::get<0>(filter)))
                 for (Renderer* face : layer.second) {
-                    Rect factSz = face->getFactical();
-                    Vec2 p = face->transform()->position() + face->getOffset();
-                    Vec2 sz = Vec2::Scale(face->getSize(), Vec2(factSz.getWH()) / pixelsPerPoint);
+                    Rect factSz = face->get_relative_size();
+                    Vec2 p = face->transform()->position() + face->get_offset();
+                    Vec2 sz = Vec2::Scale(face->get_size(), Vec2(factSz.getWH()) / pixelsPerPoint);
                     Gizmos::setColor(Color::blue);
                     Gizmos::DrawRectangleRounded(p, sz.x, sz.y, 10);
                     Gizmos::setColor(Color::black);

@@ -6,7 +6,7 @@ namespace RoninEngine::Runtime
 {
 
     Camera::Camera()
-        : Camera(DESCRIBE_TYPE(Camera))
+        : Camera(DESCRIBE_TYPE(Camera, this, &t))
     {
     }
     Camera::Camera(const std::string& name)
@@ -24,9 +24,9 @@ namespace RoninEngine::Runtime
             _main = nullptr;
     }
 
-    bool Camera::isFocused() { return _main == this; }
+    bool Camera::is_focused() { return _main == this; }
 
-    void Camera::Focus() { _main = this; }
+    void Camera::focus() { _main = this; }
 
     /*
     std::tuple<list<Renderer*>*, list<Light*>*> linearSelection() {
@@ -74,12 +74,12 @@ namespace RoninEngine::Runtime
 
     inline bool area_cast(Renderer* target, const Vec2Int& wpLeftTop, const Vec2Int& wpRightBottom)
     {
-        Vec2 rSz = target->getSize();
+        Vec2 rSz = target->get_size();
         Vec2 pos = target->transform()->position();
         return (pos.x + rSz.x >= wpLeftTop.x && pos.x - rSz.x <= wpRightBottom.x) && (pos.y - rSz.y <= wpLeftTop.y && pos.y + rSz.y >= wpRightBottom.y);
     }
 
-    std::tuple<std::map<int, std::set<Renderer*>>*, std::set<Light*>*> Camera::matrixSelection()
+    std::tuple<std::map<int, std::set<Renderer*>>*, std::set<Light*>*> Camera::matrix_select()
     {
         /*       This is projection: Algorithm storm member used.
                 x-------------------
@@ -108,8 +108,8 @@ namespace RoninEngine::Runtime
 
         if (renders.empty()) {
             Resolution res = Application::get_resolution();
-            Vec2Int wpLeftTop = Vec2::RoundToInt(ScreenToWorldPoint(Vec2::zero));
-            Vec2Int wpRightBottom = Vec2::RoundToInt(ScreenToWorldPoint(Vec2(res.width, res.height)));
+            Vec2Int wpLeftTop = Vec2::RoundToInt(screen_2_world(Vec2::zero));
+            Vec2Int wpRightBottom = Vec2::RoundToInt(screen_2_world(Vec2(res.width, res.height)));
             // RUN STORM CAST
             std::list<Transform*> storm_result = Physics2D::storm_cast(transform()->p, Math::number(Math::max(wpRightBottom.x - transform()->p.x, wpRightBottom.y - transform()->p.y)) + 1 + distanceEvcall);
             std::list<Renderer*> _removes;
@@ -129,24 +129,23 @@ namespace RoninEngine::Runtime
 
             for (auto iter = std::begin(storm_result); iter != std::end(storm_result); ++iter) {
                 GameObject* touch = (*iter)->gameObject();
-                if (!touch->exists() || !(*iter)->exists()) {
-                    continue;
-                }
-                std::list<Renderer*> rends = (*iter)->gameObject()->get_components<Renderer>();
+                if(touch->name() != "GameObject (clone)" && touch->name() != "GameObject" )
+                    throw std::bad_alloc();
+                std::list<Renderer*> rends = touch->get_components<Renderer>();
                 for (auto x : rends) {
                     renders[x->transform()->layer].insert(x);
                 }
             }
         }
 
-        if (__lightsOutResults.empty()) {
-            __lightsOutResults.insert(Level::self()->_assoc_lightings.begin(), Level::self()->_assoc_lightings.end());
+        if (_lightsOutResults.empty()) {
+            _lightsOutResults.insert(Level::self()->_assoc_lightings.begin(), Level::self()->_assoc_lightings.end());
         }
 
-        return make_tuple(&renders, &__lightsOutResults);
+        return make_tuple(&renders, &_lightsOutResults);
     }
 
-    const Vec2 Camera::ScreenToWorldPoint(Vec2 screenPoint)
+    const Vec2 Camera::screen_2_world(Vec2 screenPoint)
     {
         Resolution res = Application::get_resolution();
         Vec2 offset = _main->transform()->position();
@@ -158,7 +157,7 @@ namespace RoninEngine::Runtime
         screenPoint += offset;
         return screenPoint;
     }
-    const Vec2 Camera::WorldToScreenPoint(Vec2 worldPoint)
+    const Vec2 Camera::world_2_screen(Vec2 worldPoint)
     {
         Resolution res = Application::get_resolution();
         Vec2 scale;
@@ -172,7 +171,7 @@ namespace RoninEngine::Runtime
         return worldPoint;
     }
 
-    const Vec2 Camera::ViewportToWorldPoint(Vec2 viewportPoint)
+    const Vec2 Camera::viewport_2_world(Vec2 viewportPoint)
     {
         Resolution res = Application::get_resolution();
         Vec2 scale, offset = _main->transform()->position();
@@ -186,7 +185,7 @@ namespace RoninEngine::Runtime
         return viewportPoint;
     }
 
-    const Vec2 Camera::WorldToViewport(Vec2 worldPoint)
+    const Vec2 Camera::world_2_viewport(Vec2 worldPoint)
     {
         Resolution res = Application::get_resolution();
         Vec2 scale;
@@ -200,9 +199,9 @@ namespace RoninEngine::Runtime
         return worldPoint;
     }
 
-    const Vec2 Camera::WorldToViewportClamp(Vec2 worldPoint)
+    const Vec2 Camera::world_2_viewport_clamp(Vec2 worldPoint)
     {
-        worldPoint = WorldToViewport(worldPoint);
+        worldPoint = world_2_viewport(worldPoint);
         worldPoint.x = Math::Clamp01(worldPoint.x);
         worldPoint.y = Math::Clamp01(worldPoint.y);
         return worldPoint;

@@ -57,7 +57,7 @@ namespace RoninEngine::UI
             break;
         case RGUI_HSLIDER:
             // value, min, max members
-            resources = RoninMemory::malloc(sizeof(float) * 3);
+            resources = RoninMemory::ronin_memory_alloc(sizeof(float) * 3);
             break;
         default:
             resources = nullptr;
@@ -76,7 +76,7 @@ namespace RoninEngine::UI
             RoninMemory::free(static_cast<Timeline*>(element->resources));
             break;
         case RGUI_HSLIDER:
-            RoninMemory::mfree(element->resources);
+            RoninMemory::ronin_memory_free(element->resources);
             break;
         }
     }

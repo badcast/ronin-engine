@@ -176,7 +176,7 @@ namespace RoninEngine
                     //  Clone childs recursive
                     for (Transform* y : t->hierarchy) {
                         GameObject* yClone = instantiate(y->gameObject());
-                        yClone->transform()->setParent(existent);
+                        yClone->transform()->set_parent(existent);
                         yClone->m_name = t->gameObject()->m_name; // put " (clone)" name
                         yClone->m_name.shrink_to_fit();
                     }
@@ -208,21 +208,24 @@ namespace RoninEngine
         {
             obj = instantiate(obj);
             obj->transform()->position(position);
-            obj->transform()->setParent(parent, worldPositionStay);
+            obj->transform()->set_parent(parent, worldPositionStay);
             return obj;
         }
 
         // base class
 
         Object::Object()
-            : Object(DESCRIBE_TYPE(Object))
+            : Object(DESCRIBE_TYPE(Object, this, nullptr))
+
         {
         }
 
         Object::Object(const std::string& name)
             : m_name(name)
+            , t(-1)
         {
-
+            DESCRIBE_TYPE(Object, this, &t);
+            ::check_object(this);
             if (Level::self() == nullptr)
                 throw std::bad_exception();
 
@@ -241,6 +244,8 @@ namespace RoninEngine
         std::string& Object::name(const std::string& newName) { return (m_name = newName); }
 
         const std::string& Object::name() { return m_name; }
+
+        const int Object::get_type() const { return t; }
 
         Object::operator bool() { return instanced(this); }
     } // namespace Runtime

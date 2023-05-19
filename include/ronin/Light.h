@@ -13,7 +13,7 @@ namespace RoninEngine::Runtime
 		Light();
           Light(const std::string& name);
 		virtual ~Light();
-		void GetLightSource(Render_info* render_info);
+		void GetLightSource(Rendering* render_info);
 	};
 }
 

@@ -30,8 +30,8 @@ namespace RoninEngine::Runtime
 
     public:
         Terrain2D();
-        Terrain2D(const std::string& name);
         Terrain2D(int width, int length);
+        Terrain2D(const std::string& name);
         Terrain2D(const Terrain2D& source);
         ~Terrain2D();
 
@@ -41,9 +41,9 @@ namespace RoninEngine::Runtime
 
         const bool isCollider(const Vec2 destination);
 
-        Vec2 getSize() override;
-        Vec2 getOffset() override;
-        Rect getFactical() override;
-        void Render(Render_info* render_info) override;
+        Vec2 get_size() override;
+        Vec2 get_offset() override;
+        Rect get_relative_size() override;
+        void render(Rendering* render_info) override;
     };
 } // namespace RoninEngine::Runtime

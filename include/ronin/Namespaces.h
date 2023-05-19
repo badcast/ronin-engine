@@ -30,7 +30,7 @@ namespace RoninEngine
 
         struct Vec2Int;
 
-        struct Render_info;
+        struct Rendering;
 
         template <typename T>
         class xRect;

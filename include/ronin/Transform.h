@@ -14,11 +14,11 @@ namespace RoninEngine::Runtime
         friend class Camera;
         friend class Camera2D;
         friend class Physics2D;
-        friend GameObject* instantiate(GameObject* obj);
+        friend RONIN_API GameObject* instantiate(GameObject* obj);
         friend RONIN_API void destroy_immediate(Object* obj);
 
     protected:
-        std::vector<Transform*> hierarchy;
+        std::list<Transform*> hierarchy;
 
         Transform* m_parent;
         Vec2 p;
@@ -31,7 +31,7 @@ namespace RoninEngine::Runtime
         static void hierarchy_remove(Transform* from, Transform* off);
         static void hierarchy_removeAll(Transform* from);
         static void hierarchy_append(Transform* from, Transform* off);
-        static void hierarchy_sibiling(Transform* from, int index);
+        static bool hierarchy_sibiling(Transform* from, int index);
 
     public:
         int layer;
@@ -41,19 +41,19 @@ namespace RoninEngine::Runtime
         ~Transform();
 
         Transform* parent();
-        void setParent(Transform* parent, bool worldPositionStays = true);
+        void set_parent(Transform* parent, bool worldPositionStays = true);
 
         int child_count();
         Transform* child_of(int index);
 
         Transform* root();
 
-        void LookAt(Vec2 target, Vec2 axis);
-        void LookAt(Vec2 target);
-        void LookAt(Transform* target, Vec2 axis);
-        void LookAt(Transform* target);
-        void LookAtLerp(Vec2 target, float t);
-        void LookAtLerp(Transform* target, float t);
+        void look_at(Vec2 target, Vec2 axis);
+        void look_at(Vec2 target);
+        void look_at(Transform* target, Vec2 axis);
+        void look_at(Transform* target);
+        void look_at_lerp(Vec2 target, float t);
+        void look_at_lerp(Transform* target, float t);
 
         void as_first_child();
 
@@ -76,14 +76,14 @@ namespace RoninEngine::Runtime
         const Vec2& position(const Vec2& value);
 
         // get position in local space from parent
-        Vec2 localPosition();
+        Vec2 local_position();
         // set position in local space from parent
-        const Vec2& localPosition(const Vec2& value);
+        const Vec2& local_position(const Vec2& value);
 
         float angle();
         void angle(float value);
-        float localAngle();
-        void localAngle(float value);
+        float local_angle();
+        void local_angle(float value);
     };
 
 } // namespace RoninEngine::Runtime

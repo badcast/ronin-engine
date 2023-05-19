@@ -3,7 +3,7 @@ namespace RoninEngine::Runtime
 {
 
     Player::Player()
-        : Player(DESCRIBE_TYPE(Player))
+        : Player(DESCRIBE_TYPE(Player,this, &t))
     {
     }
 
@@ -17,7 +17,7 @@ namespace RoninEngine::Runtime
         playerCamera = gameObject()->get_component<Camera2D>();
         if (playerCamera == nullptr)
             playerCamera = gameObject()->add_component<Camera2D>();
-        spriteRenderer = gameObject()->add_component<SpriteRenderer>();
+        //spriteRenderer = gameObject()->add_component<SpriteRenderer>();
         speed = 0.1f / 2;
         // spotlight = gameObject()->add_component<Spotlight>();
     }
@@ -27,7 +27,7 @@ namespace RoninEngine::Runtime
 
     void Player::OnUpdate()
     {
-    return;
+
         float curSpeed = input::get_key(SDL_SCANCODE_LSHIFT) ? (speed * 2) : speed;
 
         if (playerCamera) {

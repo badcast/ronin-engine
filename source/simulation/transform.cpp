@@ -4,7 +4,7 @@ namespace RoninEngine::Runtime
 {
 
     Transform::Transform()
-        : Transform(DESCRIBE_TYPE(Transform))
+        : Transform(DESCRIBE_TYPE(Transform, this, &t))
     {
     }
 
@@ -18,8 +18,7 @@ namespace RoninEngine::Runtime
         Level::self()->matrix_nature(this, Vec2::RoundToInt(p + Vec2::one));
     }
 
-    Transform::~Transform()
-    {}
+    Transform::~Transform() { }
 
     int Transform::child_count() { return hierarchy.size(); }
 
@@ -42,13 +41,13 @@ namespace RoninEngine::Runtime
         return tf;
     }
 
-    void Transform::LookAt(Transform* target) { LookAt(target, Vec2::up); }
+    void Transform::look_at(Transform* target) { look_at(target, Vec2::up); }
 
-    void Transform::LookAt(Transform* target, Vec2 axis) { LookAt(target->p, axis); }
+    void Transform::look_at(Transform* target, Vec2 axis) { look_at(target->p, axis); }
 
-    void Transform::LookAt(Vec2 target) { LookAt(target, Vec2::up); }
+    void Transform::look_at(Vec2 target) { look_at(target, Vec2::up); }
 
-    void Transform::LookAt(Vec2 target, Vec2 axis)
+    void Transform::look_at(Vec2 target, Vec2 axis)
     {
         _angle = Vec2::Angle(axis, target - position()) * Math::Rad2Deg;
 
@@ -70,7 +69,7 @@ namespace RoninEngine::Runtime
         }
     }
 
-    void Transform::LookAtLerp(Vec2 target, float t)
+    void Transform::look_at_lerp(Vec2 target, float t)
     {
         Vec2 axis = Vec2::up;
         float a = Vec2::Angle(axis, target - position()) * Math::Rad2Deg;
@@ -91,10 +90,10 @@ namespace RoninEngine::Runtime
                 a = -a;
         }
 
-        localAngle(Math::LerpAngle(_angle, a, t));
+        local_angle(Math::LerpAngle(_angle, a, t));
     }
 
-    void Transform::LookAtLerp(Transform* target, float t) { LookAtLerp(target->p, t); }
+    void Transform::look_at_lerp(Transform* target, float t) { look_at_lerp(target->p, t); }
 
     void Transform::as_first_child()
     {
@@ -130,8 +129,8 @@ namespace RoninEngine::Runtime
 
     const Vec2 Transform::transformDirection(float x, float y) { return transformDirection(Vec2(x, y)); }
 
-    Vec2 Transform::localPosition() { return p; }
-    const Vec2& Transform::localPosition(const Vec2& value)
+    Vec2 Transform::local_position() { return p; }
+    const Vec2& Transform::local_position(const Vec2& value)
     {
         if (value != p) {
             Vec2Int lastPoint = Vec2::RoundToInt(position());
@@ -191,9 +190,9 @@ namespace RoninEngine::Runtime
 
     void Transform::angle(float value) { this->_angle = (this->m_parent) ? this->m_parent->angle() - value : value; }
 
-    float Transform::localAngle() { return this->_angle; }
+    float Transform::local_angle() { return this->_angle; }
 
-    void Transform::localAngle(float value)
+    void Transform::local_angle(float value)
     {
         while (value > 360)
             value -= 360;
@@ -201,7 +200,7 @@ namespace RoninEngine::Runtime
     }
     Transform* Transform::parent() { return m_parent; }
 
-    void Transform::setParent(Transform* parent, bool worldPositionStays)
+    void Transform::set_parent(Transform* parent, bool worldPositionStays)
     {
         if (this->m_parent == nullptr) {
             throw std::runtime_error("This transform is not they are parent, or is main parent?");
@@ -242,7 +241,6 @@ namespace RoninEngine::Runtime
         if (iter == from->hierarchy.end())
             return;
         from->hierarchy.erase(iter);
-        from->hierarchy.shrink_to_fit();
         off->m_parent = nullptr; // not parent
     }
     void Transform::hierarchy_removeAll(Transform* from)
@@ -252,7 +250,6 @@ namespace RoninEngine::Runtime
         }
 
         from->hierarchy.clear();
-        from->hierarchy.shrink_to_fit();
     }
     void Transform::hierarchy_append(Transform* from, Transform* off)
     {
@@ -262,5 +259,9 @@ namespace RoninEngine::Runtime
             from->hierarchy.emplace_back(off);
         }
     }
-    void Transform::hierarchy_sibiling(Transform* from, int index) { }
+    bool Transform::hierarchy_sibiling(Transform* from, int index)
+    {
+        // TODO: Set sibling
+
+    }
 } // namespace RoninEngine::Runtime

@@ -35,13 +35,12 @@ namespace RoninEngine::Runtime
         std::list<Light*> _assoc_lightings;
 
         std::map<Object*, float> _objects;
-        std::list<GameObject*> _gameObjects;
 
         void intenal_bind_script(Behaviour* obj);
         void push_light_object(Light* light);
         void push_object(Object* obj);
 
-        std::vector<Transform*>* get_hierarchy(Transform* parent);
+        std::list<Transform*>* get_hierarchy(Transform* parent);
 
     protected:
         UI::GUI* ui;

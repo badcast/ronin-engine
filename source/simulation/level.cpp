@@ -177,7 +177,7 @@ void Level::push_light_object(Light* light) { _assoc_lightings.emplace_front(lig
 
 void Level::push_object(Object* obj) { _objects.insert(std::make_pair(obj, TimeEngine::time())); }
 
-std::vector<RoninEngine::Runtime::Transform*>* Level::get_hierarchy(Runtime::Transform* parent)
+std::list<Transform*>* Level::get_hierarchy(Runtime::Transform* parent)
 {
     if (!parent) {
         Application::fail("Argument is null");
@@ -239,8 +239,6 @@ void Level::level_render_world(SDL_Renderer* renderer)
     if (_firstRunScripts) {
         if (!_realtimeScripts) {
             RoninMemory::alloc_self(_realtimeScripts);
-            if (_realtimeScripts == nullptr)
-                throw std::bad_alloc();
         }
 
         for (auto x : *_firstRunScripts) {
@@ -329,18 +327,18 @@ const int Level::object_destruction_cost(Object* obj)
     if (Level::self()->_destructTasks) {
         x = 0;
         for (std::pair<float, std::set<Object*>> mapIter : *Level::self()->_destructTasks) {
-            ++x;
             auto _set = mapIter.second;
             if (_set.find(obj) != std::end(_set)) {
                 return x;
             }
+            ++x;
         }
     }
 
     return -1;
 }
 
-const bool Level::object_destruction_state(Object* obj) { return object_destruction_cost(obj) > 0; }
+const bool Level::object_destruction_state(Object* obj) { return object_destruction_cost(obj) > ~0; }
 
 const int Level::object_destruction_count()
 {

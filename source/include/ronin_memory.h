@@ -4,24 +4,36 @@
 
 namespace RoninEngine::Runtime::RoninMemory
 {
-    void* malloc(std::size_t size);
+
+    // main memory controller
+    void* ronin_memory_alloc(std::size_t size);
+    void ronin_memory_free(void* memory);
+
+    template <typename T, typename... Args>
+    constexpr inline T* _paste_oop_init(T* m, Args&&... args)
+    {
+        return new (m) T(std::forward<Args&&>(args)...);
+    }
 
     template <typename T>
-    T* alloc()
+    constexpr inline T* _cut_oop_from(T* m)
     {
-        extern std::uint64_t __ronin_allocated;
-        T* mem = new T;
-        ++__ronin_allocated;
-        return mem;
+        m->~T();
+        return m;
     }
+
+//    template <typename T>
+//    T* alloc()
+//    {
+//        void* mem = ronin_memory_alloc(sizeof(T));
+//        return _paste_oop_init<T>(mem);
+//    }
 
     template <typename T, typename... Args>
     T* alloc(Args&&... args)
     {
-        extern std::uint64_t __ronin_allocated;
-        T* mem = new T(std::forward<Args&&>(args)...);
-        ++__ronin_allocated;
-        return mem;
+        void* mem = ronin_memory_alloc(sizeof(T));
+        return _paste_oop_init<T>(static_cast<T*>(mem), std::forward<Args&&>(args)...);
     }
 
     template <typename T>
@@ -39,12 +51,8 @@ namespace RoninEngine::Runtime::RoninMemory
     template <typename T>
     void free(T* memory)
     {
-        extern std::uint64_t __ronin_allocated;
-        delete memory;
-        --__ronin_allocated;
+        ronin_memory_free(_cut_oop_from(memory));
     }
-
-    void mfree(void* memory);
 
     std::uint64_t total_allocated();
 }

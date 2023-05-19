@@ -3,7 +3,7 @@
 namespace RoninEngine::Runtime
 {
     Light::Light()
-        : Light(DESCRIBE_TYPE(Light))
+        : Light(DESCRIBE_TYPE(Light, this, &t))
     {
     }
     Light::Light(const std::string& name)
@@ -14,7 +14,7 @@ namespace RoninEngine::Runtime
 
     Light::~Light() { }
 
-    void Light::GetLightSource(Render_info* render)
+    void Light::GetLightSource(Rendering* render)
     {
         auto res = Application::get_resolution();
         Color c;

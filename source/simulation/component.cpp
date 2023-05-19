@@ -6,7 +6,7 @@ namespace RoninEngine
     {
         // base component
         Component::Component()
-            : Component(DESCRIBE_TYPE(Component))
+            : Component(DESCRIBE_TYPE(Component,this, &t))
         {
         }
 

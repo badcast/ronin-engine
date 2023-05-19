@@ -12,7 +12,7 @@ namespace RoninEngine::Runtime
         bool targetClear;
         std::map<int, std::set<Renderer*>> renders;
         std::set<Renderer*> prev;
-        std::set<Light*> __lightsOutResults;
+        std::set<Light*> _lightsOutResults;
         virtual void render(SDL_Renderer* renderer, Rect rect, GameObject* root) = 0;
 
     public:
@@ -24,16 +24,16 @@ namespace RoninEngine::Runtime
 
         virtual ~Camera();
 
-        bool isFocused();
-        void Focus();
+        bool is_focused();
+        void focus();
 
-        std::tuple<std::map<int, std::set<Renderer*>>*, std::set<Light*>*> matrixSelection();
+        std::tuple<std::map<int, std::set<Renderer*>>*, std::set<Light*>*> matrix_select();
 
-        static const Vec2 ScreenToWorldPoint(Vec2 screenPoint);
-        static const Vec2 WorldToScreenPoint(Vec2 worldPoint);
-        static const Vec2 ViewportToWorldPoint(Vec2 viewportPoint);
-        static const Vec2 WorldToViewport(Vec2 worldPoint);
-        static const Vec2 WorldToViewportClamp(Vec2 worldPoint);
+        static const Vec2 screen_2_world(Vec2 screenPoint);
+        static const Vec2 world_2_screen(Vec2 worldPoint);
+        static const Vec2 viewport_2_world(Vec2 viewportPoint);
+        static const Vec2 world_2_viewport(Vec2 worldPoint);
+        static const Vec2 world_2_viewport_clamp(Vec2 worldPoint);
         static Camera* main_camera();
     };
 

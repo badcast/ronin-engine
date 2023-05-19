@@ -4,22 +4,11 @@
 
 using namespace RoninEngine;
 using namespace RoninEngine::Runtime;
+using namespace RoninEngine::Runtime::RoninMemory;
 using namespace RoninEngine::UI;
 using namespace RoninEngine::AIPathFinder;
 using namespace jno;
 
-template <typename T, typename... Args>
-constexpr T* _paste_oop_init(T* m, Args&&... args)
-{
-    return new (m) T(std::forward<Args&&>(args)...);
-}
-
-template <typename T>
-constexpr T* _cut_oop_from(T* m)
-{
-    m->~T();
-    return m;
-}
 // ResourceManager::ResourceManager () { }
 
 std::map<int, std::list<std::string>>* _assocMultiFiles;

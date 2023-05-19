@@ -14,7 +14,7 @@ namespace RoninEngine::Runtime
     template RONIN_API Camera2D* GameObject::add_component<Camera2D>();
     template RONIN_API Spotlight* GameObject::add_component<Spotlight>();
     template RONIN_API Terrain2D* GameObject::add_component<Terrain2D>();
-
+    //----------------
     template RONIN_API Player* GameObject::get_component<Player>();
     template RONIN_API SpriteRenderer* GameObject::get_component<SpriteRenderer>();
     template RONIN_API Camera2D* GameObject::get_component<Camera2D>();
@@ -23,7 +23,7 @@ namespace RoninEngine::Runtime
     template RONIN_API Transform* GameObject::get_component<Transform>();
 
     GameObject::GameObject()
-        : GameObject(DESCRIBE_TYPE(GameObject))
+        : GameObject(DESCRIBE_TYPE(GameObject, this, &t))
     {
     }
 
@@ -33,7 +33,6 @@ namespace RoninEngine::Runtime
         m_components.push_back(create_empty_transform());
         m_components.front()->_owner = this;
         m_active = true;
-        Level::self()->_gameObjects.emplace_back(this);
     }
 
     GameObject::~GameObject()

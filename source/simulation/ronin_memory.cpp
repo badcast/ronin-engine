@@ -9,15 +9,18 @@ namespace RoninEngine::Runtime
 
         std::uint64_t __ronin_allocated = 0;
 
-
-        void* malloc(std::size_t size)
+        void* ronin_memory_alloc(std::size_t size)
         {
             void* mem = std::malloc(size);
+            if (mem == nullptr) {
+                Application::fail_oom_kill();
+            }
+            memset(mem, 0, size);
             ++__ronin_allocated;
             return mem;
         }
 
-        void mfree(void* memory)
+        void ronin_memory_free(void* memory)
         {
             std::free(memory);
             if (--__ronin_allocated < 0)
