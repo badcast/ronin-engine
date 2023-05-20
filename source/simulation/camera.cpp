@@ -6,12 +6,13 @@ namespace RoninEngine::Runtime
 {
 
     Camera::Camera()
-        : Camera(DESCRIBE_TYPE(Camera, this, &t))
+        : Camera(DESCRIBE_AS_MAIN_OFF(Camera))
     {
     }
     Camera::Camera(const std::string& name)
-        : Component(name)
+        : Component(DESCRIBE_AS_ONLY_NAME(Camera))
     {
+        DESCRIBE_AS_MAIN(Camera);
         // using this camera as main
         _main = this;
         targetClear = enabled = true;
@@ -128,9 +129,7 @@ namespace RoninEngine::Runtime
             // order by layer component
 
             for (auto iter = std::begin(storm_result); iter != std::end(storm_result); ++iter) {
-                GameObject* touch = (*iter)->gameObject();
-                if(touch->name() != "GameObject (clone)" && touch->name() != "GameObject" )
-                    throw std::bad_alloc();
+                GameObject* touch = (*iter)->game_object();
                 std::list<Renderer*> rends = touch->get_components<Renderer>();
                 for (auto x : rends) {
                     renders[x->transform()->layer].insert(x);

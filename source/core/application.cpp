@@ -82,7 +82,7 @@ namespace RoninEngine
             Levels::Level_Init();
         }*/
         // Инициализация инструментов
-        UI::InitalizeControls();
+        UI::ui_controls_init();
 
         // Set cursor
         // SDL_SetCursor(GC::GetCursor("cursor", {1, 1}));
@@ -103,7 +103,7 @@ namespace RoninEngine
         if (!windowOwner)
             fail(SDL_GetError());
 
-        renderer = SDL_CreateRenderer(windowOwner, -1, SDL_RENDERER_ACCELERATED /*| SDL_RENDERER_PRESENTVSYNC*/);
+        renderer = SDL_CreateRenderer(windowOwner, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE /*| SDL_RENDERER_PRESENTVSYNC*/);
         if (!renderer)
             fail(SDL_GetError());
 
@@ -132,7 +132,7 @@ namespace RoninEngine
         SDL_DestroyRenderer(renderer);
         SDL_DestroyWindow(windowOwner);
 
-        UI::Free_Controls();
+        UI::ui_free_controls();
         // sdl quit
         IMG_Quit();
         Mix_Quit();

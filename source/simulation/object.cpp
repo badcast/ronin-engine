@@ -123,13 +123,11 @@ namespace RoninEngine
 
                         return iter != end(gObj->m_components);
                     });
-                } else // destroy other types
-                {
-                    // FIXME: destroy other types from gameobject->m_components (delete a list)
-                    // Recursive method
-                    for (Component* component : gObj->m_components) {
-                        destroy_immediate(component);
-                    }
+                }
+                // FIXME: destroy other types from gameobject->m_components (delete a list)
+                // Recursive method
+                for (Component* component : gObj->m_components) {
+                    destroy_immediate(component);
                 }
                 // other types
             } else {
@@ -175,9 +173,9 @@ namespace RoninEngine
                     // BUG: Hierarchy cnage is bug, fix now;
                     //  Clone childs recursive
                     for (Transform* y : t->hierarchy) {
-                        GameObject* yClone = instantiate(y->gameObject());
+                        GameObject* yClone = instantiate(y->game_object());
                         yClone->transform()->set_parent(existent);
-                        yClone->m_name = t->gameObject()->m_name; // put " (clone)" name
+                        yClone->m_name = t->game_object()->m_name; // put " (clone)" name
                         yClone->m_name.shrink_to_fit();
                     }
                     // skip transform existent component
@@ -215,21 +213,20 @@ namespace RoninEngine
         // base class
 
         Object::Object()
-            : Object(DESCRIBE_TYPE(Object, this, nullptr))
+            : Object(DESCRIBE_AS_MAIN_OFF(Object))
 
         {
         }
 
         Object::Object(const std::string& name)
             : m_name(name)
-            , t(-1)
         {
-            DESCRIBE_TYPE(Object, this, &t);
+            DESCRIBE_AS_MAIN(Object);
             ::check_object(this);
             if (Level::self() == nullptr)
                 throw std::bad_exception();
 
-            id = Level::self()->globalID++;
+            id = Level::self()->_level_ids_++;
             Level::self()->push_object(this);
         }
 
@@ -245,7 +242,9 @@ namespace RoninEngine
 
         const std::string& Object::name() { return m_name; }
 
-        const int Object::get_type() const { return t; }
+        uint32_t Object::get_id() { return id; }
+
+        const char* Object::get_type() const { return _type_; }
 
         Object::operator bool() { return instanced(this); }
     } // namespace Runtime

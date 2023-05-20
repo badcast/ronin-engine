@@ -23,13 +23,14 @@ namespace RoninEngine::Runtime
     template RONIN_API Transform* GameObject::get_component<Transform>();
 
     GameObject::GameObject()
-        : GameObject(DESCRIBE_TYPE(GameObject, this, &t))
+        : GameObject(DESCRIBE_AS_MAIN_OFF(GameObject))
     {
     }
 
     GameObject::GameObject(const std::string& name)
-        : Object(name)
+        : Object(DESCRIBE_AS_ONLY_NAME(GameObject))
     {
+        DESCRIBE_AS_MAIN(GameObject);
         m_components.push_back(create_empty_transform());
         m_components.front()->_owner = this;
         m_active = true;

@@ -17,7 +17,7 @@ Level::Level(const std::string& name)
     , _realtimeScripts(nullptr)
     , _destructTasks(nullptr)
     , _destroyed(0)
-    , globalID(0)
+    , _level_ids_(0)
     , _destroy_delay_time(0)
     , m_isUnload(false)
     , m_name(name)
@@ -75,7 +75,7 @@ Level::~Level()
 }
 
 // NOTE: Check game hierarchy
-std::list<Transform*> Level::matrixCheckDamaged()
+std::list<Transform*> Level::matrix_check_damaged()
 {
     std::list<Transform*> damaged;
 
@@ -91,7 +91,7 @@ std::list<Transform*> Level::matrixCheckDamaged()
 
 int Level::matrix_restore()
 {
-    auto damaged = matrixCheckDamaged();
+    auto damaged = matrix_check_damaged();
     return matrix_restore(damaged);
 }
 
@@ -198,7 +198,7 @@ void Level::intenal_bind_script(Behaviour* script)
     }
 }
 
-void Level::destructs()
+void Level::runtime_destructs()
 {
     _destroyed = 0;
     // Destroy req objects
@@ -217,6 +217,7 @@ void Level::destructs()
             // destroy
             for (auto target : pair.second) {
                 if (target->exists()) {
+                    // run destructor
                     destroy_immediate(target);
                     ++_destroyed;
                 }
@@ -236,6 +237,9 @@ void Level::destructs()
 
 void Level::level_render_world(SDL_Renderer* renderer)
 {
+    // set default color
+    Gizmos::setColor(Color::white);
+
     if (_firstRunScripts) {
         if (!_realtimeScripts) {
             RoninMemory::alloc_self(_realtimeScripts);
@@ -256,7 +260,7 @@ void Level::level_render_world(SDL_Renderer* renderer)
     }
 
     // Render on main camera
-    Camera* cam = Camera::main_camera(); // Draw level
+    Camera* cam = Camera::main_camera(); // Draw level from active camera (main)
     if (cam) {
         Resolution res = Application::get_resolution();
         // FlushCache last result
@@ -270,7 +274,7 @@ void Level::level_render_world(SDL_Renderer* renderer)
             n->OnGizmos();
         };
     }
-    destructs();
+    runtime_destructs();
 }
 
 void Level::level_render_ui(SDL_Renderer* renderer)

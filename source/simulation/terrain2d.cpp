@@ -10,14 +10,15 @@ namespace RoninEngine::Runtime
     }
 
     Terrain2D::Terrain2D(int width, int length)
-        : Terrain2D(DESCRIBE_TYPE(Terrain2D, this, &t))
+        : Terrain2D(DESCRIBE_AS_MAIN_OFF(Terrain2D))
     {
         RoninMemory::alloc_self(navigation, width, length);
     }
 
     Terrain2D::Terrain2D(const std::string& name)
-        : Renderer(name)
+        : Renderer(DESCRIBE_AS_ONLY_NAME(Terrain2D))
     {
+        DESCRIBE_AS_MAIN(Terrain2D);
     }
 
     Terrain2D::Terrain2D(const Terrain2D& source) { RoninMemory::alloc_self(navigation, source.navigation->Width(), source.navigation->Height()); }

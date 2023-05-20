@@ -4,13 +4,14 @@ namespace RoninEngine::Runtime
 {
 
     Transform::Transform()
-        : Transform(DESCRIBE_TYPE(Transform, this, &t))
+        : Transform(DESCRIBE_AS_MAIN_OFF(Transform))
     {
     }
 
     Transform::Transform(const std::string& name)
-        : Component(name)
+        : Component(DESCRIBE_AS_ONLY_NAME(Transform))
     {
+        DESCRIBE_AS_MAIN(Transform);
         m_parent = nullptr;
         _angle = 0;
         layer = 1;
@@ -135,7 +136,7 @@ namespace RoninEngine::Runtime
         if (value != p) {
             Vec2Int lastPoint = Vec2::RoundToInt(position());
             p = value;
-            if (gameObject()->is_active())
+            if (game_object()->is_active())
                 Level::self()->matrix_nature(this, lastPoint);
         }
         return value;
@@ -148,7 +149,7 @@ namespace RoninEngine::Runtime
         if (value != position()) {
             Vec2 lastPoint = position();
             p = (this->m_parent) ? this->m_parent->position() + value : value; // set the position
-            if (gameObject()->is_active())
+            if (game_object()->is_active())
                 Level::self()->matrix_nature(this, Vec2::RoundToInt(lastPoint));
             for (Transform* chlid : hierarchy)
                 chlid->parent_notify(lastPoint);
@@ -159,7 +160,7 @@ namespace RoninEngine::Runtime
     void Transform::parent_notify(Vec2 lastParentPoint)
     {
         Vec2 lastPoint = lastParentPoint + p; // world cordinates
-        if (gameObject()->is_active())
+        if (game_object()->is_active())
             Level::self()->matrix_nature(this, Vec2::RoundToInt(lastPoint));
         for (Transform* chlid : hierarchy)
             chlid->parent_notify(lastPoint);
@@ -262,6 +263,5 @@ namespace RoninEngine::Runtime
     bool Transform::hierarchy_sibiling(Transform* from, int index)
     {
         // TODO: Set sibling
-
     }
 } // namespace RoninEngine::Runtime

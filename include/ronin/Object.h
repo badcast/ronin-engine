@@ -43,9 +43,9 @@ namespace RoninEngine
 
         protected:
             // unique type (static)
-            long t;
+            char* _type_;
             // unique id (realtime)
-            std::size_t id;
+            std::uint32_t id;
             // object name (realtime)
             std::string m_name;
 
@@ -58,9 +58,9 @@ namespace RoninEngine
 
             const std::string& name();
 
-            std::size_t get_id();
+            std::uint32_t get_id();
 
-            const int get_type() const;
+            const char* get_type() const;
 
             void destroy();
             const bool destroy_cancel();

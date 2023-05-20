@@ -5,12 +5,13 @@ namespace RoninEngine::Runtime
     static SDL_Surface* spotlightMask = nullptr;
 
     Spotlight::Spotlight()
-        : Spotlight(DESCRIBE_TYPE(Spotlight, this, &t))
+        : Spotlight(DESCRIBE_AS_MAIN_OFF(Spotlight))
     {
     }
     Spotlight::Spotlight(const std::string& name)
-        : Light(name)
+        : Light(DESCRIBE_AS_ONLY_NAME(Spotlight))
     {
+        DESCRIBE_AS_MAIN(Spotlight);
         range = 1.f;
         intensity = 1.f;
         if (!spotlightMask) {

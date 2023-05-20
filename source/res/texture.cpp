@@ -7,10 +7,6 @@ namespace RoninEngine::Runtime
     Texture::~Texture()
     {
         if (m_native != nullptr) {
-            int x = width();
-            x = height();
-            x = valid();
-
             SDL_DestroyTexture(m_native);
             m_native = nullptr;
         }

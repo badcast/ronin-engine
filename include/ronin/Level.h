@@ -21,7 +21,7 @@ namespace RoninEngine::Runtime
         friend void destroy_immediate(Object* obj);
 
     private:
-        int globalID;
+        std::uint32_t _level_ids_;
         bool m_isUnload;
         int _destroyed;
         float _destroy_delay_time;
@@ -44,7 +44,7 @@ namespace RoninEngine::Runtime
 
     protected:
         UI::GUI* ui;
-        virtual void destructs();
+        virtual void runtime_destructs();
 
         virtual void level_render_world(SDL_Renderer* renderer);
         virtual void level_render_ui(SDL_Renderer* renderer);
@@ -83,7 +83,7 @@ namespace RoninEngine::Runtime
         const bool object_destruction_state(Object* obj);
         const int object_destruction_count();
 
-        static std::list<Transform*> matrixCheckDamaged();
+        static std::list<Transform*> matrix_check_damaged();
         static int matrix_restore();
         static int matrix_restore(const std::list<Transform*>& damaged_content);
 

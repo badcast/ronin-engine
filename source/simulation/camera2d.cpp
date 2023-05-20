@@ -6,7 +6,7 @@ using namespace RoninEngine;
 namespace RoninEngine::Runtime
 {
     Camera2D::Camera2D()
-        : Camera(DESCRIBE_TYPE(Camera2D, this, &t))
+        : Camera(DESCRIBE_AS_MAIN_OFF(Camera2D))
         , scale(Vec2::one)
     {
         this->visibleBorders = false;
@@ -15,9 +15,9 @@ namespace RoninEngine::Runtime
     }
 
     Camera2D::Camera2D(const std::string& name)
-        : Camera(name)
+        : Camera(DESCRIBE_AS_ONLY_NAME(Camera2D))
     {
-
+        DESCRIBE_AS_MAIN(Camera2D);
     }
 
     RoninEngine::Runtime::Camera2D::Camera2D(const Camera2D& proto)
@@ -35,6 +35,8 @@ namespace RoninEngine::Runtime
         Vec2* point;
         Vec2 sourcePoint;
         // Vec2 _scale;
+
+        Color prevColor = Gizmos::getColor();
 
         Gizmos::setColor(0xffc4c4c4);
 
@@ -151,19 +153,26 @@ namespace RoninEngine::Runtime
             Gizmos::DrawLine(Vec2(rect.w - offset, rect.h - 1 - offset), Vec2(rect.w - offset, rect.h - offset - height));
         }
 
-        if (visibleObjects) {
+        if (visibleObjects || visibleNames) {
             for (const auto& layer : (*std::get<0>(filter)))
                 for (Renderer* face : layer.second) {
-                    Rect factSz = face->get_relative_size();
+
                     Vec2 p = face->transform()->position() + face->get_offset();
-                    Vec2 sz = Vec2::Scale(face->get_size(), Vec2(factSz.getWH()) / pixelsPerPoint);
-                    Gizmos::setColor(Color::blue);
-                    Gizmos::DrawRectangleRounded(p, sz.x, sz.y, 10);
-                    Gizmos::setColor(Color::black);
-                    Gizmos::DrawPosition(p, 0.2f);
-                    if (visibleNames)
-                        Gizmos::DrawTextOnPosition(p, face->gameObject()->m_name);
+                    if (visibleObjects) {
+                        Rect factSz = face->get_relative_size();
+                        Vec2 sz = Vec2::Scale(face->get_size(), Vec2(factSz.getWH()) / pixelsPerPoint);
+                        Gizmos::setColor(Color::blue);
+                        Gizmos::DrawRectangleRounded(p, sz.x, sz.y, 10);
+                        Gizmos::setColor(Color::black);
+                        Gizmos::DrawPosition(p, 0.2f);
+                    }
+                    if (visibleNames) {
+                        Gizmos::setColor(Color::white);
+                        Gizmos::DrawTextOnPosition(p, face->game_object()->m_name);
+                    }
                 }
         }
+
+        Gizmos::setColor(prevColor);
     }
 } // namespace RoninEngine::Runtime

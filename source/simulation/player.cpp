@@ -3,21 +3,22 @@ namespace RoninEngine::Runtime
 {
 
     Player::Player()
-        : Player(DESCRIBE_TYPE(Player,this, &t))
+        : Player(DESCRIBE_AS_MAIN_OFF(Player))
     {
     }
 
     Player::Player(const std::string& name)
-        : Behaviour(name)
+        : Behaviour(DESCRIBE_AS_ONLY_NAME(Player))
     {
+        DESCRIBE_AS_MAIN(Player);
     }
 
     void Player::OnAwake()
     {
-        playerCamera = gameObject()->get_component<Camera2D>();
+        playerCamera = game_object()->get_component<Camera2D>();
         if (playerCamera == nullptr)
-            playerCamera = gameObject()->add_component<Camera2D>();
-        //spriteRenderer = gameObject()->add_component<SpriteRenderer>();
+            playerCamera = game_object()->add_component<Camera2D>();
+        // spriteRenderer = gameObject()->add_component<SpriteRenderer>();
         speed = 0.1f / 2;
         // spotlight = gameObject()->add_component<Spotlight>();
     }

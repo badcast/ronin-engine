@@ -3,12 +3,13 @@
 namespace RoninEngine::Runtime
 {
     Light::Light()
-        : Light(DESCRIBE_TYPE(Light, this, &t))
+        : Light(DESCRIBE_AS_MAIN_OFF(Light))
     {
     }
     Light::Light(const std::string& name)
-        : Component(name)
+        : Component(DESCRIBE_AS_ONLY_NAME(Light))
     {
+        DESCRIBE_AS_MAIN(Light);
         fieldFogTexture = nullptr;
     }
 

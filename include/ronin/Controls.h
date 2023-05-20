@@ -31,9 +31,9 @@ namespace RoninEngine
 
         typedef void (*event_value_changed)(uid id, float value);
 
-        extern void InitalizeControls();
-        extern void Free_Controls();
-        extern void ResetControls();
+        extern void ui_controls_init();
+        extern void ui_free_controls();
+        extern void ui_reset_controls();
 
         extern void DrawFontAt(SDL_Renderer* renderer, const std::string& text, int fontSize, const Runtime::Vec2Int& screenPoint, const Runtime::Color color);
 

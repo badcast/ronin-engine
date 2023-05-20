@@ -26,7 +26,7 @@ namespace RoninEngine::UI
 
     TTF_Font* pfont;
 
-    void InitalizeControls()
+    void ui_controls_init()
     {
         TTF_Init();
 
@@ -35,14 +35,14 @@ namespace RoninEngine::UI
         pfont = TTF_OpenFontRW(raw, SDL_TRUE, 14);
     }
 
-    void Free_Controls()
+    void ui_free_controls()
     {
         // TODO: free controls?
         TTF_CloseFont(pfont);
         TTF_Quit();
     }
 
-    void ResetControls() { _controlId = 0; }
+    void ui_reset_controls() { _controlId = 0; }
 
     void* factory_resource(GUIControlPresents type)
     {
@@ -103,7 +103,8 @@ namespace RoninEngine::UI
         case RoninEngine::UI::_UC:
             break;
         case RGUI_TEXT: {
-            Render_String(render, element.rect, element.text.c_str(), element.text.size());
+            DrawFontAt(render, element.text, 15, element.rect.getXY(), Color::white);
+            // Render_String(render, element.rect, element.text.c_str(), element.text.size());
             break;
         }
 
@@ -122,7 +123,7 @@ namespace RoninEngine::UI
             SDL_RenderFillRect(render, (SDL_Rect*)&rect);
 
             // render text
-            //Render_String(render, element.rect, element.text.c_str(), element.text.size(), 13, TextAlign::MiddleCenter, true, uiHover);
+            // Render_String(render, element.rect, element.text.c_str(), element.text.size(), 13, TextAlign::MiddleCenter, true, uiHover);
             DrawFontAt(render, element.text, 12, element.rect.getXY(), Color::white);
             bool msClick = input::isMouseUp();
             result = uiHover && msClick;
@@ -411,15 +412,17 @@ namespace RoninEngine::UI
         Texture* texture;
         SDL_Rect r;
         SDL_Surface* surf = TTF_RenderUTF8_Solid(pfont, text.c_str(), SDL_Color(*reinterpret_cast<const SDL_Color*>(&color)));
-        ResourceManager::gc_alloc_texture_from(&texture, surf);
-        r.h = texture->height();
-        r.w = texture->width();
+        if (surf) {
+            ResourceManager::gc_alloc_texture_from(&texture, surf);
+            r.h = texture->height();
+            r.w = texture->width();
 
-        r.x = screenPoint.x;
-        r.y = screenPoint.y;
-        SDL_RenderCopy(renderer, texture->native(), nullptr, &r);
-        RoninMemory::free(texture);
-        SDL_FreeSurface(surf);
+            r.x = screenPoint.x;
+            r.y = screenPoint.y;
+            SDL_RenderCopy(renderer, texture->native(), nullptr, &r);
+            RoninMemory::free(texture);
+            SDL_FreeSurface(surf);
+        }
     }
 
 } // namespace RoninEngine::UI

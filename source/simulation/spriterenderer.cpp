@@ -6,12 +6,12 @@ namespace RoninEngine::Runtime
     // FIXME: OPTIMIZING SPRITE RENDERER COMPONENT
 
     SpriteRenderer::SpriteRenderer()
-        : SpriteRenderer(DESCRIBE_TYPE(SpriteRenderer,this,&t))
+        : SpriteRenderer(DESCRIBE_AS_MAIN_OFF(SpriteRenderer))
     {
     }
 
     SpriteRenderer::SpriteRenderer(const std::string& name)
-        : Renderer(name)
+        : Renderer(DESCRIBE_AS_ONLY_NAME(SpriteRenderer))
         , sprite(nullptr)
         , flip(Vec2::one)
         , renderType(SpriteRenderType::Simple)
@@ -19,6 +19,7 @@ namespace RoninEngine::Runtime
         , renderPresentMode(SpriteRenderPresentMode::Fixed)
         , color(Color::white)
     {
+        DESCRIBE_AS_MAIN(SpriteRenderer);
     }
 
     SpriteRenderer::SpriteRenderer(const SpriteRenderer& proto)
