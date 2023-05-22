@@ -7,29 +7,29 @@ namespace RoninEngine::Runtime
     class RONIN_API Random
     {
     public:
-        RONIN_API static void srand(int seed);
+        static void srand(int seed);
 
-        RONIN_API static int range(int min, int max);
+        static int range(int min, int max);
 
-        RONIN_API static float range(float min, float max);
+        static float range(float min, float max);
 
-        RONIN_API static float value();
+        static float value();
 
-        RONIN_API static Vec2 randomVector();
+        static Vec2 randomVector();
 
-        RONIN_API static float randomAngle();
+        static float randomAngle();
     };
 
     class RONIN_API Math
     {
     public:
-        static constexpr long double longPI = 3.14159265358979323846264338327950288;
-        static constexpr float PI = static_cast<float>(longPI); // calc PI formula l / d (Length circle div diameter)
-        static constexpr float Infinity = std::numeric_limits<float>::infinity();
-        static constexpr float NegativeInfinity = -Infinity;
-        static constexpr float Deg2Rad = 0.01745329;
-        static constexpr float Rad2Deg = 180 / PI;
-        static constexpr int RLevelDigits = 10000;
+        static constexpr long double long_pi = 3.14159265358979323846264338327950288;
+        static constexpr float pi = static_cast<float>(long_pi); // calc PI formula l / d (Length circle div diameter)
+        static constexpr float infinity = std::numeric_limits<float>::infinity();
+        static constexpr float negative_infinity = -infinity;
+        static constexpr float deg2rad = 0.01745329;
+        static constexpr float rad2deg = 180 / pi;
+        static constexpr int r_level_digits = 10000;
 
         static float cos(float x);
 
@@ -43,7 +43,7 @@ namespace RoninEngine::Runtime
 
         static float atan2(float y, float x);
 
-        static float Clamp01(float val);
+        static float clamp01(float val);
 
         template <typename T>
         static T map(const T& x, const T& in_min, const T& in_max, const T& out_min, const T& out_max)
@@ -64,7 +64,7 @@ namespace RoninEngine::Runtime
         }
 
         template <typename T>
-        static T Clamp(const T& val, const T& min, const T& max)
+        static T clamp(const T& val, const T& min, const T& max)
         {
             return T(val > max ? max : val < min ? min : val);
         }
@@ -117,41 +117,45 @@ namespace RoninEngine::Runtime
 
         static float repeat(float t, float length);
 
-        static float DeltaAngle(float current, float target);
+        static float delta_angle(float current, float target);
 
-        static float Gamma(float value, float absmax, float gamma);
+        static float gamma(float value, float absmax, float gamma);
 
-        static float InverseLerp(float a, float b, float value);
+        static float inverse_lerp(float a, float b, float value);
 
-        static float Lerp(float a, float b, float t);
+        static float lerp(float a, float b, float t);
 
-        static float LerpAngle(float a, float b, float t);
+        static float lerp_angle(float a, float b, float t);
 
-        static float LerpUnclamped(float a, float b, float t);
+        static float lerp_unclamped(float a, float b, float t);
 
-        static bool LineIntersection(Vec2 p1, Vec2 p2, Vec2 p3, Vec2 p4, Vec2& result);
+        static bool line_intersection(Vec2 p1, Vec2 p2, Vec2 p3, Vec2 p4, Vec2& result);
 
-        static float MoveTowards(float current, float target, float maxDelta);
+        static float move_towards(float current, float target, float maxDelta);
 
-        static bool LineSegmentIntersection(Vec2 p1, Vec2 p2, Vec2 p3, Vec2 p4, Vec2& result);
+        static bool line_segment_intersection(Vec2 p1, Vec2 p2, Vec2 p3, Vec2 p4, Vec2& result);
 
-        static float SmoothDamp(float current, float target, float& currentVelocity, float smoothTime, float maxSpeed);
+        static float smooth_damp(float current, float target, float& currentVelocity, float smoothTime, float maxSpeed);
 
-        static float SmoothDamp(float current, float target, float& currentVelocity, float smoothTime);
+        static float smooth_damp(float current, float target, float& currentVelocity, float smoothTime);
 
-        static float SmoothDamp(float current, float target, float& currentVelocity, float smoothTime, float maxSpeed, float deltaTime);
+        static float smooth_damp(float current, float target, float& currentVelocity, float smoothTime, float maxSpeed, float deltaTime);
 
         // Celsius to Fahrenheit
         static float cel2far(float celsius);
         // Fahre nheit to Celsius
         static float far2cel(float fahrenheit);
 
-        static float SmoothDampAngle(float current, float target, float& currentVelocity, float smoothTime, float maxSpeed);
+        static float smooth_damp_angle(float current, float target, float& currentVelocity, float smoothTime, float maxSpeed);
 
-        static float SmoothDampAngle(float current, float target, float& currentVelocity, float smoothTime);
+        static float smooth_damp_angle(float current, float target, float& currentVelocity, float smoothTime);
 
-        static float SmoothDampAngle(float current, float target, float& currentVelocity, float smoothTime, float maxSpeed, float deltaTime);
+        static float smooth_damp_angle(float current, float target, float& currentVelocity, float smoothTime, float maxSpeed, float deltaTime);
 
-        static float SmoothStep(float from, float to, float t);
+        static float smooth_step(float from, float to, float t);
+
+        static std::uint64_t num_lastof(std::uint64_t number, int level);
+
+        static std::string num_beautify(std::uint64_t num, char seperate = ' ', int digits = 3);
     };
 } // namespace RoninEngine::Runtime

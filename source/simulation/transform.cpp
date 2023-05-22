@@ -16,7 +16,7 @@ namespace RoninEngine::Runtime
         _angle = 0;
         layer = 1;
         // set as default
-        Level::self()->matrix_nature(this, Vec2::RoundToInt(p + Vec2::one));
+        Level::self()->matrix_nature(this, Vec2::round_to_int(p + Vec2::one));
     }
 
     Transform::~Transform() { }
@@ -50,7 +50,7 @@ namespace RoninEngine::Runtime
 
     void Transform::look_at(Vec2 target, Vec2 axis)
     {
-        _angle = Vec2::Angle(axis, target - position()) * Math::Rad2Deg;
+        _angle = Vec2::angle(axis, target - position()) * Math::rad2deg;
 
         // normalize horz
         if (axis.x == 1) {
@@ -73,7 +73,7 @@ namespace RoninEngine::Runtime
     void Transform::look_at_lerp(Vec2 target, float t)
     {
         Vec2 axis = Vec2::up;
-        float a = Vec2::Angle(axis, target - position()) * Math::Rad2Deg;
+        float a = Vec2::angle(axis, target - position()) * Math::rad2deg;
         // normalize
         if (axis.x == 1) {
             if (p.y < target.y)
@@ -91,7 +91,7 @@ namespace RoninEngine::Runtime
                 a = -a;
         }
 
-        local_angle(Math::LerpAngle(_angle, a, t));
+        local_angle(Math::lerp_angle(_angle, a, t));
     }
 
     void Transform::look_at_lerp(Transform* target, float t) { look_at_lerp(target->p, t); }
@@ -126,7 +126,7 @@ namespace RoninEngine::Runtime
 
     const Vec2 Transform::down() { return transformDirection(Vec2::down); }
 
-    const Vec2 Transform::transformDirection(Vec2 direction) { return Vec2::RotateAround(p, direction, _angle * Math::Deg2Rad); }
+    const Vec2 Transform::transformDirection(Vec2 direction) { return Vec2::rotate_around(p, direction, _angle * Math::deg2rad); }
 
     const Vec2 Transform::transformDirection(float x, float y) { return transformDirection(Vec2(x, y)); }
 
@@ -134,7 +134,7 @@ namespace RoninEngine::Runtime
     const Vec2& Transform::local_position(const Vec2& value)
     {
         if (value != p) {
-            Vec2Int lastPoint = Vec2::RoundToInt(position());
+            Vec2Int lastPoint = Vec2::round_to_int(position());
             p = value;
             if (game_object()->is_active())
                 Level::self()->matrix_nature(this, lastPoint);
@@ -150,7 +150,7 @@ namespace RoninEngine::Runtime
             Vec2 lastPoint = position();
             p = (this->m_parent) ? this->m_parent->position() + value : value; // set the position
             if (game_object()->is_active())
-                Level::self()->matrix_nature(this, Vec2::RoundToInt(lastPoint));
+                Level::self()->matrix_nature(this, Vec2::round_to_int(lastPoint));
             for (Transform* chlid : hierarchy)
                 chlid->parent_notify(lastPoint);
         }
@@ -161,14 +161,14 @@ namespace RoninEngine::Runtime
     {
         Vec2 lastPoint = lastParentPoint + p; // world cordinates
         if (game_object()->is_active())
-            Level::self()->matrix_nature(this, Vec2::RoundToInt(lastPoint));
+            Level::self()->matrix_nature(this, Vec2::round_to_int(lastPoint));
         for (Transform* chlid : hierarchy)
             chlid->parent_notify(lastPoint);
     }
 
     void Transform::parent_notify_activeState(GameObject* from)
     {
-        Vec2Int pos = Vec2::RoundToInt(this->position());
+        Vec2Int pos = Vec2::round_to_int(this->position());
         if (!from->is_active()) {
             decltype(Level::self()->matrixWorld)::iterator iter = Level::self()->matrixWorld.find(pos);
             // Delete from matrix

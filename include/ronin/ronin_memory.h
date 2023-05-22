@@ -1,13 +1,13 @@
 #pragma once
 
-#include "ronin.h"
+#include "begin.h"
 
 namespace RoninEngine::Runtime::RoninMemory
 {
 
     // main memory controller
-    void* ronin_memory_alloc(std::size_t size);
-    void ronin_memory_free(void* memory);
+    extern RONIN_API void* ronin_memory_alloc(std::size_t size);
+    extern RONIN_API void ronin_memory_free(void* memory);
 
     template <typename T, typename... Args>
     constexpr inline T* _paste_oop_init(T* m, Args&&... args)
@@ -21,13 +21,6 @@ namespace RoninEngine::Runtime::RoninMemory
         m->~T();
         return m;
     }
-
-//    template <typename T>
-//    T* alloc()
-//    {
-//        void* mem = ronin_memory_alloc(sizeof(T));
-//        return _paste_oop_init<T>(mem);
-//    }
 
     template <typename T, typename... Args>
     T* alloc(Args&&... args)

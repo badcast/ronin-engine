@@ -95,24 +95,24 @@ namespace RoninEngine::Runtime
                 |                   |
                  -------------------y
 
-                Method finder: Storm                                    see: Physics2D::stormCast for details
-                 ' * * * * * * * * *'
-                 ' * * * * * * * * *'   n = 10
-                 ' * * * * * * * * *'   n0 (first input point) = 0
-                 ' * * * 2 3 4 * * *'   n10 (last input point) = 9
-                 ' * * 9 1 0 5 * * *'
-                 ' * * * 8 7 6 * * *'
-                 ' * * * * * * * * *'
-                 ' * * * * * * * * *'
-                 ' * * * * * * * * *'
+                Method finder: Storm                    see: Physics2D::storm_cast for details
+                 ' * * * * * * * * * '
+                 ' * * * * * * * * * '   n = 10
+                 ' * * * * * * * * * '   n0 (first input point) = 0
+                 ' * * * 2 3 4 * * * '   n10 (last input point) = 9
+                 ' * * 9 1 0 5 * * * '
+                 ' * * * 8 7 6 * * * '
+                 ' * * * * * * * * * '
+                 ' * * * * * * * * * '
+                 ' * * * * * * * * * '
         */
 
         if (renders.empty()) {
             Resolution res = Application::get_resolution();
-            Vec2Int wpLeftTop = Vec2::RoundToInt(screen_2_world(Vec2::zero));
-            Vec2Int wpRightBottom = Vec2::RoundToInt(screen_2_world(Vec2(res.width, res.height)));
+            Vec2Int wpLeftTop = Vec2::round_to_int(screen_2_world(Vec2::zero));
+            Vec2Int wpRightBottom = Vec2::round_to_int(screen_2_world(Vec2(res.width, res.height)));
             // RUN STORM CAST
-            std::list<Transform*> storm_result = Physics2D::storm_cast(transform()->p, Math::number(Math::max(wpRightBottom.x - transform()->p.x, wpRightBottom.y - transform()->p.y)) + 1 + distanceEvcall);
+            std::list<Transform*> storm_result = Physics2D::rect_cast(transform()->p, Math::number(Math::max(wpRightBottom.x - transform()->p.x, wpRightBottom.y - transform()->p.y)) + 1 + distanceEvcall);
             std::list<Renderer*> _removes;
             // собираем оставшиеся которые прикреплены к видимости
             for (auto x = std::begin(prev); x != std::end(prev); ++x) {
@@ -133,6 +133,7 @@ namespace RoninEngine::Runtime
                 std::list<Renderer*> rends = touch->get_components<Renderer>();
                 for (auto x : rends) {
                     renders[x->transform()->layer].insert(x);
+                    // prev.insert(x);
                 }
             }
         }
@@ -201,8 +202,8 @@ namespace RoninEngine::Runtime
     const Vec2 Camera::world_2_viewport_clamp(Vec2 worldPoint)
     {
         worldPoint = world_2_viewport(worldPoint);
-        worldPoint.x = Math::Clamp01(worldPoint.x);
-        worldPoint.y = Math::Clamp01(worldPoint.y);
+        worldPoint.x = Math::clamp01(worldPoint.x);
+        worldPoint.y = Math::clamp01(worldPoint.y);
         return worldPoint;
     }
     Camera* Camera::main_camera() { return _main; }

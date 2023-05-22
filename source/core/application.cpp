@@ -6,14 +6,37 @@ namespace RoninEngine
 {
     namespace Runtime
     {
-        float timeScale, _lastTime, internal_time, intenal_delta_time;
+        float internal_time_scale, internal_game_time, internal_delta_time;
 
-        std::uint32_t _startedTime;
-        std::uint32_t intenal_frames; // framecounter
+        std::uint32_t internal_start_engine_time;
+        std::uint32_t internal_frames; // framecounter
+        std::vector<std::uint32_t> _watcher_time;
+
+        Vec2Int m_mousePoint;
+        std::uint8_t mouseState;
+        std::uint8_t lastMouseState;
+        std::uint8_t mouseWheels;
+        Vec2 m_axis;
+        bool text_inputState;
 
         extern GameObject* create_empty_gameobject();
 
         extern void manager_init();
+
+        extern void text_get(std::string& text);
+        extern void text_stop_input();
+        extern void text_start_input();
+        extern void input_movement_update();
+        extern void internal_update_input(SDL_Event* e);
+
+        extern bool unload_level(Level* level);
+    }
+
+    namespace UI
+    {
+        extern void ui_controls_init();
+        extern void ui_free_controls();
+        extern void ui_reset_controls();
     }
 
     static bool m_inited = false;
@@ -24,24 +47,17 @@ namespace RoninEngine
     static SDL_Window* windowOwner = nullptr;
     static Runtime::Level* m_level = nullptr;
     static bool isQuiting;
-
-    Runtime::Vec2Int m_mousePoint;
-    std::uint8_t mouseState;
-    std::uint8_t lastMouseState;
-    std::uint8_t mouseWheels;
-    Runtime::Vec2 m_axis;
-    bool text_inputState;
+    static ScoreWatcher _wwatcher = {};
 
     void internal_init_TimeEngine()
     {
-        internal_time = 0;
-        _lastTime = 0;
-        timeScale = 1;
-        _startedTime = 0;
-        _startedTime = TimeEngine::startUpTime();
+        internal_game_time = 0;
+        internal_time_scale = 1;
+        internal_start_engine_time = 0;
+        internal_start_engine_time = TimeEngine::startUpTime();
     }
 
-    void input_reset()
+    void internal_reseting()
     {
         mouseState = 0;
         mouseWheels = 0;
@@ -57,14 +73,14 @@ namespace RoninEngine
             fail("Fail init main system.");
 
         // init graphics
-        if (!IMG_Init(IMG_INIT_PNG | IMG_INIT_JPG))
+        if (!IMG_Init(IMG_InitFlags::IMG_INIT_PNG | IMG_InitFlags::IMG_INIT_JPG))
             fail("Fail init imageformats. (libPNG, libJPG) not defined");
 
         // init Audio system
         if (!Mix_Init(MIX_InitFlags::MIX_INIT_OGG | MIX_InitFlags::MIX_INIT_MP3))
             fail("Fail init audio.");
 
-        if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 1024))
+        if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 512))
             fail("Fail open audio.");
 
         /*if (initResources) {
@@ -94,6 +110,7 @@ namespace RoninEngine
     {
         if (!m_inited || windowOwner)
             Application::fail("Application not Inited");
+
         std::uint32_t __flags = SDL_WINDOW_SHOWN;
 
         if (fullscreen)
@@ -104,51 +121,27 @@ namespace RoninEngine
             fail(SDL_GetError());
 
         renderer = SDL_CreateRenderer(windowOwner, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE /*| SDL_RENDERER_PRESENTVSYNC*/);
+
         if (!renderer)
             fail(SDL_GetError());
+
+        //        SDL_RendererInfo rfio;
+        //        SDL_GetRendererInfo(renderer, &rfio);
 
         // Brightness - Яркость
         SDL_SetWindowBrightness(windowOwner, 1);
     }
 
-    void Application::close_window()
-    {
-        if (windowOwner) {
-            request_quit();
-            SDL_DestroyWindow(windowOwner);
-            SDL_DestroyRenderer(renderer);
-            renderer = nullptr;
-            windowOwner = nullptr;
-        }
-    }
-
     void Application::request_quit() { isQuiting = true; }
-
-    void Application::quit()
-    {
-        if (!m_inited)
-            return;
-
-        SDL_DestroyRenderer(renderer);
-        SDL_DestroyWindow(windowOwner);
-
-        UI::ui_free_controls();
-        // sdl quit
-        IMG_Quit();
-        Mix_Quit();
-        SDL_Quit();
-
-        m_inited = false;
-    }
 
     void Application::load_level(Level* level)
     {
-        if (!level || m_level == level || windowOwner == nullptr)
+        if (windowOwner == nullptr || !level || m_level == level)
             throw std::bad_cast();
 
         if (m_level) {
             destroyableLevel = m_level;
-            m_level->unload();
+            m_level->request_unload();
         }
 
         if (!level->is_hierarchy()) {
@@ -156,7 +149,7 @@ namespace RoninEngine
             level->main_object = create_empty_gameobject();
             level->main_object->name("Main Object");
             level->main_object->transform()->name("Root");
-            //pickup from renders
+            // pickup from renders
             level->matrix_nature_pickup(level->main_object->transform());
         }
 
@@ -205,15 +198,18 @@ namespace RoninEngine
         return res;
     }
 
+    ScoreWatcher Application::get_watches() { return _wwatcher; }
+
     bool Application::simulate()
     {
-        char windowTitle[128];
-        float fps;
-        int delayed;
+
+        char windowTitle[96];
+        float fps, fpsRound = 0;
+        int delayed = 0;
         SDL_Event event;
-        SDL_WindowFlags wndFlags;
-        float secPerFrame;
+        float secPerFrame, game_time_score;
         SDL_DisplayMode displayMode;
+        SDL_WindowFlags flags;
 
         if (m_level == nullptr) {
             show_message("Level not loaded");
@@ -226,99 +222,174 @@ namespace RoninEngine
         }
 
         internal_init_TimeEngine();
-
+        flags = static_cast<SDL_WindowFlags>(SDL_GetWindowFlags(windowOwner));
         displayMode = Application::get_display_mode();
         secPerFrame = 1000.f / displayMode.refresh_rate; // refresh screen from Monitor Settings
+        game_time_score = secPerFrame * 0.001f;
         while (!isQuiting) {
+            // TODO: m_level->request_unloading use as WNILE block (list proc)
+
+            // delaying
+            SDL_Delay(delayed);
+
             // update events
-            input_reset();
-            delayed = TimeEngine::tickMillis();
-            wndFlags = static_cast<SDL_WindowFlags>(SDL_GetWindowFlags(Application::get_window()));
+            internal_reseting();
+
+            TimeEngine::begin_watch();
+
+            delayed = TimeEngine::tick_millis();
+
+            TimeEngine::begin_watch();
+
             while (SDL_PollEvent(&event)) {
-                input::Update_Input(&event);
+                internal_update_input(&event);
                 if (event.type == SDL_QUIT)
                     isQuiting = true;
             }
 
-            if ((wndFlags & SDL_WindowFlags::SDL_WINDOW_MINIMIZED) != SDL_WindowFlags::SDL_WINDOW_MINIMIZED) {
-                // set default color
-                SDL_SetRenderDrawColor(renderer, 0x11, 0x11, 0x11, SDL_ALPHA_OPAQUE); // back color for clear
+            // set default color
+            SDL_SetRenderDrawColor(renderer, 0x11, 0x11, 0x11, SDL_ALPHA_OPAQUE); // back color for clear
 
-                // Clearing
-                SDL_RenderClear(renderer);
+            // Clearing
+            SDL_RenderClear(renderer);
 
-                input::movement_update();
+            input_movement_update();
 
-                if (!m_levelLoaded) {
-                    // free cache
-                    if (destroyableLevel) {
-                        destroyableLevel->onUnloading();
+            if (!m_levelLoaded) {
+                // free cache
+                if (destroyableLevel) {
+                    destroyableLevel->on_unloading();
 
-                        RoninMemory::free(destroyableLevel);
-
-                        destroyableLevel = nullptr;
-                    }
-
-                    m_levelLoaded = false;
-                    // Start first init
-                    m_level->awake();
-                    m_levelLoaded = true;
-                } else {
-                    // update level
-                    if (!m_levelAccept) {
-                        SDL_RenderFlush(renderer); // flush renderer before first render
-                        m_level->start();
-                        m_levelAccept = true;
-                    } else {
-                        m_level->update();
-                    }
-
-                    m_level->level_render_world(renderer);
-                    if (Camera::main_camera())
-                        m_level->onDrawGizmos(); // Draw gizmos
-
-                    // Set scale as default
-                    SDL_RenderSetScale(renderer, 1, 1);
-
-                    m_level->level_render_ui(renderer);
-
-                    if (!destroyableLevel) {
-                        SDL_RenderPresent(renderer);
-                        m_level->lateUpdate();
-                        m_level->level_render_world_late(renderer);
-                    }
+                    RoninMemory::free(destroyableLevel);
+                    destroyableLevel = nullptr;
                 }
+
+                SDL_RenderFlush(renderer); // flush renderer before first render
+
+                // Start first init
+                m_level->on_awake();
+                m_levelLoaded = true;
+            }
+            _wwatcher.ms_wait_internal_instructions = TimeEngine::end_watch();
+
+            // update level
+            if (!m_level->request_unloading) {
+                // begin watcher
+                TimeEngine::begin_watch();
+
+                if (!m_levelAccept) {
+
+                    m_level->on_start();
+                    m_levelAccept = true;
+                }
+                if (!m_level->request_unloading) {
+
+                    m_level->on_update();
+
+                    // end watcher
+                    _wwatcher.ms_wait_exec_level = TimeEngine::end_watch();
+
+                } else {
+                    // end watcher
+                    _wwatcher.ms_wait_exec_level = TimeEngine::end_watch();
+
+                    goto end_simulate; // break on unload state
+                }
+            } else
+                goto end_simulate; // break on unload state
+
+            m_level->level_render_world(renderer, &_wwatcher);
+
+            // begin watcher
+            TimeEngine::begin_watch();
+            if (Camera::main_camera()) {
+                if (m_level->_realtimeScripts) {
+                    for (auto n : *m_level->_realtimeScripts) {
+                        n->OnGizmos();
+                    };
+                }
+                m_level->on_gizmo(); // Draw gizmos
+            }
+            _wwatcher.ms_wait_render_gizmos = TimeEngine::end_watch();
+            // end watcher
+
+            if (m_level->request_unloading)
+                goto end_simulate; // break on unload state
+
+            // Set scale as default
+            SDL_RenderSetScale(renderer, 1, 1);
+
+            // begin watcher
+            TimeEngine::begin_watch();
+            m_level->level_render_ui(renderer);
+            _wwatcher.ms_wait_render_ui = TimeEngine::end_watch();
+            // end watcher
+
+            if (m_level->request_unloading)
+                goto end_simulate; // break on unload state
+
+            if (!destroyableLevel) {
+                // begin watcher
+                TimeEngine::begin_watch();
+                SDL_RenderPresent(renderer);
+                _wwatcher.ms_wait_render_level = TimeEngine::end_watch();
+                // end watcher
+
+                m_level->level_render_world_late(renderer);
             }
 
-            delayed = TimeEngine::tickMillis() - delayed;
+        end_simulate:
+            delayed = TimeEngine::tick_millis() - delayed;
 
-            // if (Time::startUpTime() > fpsRound)
-            {
-                fps = intenal_frames / (TimeEngine::startUpTime());
-                if (fps > 2000000) {
-                    fps = 0;
-                }
+            _wwatcher.ms_wait_frame = TimeEngine::end_watch();
 
+            ++internal_frames;
+
+            if (!_watcher_time.empty())
+                throw std::runtime_error("TimeEngine::end_watcher() - not released stack.");
+
+            internal_delta_time = delayed / 1000.f;
+            //                        if (internal_delta_time > 1) {
+            //                            internal_delta_time -= 1;
+            //                            internal_delta_time = Math::clamp01(internal_delta_time);
+            //                        }
+
+            internal_game_time += game_time_score;
+
+            if (TimeEngine::startUpTime() > fpsRound) {
+                // SDL_METHOD:
+                // fps = internal_frames / (TimeEngine::startUpTime());
+                fps = 1 / internal_delta_time;
                 std::sprintf(
                     windowTitle,
-                    "FPS:%d Memory:%luMiB, "
-                    "Ronin_Allocated:%lu, SDL_Allocated:%d",
-                    static_cast<int>(fps), get_process_sizeMemory() / 1024 / 1024, RoninMemory::total_allocated(), SDL_GetNumAllocations());
+                    "FPS:%d Memory:%sMiB, "
+                    "Ronin_Allocated:%s, SDL_Allocated:%s, Frames:%u",
+                    static_cast<int>(fps), Math::num_beautify(get_process_sizeMemory() / 1024 / 1024).c_str(), Math::num_beautify(RoninMemory::total_allocated()).c_str(), Math::num_beautify(SDL_GetNumAllocations()).c_str(), internal_frames);
                 SDL_SetWindowTitle(Application::get_window(), windowTitle);
-                // fpsRound = Time::startUpTime() + 1;  // updater per 1 seconds
+                fpsRound = TimeEngine::startUpTime() + .5f; // updater per 1 seconds
             }
 
-            intenal_delta_time = delayed;
-            if (intenal_delta_time > 1) {
-                intenal_delta_time -= 1;
-                intenal_delta_time = Math::Clamp01(intenal_delta_time);
-            }
-            internal_time += 0.001f * secPerFrame;
+            if (m_level->request_unloading)
+                break; // break on unload state
+
             // delay elapsed
-            SDL_Delay(Math::max(0, static_cast<int>(secPerFrame - delayed)));
-            ++intenal_frames;
+            delayed = Math::max(0, static_cast<int>(Math::ceil(secPerFrame) - delayed));
         }
 
+        // unload level
+        Runtime::unload_level(m_level);
+
+        SDL_DestroyRenderer(renderer);
+        SDL_DestroyWindow(windowOwner);
+
+        UI::ui_free_controls();
+        // sdl quit
+        Mix_Quit();
+        IMG_Quit();
+        SDL_Quit();
+
+        m_inited = false;
+        int r = Runtime::RoninMemory::total_allocated();
         return isQuiting;
     }
 

@@ -21,7 +21,7 @@ namespace RoninEngine::Runtime
 
     Spotlight::~Spotlight() { }
 
-    void Spotlight::GetLight(SDL_Renderer* renderer)
+    void Spotlight::get_light(SDL_Renderer* renderer)
     {
 
         SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, spotlightMask);

@@ -5,6 +5,13 @@
 
 #define DROPDOWN_RESOURCE std::pair<int, std::list<std::string>>
 
+namespace RoninEngine::Runtime
+{
+    extern void text_get(std::string& text);
+    extern void text_start_input();
+    extern void text_stop_input();
+}
+
 namespace RoninEngine::UI
 {
     struct ElementInteraction {
@@ -86,13 +93,13 @@ namespace RoninEngine::UI
     bool general_render_ui_section(GUI* gui, UIElement& element, SDL_Renderer* render, const bool uiHover, bool& focus)
     {
         static float dropDownLinear = 0;
-        Vec2Int ms = input::getMousePoint();
+        Vec2Int ms = Input::get_mouse_point();
         bool result = false;
         {
             // TODO: general drawing
 
             if (uiHover) {
-                if (input::get_key_down(SDL_SCANCODE_LCTRL)) {
+                if (Input::get_key_down(SDL_SCANCODE_LCTRL)) {
                     element.rect.x = ms.x - element.rect.w / 2;
                     element.rect.y = ms.y - element.rect.h / 2;
                 }
@@ -117,7 +124,7 @@ namespace RoninEngine::UI
             gui->set_color_rgb(0xa75100);
             SDL_RenderDrawRect(render, (SDL_Rect*)&element.rect);
             // fill
-            gui->set_color_rgb(uiHover ? input::isMouseDown() ? 0xab0000 : 0xe70000 : 0xc90000);
+            gui->set_color_rgb(uiHover ? Input::is_mouse_down() ? 0xab0000 : 0xe70000 : 0xc90000);
             rect = element.rect;
             rect += inside / 2;
             SDL_RenderFillRect(render, (SDL_Rect*)&rect);
@@ -125,7 +132,7 @@ namespace RoninEngine::UI
             // render text
             // Render_String(render, element.rect, element.text.c_str(), element.text.size(), 13, TextAlign::MiddleCenter, true, uiHover);
             DrawFontAt(render, element.text, 12, element.rect.getXY(), Color::white);
-            bool msClick = input::isMouseUp();
+            bool msClick = Input::is_mouse_up();
             result = uiHover && msClick;
             break;
         }
@@ -134,14 +141,14 @@ namespace RoninEngine::UI
             // uielement background
             static const int thickness = 2;
             static const Rect thick = { thickness, thickness, -thickness, -thickness };
-            bool msClick = uiHover && input::isMouseUp();
+            bool msClick = uiHover && Input::is_mouse_up();
             Rect r = element.rect;
             r += thick;
 
             // uielement background
-            Gizmos::setColor((uiHover) ? colorSpace.defaultInteraction.normalState : colorSpace.defaultInteraction.hoverState);
+            Gizmos::set_color((uiHover) ? colorSpace.defaultInteraction.normalState : colorSpace.defaultInteraction.hoverState);
             SDL_RenderFillRect(render, (SDL_Rect*)&r);
-            Gizmos::setColor(Color::gray);
+            Gizmos::set_color(Color::gray);
             for (int x = 0; x < thickness; ++x) {
                 r -= Rect(1, 1, -1, -1);
                 SDL_RenderDrawRect(render, (SDL_Rect*)&r);
@@ -166,14 +173,14 @@ namespace RoninEngine::UI
             // focusing intersection
             if (focus) {
                 std::string linput;
-                input::text_get(linput);
+                RoninEngine::Runtime::text_get(linput);
                 element.text += linput;
             } else {
                 // clik and focused
                 if (focus = result = msClick) {
-                    input::text_start_input();
+                    text_start_input();
                 } else {
-                    input::text_stop_input();
+                    text_stop_input();
                 }
             }
             break;
@@ -185,10 +192,10 @@ namespace RoninEngine::UI
             float* value = (float*)element.resources;
             float* min = value + 1;
             float* max = min + 1;
-            bool msClick = uiHover && input::isMouseDown();
+            bool msClick = uiHover && Input::is_mouse_down();
             // clamp mouse point an inside
-            ms.x = Math::Clamp(ms.x, element.rect.x, element.rect.x + element.rect.w);
-            ms.y = Math::Clamp(ms.y, element.rect.y, element.rect.y + element.rect.h);
+            ms.x = Math::clamp(ms.x, element.rect.x, element.rect.x + element.rect.w);
+            ms.y = Math::clamp(ms.y, element.rect.y, element.rect.y + element.rect.h);
             // get rect
             rect = *reinterpret_cast<SDL_Rect*>(&element.rect);
 
@@ -196,30 +203,30 @@ namespace RoninEngine::UI
                 focus = msClick;
             }
 
-            if (uiHover && input::wheelRadix()) {
-                *value += input::wheelRadix() / 10.f; // step wheel mouse = ±0.1
-                *value = Math::Clamp(*value, *min, *max);
+            if (uiHover && Input::wheel_radix()) {
+                *value += Input::wheel_radix() / 10.f; // step wheel mouse = ±0.1
+                *value = Math::clamp(*value, *min, *max);
                 result = true;
             }
 
             // focused state
             if (focus) {
-                if (input::isMouseDown()) {
+                if (Input::is_mouse_down()) {
                     // get *x* component from mouse point for set cursor point
                     *value = Math::map((float)ms.x, (float)rect.x, (float)rect.x + rect.w, *min, *max);
                 }
 
                 result = true;
             } else
-                *value = Math::Clamp(*value, *min, *max);
+                *value = Math::clamp(*value, *min, *max);
 
             ratio = Math::map(*value, *min, *max, 0.f, 1.f);
 
             rect.h = 4;
             rect.y += (element.rect.h - rect.h) / 2;
 
-            Gizmos::setColor(uiHover ? Color::lightgray : Color::gray);
-            Color color = Gizmos::getColor();
+            Gizmos::set_color(uiHover ? Color::lightgray : Color::gray);
+            Color color = Gizmos::get_color();
             roundedBoxColor(render, rect.x, rect.y, rect.x + rect.w, rect.y + rect.h, 3, Color::slategray);
             roundedRectangleColor(render, rect.x, rect.y, rect.x + rect.w, rect.y + rect.h, 3, color);
             // SDL_RenderFillRect(render, &rect);
@@ -240,7 +247,7 @@ namespace RoninEngine::UI
             float* value = (float*)element.resources;
             float* min = value + 1;
             float* max = min + 1;
-            *value = Math::Clamp(*value, *min, *max);
+            *value = Math::clamp(*value, *min, *max);
 
             // Minimal support
 
@@ -299,14 +306,14 @@ namespace RoninEngine::UI
         case RGUI_DROPDOWN: {
             static const int thickness = 2;
             static const Rect thick = { thickness, thickness, -thickness, -thickness };
-            bool msClick = uiHover && input::isMouseUp();
+            bool msClick = uiHover && Input::is_mouse_up();
             Rect r = element.rect;
             r += thick;
 
             // uielement background
-            Gizmos::setColor((uiHover) ? colorSpace.defaultInteraction.normalState : colorSpace.defaultInteraction.hoverState);
+            Gizmos::set_color((uiHover) ? colorSpace.defaultInteraction.normalState : colorSpace.defaultInteraction.hoverState);
             SDL_RenderFillRect(render, (SDL_Rect*)&r);
-            Gizmos::setColor(Color::gray);
+            Gizmos::set_color(Color::gray);
             for (int x = 0; x < thickness; ++x) {
                 r -= Rect(1, 1, -1, -1);
                 SDL_RenderDrawRect(render, (SDL_Rect*)&r);
@@ -338,9 +345,9 @@ namespace RoninEngine::UI
                 r = element.rect;
                 r.y += r.h;
 
-                r.h = dropDownLinear = Math::ceil(Math::LerpUnclamped(dropDownLinear, link->second.size() * sz, 2 * TimeEngine::deltaTime()));
+                r.h = dropDownLinear = Math::ceil(Math::lerp_unclamped(dropDownLinear, link->second.size() * sz, 2 * TimeEngine::deltaTime()));
 
-                Gizmos::setColor(colorSpace.defaultInteraction.hoverState);
+                Gizmos::set_color(colorSpace.defaultInteraction.hoverState);
                 // draw background
                 SDL_RenderFillRect(render, (SDL_Rect*)&r);
                 if (link->second.size() * sz == r.h) {
@@ -352,16 +359,16 @@ namespace RoninEngine::UI
                     for (auto iter = std::begin(link->second); iter != std::end(link->second); ++iter, ++index) {
                         // draw element highligh
                         if (!result && SDL_PointInRect((SDL_Point*)&(ms), (SDL_Rect*)&elrect)) {
-                            Gizmos::setColor(colorSpace.defaultInteraction.pressState);
+                            Gizmos::set_color(colorSpace.defaultInteraction.pressState);
                             SDL_RenderFillRect(render, (SDL_Rect*)&elrect);
-                            if (input::isMouseUp()) {
+                            if (Input::is_mouse_up()) {
                                 link->first = index;
                                 element.text = *iter;
                                 result = focus = false;
                             }
                         }
 
-                        Gizmos::setColor(colorSpace.defaultInteraction.hoverState);
+                        Gizmos::set_color(colorSpace.defaultInteraction.hoverState);
                         // Draw element text
                         surf = TTF_RenderUTF8_Solid(pfont, iter->c_str(), *reinterpret_cast<SDL_Color*>(&(link->first != index ? colorSpace.dropdownText : colorSpace.dropdownSelectedText)));
                         ResourceManager::gc_alloc_texture_from(&texture, surf);

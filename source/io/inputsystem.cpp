@@ -1,6 +1,6 @@
 #include "ronin.h"
 
-namespace RoninEngine
+namespace RoninEngine::Runtime
 {
     extern Runtime::Vec2Int m_mousePoint;
     extern std::uint8_t mouseState;
@@ -10,7 +10,7 @@ namespace RoninEngine
     extern bool text_inputState;
     std::string internalText;
 
-    void input::movement_update()
+    void input_movement_update()
     {
         const uint8_t* s = SDL_GetKeyboardState(nullptr);
         if (s[SDL_SCANCODE_D] || s[SDL_SCANCODE_RIGHT])
@@ -28,7 +28,7 @@ namespace RoninEngine
             m_axis.y = 0;
     }
 
-    void input::Update_Input(SDL_Event* e)
+    void internal_update_input(SDL_Event* e)
     {
         switch (e->type) {
         case SDL_TEXTINPUT:
@@ -87,37 +87,37 @@ namespace RoninEngine
         }
     }
 
-    void input::text_start_input()
+    void text_start_input()
     {
         //    SDL_IsTextInputActive for check state
 
         SDL_StartTextInput();
     }
 
-    void input::text_stop_input() { SDL_StopTextInput(); }
+    void text_stop_input() { SDL_StopTextInput(); }
 
-    void input::text_get(std::string& text)
+    void text_get(std::string& text)
     {
         text = internalText;
         internalText.resize(0);
     }
 
-    const bool input::isMouseUp(int button) { return mouseState == 1; }
+    const bool Input::is_mouse_up(int button) { return mouseState == 1; }
 
-    const bool input::isMouseDown(int button) { return SDL_GetMouseState(nullptr, nullptr) & SDL_BUTTON_LMASK != 0; }
+    const bool Input::is_mouse_down(int button) { return SDL_GetMouseState(nullptr, nullptr) & SDL_BUTTON_LMASK != 0; }
 
-    const bool input::isCapsLock() { return get_key(SDL_SCANCODE_CAPSLOCK); }
+    const bool Input::is_caps_lock() { return get_key(SDL_SCANCODE_CAPSLOCK); }
 
-    const char input::wheelRadix() { return mouseWheels; }
+    const char Input::wheel_radix() { return mouseWheels; }
 
-    const Vec2Int input::getMousePoint() { return m_mousePoint; }
+    const Vec2Int Input::get_mouse_point() { return m_mousePoint; }
 
-    const Vec2 input::getMousePointF() { return { static_cast<float>(m_mousePoint.x), static_cast<float>(m_mousePoint.y) }; }
+    const Vec2 Input::get_mouse_pointf() { return { static_cast<float>(m_mousePoint.x), static_cast<float>(m_mousePoint.y) }; }
 
-    const Vec2 input::get_axis() { return m_axis; }
+    const Vec2 Input::get_axis() { return m_axis; }
 
-    const bool input::get_key(SDL_Scancode code) { return static_cast<bool>(SDL_GetKeyboardState(nullptr)[code]); }
+    const bool Input::get_key(SDL_Scancode code) { return static_cast<bool>(SDL_GetKeyboardState(nullptr)[code]); }
 
-    const bool input::get_key_down(SDL_Scancode code) { return static_cast<bool>(SDL_GetKeyboardState(nullptr)[code]); }
+    const bool Input::get_key_down(SDL_Scancode code) { return static_cast<bool>(SDL_GetKeyboardState(nullptr)[code]); }
 
 } // namespace RoninEngine

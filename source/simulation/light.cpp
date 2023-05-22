@@ -15,7 +15,7 @@ namespace RoninEngine::Runtime
 
     Light::~Light() { }
 
-    void Light::GetLightSource(Rendering* render)
+    void Light::get_light_source(Rendering* render)
     {
         auto res = Application::get_resolution();
         Color c;
@@ -44,7 +44,7 @@ namespace RoninEngine::Runtime
         // SDL_RenderClear(render->renderer);
 
         // Get light
-        this->GetLight(render->renderer);
+        this->get_light(render->renderer);
 
         SDL_SetRenderTarget(render->renderer, lastTarget);
         SDL_RenderCopy(render->renderer, target, nullptr, nullptr); // copy

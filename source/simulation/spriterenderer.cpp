@@ -37,7 +37,7 @@ namespace RoninEngine::Runtime
 
     SpriteRenderer::~SpriteRenderer() { }
 
-    Vec2 SpriteRenderer::get_size() { return Vec2::Abs(this->size); }
+    Vec2 SpriteRenderer::get_size() { return Vec2::abs(this->size); }
 
     Vec2 SpriteRenderer::get_offset()
     {

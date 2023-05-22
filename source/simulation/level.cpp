@@ -3,7 +3,74 @@
 using namespace RoninEngine;
 using namespace RoninEngine::Runtime;
 
-// TODO: optimze MatrixSelection USE TRANSFORM::LAYER component for selection (as INDEX)
+// TODO: optimize MatrixSelection USE TRANSFORM::LAYER component for selection (as INDEX)
+
+namespace RoninEngine::Runtime
+{
+    bool unload_level(Level* level)
+    {
+        GameObject* target; // first;
+        if (level == nullptr) {
+            throw std::runtime_error("arg level is null");
+        }
+
+        if ((target = level->main_object) == nullptr)
+            return false;
+
+        std::list<GameObject*> stacks;
+
+        level->request_unload();
+
+        // unloading owner
+        level->on_unloading();
+
+        if (level->_firstRunScripts) {
+            RoninMemory::free(level->_firstRunScripts);
+            level->_firstRunScripts = nullptr;
+        }
+        if (level->_realtimeScripts) {
+            RoninMemory::free(level->_realtimeScripts);
+            level->_realtimeScripts = nullptr;
+        }
+        if (level->_destructTasks) {
+            RoninMemory::free(level->_destructTasks);
+            level->_destructTasks = nullptr;
+        }
+
+        // free GUI objects
+        if (level->ui) {
+            RoninMemory::free(level->ui);
+            level->ui = nullptr;
+        }
+
+        // free objects
+        while (target) {
+            for (Transform* e : *Level::get_hierarchy(target->transform())) {
+                stacks.emplace_front(e->game_object());
+            }
+
+            // destroy
+            if (target->exists())
+                destroy_immediate(target);
+
+            if (stacks.empty()) {
+                target = nullptr;
+            } else {
+                target = stacks.front();
+                stacks.pop_front();
+            }
+        }
+
+        level->main_object = nullptr;
+
+        if (!level->_objects.empty()) {
+            throw std::runtime_error("that's objects isn't release");
+            // this->_objects.clear();
+        }
+
+        return true;
+    }
+}
 
 Level* selfLevel;
 
@@ -19,59 +86,24 @@ Level::Level(const std::string& name)
     , _destroyed(0)
     , _level_ids_(0)
     , _destroy_delay_time(0)
-    , m_isUnload(false)
+    , request_unloading(false)
     , m_name(name)
 {
     if (selfLevel != nullptr) {
-        static_assert(true, "pCurrentScene replaced by new");
+        static_assert(true, "current level replaced by new");
     }
     selfLevel = this;
     RoninMemory::alloc_self(ui, this);
 }
 Level::~Level()
 {
-    GameObject* target = main_object; // first
-    Transform* tr;
-    std::list<GameObject*> stack;
+    // unloading
+    unload_level(this);
 
     if (selfLevel == this) {
-        static_assert(true, "pCurrentScene set to null");
+        static_assert(true, "current level set to null");
         selfLevel = nullptr;
     }
-
-    if (_firstRunScripts) {
-        RoninMemory::free(_firstRunScripts);
-        _firstRunScripts = nullptr;
-    }
-    if (_realtimeScripts) {
-        RoninMemory::free(_realtimeScripts);
-        _realtimeScripts = nullptr;
-    }
-    if (_destructTasks) {
-        RoninMemory::free(_destructTasks);
-        _destructTasks = nullptr;
-    }
-
-    /*
-        // free objects
-        while (target) {
-            tr = target->transform();
-            for (auto c : tr->hierarchy) {
-                stack.emplace_back(c->gameObject());
-            }
-
-            GC::gc_unload(target);
-
-            if (!stack.empty()) {
-                target = stack.front();
-                stack.pop_front();
-            } else
-                target = nullptr;
-        }
-    */
-    this->_objects.clear();
-
-    RoninMemory::free(ui);
 }
 
 // NOTE: Check game hierarchy
@@ -81,7 +113,7 @@ std::list<Transform*> Level::matrix_check_damaged()
 
     for (auto x = begin(selfLevel->matrixWorld); x != end(selfLevel->matrixWorld); ++x) {
         for (auto y = begin(x->second); y != end(x->second); ++y) {
-            if (Vec2::RoundToInt((*y)->position()) != x->first) {
+            if (Vec2::round_to_int((*y)->position()) != x->first) {
                 damaged.emplace_back(*y);
             }
         }
@@ -101,7 +133,7 @@ int Level::matrix_restore(const std::list<Runtime::Transform*>& damaged_content)
     int restored = 0;
 
     for (Runtime::Transform* dam : damaged_content) {
-        Vec2Int find = Vec2::RoundToInt(dam->p);
+        Vec2Int find = Vec2::round_to_int(dam->p);
         auto vertList = selfLevel->matrixWorld.find(find);
 
         if (vertList == std::end(selfLevel->matrixWorld))
@@ -138,7 +170,7 @@ void Level::get_render_info(int* culled, int* fullobjects)
     }
 }
 
-void Level::matrix_nature(Transform* target, Vec2Int lastPoint) { matrix_nature(target, Vec2::RoundToInt(target->position()), lastPoint); }
+void Level::matrix_nature(Transform* target, Vec2Int lastPoint) { matrix_nature(target, Vec2::round_to_int(target->position()), lastPoint); }
 
 // THIS is matrix get from world space
 void Level::matrix_nature(Runtime::Transform* target, const RoninEngine::Runtime::Vec2Int& newPoint, const RoninEngine::Runtime::Vec2Int& lastPoint)
@@ -163,7 +195,7 @@ void Level::matrix_nature(Runtime::Transform* target, const RoninEngine::Runtime
 
 void Level::matrix_nature_pickup(Runtime::Transform* target)
 {
-    auto iter = matrixWorld.find(Vec2::RoundToInt(target->position()));
+    auto iter = matrixWorld.find(Vec2::round_to_int(target->position()));
 
     if (std::end(matrixWorld) != iter) {
         iter->second.erase(target);
@@ -235,46 +267,55 @@ void Level::runtime_destructs()
     }
 }
 
-void Level::level_render_world(SDL_Renderer* renderer)
+void Level::level_render_world(SDL_Renderer* renderer, ScoreWatcher* watcher)
 {
     // set default color
-    Gizmos::setColor(Color::white);
+    Gizmos::set_color(Color::white);
+
+    if (watcher == nullptr)
+        throw std::runtime_error("arg watcher is null");
+
+    TimeEngine::begin_watch();
 
     if (_firstRunScripts) {
         if (!_realtimeScripts) {
             RoninMemory::alloc_self(_realtimeScripts);
         }
 
-        for (auto x : *_firstRunScripts) {
-            x->OnStart(); // go start (first draw)
-            this->_realtimeScripts->emplace_back(x);
+        for (Behaviour* exec : *_firstRunScripts) {
+            exec->OnStart(); // go start (first draw)
+            _realtimeScripts->emplace_back(exec);
         }
         RoninMemory::free(_firstRunScripts);
         _firstRunScripts = nullptr;
     }
 
     if (_realtimeScripts) {
-        for (auto n : *_realtimeScripts) {
-            n->OnUpdate();
+        for (Behaviour* exec : *_realtimeScripts) {
+            exec->OnUpdate();
         };
     }
+    watcher->ms_wait_exec_scripts = TimeEngine::end_watch();
+    // end watcher
 
+    TimeEngine::begin_watch();
     // Render on main camera
     Camera* cam = Camera::main_camera(); // Draw level from active camera (main)
     if (cam) {
         Resolution res = Application::get_resolution();
+
         // FlushCache last result
         if (cam->targetClear)
             cam->renders.clear();
-        // Рисуем в соотношение окна...
+
+        // draw world in world size
         cam->render(renderer, { 0, 0, res.width, res.height }, main_object);
     }
-    if (_realtimeScripts) {
-        for (auto n : *_realtimeScripts) {
-            n->OnGizmos();
-        };
-    }
+    watcher->ms_wait_render_collect = TimeEngine::end_watch();
+
+    TimeEngine::begin_watch();
     runtime_destructs();
+    watcher->ms_wait_destructions = TimeEngine::end_watch();
 }
 
 void Level::level_render_ui(SDL_Renderer* renderer)
@@ -285,6 +326,7 @@ void Level::level_render_ui(SDL_Renderer* renderer)
 
 void Level::level_render_world_late(SDL_Renderer* renderer)
 {
+    on_late_update();
     if (_realtimeScripts) {
         for (auto n : *_realtimeScripts) {
             n->OnLateUpdate();
@@ -295,9 +337,9 @@ bool Level::is_hierarchy() { return this->main_object != nullptr; }
 
 std::string& Level::name() { return this->m_name; }
 
-UI::GUI* Level::gui() { return this->ui; }
+UI::GUI* Level::get_gui() { return this->ui; }
 
-void Level::unload() { this->m_isUnload = true; }
+void Level::request_unload() { this->request_unloading = true; }
 
 int Level::get_destroyed_frames() { return _destroyed; }
 
@@ -355,16 +397,16 @@ const int Level::object_destruction_count()
     return x;
 }
 
-void Level::awake() { }
+void Level::on_awake() { }
 
-void Level::start() { }
+void Level::on_start() { }
 
-void Level::update() { }
+void Level::on_update() { }
 
-void Level::lateUpdate() { }
+void Level::on_late_update() { }
 
-void Level::onDrawGizmos() { }
+void Level::on_gizmo() { }
 
-void Level::onUnloading() { }
+void Level::on_unloading() { }
 
 Level* Level::self() { return selfLevel; }

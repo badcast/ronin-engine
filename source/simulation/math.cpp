@@ -53,7 +53,7 @@ float Math::atan(float x) { return ::atanf(x); }
 
 float Math::atan2(float y, float x) { return ::atan2f(y, x); }
 
-float Math::Clamp01(float val) { return Clamp(val, 0.f, 1.f); }
+float Math::clamp01(float val) { return clamp(val, 0.f, 1.f); }
 
 int Math::abs(int x) { return std::abs(x); }
 
@@ -91,9 +91,9 @@ float Math::pow(float x, float y) { return ::powf(x, y); }
 
 float Math::sqrt(float x) { return std::sqrt(x); }
 
-float Math::repeat(float t, float length) { return Clamp(t - floor(t / length) * length, 0.f, length); }
+float Math::repeat(float t, float length) { return clamp(t - floor(t / length) * length, 0.f, length); }
 
-float Math::DeltaAngle(float current, float target)
+float Math::delta_angle(float current, float target)
 {
     float num = repeat(target - current, 360);
     if (num > 180) {
@@ -102,7 +102,7 @@ float Math::DeltaAngle(float current, float target)
     return num;
 }
 
-float Math::Gamma(float value, float absmax, float gamma)
+float Math::gamma(float value, float absmax, float gamma)
 {
     bool flag = false;
     if (value < 0) {
@@ -119,31 +119,31 @@ float Math::Gamma(float value, float absmax, float gamma)
     return result;
 }
 
-float Math::InverseLerp(float a, float b, float value)
+float Math::inverse_lerp(float a, float b, float value)
 {
     float result;
     if (a != b) {
-        result = Clamp01((value - a) / (b - a));
+        result = clamp01((value - a) / (b - a));
     } else {
         result = 0;
     }
     return result;
 }
 
-float Math::Lerp(float a, float b, float t) { return a + (b - a) * Clamp01(t); }
+float Math::lerp(float a, float b, float t) { return a + (b - a) * clamp01(t); }
 
-float Math::LerpAngle(float a, float b, float t)
+float Math::lerp_angle(float a, float b, float t)
 {
     float num = repeat(b - a, 360);
     if (num > 180) {
         num -= 360;
     }
-    return a + num * Clamp01(t);
+    return a + num * clamp01(t);
 }
 
-float Math::LerpUnclamped(float a, float b, float t) { return a + (b - a) * t; }
+float Math::lerp_unclamped(float a, float b, float t) { return a + (b - a) * t; }
 
-bool Math::LineIntersection(Vec2 p1, Vec2 p2, Vec2 p3, Vec2 p4, Vec2& result)
+bool Math::line_intersection(Vec2 p1, Vec2 p2, Vec2 p3, Vec2 p4, Vec2& result)
 {
     float num = p2.x - p1.x;
     float num2 = p2.y - p1.y;
@@ -163,7 +163,7 @@ bool Math::LineIntersection(Vec2 p1, Vec2 p2, Vec2 p3, Vec2 p4, Vec2& result)
     return result2;
 }
 
-float Math::MoveTowards(float current, float target, float maxDelta)
+float Math::move_towards(float current, float target, float maxDelta)
 {
     float result;
     if (abs(target - current) <= maxDelta) {
@@ -174,7 +174,7 @@ float Math::MoveTowards(float current, float target, float maxDelta)
     return result;
 }
 
-bool Math::LineSegmentIntersection(Vec2 p1, Vec2 p2, Vec2 p3, Vec2 p4, Vec2& result)
+bool Math::line_segment_intersection(Vec2 p1, Vec2 p2, Vec2 p3, Vec2 p4, Vec2& result)
 {
     float num = p2.x - p1.x;
     float num2 = p2.y - p1.y;
@@ -203,15 +203,15 @@ bool Math::LineSegmentIntersection(Vec2 p1, Vec2 p2, Vec2 p3, Vec2 p4, Vec2& res
     return result2;
 }
 
-float Math::SmoothDamp(float current, float target, float& currentVelocity, float smoothTime, float maxSpeed) { return Math::SmoothDamp(current, target, currentVelocity, smoothTime, maxSpeed, TimeEngine::deltaTime()); }
+float Math::smooth_damp(float current, float target, float& currentVelocity, float smoothTime, float maxSpeed) { return Math::smooth_damp(current, target, currentVelocity, smoothTime, maxSpeed, TimeEngine::deltaTime()); }
 
-float Math::SmoothDamp(float current, float target, float& currentVelocity, float smoothTime)
+float Math::smooth_damp(float current, float target, float& currentVelocity, float smoothTime)
 {
-    float maxSpeed = Infinity;
-    return Math::SmoothDamp(current, target, currentVelocity, smoothTime, maxSpeed, TimeEngine::deltaTime());
+    float maxSpeed = infinity;
+    return Math::smooth_damp(current, target, currentVelocity, smoothTime, maxSpeed, TimeEngine::deltaTime());
 }
 
-float Math::SmoothDamp(float current, float target, float& currentVelocity, float smoothTime, float maxSpeed, float deltaTime)
+float Math::smooth_damp(float current, float target, float& currentVelocity, float smoothTime, float maxSpeed, float deltaTime)
 {
     smoothTime = max(0.f, max(1.f, smoothTime));
     float num = 2 / smoothTime;
@@ -220,7 +220,7 @@ float Math::SmoothDamp(float current, float target, float& currentVelocity, floa
     float num4 = current - target;
     float num5 = target;
     float num6 = maxSpeed * smoothTime;
-    num4 = Clamp(num4, -num6, num6);
+    num4 = clamp(num4, -num6, num6);
     target = current - num4;
     float num7 = (currentVelocity + num * num4) * deltaTime;
     currentVelocity = (currentVelocity - num * num7) * num3;
@@ -236,23 +236,50 @@ float Math::cel2far(float celsius) { return celsius * 1.8f + 32; }
 
 float Math::far2cel(float fahrenheit) { return (fahrenheit - 32) * periodic_fahren; }
 
-float Math::SmoothDampAngle(float current, float target, float& currentVelocity, float smoothTime, float maxSpeed) { return SmoothDampAngle(current, target, currentVelocity, smoothTime, maxSpeed, TimeEngine::deltaTime()); }
+float Math::smooth_damp_angle(float current, float target, float& currentVelocity, float smoothTime, float maxSpeed) { return smooth_damp_angle(current, target, currentVelocity, smoothTime, maxSpeed, TimeEngine::deltaTime()); }
 
-float Math::SmoothDampAngle(float current, float target, float& currentVelocity, float smoothTime)
+float Math::smooth_damp_angle(float current, float target, float& currentVelocity, float smoothTime)
 {
-    float maxSpeed = Infinity;
-    return SmoothDampAngle(current, target, currentVelocity, smoothTime, maxSpeed, TimeEngine::deltaTime());
+    float maxSpeed = infinity;
+    return smooth_damp_angle(current, target, currentVelocity, smoothTime, maxSpeed, TimeEngine::deltaTime());
 }
 
-float Math::SmoothDampAngle(float current, float target, float& currentVelocity, float smoothTime, float maxSpeed, float deltaTime)
+float Math::smooth_damp_angle(float current, float target, float& currentVelocity, float smoothTime, float maxSpeed, float deltaTime)
 {
-    target = current + DeltaAngle(current, target);
-    return SmoothDamp(current, target, currentVelocity, smoothTime, maxSpeed, deltaTime);
+    target = current + delta_angle(current, target);
+    return smooth_damp(current, target, currentVelocity, smoothTime, maxSpeed, deltaTime);
 }
 
-float Math::SmoothStep(float from, float to, float t)
+float Math::smooth_step(float from, float to, float t)
 {
-    t = Clamp01(t);
+    t = clamp01(t);
     t = -2 * t * t * t + 3 * t * t;
     return to * t + from * (1 - t);
+}
+
+uint64_t Math::num_lastof(uint64_t number, int level)
+{
+    std::uint64_t x = std::pow(10, level);
+    auto d = std::ldiv(number, x);
+    if (number < x / 10)
+        d.rem = 0;
+    return d.rem;
+}
+
+std::string Math::num_beautify(std::uint64_t num, char seperate, int digits)
+{
+    constexpr int radix = 10;
+    int level = 1;
+    std::string result {};
+    std::div_t dv;
+
+    while ((num = (dv = std::div(num, radix)).quot)) {
+        result.insert(0, std::to_string(dv.rem));
+
+        if (level % digits == 0)
+            result.insert(0, 1, seperate);
+        ++level;
+    }
+    result.insert(0, std::to_string(dv.rem));
+    return result;
 }

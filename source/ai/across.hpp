@@ -17,6 +17,7 @@
 
 namespace across
 {
+
     enum class NavStatus { Undefined, Locked, Closed, Opened };
 
     enum class NavMethodRule { NavigationIntelegency, PlusMethod, SquareMethod, CrossMethod };

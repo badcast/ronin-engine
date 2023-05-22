@@ -11,9 +11,13 @@ namespace RoninEngine::UI
     extern bool general_render_ui_section(GUI* gui, UIElement& element, SDL_Renderer* render, const bool hovering, bool& focus);
     extern void event_action(UIElement* element);
 
-    uid call_register_ui(GUI* gui, uid parent = NOPARENT) throw()
+    extern void ui_controls_init();
+    extern void ui_free_controls();
+    extern void ui_reset_controls();
+
+    uid call_register_ui(GUI* gui, uid parent = NOPARENT)
     {
-        if (parent && !gui->has_ui(parent))
+        if (!gui->has_ui(parent))
             throw std::runtime_error("Is not end parent");
 
         UIElement data {};
@@ -335,7 +339,7 @@ namespace RoninEngine::UI
         bool uiHover;
         bool uiContex;
 
-        ms = input::getMousePoint();
+        ms = Input::get_mouse_point();
         _focusedUI = false;
 
         for (auto iter = begin(ui_layer.layers); iter != end(ui_layer.layers); ++iter)
@@ -353,7 +357,7 @@ namespace RoninEngine::UI
                 uiFocus = id == ui_layer.focusedID;
 
                 // unfocus on click an not hovered
-                if (uiFocus && (!uiHover || !uiContex) && input::isMouseUp()) {
+                if (uiFocus && (!uiHover || !uiContex) && Input::is_mouse_up()) {
                     uiFocus = false;
                     ui_layer.focusedID = 0;
                 }
@@ -383,7 +387,7 @@ namespace RoninEngine::UI
                     _focusedUI = uiFocus;
             }
 
-            if (this->m_level->m_isUnload)
+            if (this->m_level->request_unloading)
                 break;
 
             for (auto iter = begin(uielement->childs); iter != end(uielement->childs); ++iter)

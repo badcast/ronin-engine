@@ -14,7 +14,7 @@ namespace RoninEngine::Runtime {
          Atlas(const Atlas&) = default;
          ~Atlas() = default;
 
-         Sprite* Get_Sprite(const std::string& spriteName);
+         Sprite* get_sprite(const std::string& spriteName);
    };
 
 }  // namespace RoninEngine::Runtime

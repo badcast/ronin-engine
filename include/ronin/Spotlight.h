@@ -14,6 +14,6 @@ class RONIN_API Spotlight final : public Light {
     ~Spotlight();
 
    protected:
-    virtual void GetLight(SDL_Renderer* renderer);
+    virtual void get_light(SDL_Renderer* renderer);
 };
 }  // namespace RoninEngine::Runtime

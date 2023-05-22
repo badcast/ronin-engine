@@ -9,7 +9,6 @@
 
 #include "basic_ronin.h"
 
-#include "ronin_memory.h"
 #include "just-parser.h"
 
 // applications

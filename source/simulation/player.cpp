@@ -29,12 +29,12 @@ namespace RoninEngine::Runtime
     void Player::OnUpdate()
     {
 
-        float curSpeed = input::get_key(SDL_SCANCODE_LSHIFT) ? (speed * 2) : speed;
+        float curSpeed = Input::get_key(SDL_SCANCODE_LSHIFT) ? (speed * 2) : speed;
 
         if (playerCamera) {
             auto cameraPoint = playerCamera->transform()->position();
             auto point = cameraPoint;
-            Vec2 axis = input::get_axis();
+            Vec2 axis = Input::get_axis();
 
             if (axis != Vec2::zero && axis.x != axis.y) {
                 if (axis.x - movementDir.x != 0 && axis.y - movementDir.y != 0)
@@ -45,7 +45,7 @@ namespace RoninEngine::Runtime
                 return;
             movementDir = axis;
             // transform()->LookAtLerp(point + movementDir, .5f);
-            transform()->position(Vec2::MoveTowards(point, point + movementDir, curSpeed));
+            transform()->position(Vec2::move_towards(point, point + movementDir, curSpeed));
         }
     }
 

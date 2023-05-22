@@ -7,14 +7,16 @@ namespace RoninEngine::Runtime
     class RONIN_API TimeEngine
     {
     public:
-        RONIN_API static float time();
-        RONIN_API static float startUpTime();
-        RONIN_API static float deltaTime();
-        RONIN_API static bool is_paused();
-        RONIN_API static bool is_playing();
-        RONIN_API static float get_time_scale();
-        RONIN_API static void set_time_scale(float scale);
-        RONIN_API static std::uint32_t frame();
-        RONIN_API static std::uint32_t tickMillis();
+        static float time();
+        static float startUpTime();
+        static float deltaTime();
+        static bool is_paused();
+        static bool is_playing();
+        static float get_time_scale();
+        static void set_time_scale(float scale);
+        static std::uint32_t frame();
+        static std::uint32_t tick_millis();
+        static void begin_watch();
+        static std::uint32_t end_watch();
     };
 } // namespace RoninEngine

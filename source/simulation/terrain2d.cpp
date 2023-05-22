@@ -26,9 +26,9 @@ namespace RoninEngine::Runtime
 
     AIPathFinder::NavMesh* Terrain2D::surfaceMesh() { return this->navigation; }
 
-    void Terrain2D::load(const TerrainData& terrainData) { }
+    void Terrain2D::load_from(const TerrainData& terrainData) { }
 
-    const bool Terrain2D::isCollider(const Vec2 destination)
+    const bool Terrain2D::is_collider(const Vec2 destination)
     {
         auto n = this->navigation->GetNeuron(destination);
         return n && navigation->neuronLocked(navigation->neuronGetPoint(n));

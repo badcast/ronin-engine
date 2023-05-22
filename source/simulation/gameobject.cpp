@@ -1,5 +1,4 @@
 #include "ronin.h"
-#include "ronin_memory.h"
 
 using namespace RoninEngine;
 using namespace RoninEngine::Runtime;
@@ -61,15 +60,6 @@ namespace RoninEngine::Runtime
     {
         // NOTE: transform всегда первый объект из контейнера m_components
         return static_cast<Transform*>(m_components.front());
-    }
-
-    template <typename T>
-    std::enable_if_t<std::is_base_of<Component, T>::value, T*> GameObject::add_component()
-    {
-        // init component
-        T* comp = RoninMemory::alloc<T>();
-        this->add_component(static_cast<Component*>(comp));
-        return comp;
     }
 
     template <typename T>

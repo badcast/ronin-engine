@@ -1,4 +1,4 @@
-#include "ronin_memory.h"
+#include "ronin.h"
 
 namespace RoninEngine::Runtime
 {
@@ -23,8 +23,8 @@ namespace RoninEngine::Runtime
         void ronin_memory_free(void* memory)
         {
             std::free(memory);
-            if (--__ronin_allocated < 0)
-                Application::fail_oom_kill();
+            if (__ronin_allocated-- == 0)
+                Application::fail("invalid ronin_memory_free()");
         }
 
         std::uint64_t total_allocated() { return __ronin_allocated; }

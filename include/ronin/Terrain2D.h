@@ -37,9 +37,9 @@ namespace RoninEngine::Runtime
 
         RoninEngine::AIPathFinder::NavMesh* surfaceMesh();
 
-        void load(const TerrainData& terrainData);
+        void load_from(const TerrainData& terrainData);
 
-        const bool isCollider(const Vec2 destination);
+        const bool is_collider(const Vec2 destination);
 
         Vec2 get_size() override;
         Vec2 get_offset() override;

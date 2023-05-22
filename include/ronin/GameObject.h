@@ -69,16 +69,16 @@ namespace RoninEngine
 
             Transform* transform();
 
-            Component* add_component(Component* component);
-
             template <typename T>
             std::enable_if_t<std::is_base_of<Component, T>::value, T*> add_component();
 
-            SpriteRenderer* spriteRenderer() { return get_component<SpriteRenderer>(); }
+            Component* add_component(Component* component);
 
-            Camera2D* camera2D() { return get_component<Camera2D>(); }
+            SpriteRenderer* get_sprite_renderer() { return get_component<SpriteRenderer>(); }
 
-            Terrain2D* terrain2D() { return get_component<Terrain2D>(); }
+            Camera2D* get_camera2D() { return get_component<Camera2D>(); }
+
+            Terrain2D* get_terrain2D() { return get_component<Terrain2D>(); }
 
             template <typename T>
             T* get_component();
@@ -86,6 +86,15 @@ namespace RoninEngine
             template <typename T>
             std::list<T*> get_components();
         };
+
+        template <typename T>
+        std::enable_if_t<std::is_base_of<Component, T>::value, T*> GameObject::add_component()
+        {
+            // init component
+            T* component = RoninMemory::alloc<T>();
+            this->add_component(static_cast<Component*>(component));
+            return component;
+        }
 
         template <typename T>
         // std::enable_if<!std::is_same<RoninEngine::Runtime::Transform,T>::value, std::list<T*>>

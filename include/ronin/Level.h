@@ -20,9 +20,11 @@ namespace RoninEngine::Runtime
         friend void destroy(Object* obj, float t);
         friend void destroy_immediate(Object* obj);
 
+        friend bool unload_level(Level* level);
+
     private:
         std::uint32_t _level_ids_;
-        bool m_isUnload;
+        bool request_unloading;
         int _destroyed;
         float _destroy_delay_time;
         std::string m_name;
@@ -40,25 +42,25 @@ namespace RoninEngine::Runtime
         void push_light_object(Light* light);
         void push_object(Object* obj);
 
-        std::list<Transform*>* get_hierarchy(Transform* parent);
+        static std::list<Transform*>* get_hierarchy(Transform* parent);
 
     protected:
         UI::GUI* ui;
         virtual void runtime_destructs();
 
-        virtual void level_render_world(SDL_Renderer* renderer);
+        virtual void level_render_world(SDL_Renderer* renderer, RoninEngine::ScoreWatcher* watcher);
         virtual void level_render_ui(SDL_Renderer* renderer);
         virtual void level_render_world_late(SDL_Renderer* renderer);
         void matrix_nature(Transform* target, Vec2Int lastPoint);
         void matrix_nature(Transform* target, const Vec2Int& newPoint, const Vec2Int& lastPoint);
         void matrix_nature_pickup(Transform* target);
 
-        virtual void awake();
-        virtual void start();
-        virtual void update();
-        virtual void lateUpdate();
-        virtual void onDrawGizmos();
-        virtual void onUnloading();
+        virtual void on_awake();
+        virtual void on_start();
+        virtual void on_update();
+        virtual void on_late_update();
+        virtual void on_gizmo();
+        virtual void on_unloading();
 
     public:
         // Main or Root object
@@ -71,10 +73,11 @@ namespace RoninEngine::Runtime
 
         std::string& name();
 
+        UI::GUI* get_gui();
+
         bool is_hierarchy();
 
-        UI::GUI* gui();
-        void unload();
+        void request_unload();
 
         int get_destroyed_frames();
 

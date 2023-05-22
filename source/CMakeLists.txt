@@ -4,6 +4,7 @@ function(find_packages)
     find_package(SDL2_image REQUIRED)
     find_package(SDL2_mixer REQUIRED)
     find_package(SDL2_ttf REQUIRED)
+
   elseif(WIN32)
     # set(CMAKE_GNUtoMS ON)
 
@@ -23,6 +24,9 @@ function(find_packages)
     find_package(SDL2_mixer REQUIRED)
     find_package(SDL2_ttf REQUIRED)
   endif()
+
+  find_package(OpenMP REQUIRED)
+
 endfunction()
 
 set(RGE_LIBS "")

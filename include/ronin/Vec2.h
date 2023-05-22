@@ -80,61 +80,61 @@ namespace RoninEngine
             ~Vec2() = default;
 
             float magnitude() const;
-            float sqrMagnitude() const;
+            float sqr_magnitude() const;
             Vec2 normalized();
-            void Normalize();
+            void normalize();
 
-            RONIN_API static const Vec2 one;
-            RONIN_API static const Vec2 half;
-            RONIN_API static const Vec2 minusOne;
-            RONIN_API static const Vec2 zero;
-            RONIN_API static const Vec2 down;
-            RONIN_API static const Vec2 left;
-            RONIN_API static const Vec2 right;
-            RONIN_API static const Vec2 up;
-            RONIN_API static const Vec2 infinity;
-            RONIN_API static const Vec2 negativeInfinity;
+            static const Vec2 one;
+            static const Vec2 half;
+            static const Vec2 minusOne;
+            static const Vec2 zero;
+            static const Vec2 down;
+            static const Vec2 left;
+            static const Vec2 right;
+            static const Vec2 up;
+            static const Vec2 infinity;
+            static const Vec2 negativeInfinity;
 
-            RONIN_API static const Vec2 Abs(const Vec2& value);
-            RONIN_API static const Vec2 NAbs(const Vec2& value);
-            RONIN_API static Vec2 Slerp(const Vec2& a, const Vec2& b, float t);
-            RONIN_API static Vec2 SlerpUnclamped(const Vec2& a, const Vec2& b, float t);
-            RONIN_API static Vec2 Lerp(const Vec2& a, const Vec2& b, float t);
-            RONIN_API static Vec2 LerpUnclamped(const Vec2& a, const Vec2& b, float t);
-            RONIN_API static Vec2 Max(const Vec2& lhs, const Vec2& rhs);
-            RONIN_API static Vec2 Min(const Vec2& lhs, const Vec2& rhs);
-            RONIN_API static Vec2 MoveTowards(const Vec2& current, const Vec2& target, float maxDistanceDelta);
-            RONIN_API static Vec2 Reflect(const Vec2& inDirection, const Vec2& inNormal);
-            RONIN_API static Vec2 Scale(const Vec2& a, const Vec2& b);
-            RONIN_API static float Distance(const Vec2& lhs, const Vec2& rhs);
-            RONIN_API static float DistanceSqr(const Vec2& lhs, const Vec2& rhs);
-            RONIN_API static float Angle(Vec2 from, Vec2 to);
-            RONIN_API static float SignedAngle(Vec2 from, Vec2 to);
-            RONIN_API static Vec2 ClampMagnitude(Vec2 vector, float maxLength);
-            RONIN_API static Vec2 SmoothDamp(Vec2 current, Vec2 target, Vec2& currentVelocity, float smoothTime, float maxSpeed, float deltaTime);
-            RONIN_API static float Dot(const Vec2& lhs, const Vec2& rhs);
-            RONIN_API static float SqrMagnitude(const Vec2& lhs);
-            RONIN_API static Vec2 Round(Vec2 lhs);
-            RONIN_API static Runtime::Vec2Int RoundToInt(const Vec2& lhs);
+            static const Vec2 abs(const Vec2& value);
+            static const Vec2 nabs(const Vec2& value);
+            static Vec2 slerp(const Vec2& a, const Vec2& b, float t);
+            static Vec2 slerp_unclamped(const Vec2& a, const Vec2& b, float t);
+            static Vec2 lerp(const Vec2& a, const Vec2& b, float t);
+            static Vec2 lerp_unclamped(const Vec2& a, const Vec2& b, float t);
+            static Vec2 max(const Vec2& lhs, const Vec2& rhs);
+            static Vec2 min(const Vec2& lhs, const Vec2& rhs);
+            static Vec2 move_towards(const Vec2& current, const Vec2& target, float maxDistanceDelta);
+            static Vec2 reflect(const Vec2& inDirection, const Vec2& inNormal);
+            static Vec2 scale(const Vec2& a, const Vec2& b);
+            static float distance(const Vec2& lhs, const Vec2& rhs);
+            static float distance_sqr(const Vec2& lhs, const Vec2& rhs);
+            static float angle(Vec2 from, Vec2 to);
+            static float signed_angle(Vec2 from, Vec2 to);
+            static Vec2 clamp_magnitude(Vec2 vector, float maxLength);
+            static Vec2 smooth_damp(Vec2 current, Vec2 target, Vec2& currentVelocity, float smoothTime, float maxSpeed, float deltaTime);
+            static float dot(const Vec2& lhs, const Vec2& rhs);
+            static float sqr_magnitude(const Vec2& lhs);
+            static Vec2 round(Vec2 lhs);
+            static Vec2Int round_to_int(const Vec2& lhs);
             //	static bool AreaEnclosePoints(const Rectf_t* points, int count, const
             // Rectf_t* clip, Rectf_t* result);
-            RONIN_API static bool AreaPointInRect(const Vec2& p, const Rectf_t& r);
-            RONIN_API static bool HasIntersection(const Rectf_t& lhs, const Rectf_t& rhs);
-            RONIN_API static bool InArea(const Vec2& p, const Rectf_t& r);
-            RONIN_API static const Vec2 Rotate(Vec2 vec, Vec2 normal, float angleRadian);
-            RONIN_API static const Vec2 Rotate(Vec2 position, float angleRadian);
-            RONIN_API static const Vec2 RotateClockwise(Vec2 position, float angleRadian);
-            RONIN_API static const Vec2 RotateAround(Vec2 center, Vec2 localPosition, float angleRadian);
+            static bool area_point_in_rect(const Vec2& p, const Rectf_t& r);
+            static bool has_intersection(const Rectf_t& lhs, const Rectf_t& rhs);
+            static bool in_area(const Vec2& p, const Rectf_t& r);
+            static const Vec2 rotate(Vec2 vec, Vec2 normal, float angleRadian);
+            static const Vec2 rotate(Vec2 position, float angleRadian);
+            static const Vec2 rotate_clockwise(Vec2 position, float angleRadian);
+            static const Vec2 rotate_around(Vec2 center, Vec2 localPosition, float angleRadian);
 
-            RONIN_API static const Vec2 Perpendicular(Vec2 inDirection);
+            static const Vec2 perpendicular(Vec2 inDirection);
 
-            RONIN_API Vec2& operator+=(const Vec2& rhs);
-            RONIN_API Vec2& operator-=(const Vec2& rhs);
-            RONIN_API Vec2& operator*=(const float& d);
-            RONIN_API Vec2& operator/=(const float& d);
-            RONIN_API Vec2& operator=(const Vec2& rhs);
+            Vec2& operator+=(const Vec2& rhs);
+            Vec2& operator-=(const Vec2& rhs);
+            Vec2& operator*=(const float& d);
+            Vec2& operator/=(const float& d);
+            Vec2& operator=(const Vec2& rhs);
 
-            RONIN_API Vec2 operator-() const;
+            Vec2 operator-() const;
         };
 
         // NOTE: Я не считаю это лучшим способом инициализировать переменные статических членов.
@@ -187,6 +187,7 @@ namespace RoninEngine
 namespace std
 {
     // this for Hashtable function
+
     template <>
     struct hash<RoninEngine::Runtime::Vec2> {
         std::size_t operator()(const RoninEngine::Runtime::Vec2& val) const noexcept

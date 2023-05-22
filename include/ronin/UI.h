@@ -41,7 +41,7 @@ namespace RoninEngine
 
             /// Register ui element and get unique ID
             CI std::list<uid> get_groups();
-            CI friend uid call_register_ui(GUI* gui, uid parent) throw();
+            CI friend uid call_register_ui(GUI* gui, uid parent);
             CI friend UIElement& call_get_element(GUI* gui, uid id);
             CI UIElement& getElement(uid id);
             CI bool has_action(void* outPos);

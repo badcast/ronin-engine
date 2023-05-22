@@ -1,4 +1,5 @@
 #include "ronin.h"
+#include "omp.h"
 
 // TODO: how to create shadow ? for all sprite renderer component
 using namespace RoninEngine;
@@ -34,18 +35,15 @@ namespace RoninEngine::Runtime
         Rendering wrapper;
         Vec2* point;
         Vec2 sourcePoint;
-        // Vec2 _scale;
-
-        Color prevColor = Gizmos::getColor();
-
-        Gizmos::setColor(0xffc4c4c4);
-
+        Color prevColor = Gizmos::get_color();
+        SDL_mutex* m = SDL_CreateMutex();
+        Gizmos::set_color(0xffc4c4c4);
         if (visibleGrids) {
-            Gizmos::Draw2DWorldSpace(Vec2::zero);
-            Gizmos::DrawPosition(transform()->position(), maxWorldScalar);
+            Gizmos::draw_2D_world_space(Vec2::zero);
+            Gizmos::draw_position(transform()->position(), maxWorldScalar);
         }
         // get from matrix selection
-        auto filter = matrix_select();
+        std::tuple<std::map<int, std::set<Renderer*>>*, std::set<Light*>*> filter = matrix_select();
 
         // scale.x = Mathf::Min(Mathf::Max(scale.x, -10.f), 10.f);
         // scale.y = Mathf::Min(Mathf::Max(scale.y, -10.f), 10.f);
@@ -53,14 +51,21 @@ namespace RoninEngine::Runtime
         SDL_RenderSetScale(renderer, scale.x, scale.y);
 
         // Render Objects
-        for (const auto& layer : *(std::get<0>(filter)))
-            for (auto renderSource : layer.second) {
-                // drawing
-                // clear
-                wrapper = {};
+        for (auto& layer : *(std::get<0>(filter))) {
+            std::vector<Renderer*> robject;
+            robject.reserve(layer.second.size());
+            for (auto ib = layer.second.begin(); ib != layer.second.end(); ++ib) {
+                robject.emplace_back(*ib);
+            }
+            int size = robject.size();
+#pragma omp parallel for private(sourcePoint) private(wrapper) private(point)
+            for (std::size_t pointer = 0; pointer < size; ++pointer) {
+                Renderer* renderSource = robject[pointer];
+                memset(&wrapper, 0, sizeof(wrapper));
                 wrapper.renderer = renderer;
-
+                SDL_LockMutex(m);
                 renderSource->render(&wrapper); // draw
+                SDL_UnlockMutex(m);
                 if (wrapper.texture) {
                     // FIXME: point (transform()->position) ? wtf?
                     Vec2 point = transform()->p;
@@ -68,7 +73,7 @@ namespace RoninEngine::Runtime
 
                     if (rTrans->m_parent && renderSource->transform()->m_parent != Level::self()->main_object->transform()) {
                         Vec2 direction = rTrans->p;
-                        sourcePoint = Vec2::RotateAround(rTrans->m_parent->position(), direction, rTrans->angle() * Math::Deg2Rad);
+                        sourcePoint = Vec2::rotate_around(rTrans->m_parent->position(), direction, rTrans->angle() * Math::deg2rad);
                         //                rTrans->localPosition(
                         //                    Vec2::Max(direction, Vec2::RotateAround(Vec2::zero, direction, rTrans->angle() *
                         //                    Mathf::Deg2Rad)));
@@ -82,7 +87,7 @@ namespace RoninEngine::Runtime
 
                     Vec2 arranged(wrapper.dst.x, wrapper.dst.y);
                     if (arranged != Vec2::zero)
-                        arranged = Vec2::RotateAround(sourcePoint, arranged, renderSource->transform()->angle() * Math::Deg2Rad);
+                        arranged = Vec2::rotate_around(sourcePoint, arranged, renderSource->transform()->angle() * Math::deg2rad);
 
                     sourcePoint += renderSource->get_offset();
 
@@ -93,12 +98,15 @@ namespace RoninEngine::Runtime
                     // Положение по вертикале
                     wrapper.dst.y = arranged.y + ((rect.h - wrapper.dst.h) / 2.0f + (point.y - sourcePoint.y) * pixelsPerPoint);
 
+                    SDL_LockMutex(m);
                     // native renderer component
                     SDL_RenderCopyExF(renderer, wrapper.texture, (SDL_Rect*)&wrapper.src, reinterpret_cast<SDL_FRect*>(&wrapper.dst), renderSource->transform()->angle(), nullptr, SDL_RendererFlip::SDL_FLIP_NONE);
-
                     SDL_DestroyTexture(wrapper.texture);
+                    SDL_UnlockMutex(m);
                 }
             }
+        }
+        SDL_DestroyMutex(m);
         // Render Lights
         for (auto lightSource : *std::get<1>(filter)) {
             // drawing
@@ -106,7 +114,7 @@ namespace RoninEngine::Runtime
             memset(&wrapper, 0, sizeof wrapper);
             wrapper.renderer = renderer;
 
-            lightSource->GetLightSource(&wrapper); // draw
+            lightSource->get_light_source(&wrapper); // draw
 
             if (wrapper.texture) {
                 point = &transform()->p;
@@ -142,15 +150,15 @@ namespace RoninEngine::Runtime
             SDL_RenderDrawPointF(renderer, wrapper.dst.x, wrapper.dst.y + offset);
 
             // borders
-            Gizmos::DrawLine(Vec2(rect.x + offset, rect.y + offset), Vec2(rect.x + offset + height, rect.y + offset));
-            Gizmos::DrawLine(Vec2(rect.w - offset, rect.y + offset), Vec2(rect.w - offset - height, rect.y + offset));
-            Gizmos::DrawLine(Vec2(rect.x + offset, rect.h - offset), Vec2(rect.x + offset + height, rect.h - offset));
-            Gizmos::DrawLine(Vec2(rect.w - offset, rect.h - offset), Vec2(rect.w - offset - height, rect.h - offset));
+            Gizmos::draw_line(Vec2(rect.x + offset, rect.y + offset), Vec2(rect.x + offset + height, rect.y + offset));
+            Gizmos::draw_line(Vec2(rect.w - offset, rect.y + offset), Vec2(rect.w - offset - height, rect.y + offset));
+            Gizmos::draw_line(Vec2(rect.x + offset, rect.h - offset), Vec2(rect.x + offset + height, rect.h - offset));
+            Gizmos::draw_line(Vec2(rect.w - offset, rect.h - offset), Vec2(rect.w - offset - height, rect.h - offset));
 
-            Gizmos::DrawLine(Vec2(rect.x + offset, rect.y + 1 + offset), Vec2(rect.x + offset, rect.y + offset + height));
-            Gizmos::DrawLine(Vec2(rect.w - offset, rect.y + 1 + offset), Vec2(rect.w - offset, rect.y + offset + height));
-            Gizmos::DrawLine(Vec2(rect.x + offset, rect.h - 1 - offset), Vec2(rect.x + offset, rect.h - offset - height));
-            Gizmos::DrawLine(Vec2(rect.w - offset, rect.h - 1 - offset), Vec2(rect.w - offset, rect.h - offset - height));
+            Gizmos::draw_line(Vec2(rect.x + offset, rect.y + 1 + offset), Vec2(rect.x + offset, rect.y + offset + height));
+            Gizmos::draw_line(Vec2(rect.w - offset, rect.y + 1 + offset), Vec2(rect.w - offset, rect.y + offset + height));
+            Gizmos::draw_line(Vec2(rect.x + offset, rect.h - 1 - offset), Vec2(rect.x + offset, rect.h - offset - height));
+            Gizmos::draw_line(Vec2(rect.w - offset, rect.h - 1 - offset), Vec2(rect.w - offset, rect.h - offset - height));
         }
 
         if (visibleObjects || visibleNames) {
@@ -160,19 +168,19 @@ namespace RoninEngine::Runtime
                     Vec2 p = face->transform()->position() + face->get_offset();
                     if (visibleObjects) {
                         Rect factSz = face->get_relative_size();
-                        Vec2 sz = Vec2::Scale(face->get_size(), Vec2(factSz.getWH()) / pixelsPerPoint);
-                        Gizmos::setColor(Color::blue);
-                        Gizmos::DrawRectangleRounded(p, sz.x, sz.y, 10);
-                        Gizmos::setColor(Color::black);
-                        Gizmos::DrawPosition(p, 0.2f);
+                        Vec2 sz = Vec2::scale(face->get_size(), Vec2(factSz.getWH()) / pixelsPerPoint);
+                        Gizmos::set_color(Color::blue);
+                        Gizmos::draw_rectangle_rounded(p, sz.x, sz.y, 10);
+                        Gizmos::set_color(Color::black);
+                        Gizmos::draw_position(p, 0.2f);
                     }
                     if (visibleNames) {
-                        Gizmos::setColor(Color::white);
-                        Gizmos::DrawTextOnPosition(p, face->game_object()->m_name);
+                        Gizmos::set_color(Color::white);
+                        Gizmos::draw_text(p, face->game_object()->m_name);
                     }
                 }
         }
 
-        Gizmos::setColor(prevColor);
+        Gizmos::set_color(prevColor);
     }
 } // namespace RoninEngine::Runtime

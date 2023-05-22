@@ -2,7 +2,7 @@
 
 namespace RoninEngine::Runtime
 {
-    Sprite* Atlas::Get_Sprite(const std::string& spriteName)
+    Sprite* Atlas::get_sprite(const std::string& spriteName)
     {
         auto iter = _sprites.find(spriteName);
         if (iter == end(_sprites))

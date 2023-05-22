@@ -3,12 +3,17 @@
 
 namespace RoninEngine::Runtime
 {
-    std::uint32_t const_storm_dimensions = 0xFFFFFF;
-    std::uint32_t const_storm_steps_flag = std::numeric_limits<std::uint32_t>::max();
-    std::uint32_t const_storm_xDeterminant = 0xF000000;
-    std::uint32_t const_storm_yDeterminant = 0xF0000000;
-    std::uint32_t const_storm_yDeterminant_start = 0x20000000;
-    std::uint32_t const_storm_yDeterminant_inverse = 0x30000000;
+    std::uint32_t const_storm_dimensions = 0xFFFFFF
+        /* =  = */,
+                  const_storm_steps_flag = std::numeric_limits<std::uint32_t>::max()
+        /* =  = */,
+                  const_storm_xDeterminant = 0xF000000
+        /* =  = */,
+                  const_storm_yDeterminant = 0xF0000000
+        /* =  = */,
+                  const_storm_yDeterminant_start = 0x20000000
+        /* =  = */,
+                  const_storm_yDeterminant_inverse = 0x30000000;
 
     std::list<Transform*> Physics2D::storm_cast(const Vec2& origin, int edges, int layer)
     {
@@ -51,8 +56,8 @@ namespace RoninEngine::Runtime
                 std::sprintf(msg_info, "origin=(x)%f (y)%f edges=%d layer=%d", origin.x, origin.y, edges, layer);
                 Application::show_message(msg_info);
         */
-        auto& mx = Level::self()->matrixWorld;
-        Vec2Int ray = Vec2::RoundToInt(origin);
+        std::unordered_map<Vec2Int, std::set<Transform*>>& mx = Level::self()->matrixWorld;
+        Vec2Int ray = Vec2::round_to_int(origin);
         std::uint64_t stormMember = 0;
         std::uint64_t stormFlags = 1;
         std::list<Transform*> grubbed;
@@ -125,13 +130,13 @@ namespace RoninEngine::Runtime
         return grubbed;
     }
 
-    std::list<Transform*> Physics2D::rectCast(Vec2 origin, float distance)
+    std::list<Transform*> Physics2D::rect_cast(Vec2 origin, float distance, int layer)
     {
         auto& mx = Level::self()->matrixWorld;
         std::list<Transform*> _cont;
 
         Vec2Int env;
-        Vec2Int originRounded = Vec2::RoundToInt(origin);
+        Vec2Int originRounded = Vec2::round_to_int(origin);
         float distanceRounded = Math::ceil(distance);
         for (env.x = originRounded.x - distanceRounded; env.x <= originRounded.x + distanceRounded; ++env.x) {
             for (env.y = originRounded.y - distanceRounded; env.y <= originRounded.y + distanceRounded; ++env.y) {
@@ -139,7 +144,7 @@ namespace RoninEngine::Runtime
                 if (findedIter != std::end(mx)) {
                     // filtering by distance
                     for (auto lhs : findedIter->second) {
-                        if (Vec2::Distance(lhs->p, origin) <= distance)
+                        if (Vec2::distance(lhs->p, origin) <= distance)
                             _cont.emplace_back(lhs);
                     }
                 }
@@ -149,11 +154,11 @@ namespace RoninEngine::Runtime
         return _cont;
     }
 
-    std::list<Transform*> Physics2D::sphereCast(Vec2 origin, float distance, int layer)
+    std::list<Transform*> Physics2D::sphere_cast(Vec2 origin, float distance, int layer)
     {
         std::list<Transform*> _cont = storm_cast(origin, Math::number(Math::ceil(distance)), layer);
 
-        _cont.remove_if([&](Transform* lhs) { return Vec2::Distance(lhs->p, origin) > distance; });
+        _cont.remove_if([&](Transform* lhs) { return Vec2::distance(lhs->p, origin) > distance; });
 
         return _cont;
     }
