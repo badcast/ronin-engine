@@ -45,23 +45,27 @@ namespace RoninEngine
         // base
         class Math;
         class Object;
+        class Renderer;
         class Component;
+        class Behaviour;
         class Physics2D;
 
         // factory
-        class Transform;
-        class Camera;
-        class Camera2D;
+        class GameObject;
         class Texture;
         class Atlas;
         class Sprite;
-        class Behaviour;
-        class Terrain2D;
-        class SpriteRenderer;
-        class Spotlight;
-        class GameObject;
-        class Light;
-        class Renderer;
         struct Color;
+
+        //derived component
+        class Transform;
+        class Light;
+        class Spotlight;
+        class SpriteRenderer;
+        class Terrain2D;
+        class Camera;
+        class Camera2D;
+        class MoveController2D;
+
     } // namespace Runtime
 } // namespace RoninEngine

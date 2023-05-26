@@ -3,15 +3,15 @@
 
 namespace RoninEngine::Runtime
 {
-    class RONIN_API Player : public Behaviour
+    class RONIN_API MoveController2D : public Behaviour
     {
     public:
         Camera2D* playerCamera;
         SpriteRenderer* spriteRenderer;
         Spotlight* spotlight;
 
-        Player();
-        Player(const std::string& name);
+        MoveController2D();
+        MoveController2D(const std::string& name);
         float speed;
 
         void OnAwake();

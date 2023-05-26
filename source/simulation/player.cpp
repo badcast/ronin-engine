@@ -2,18 +2,18 @@
 namespace RoninEngine::Runtime
 {
 
-    Player::Player()
-        : Player(DESCRIBE_AS_MAIN_OFF(Player))
+    MoveController2D::MoveController2D()
+        : MoveController2D(DESCRIBE_AS_MAIN_OFF(MoveController2D))
     {
     }
 
-    Player::Player(const std::string& name)
-        : Behaviour(DESCRIBE_AS_ONLY_NAME(Player))
+    MoveController2D::MoveController2D(const std::string& name)
+        : Behaviour(DESCRIBE_AS_ONLY_NAME(MoveController2D))
     {
-        DESCRIBE_AS_MAIN(Player);
+        DESCRIBE_AS_MAIN(MoveController2D);
     }
 
-    void Player::OnAwake()
+    void MoveController2D::OnAwake()
     {
         playerCamera = game_object()->get_component<Camera2D>();
         if (playerCamera == nullptr)
@@ -24,9 +24,9 @@ namespace RoninEngine::Runtime
     }
     Vec2 movementDir = Vec2::up;
 
-    void Player::OnStart() { }
+    void MoveController2D::OnStart() { }
 
-    void Player::OnUpdate()
+    void MoveController2D::OnUpdate()
     {
 
         float curSpeed = Input::get_key(SDL_SCANCODE_LSHIFT) ? (speed * 2) : speed;
@@ -49,7 +49,7 @@ namespace RoninEngine::Runtime
         }
     }
 
-    void Player::OnLateUpdate() { }
-    void Player::OnDestroy() { }
+    void MoveController2D::OnLateUpdate() { }
+    void MoveController2D::OnDestroy() { }
 
 } // namespace RoninEngine::Runtime

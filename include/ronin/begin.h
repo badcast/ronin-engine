@@ -30,7 +30,6 @@
 
 #include "Defines.h"
 
-
 #include "Namespaces.h"
 
 #include "Color.h"

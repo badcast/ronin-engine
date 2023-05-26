@@ -8,13 +8,13 @@ namespace RoninEngine::Runtime
     extern Transform* create_empty_transform();
 
     // NOTE: Решение многих проблем и времени, объявление
-    template RONIN_API Player* GameObject::add_component<Player>();
+    template RONIN_API MoveController2D* GameObject::add_component<MoveController2D>();
     template RONIN_API SpriteRenderer* GameObject::add_component<SpriteRenderer>();
     template RONIN_API Camera2D* GameObject::add_component<Camera2D>();
     template RONIN_API Spotlight* GameObject::add_component<Spotlight>();
     template RONIN_API Terrain2D* GameObject::add_component<Terrain2D>();
     //----------------
-    template RONIN_API Player* GameObject::get_component<Player>();
+    template RONIN_API MoveController2D* GameObject::get_component<MoveController2D>();
     template RONIN_API SpriteRenderer* GameObject::get_component<SpriteRenderer>();
     template RONIN_API Camera2D* GameObject::get_component<Camera2D>();
     template RONIN_API Spotlight* GameObject::get_component<Spotlight>();
