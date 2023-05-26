@@ -80,6 +80,7 @@ namespace RoninEngine
             static Camera2D* create_camera2D(Vec2 position = Vec2::zero);
             static Sprite* create_sprite2D_box(Vec2 size = Vec2::one, Color fillColor = Color::white);
             static Sprite* create_sprite2D_circle(Vec2 size = Vec2::one, float radius = 1.f, Color fillColor = Color::white);
+            static Sprite* create_sprite2D_triangle(Vec2 size = Vec2::one, float height = 1.f, Color fillColor = Color::white);
         };
     } // namespace Runtime
 } // namespace RoninEngine

@@ -42,11 +42,6 @@ namespace RoninEngine::Runtime
         if (surface == nullptr) {
             Application::fail_oom_kill();
         }
-        SDL_LockSurface(surface);
-        // clear
-        memset(surface->pixels, 0, surface->h * surface->pitch);
-        SDL_UnlockSurface(surface);
-
         SDL_Renderer* renderer = SDL_CreateSoftwareRenderer(surface);
 
         // draw circle
@@ -54,6 +49,36 @@ namespace RoninEngine::Runtime
 
         SDL_DestroyRenderer(renderer);
 
+        ResourceManager::gc_alloc_sprite_with(&sprite, surface, { 0, 0, size.x, size.y });
+        return sprite;
+    }
+
+    Sprite* Primitive::create_sprite2D_triangle(Vec2 size, float height, Color fillColor)
+    {
+        Sprite* sprite;
+
+        size *= pixelsPerPoint;
+        SDL_Surface* surface = SDL_CreateRGBSurfaceWithFormat(0, size.x, size.y, 32, sdl_default_pixelformat);
+        if (surface == nullptr) {
+            Application::fail_oom_kill();
+        }
+
+        // drawing triangle
+        SDL_Renderer* renderer = SDL_CreateSoftwareRenderer(surface);
+        filledTrigonColor(renderer, 0, size.y, size.x, size.y - height, size.x/2, 0, fillColor);
+        SDL_DestroyRenderer(renderer);
+
+        //        SDL_LockSurface(surface);
+        //        height *= pixelsPerPoint;
+        //        int minHeight = Math::min<int>(height, surface->h);
+        //        for (int y = minHeight; y >= 0; --y) {
+        //            int z = (surface->w);
+        //            for (int x = 0; x < z; ++x) {
+        //                // NOTE: Формула пикселей для SDL :: Y Offset * (Pitch/BytesPerPixel) + X Offset
+        //                SDL_memset4(surface->pixels + (y * (surface->pitch / surface->format->BytesPerPixel) + x), fillColor, sizeof(fillColor));
+        //            }
+        //        }
+        //        SDL_UnlockSurface(surface);
         ResourceManager::gc_alloc_sprite_with(&sprite, surface, { 0, 0, size.x, size.y });
         return sprite;
     }
