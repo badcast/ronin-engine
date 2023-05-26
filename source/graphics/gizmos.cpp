@@ -265,7 +265,7 @@ namespace RoninEngine::Runtime
         center = Camera::world_2_screen(center);
         width *= pixelsPerPoint;
         height *= pixelsPerPoint;
-        Rectf_t rect { center.x - width / 2, center.y - height / 2, width, height };
+        Rectf rect { center.x - width / 2, center.y - height / 2, width, height };
 
         SDL_RenderFillRectF(Application::get_renderer(), reinterpret_cast<SDL_FRect*>(&rect));
     }
@@ -274,7 +274,7 @@ namespace RoninEngine::Runtime
     {
         center = Camera::world_2_screen(center);
         width *= pixelsPerPoint;
-        Rectf_t rect { center.x - width / 2, center.y - width / 2, width, width };
+        Rectf rect { center.x - width / 2, center.y - width / 2, width, width };
 
         SDL_RenderFillRectF(Application::get_renderer(), reinterpret_cast<SDL_FRect*>(&rect));
     }

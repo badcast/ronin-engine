@@ -61,8 +61,8 @@ namespace RoninEngine::Runtime
         return rect;
     }
 
-    Sprite* Sprite::spriteEmpty() { return Primitive::create_sprite2D_box(Vec2Int::one, Color::black); }
-    Sprite* Sprite::spriteBlack() { return Primitive::create_sprite2D_box(Vec2Int::one * 100, Color::black); }
-    Sprite* Sprite::spriteWhite() { return Primitive::create_sprite2D_box(Vec2Int::one, Color::white); }
+    Sprite* Sprite::spriteEmpty() { return Primitive::create_sprite2D_box(Vec2::one, Color::black); }
+    Sprite* Sprite::spriteBlack() { return Primitive::create_sprite2D_box(Vec2::one, Color::black); }
+    Sprite* Sprite::spriteWhite() { return Primitive::create_sprite2D_box(Vec2::one, Color::white); }
 
 } // namespace RoninEngine::Runtime

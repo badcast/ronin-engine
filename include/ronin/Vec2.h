@@ -118,9 +118,9 @@ namespace RoninEngine
             static Vec2Int round_to_int(const Vec2& lhs);
             //	static bool AreaEnclosePoints(const Rectf_t* points, int count, const
             // Rectf_t* clip, Rectf_t* result);
-            static bool area_point_in_rect(const Vec2& p, const Rectf_t& r);
-            static bool has_intersection(const Rectf_t& lhs, const Rectf_t& rhs);
-            static bool in_area(const Vec2& p, const Rectf_t& r);
+            static bool area_point_in_rect(const Vec2& p, const Rectf& rhs);
+            static bool has_intersection(const Rectf& lhs, const Rectf& rhs);
+            static bool in_area(const Vec2& p, const Rectf& rhs);
             static const Vec2 rotate(Vec2 vec, Vec2 normal, float angleRadian);
             static const Vec2 rotate(Vec2 position, float angleRadian);
             static const Vec2 rotate_clockwise(Vec2 position, float angleRadian);

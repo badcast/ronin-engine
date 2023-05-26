@@ -33,10 +33,10 @@ namespace RoninEngine
         struct Rendering;
 
         template <typename T>
-        class xRect;
+        class RRect;
 
-        typedef xRect<int> Rect;
-        typedef xRect<float> Rectf_t;
+        typedef RRect<int> Rect;
+        typedef RRect<float> Rectf;
 
         // core
         class ResourceManager;
@@ -57,7 +57,7 @@ namespace RoninEngine
         class Sprite;
         struct Color;
 
-        //derived component
+        // derived component
         class Transform;
         class Light;
         class Spotlight;

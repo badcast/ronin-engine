@@ -50,7 +50,6 @@ namespace RoninEngine::Runtime
         Rect get_relative_size();
 
         void set_sprite(Sprite* sprite);
-        void set_sprite_from_surface(SDL_Surface* src);
         Sprite* get_sprite();
 
         void offset_from_local_position(Vec2 localPosition);

@@ -10,20 +10,20 @@ namespace RoninEngine
         enum Align { Left, Right, Center };
 
         template <typename T>
-        class xRect
+        class RRect
         {
         public:
             T x, y, w, h;
             template <typename V>
-            xRect(const V& xy, const V& wh)
+            RRect(const V& xy, const V& wh)
                 : x(xy.x)
                 , y(xy.y)
                 , w(wh.x)
                 , h(wh.y)
             {
             }
-            xRect() { x = y = w = h = 0; }
-            xRect(const T& x, const T& y, const T& w, const T& h)
+            RRect() { x = y = w = h = 0; }
+            RRect(const T& x, const T& y, const T& w, const T& h)
                 : x(x)
                 , y(y)
                 , w(w)
@@ -33,15 +33,15 @@ namespace RoninEngine
 
             bool empty() const { return x == 0 && y == 0 && w == 0 && h == 0; }
 
-            xRect<T> operator+(const xRect<T>& rhs) { return { this->x + rhs.x, this->y + rhs.y, this->w + rhs.w, this->h + rhs.h }; }
+            RRect<T> operator+(const RRect<T>& rhs) { return { this->x + rhs.x, this->y + rhs.y, this->w + rhs.w, this->h + rhs.h }; }
 
-            xRect<T> operator-(const xRect<T>& rhs) { return { this->x - rhs.x, this->y + rhs.y, this->w - rhs.w, this->h - rhs.h }; }
+            RRect<T> operator-(const RRect<T>& rhs) { return { this->x - rhs.x, this->y + rhs.y, this->w - rhs.w, this->h - rhs.h }; }
 
-            xRect<T> operator*(const T& rhs) { return { this->x * rhs, this->y * rhs, this->w * rhs, this->h * rhs }; }
+            RRect<T> operator*(const T& rhs) { return { this->x * rhs, this->y * rhs, this->w * rhs, this->h * rhs }; }
 
-            xRect<T> operator/(const T& rhs) { return { this->x / rhs, this->y / rhs, this->w / rhs, this->h / rhs }; }
+            RRect<T> operator/(const T& rhs) { return { this->x / rhs, this->y / rhs, this->w / rhs, this->h / rhs }; }
 
-            xRect<T>& operator+=(const xRect<T>& rhs)
+            RRect<T>& operator+=(const RRect<T>& rhs)
             {
                 this->x += rhs.x;
                 this->y += rhs.y;
@@ -50,7 +50,7 @@ namespace RoninEngine
                 return *this;
             }
 
-            xRect<T>& operator-=(const xRect<T>& rhs)
+            RRect<T>& operator-=(const RRect<T>& rhs)
             {
                 this->x -= rhs.x;
                 this->y -= rhs.y;
@@ -59,14 +59,14 @@ namespace RoninEngine
                 return *this;
             }
 
-            xRect<T>& operator*=(const T& rhs)
+            RRect<T>& operator*=(const T& rhs)
             {
                 this->x *= rhs;
                 this->y *= rhs;
                 return *this;
             }
 
-            xRect<T>& operator/=(const T& rhs)
+            RRect<T>& operator/=(const T& rhs)
             {
                 this->x /= rhs;
                 this->y /= rhs;
@@ -91,8 +91,8 @@ namespace RoninEngine
                 } else
                     throw std::bad_exception();
             }
-            static const xRect<T> zero;
-            static const xRect<T> one;
+            static const RRect<T> zero;
+            static const RRect<T> one;
         };
     } // namespace Runtime
 

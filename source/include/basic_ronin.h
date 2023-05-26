@@ -53,7 +53,7 @@ namespace RoninEngine::Runtime
 {
     struct Rendering {
         Rect src;
-        Rectf_t dst;
+        Rectf dst;
         SDL_Texture* texture;
         SDL_Renderer* renderer;
     };

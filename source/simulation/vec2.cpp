@@ -202,11 +202,11 @@ Vec2Int Vec2::round_to_int(const Vec2& lhs)
     return p;
 }
 
-bool Vec2::area_point_in_rect(const Vec2& p, const Rectf_t& r) { return ((p.x >= r.x) && (p.x < (r.x + r.w)) && (p.y >= r.y) && (p.y < (r.y + r.h))); }
+bool Vec2::area_point_in_rect(const Vec2& p, const Rectf& r) { return ((p.x >= r.x) && (p.x < (r.x + r.w)) && (p.y >= r.y) && (p.y < (r.y + r.h))); }
 
-bool Vec2::has_intersection(const Rectf_t& lhs, const Rectf_t& rhs) { return SDL_HasIntersectionF(reinterpret_cast<const SDL_FRect*>(&lhs), reinterpret_cast<const SDL_FRect*>(&rhs)); }
+bool Vec2::has_intersection(const Rectf& lhs, const Rectf& rhs) { return SDL_HasIntersectionF(reinterpret_cast<const SDL_FRect*>(&lhs), reinterpret_cast<const SDL_FRect*>(&rhs)); }
 
-bool Vec2::in_area(const Vec2& p, const Rectf_t& r) { return p.x >= r.x && p.x <= r.w && p.y >= r.h && p.y <= r.y; }
+bool Vec2::in_area(const Vec2& p, const Rectf& r) { return p.x >= r.x && p.x <= r.w && p.y >= r.h && p.y <= r.y; }
 
 const Vec2 Vec2::rotate(Vec2 vec, Vec2 normal, float angleRadian)
 {

@@ -68,12 +68,6 @@ namespace RoninEngine::Runtime
         this->sprite = sprite;
     }
 
-    void SpriteRenderer::set_sprite_from_surface(SDL_Surface* src)
-    {
-        Sprite* spr;
-        ResourceManager::gc_alloc_sprite_with(&spr, src);
-        set_sprite(spr);
-    }
     Sprite* SpriteRenderer::get_sprite() { return this->sprite; }
 
     void SpriteRenderer::offset_from_local_position(Vec2 localPosition) { offset_from_world_position(transform()->position() + localPosition); }

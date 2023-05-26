@@ -3,14 +3,14 @@
 namespace RoninEngine::Runtime
 {
     template <>
-    const xRect<float> xRect<float>::zero = {};
+    const RRect<float> RRect<float>::zero = {};
     template <>
-    const xRect<float> xRect<float>::one = { 1, 1, 1, 1 };
+    const RRect<float> RRect<float>::one = { 1, 1, 1, 1 };
 
     template <>
-    const xRect<int> xRect<int>::zero = {};
+    const RRect<int> RRect<int>::zero = {};
     template <>
-    const xRect<int> xRect<int>::one = { 1, 1, 1, 1 };
+    const RRect<int> RRect<int>::one = { 1, 1, 1, 1 };
 } // namespace RoninEngine
 
 // template<> RONIN_API const char * define_type<RoninEngine::Runtime::GameObject>(char const*,              RoninEngine::Runtime::GameObject*, int*);
