@@ -283,7 +283,8 @@ void Level::level_render_world(SDL_Renderer* renderer, ScoreWatcher* watcher)
         }
 
         for (Behaviour* exec : *_firstRunScripts) {
-            exec->OnStart(); // go start (first draw)
+            if (exec->game_object()->m_active)
+                exec->OnStart(); // go start (first draw)
             _realtimeScripts->emplace_back(exec);
         }
         RoninMemory::free(_firstRunScripts);
@@ -292,7 +293,8 @@ void Level::level_render_world(SDL_Renderer* renderer, ScoreWatcher* watcher)
 
     if (_realtimeScripts) {
         for (Behaviour* exec : *_realtimeScripts) {
-            exec->OnUpdate();
+            if (exec->game_object()->m_active)
+                exec->OnUpdate();
         };
     }
     watcher->ms_wait_exec_scripts = TimeEngine::end_watch();
@@ -313,6 +315,20 @@ void Level::level_render_world(SDL_Renderer* renderer, ScoreWatcher* watcher)
     }
     watcher->ms_wait_render_collect = TimeEngine::end_watch();
 
+    // begin watcher
+    TimeEngine::begin_watch();
+    if (Camera::main_camera()) {
+        if (_realtimeScripts) {
+            for (auto exec : *_realtimeScripts) {
+                if (exec->game_object()->m_active)
+                    exec->OnGizmos();
+            };
+        }
+        on_gizmo(); // Draw gizmos
+    }
+    watcher->ms_wait_render_gizmos = TimeEngine::end_watch();
+    // end watcher
+
     TimeEngine::begin_watch();
     runtime_destructs();
     watcher->ms_wait_destructions = TimeEngine::end_watch();
@@ -328,8 +344,9 @@ void Level::level_render_world_late(SDL_Renderer* renderer)
 {
     on_late_update();
     if (_realtimeScripts) {
-        for (auto n : *_realtimeScripts) {
-            n->OnLateUpdate();
+        for (auto exec : *_realtimeScripts) {
+            if (exec->game_object()->m_active)
+                exec->OnLateUpdate();
         }
     }
 }
@@ -342,6 +359,36 @@ UI::GUI* Level::get_gui() { return this->ui; }
 void Level::request_unload() { this->request_unloading = true; }
 
 int Level::get_destroyed_frames() { return _destroyed; }
+
+std::list<GameObject*> Level::get_all_gameobjects()
+{
+    std::list<GameObject*> all_gobjects;
+    GameObject* next = main_object;
+
+    while (next) {
+        for (Transform* e : *Level::get_hierarchy(next->transform())) {
+            all_gobjects.emplace_front(e->game_object());
+        }
+        if (next == all_gobjects.front())
+            next = nullptr;
+        else
+            next = all_gobjects.front();
+    }
+    return all_gobjects;
+}
+
+std::list<Component*> Level::get_all_components()
+{
+    std::list<Component*> components;
+    std::list<GameObject*> all_objects = get_all_gameobjects();
+
+    for (GameObject* curObject : all_objects) {
+        for (Component* self_component : curObject->m_components) {
+            components.emplace_back(self_component);
+        }
+    }
+    return components;
+}
 
 const bool Level::object_desctruction_cancel(Object* obj)
 {

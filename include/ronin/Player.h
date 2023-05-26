@@ -7,8 +7,6 @@ namespace RoninEngine::Runtime
     {
     public:
         Camera2D* playerCamera;
-        SpriteRenderer* spriteRenderer;
-        Spotlight* spotlight;
 
         MoveController2D();
         MoveController2D(const std::string& name);

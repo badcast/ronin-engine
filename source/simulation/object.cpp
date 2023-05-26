@@ -28,6 +28,8 @@ namespace RoninEngine
                     RoninMemory::alloc_self(newTComponent, *clone);
                 } else if constexpr (std::is_same<T, Terrain2D>::value) {
                     RoninMemory::alloc_self(newTComponent, *clone);
+                } else if constexpr (std::is_same<T, Behaviour>::value) {
+                    RoninMemory::alloc_self(newTComponent, *clone);
                 } else {
                     static_assert(true, "undefined type");
                     newTComponent = nullptr;
@@ -112,18 +114,7 @@ namespace RoninEngine
 
             GameObject* gObj;
             if ((gObj = dynamic_cast<GameObject*>(obj)) != nullptr) {
-                if (Level::self()->_firstRunScripts) {
-                    Level::self()->_firstRunScripts->remove_if([gObj](Behaviour* x) {
-                        auto iter = find_if(std::begin(gObj->m_components), std::end(gObj->m_components), [x](const Component* c) { return (Component*)x == c; });
-                        return iter != end(gObj->m_components);
-                    });
-                } else if (Level::self()->_realtimeScripts) {
-                    Level::self()->_realtimeScripts->remove_if([gObj](Behaviour* x) {
-                        auto iter = find_if(std::begin(gObj->m_components), std::end(gObj->m_components), [x](Component* c) { return (Component*)x == c; });
 
-                        return iter != end(gObj->m_components);
-                    });
-                }
                 // FIXME: destroy other types from gameobject->m_components (delete a list)
                 // Recursive method
                 for (Component* component : gObj->m_components) {
@@ -133,6 +124,7 @@ namespace RoninEngine
             } else {
                 Renderer* r;
                 Transform* t;
+                Behaviour* exec;
                 if ((t = dynamic_cast<Transform*>(obj))) {
                     // picking from matrix
                     if (t->parent()) {
@@ -140,6 +132,12 @@ namespace RoninEngine
                     }
                     Transform::hierarchy_removeAll(t);
                     Level::self()->matrix_nature_pickup(t);
+                } else if ((exec = dynamic_cast<Behaviour*>(obj))) {
+
+                    if (Level::self()->_firstRunScripts)
+                        Level::self()->_firstRunScripts->remove(exec);
+                    if (Level::self()->_realtimeScripts)
+                        Level::self()->_realtimeScripts->remove(exec);
                 }
             }
 
@@ -184,6 +182,9 @@ namespace RoninEngine
                     replacement = internal_factory_base<SpriteRenderer>(false, reinterpret_cast<SpriteRenderer*>(replacement), nullptr);
                 } else if (dynamic_cast<Camera2D*>(replacement)) {
                     replacement = internal_factory_base<Camera2D>(false, reinterpret_cast<Camera2D*>(replacement), nullptr);
+                    //} else if (dynamic_cast<Behaviour*>(replacement)) {
+
+                    /// replacement = internal_factory_base<Behaviour>(false, reinterpret_cast<Behaviour*>(replacement), nullptr);
                 } else {
                     static_assert(true, "Undefined type");
                     continue;

@@ -4,7 +4,12 @@ using namespace RoninEngine;
 namespace RoninEngine::Runtime
 {
 
-    GameObject* Primitive::create_empty_game_object(Vec2 position) { return create_game_object(); }
+    GameObject* Primitive::create_empty_game_object(Vec2 position)
+    {
+        GameObject* obj = create_game_object();
+        obj->transform()->transform()->position(position);
+        return obj;
+    }
 
     GameObject* Primitive::create_box2d(Vec2 position, float angle)
     {
@@ -65,7 +70,7 @@ namespace RoninEngine::Runtime
 
         // drawing triangle
         SDL_Renderer* renderer = SDL_CreateSoftwareRenderer(surface);
-        filledTrigonColor(renderer, 0, size.y, size.x, size.y - height, size.x/2, 0, fillColor);
+        filledTrigonColor(renderer, 0, size.y, size.x, size.y - height, size.x / 2, 0, fillColor);
         SDL_DestroyRenderer(renderer);
 
         //        SDL_LockSurface(surface);

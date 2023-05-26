@@ -300,19 +300,6 @@ namespace RoninEngine
 
             m_level->level_render_world(renderer, &_wwatcher);
 
-            // begin watcher
-            TimeEngine::begin_watch();
-            if (Camera::main_camera()) {
-                if (m_level->_realtimeScripts) {
-                    for (auto n : *m_level->_realtimeScripts) {
-                        n->OnGizmos();
-                    };
-                }
-                m_level->on_gizmo(); // Draw gizmos
-            }
-            _wwatcher.ms_wait_render_gizmos = TimeEngine::end_watch();
-            // end watcher
-
             if (m_level->request_unloading)
                 goto end_simulate; // break on unload state
 

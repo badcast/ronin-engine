@@ -35,13 +35,7 @@ namespace RoninEngine::Runtime
         m_active = true;
     }
 
-    GameObject::~GameObject()
-    {
-        return;
-        for (auto x : m_components) {
-            RoninMemory::free(x);
-        }
-    }
+    GameObject::~GameObject() { }
 
     bool GameObject::is_active() { return m_active; }
 
@@ -51,7 +45,7 @@ namespace RoninEngine::Runtime
             return;
 
         m_active = state;
-        transform()->parent_notify_activeState(this);
+        transform()->parent_notify_active_state(this);
     }
 
     void GameObject::set_active_recursivelly(bool state) { this->set_active(false); }

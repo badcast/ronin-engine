@@ -166,7 +166,7 @@ namespace RoninEngine::Runtime
             chlid->parent_notify(lastPoint);
     }
 
-    void Transform::parent_notify_activeState(GameObject* from)
+    void Transform::parent_notify_active_state(GameObject* from)
     {
         Vec2Int pos = Vec2::round_to_int(this->position());
         if (!from->is_active()) {
@@ -184,7 +184,7 @@ namespace RoninEngine::Runtime
         }
         // send in hierarchy
         for (Transform* chlid : hierarchy)
-            chlid->parent_notify_activeState(from);
+            chlid->parent_notify_active_state(from);
     }
 
     float Transform::angle() { return (this->m_parent) ? this->m_parent->_angle + this->_angle : this->_angle; }

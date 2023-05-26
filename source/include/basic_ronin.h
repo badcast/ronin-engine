@@ -22,7 +22,7 @@ constexpr bool object_base_of(base* obj, _derived* compare)
 
 // this method for replacing C++ dynamic_cast
 template <typename T>
-static typename std::enable_if<std::is_base_of<RoninEngine::Runtime::Object, T>::value, const char*>::type define_type(const char* typestr, T* self, char** _type_, const char* name)
+static typename std::enable_if<std::is_base_of<RoninEngine::Runtime::Object, T>::value, const char*>::type runtime_define_type(const char* typestr, T* self, char** _type_, const char* name)
 {
     // param @self not use
     if (_type_ != nullptr && *_type_ == nullptr) {
@@ -41,7 +41,7 @@ static typename std::enable_if<std::is_base_of<RoninEngine::Runtime::Object, T>:
 
 extern void check_object(RoninEngine::Runtime::Object* obj);
 
-#define DESCRIBE_TYPE(TYPE, self, _type_, name) (define_type<TYPE>(#TYPE, self, (_type_), name))
+#define DESCRIBE_TYPE(TYPE, self, _type_, name) (runtime_define_type<TYPE>(#TYPE, self, (_type_), name))
 
 #define DESCRIBE_AS_ONLY_NAME(TYPE) (DESCRIBE_TYPE(TYPE, this, &_type_, name.c_str()))
 

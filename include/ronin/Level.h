@@ -81,6 +81,12 @@ namespace RoninEngine::Runtime
 
         int get_destroyed_frames();
 
+        std::list<GameObject*> get_all_gameobjects();
+        std::list<Component*> get_all_components();
+
+        template <typename T>
+        std::list<T*> find_objects_with_type();
+
         const bool object_desctruction_cancel(Object* obj);
         const int object_destruction_cost(Object* obj);
         const bool object_destruction_state(Object* obj);
@@ -94,5 +100,22 @@ namespace RoninEngine::Runtime
 
         static Level* self();
     };
+
+    template <typename T>
+    std::list<T*> Level::find_objects_with_type()
+    {
+        T* _target;
+        std::list<T*> __classes;
+
+        std::list<Component*> __compr = get_all_components();
+
+        for (auto iter = __compr.begin(); iter != __compr.end(); ++iter) {
+            if ((_target = dynamic_cast<T*>(*iter))) {
+                __classes.emplace_back(_target);
+            }
+        }
+
+        return __classes;
+    }
 
 } // namespace RoninEngine

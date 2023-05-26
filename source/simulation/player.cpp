@@ -18,9 +18,7 @@ namespace RoninEngine::Runtime
         playerCamera = game_object()->get_component<Camera2D>();
         if (playerCamera == nullptr)
             playerCamera = game_object()->add_component<Camera2D>();
-        // spriteRenderer = gameObject()->add_component<SpriteRenderer>();
         speed = 0.1f / 2;
-        // spotlight = gameObject()->add_component<Spotlight>();
     }
     Vec2 movementDir = Vec2::up;
 

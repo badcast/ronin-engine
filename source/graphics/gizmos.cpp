@@ -233,7 +233,7 @@ namespace RoninEngine::Runtime
     void RoninEngine::Runtime::Gizmos::draw_text(Vec2 origin, const std::string& text)
     {
         origin = Camera::world_2_screen(origin);
-        RoninEngine::UI::DrawFontAt(Application::get_renderer(), text, 11, Vec2::round_to_int(origin), get_color());
+        RoninEngine::UI::draw_font_at(Application::get_renderer(), text, 11, Vec2::round_to_int(origin), get_color(), true);
     }
     void RoninEngine::Runtime::Gizmos::draw_text_legacy(Vec2 origin, const std::string& text)
     {

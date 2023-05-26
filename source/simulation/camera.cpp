@@ -112,7 +112,7 @@ namespace RoninEngine::Runtime
             Vec2Int wpLeftTop = Vec2::round_to_int(screen_2_world(Vec2::zero));
             Vec2Int wpRightBottom = Vec2::round_to_int(screen_2_world(Vec2(res.width, res.height)));
             // RUN STORM CAST
-            std::list<Transform*> storm_result = Physics2D::rect_cast(transform()->p, Math::number(Math::max(wpRightBottom.x - transform()->p.x, wpRightBottom.y - transform()->p.y)) + 1 + distanceEvcall);
+            std::list<Transform*> storm_result = Physics2D::storm_cast(transform()->p, Math::number(Math::max(wpRightBottom.x - transform()->p.x, wpRightBottom.y - transform()->p.y)) + 1 + distanceEvcall);
             std::list<Renderer*> _removes;
             // собираем оставшиеся которые прикреплены к видимости
             for (auto x = std::begin(prev); x != std::end(prev); ++x) {

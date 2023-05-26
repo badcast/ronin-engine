@@ -25,7 +25,7 @@ namespace RoninEngine::Runtime
         float _angle;
 
         void parent_notify(Vec2 lastParentPoint);
-        void parent_notify_activeState(GameObject* from);
+        void parent_notify_active_state(GameObject* from);
 
         static void hierarchy_parent_change(Transform* from, Transform* newParent);
         static void hierarchy_remove(Transform* from, Transform* off);

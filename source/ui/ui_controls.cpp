@@ -110,7 +110,7 @@ namespace RoninEngine::UI
         case RoninEngine::UI::_UC:
             break;
         case RGUI_TEXT: {
-            DrawFontAt(render, element.text, 15, element.rect.getXY(), Color::white);
+            draw_font_at(render, element.text, 15, element.rect.getXY(), Color::white);
             // Render_String(render, element.rect, element.text.c_str(), element.text.size());
             break;
         }
@@ -131,7 +131,7 @@ namespace RoninEngine::UI
 
             // render text
             // Render_String(render, element.rect, element.text.c_str(), element.text.size(), 13, TextAlign::MiddleCenter, true, uiHover);
-            DrawFontAt(render, element.text, 12, element.rect.getXY(), Color::white);
+            draw_font_at(render, element.text, 12, element.rect.getXY(), Color::white);
             bool msClick = Input::is_mouse_up();
             result = uiHover && msClick;
             break;
@@ -414,20 +414,24 @@ namespace RoninEngine::UI
         }
     }
 
-    void DrawFontAt(SDL_Renderer* renderer, const std::string& text, int fontSize, const Runtime::Vec2Int& screenPoint, const Color color)
+    void draw_font_at(SDL_Renderer* renderer, const std::string& text, int fontSize, Runtime::Vec2Int screenPoint, const Color color, bool alignCenter)
     {
-        Texture* texture;
+        SDL_Texture* texture;
         SDL_Rect r;
         SDL_Surface* surf = TTF_RenderUTF8_Solid(pfont, text.c_str(), SDL_Color(*reinterpret_cast<const SDL_Color*>(&color)));
         if (surf) {
-            ResourceManager::gc_alloc_texture_from(&texture, surf);
-            r.h = texture->height();
-            r.w = texture->width();
+            texture = SDL_CreateTextureFromSurface(renderer, surf);
+            r.w = surf->w;
+            r.h = surf->h;
 
             r.x = screenPoint.x;
             r.y = screenPoint.y;
-            SDL_RenderCopy(renderer, texture->native(), nullptr, &r);
-            RoninMemory::free(texture);
+            if (alignCenter) {
+                r.x -= r.w / 2;
+                r.y -= r.h / 2;
+            }
+            SDL_RenderCopy(renderer, texture, nullptr, &r);
+            SDL_DestroyTexture(texture);
             SDL_FreeSurface(surf);
         }
     }
