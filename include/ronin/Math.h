@@ -157,5 +157,13 @@ namespace RoninEngine::Runtime
         static std::uint64_t num_lastof(std::uint64_t number, int level);
 
         static std::string num_beautify(std::uint64_t num, char seperate = ' ', int digits = 3);
+
+        static float square(float x);
+        static float square_rectangle(float a, float b);
+        static float square_rectangle(Vec2 p1, Vec2 p2, Vec2 p3, Vec2 p4);
+        static float square_circle(float radius);
+        static float square_triangle(float base, float height);
+        static float square_triangle(Vec2 p1, Vec2 p2, Vec2 p3);
+        static float square_mesh(std::list<Vec2>& vec);
     };
 } // namespace RoninEngine::Runtime

@@ -283,3 +283,36 @@ std::string Math::num_beautify(std::uint64_t num, char seperate, int digits)
     result.insert(0, std::to_string(dv.rem));
     return result;
 }
+
+float Math::square_triangle(float base, float height) { return base * height / 2; }
+float Math::square(float x) { return x * x; }
+float Math::square_rectangle(float a, float b) { return a * b; }
+float Math::square_circle(float radius)
+{
+    /*
+     *      get the square circle
+     *      S = PI * r^2
+     *      S = PI * (d/2)^2
+     *      S = (PI * d^2) / 4
+     *
+     */
+    return Math::pi * Math::pow2(radius);
+}
+float Math::square_mesh(std::list<Vec2>& vecs)
+{
+    /*
+     *    get the square a customize figure
+     *    S = square
+     *    S1 = cell square
+     *    n = closed cell
+     *    r = partially closed cell
+     *    S = S1 * (n + 1/2 * r)
+     *
+     */
+
+    float S = -1;
+
+    // TODO: написать алгоритм измерение площади произвольным фигурам
+    throw std::runtime_error("algorithm is not implemented");
+    return S;
+}

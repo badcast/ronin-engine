@@ -6,6 +6,8 @@ namespace RoninEngine
 {
     namespace Runtime
     {
+        Level* switched_level;
+
         float internal_time_scale, internal_game_time, internal_delta_time;
 
         std::uint32_t internal_start_engine_time;
@@ -45,7 +47,6 @@ namespace RoninEngine
     static Runtime::Level* destroyableLevel = nullptr;
     static SDL_Renderer* renderer = nullptr;
     static SDL_Window* windowOwner = nullptr;
-    static Runtime::Level* m_level = nullptr;
     static bool isQuiting;
     static ScoreWatcher _wwatcher = {};
 
@@ -65,7 +66,6 @@ namespace RoninEngine
 
     void Application::init()
     {
-        char errorStr[128];
         if (m_inited)
             return;
 
@@ -97,6 +97,10 @@ namespace RoninEngine
             UI::Initialize_Fonts(true);
             Levels::Level_Init();
         }*/
+
+        // Init level
+        switched_level = nullptr;
+
         // Инициализация инструментов
         UI::ui_controls_init();
 
@@ -136,14 +140,15 @@ namespace RoninEngine
 
     void Application::load_level(Level* level)
     {
-        if (windowOwner == nullptr || !level || m_level == level)
+        if (windowOwner == nullptr || !level || switched_level == level)
             throw std::bad_cast();
 
-        if (m_level) {
-            destroyableLevel = m_level;
-            m_level->request_unload();
+        if (switched_level) {
+            destroyableLevel = switched_level;
+            switched_level->request_unload();
         }
 
+        switched_level = level;
         if (!level->is_hierarchy()) {
             // init main object
             level->main_object = create_empty_gameobject();
@@ -153,7 +158,6 @@ namespace RoninEngine
             level->matrix_nature_pickup(level->main_object->transform());
         }
 
-        m_level = level;
         m_levelAccept = false;
         m_levelLoaded = false;
     }
@@ -211,7 +215,7 @@ namespace RoninEngine
         SDL_DisplayMode displayMode;
         SDL_WindowFlags flags;
 
-        if (m_level == nullptr) {
+        if (switched_level == nullptr) {
             show_message("Level not loaded");
             return false;
         }
@@ -258,8 +262,6 @@ namespace RoninEngine
             if (!m_levelLoaded) {
                 // free cache
                 if (destroyableLevel) {
-                    destroyableLevel->on_unloading();
-
                     RoninMemory::free(destroyableLevel);
                     destroyableLevel = nullptr;
                 }
@@ -267,24 +269,24 @@ namespace RoninEngine
                 SDL_RenderFlush(renderer); // flush renderer before first render
 
                 // Start first init
-                m_level->on_awake();
+                switched_level->on_awake();
                 m_levelLoaded = true;
             }
             _wwatcher.ms_wait_internal_instructions = TimeEngine::end_watch();
 
             // update level
-            if (!m_level->request_unloading) {
+            if (!switched_level->request_unloading) {
                 // begin watcher
                 TimeEngine::begin_watch();
 
                 if (!m_levelAccept) {
 
-                    m_level->on_start();
+                    switched_level->on_start();
                     m_levelAccept = true;
                 }
-                if (!m_level->request_unloading) {
+                if (!switched_level->request_unloading) {
 
-                    m_level->on_update();
+                    switched_level->on_update();
 
                     // end watcher
                     _wwatcher.ms_wait_exec_level = TimeEngine::end_watch();
@@ -298,9 +300,9 @@ namespace RoninEngine
             } else
                 goto end_simulate; // break on unload state
 
-            m_level->level_render_world(renderer, &_wwatcher);
+            switched_level->level_render_world(renderer, &_wwatcher);
 
-            if (m_level->request_unloading)
+            if (switched_level->request_unloading)
                 goto end_simulate; // break on unload state
 
             // Set scale as default
@@ -308,11 +310,11 @@ namespace RoninEngine
 
             // begin watcher
             TimeEngine::begin_watch();
-            m_level->level_render_ui(renderer);
+            switched_level->level_render_ui(renderer);
             _wwatcher.ms_wait_render_ui = TimeEngine::end_watch();
             // end watcher
 
-            if (m_level->request_unloading)
+            if (switched_level->request_unloading)
                 goto end_simulate; // break on unload state
 
             if (!destroyableLevel) {
@@ -322,7 +324,7 @@ namespace RoninEngine
                 _wwatcher.ms_wait_render_level = TimeEngine::end_watch();
                 // end watcher
 
-                m_level->level_render_world_late(renderer);
+                switched_level->level_render_world_late(renderer);
             }
 
         end_simulate:
@@ -336,6 +338,9 @@ namespace RoninEngine
                 throw std::runtime_error("TimeEngine::end_watcher() - not released stack.");
 
             internal_delta_time = delayed / 1000.f;
+            if (internal_delta_time < 0.01f) {
+                internal_delta_time = 0.01f;
+            }
             //                        if (internal_delta_time > 1) {
             //                            internal_delta_time -= 1;
             //                            internal_delta_time = Math::clamp01(internal_delta_time);
@@ -349,14 +354,14 @@ namespace RoninEngine
                 fps = 1 / internal_delta_time;
                 std::sprintf(
                     windowTitle,
-                    "FPS:%d Memory:%sMiB, "
+                    "FPS:%.1f Memory:%sMiB, "
                     "Ronin_Allocated:%s, SDL_Allocated:%s, Frames:%u",
-                    static_cast<int>(fps), Math::num_beautify(get_process_sizeMemory() / 1024 / 1024).c_str(), Math::num_beautify(RoninMemory::total_allocated()).c_str(), Math::num_beautify(SDL_GetNumAllocations()).c_str(), internal_frames);
+                    fps, Math::num_beautify(get_process_sizeMemory() / 1024 / 1024).c_str(), Math::num_beautify(RoninMemory::total_allocated()).c_str(), Math::num_beautify(SDL_GetNumAllocations()).c_str(), internal_frames);
                 SDL_SetWindowTitle(Application::get_window(), windowTitle);
                 fpsRound = TimeEngine::startUpTime() + .5f; // updater per 1 seconds
             }
 
-            if (m_level->request_unloading)
+            if (switched_level->request_unloading)
                 break; // break on unload state
 
             // delay elapsed
@@ -364,7 +369,7 @@ namespace RoninEngine
         }
 
         // unload level
-        Runtime::unload_level(m_level);
+        Runtime::unload_level(switched_level);
 
         SDL_DestroyRenderer(renderer);
         SDL_DestroyWindow(windowOwner);

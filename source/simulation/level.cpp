@@ -7,9 +7,13 @@ using namespace RoninEngine::Runtime;
 
 namespace RoninEngine::Runtime
 {
+    extern Level* switched_level;
     bool unload_level(Level* level)
     {
+        std::list<GameObject*> stacks;
         GameObject* target; // first;
+        Level* lastLevel;
+
         if (level == nullptr) {
             throw std::runtime_error("arg level is null");
         }
@@ -17,62 +21,63 @@ namespace RoninEngine::Runtime
         if ((target = level->main_object) == nullptr)
             return false;
 
-        std::list<GameObject*> stacks;
+        lastLevel = switched_level;
+        switched_level = level;
+        try {
+            level->request_unload();
 
-        level->request_unload();
+            // unloading owner
+            level->on_unloading();
 
-        // unloading owner
-        level->on_unloading();
-
-        if (level->_firstRunScripts) {
-            RoninMemory::free(level->_firstRunScripts);
-            level->_firstRunScripts = nullptr;
-        }
-        if (level->_realtimeScripts) {
-            RoninMemory::free(level->_realtimeScripts);
-            level->_realtimeScripts = nullptr;
-        }
-        if (level->_destructTasks) {
-            RoninMemory::free(level->_destructTasks);
-            level->_destructTasks = nullptr;
-        }
-
-        // free GUI objects
-        if (level->ui) {
-            RoninMemory::free(level->ui);
-            level->ui = nullptr;
-        }
-
-        // free objects
-        while (target) {
-            for (Transform* e : *Level::get_hierarchy(target->transform())) {
-                stacks.emplace_front(e->game_object());
+            if (level->_firstRunScripts) {
+                RoninMemory::free(level->_firstRunScripts);
+                level->_firstRunScripts = nullptr;
+            }
+            if (level->_realtimeScripts) {
+                RoninMemory::free(level->_realtimeScripts);
+                level->_realtimeScripts = nullptr;
+            }
+            if (level->_destructTasks) {
+                RoninMemory::free(level->_destructTasks);
+                level->_destructTasks = nullptr;
             }
 
-            // destroy
-            if (target->exists())
+            // free GUI objects
+            if (level->ui) {
+                RoninMemory::free(level->ui);
+                level->ui = nullptr;
+            }
+
+            // free objects
+            while (target) {
+                for (Transform* e : *Level::get_hierarchy(target->transform())) {
+                    stacks.emplace_front(e->game_object());
+                }
+
+                // destroy
                 destroy_immediate(target);
 
-            if (stacks.empty()) {
-                target = nullptr;
-            } else {
-                target = stacks.front();
-                stacks.pop_front();
+                if (stacks.empty()) {
+                    target = nullptr;
+                } else {
+                    target = stacks.front();
+                    stacks.pop_front();
+                }
             }
+
+            level->main_object = nullptr;
+
+            if (!level->_objects.empty()) {
+                throw std::runtime_error("that's objects isn't release");
+                // this->_objects.clear();
+            }
+        } catch (ex) {
+            switched_level = lastLevel;
+            throw ex;
         }
-
-        level->main_object = nullptr;
-
-        if (!level->_objects.empty()) {
-            throw std::runtime_error("that's objects isn't release");
-            // this->_objects.clear();
-        }
-
         return true;
     }
 }
-
-Level* selfLevel;
 
 Level::Level()
     : Level("Untitled")
@@ -89,21 +94,16 @@ Level::Level(const std::string& name)
     , request_unloading(false)
     , m_name(name)
 {
-    if (selfLevel != nullptr) {
+    if (switched_level != nullptr) {
         static_assert(true, "current level replaced by new");
     }
-    selfLevel = this;
+
     RoninMemory::alloc_self(ui, this);
 }
 Level::~Level()
 {
     // unloading
     unload_level(this);
-
-    if (selfLevel == this) {
-        static_assert(true, "current level set to null");
-        selfLevel = nullptr;
-    }
 }
 
 // NOTE: Check game hierarchy
@@ -111,7 +111,7 @@ std::list<Transform*> Level::matrix_check_damaged()
 {
     std::list<Transform*> damaged;
 
-    for (auto x = begin(selfLevel->matrixWorld); x != end(selfLevel->matrixWorld); ++x) {
+    for (auto x = std::begin(switched_level->matrixWorld); x != end(switched_level->matrixWorld); ++x) {
         for (auto y = begin(x->second); y != end(x->second); ++y) {
             if (Vec2::round_to_int((*y)->position()) != x->first) {
                 damaged.emplace_back(*y);
@@ -134,9 +134,9 @@ int Level::matrix_restore(const std::list<Runtime::Transform*>& damaged_content)
 
     for (Runtime::Transform* dam : damaged_content) {
         Vec2Int find = Vec2::round_to_int(dam->p);
-        auto vertList = selfLevel->matrixWorld.find(find);
+        auto vertList = switched_level->matrixWorld.find(find);
 
-        if (vertList == std::end(selfLevel->matrixWorld))
+        if (vertList == std::end(switched_level->matrixWorld))
             continue;
 
         if (vertList->first != find)
@@ -456,4 +456,4 @@ void Level::on_gizmo() { }
 
 void Level::on_unloading() { }
 
-Level* Level::self() { return selfLevel; }
+Level* Level::self() { return switched_level; }

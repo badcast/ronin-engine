@@ -63,6 +63,7 @@ namespace RoninEngine::Runtime
         Sprite* sprite;
 
         size *= pixelsPerPoint;
+        height *= pixelsPerPoint;
         SDL_Surface* surface = SDL_CreateRGBSurfaceWithFormat(0, size.x, size.y, 32, sdl_default_pixelformat);
         if (surface == nullptr) {
             Application::fail_oom_kill();
@@ -70,7 +71,7 @@ namespace RoninEngine::Runtime
 
         // drawing triangle
         SDL_Renderer* renderer = SDL_CreateSoftwareRenderer(surface);
-        filledTrigonColor(renderer, 0, size.y, size.x, size.y - height, size.x / 2, 0, fillColor);
+        filledTrigonColor(renderer, 0, size.y, size.x, size.y, size.x / 2, 0, fillColor);
         SDL_DestroyRenderer(renderer);
 
         //        SDL_LockSurface(surface);

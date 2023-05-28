@@ -1,6 +1,3 @@
-
-#define USE_PRIMITIVES 1
-
 #include "ronin.h"
 
 namespace RoninEngine::Runtime
@@ -255,9 +252,8 @@ namespace RoninEngine::Runtime
         y = Math::number(origin.y);
         r = static_cast<std::uint16_t>(distance * pixelsPerPoint);
         Color m_color = get_color();
-#if USE_PRIMITIVES
+
         circleRGBA(Application::get_renderer(), x, y, r, m_color.r, m_color.g, m_color.b, m_color.a);
-#endif
     }
 
     void Gizmos::draw_fill_rect(Vec2 center, float width, float height)
@@ -270,14 +266,28 @@ namespace RoninEngine::Runtime
         SDL_RenderFillRectF(Application::get_renderer(), reinterpret_cast<SDL_FRect*>(&rect));
     }
 
-    void Gizmos::draw_fill_square(Vec2 center, float width)
+    void Gizmos::draw_fill_rect_rounded(Vec2 origin, float width, float height, uint16_t radius)
     {
-        center = Camera::world_2_screen(center);
+        origin = Camera::main_camera()->world_2_screen(origin);
+        std::uint16_t x, y;
         width *= pixelsPerPoint;
-        Rectf rect { center.x - width / 2, center.y - width / 2, width, width };
+        height *= pixelsPerPoint;
+        x = origin.x - width / 2;
+        y = origin.y - height / 2;
+
+        roundedBoxColor(Application::get_renderer(), x, y, x + width, y + height, radius, get_color());
+    }
+
+    void Gizmos::draw_fill_square(Vec2 origin, float width)
+    {
+        origin = Camera::world_2_screen(origin);
+        width *= pixelsPerPoint;
+        Rectf rect { origin.x - width / 2, origin.y - width / 2, width, width };
 
         SDL_RenderFillRectF(Application::get_renderer(), reinterpret_cast<SDL_FRect*>(&rect));
     }
+
+    void Gizmos::draw_fill_square_rounded(Vec2 origin, float width, std::uint16_t radius) { draw_fill_rect_rounded(origin, width, width, radius); }
 
     void Gizmos::draw_storm(Vec2 ray, int edges, int delim)
     {
@@ -361,36 +371,5 @@ namespace RoninEngine::Runtime
         set_color(lastColor);
     }
 
-    float Gizmos::square_triangle(float base, float height) { return base * height / 2; }
-    float Gizmos::square(float x) { return x * x; }
-    float Gizmos::square_rectangle(float a, float b) { return a * b; }
-    float Gizmos::square_circle(float radius)
-    {
-        /*
-         *      get the square circle
-         *      S = PI * r^2
-         *      S = PI * (d/2)^2
-         *      S = (PI * d^2) / 4
-         *
-         */
-        return Math::pi * Math::pow2(radius);
-    }
-    float Gizmos::square_mesh(std::list<Vec2>& vecs)
-    {
-        /*
-         *    get the square a customize figure
-         *    S = square
-         *    S1 = cell square
-         *    n = closed cell
-         *    r = partially closed cell
-         *    S = S1 * (n + 1/2 * r)
-         *
-         */
 
-        float S = -1;
-
-        // TODO: написать алгоритм измерение площади произвольным фигурам
-        throw std::runtime_error("algorithm is not implemented");
-        return S;
-    }
 } // namespace RoninEngine::Runtime
