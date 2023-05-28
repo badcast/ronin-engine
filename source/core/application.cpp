@@ -145,10 +145,11 @@ namespace RoninEngine
 
         if (switched_level) {
             destroyableLevel = switched_level;
-            switched_level->request_unload();
+            destroyableLevel->request_unload();
         }
 
         switched_level = level;
+        switched_level->request_unloading = false;
         if (!level->is_hierarchy()) {
             // init main object
             level->main_object = create_empty_gameobject();
@@ -262,7 +263,7 @@ namespace RoninEngine
             if (!m_levelLoaded) {
                 // free cache
                 if (destroyableLevel) {
-                    RoninMemory::free(destroyableLevel);
+                    // RoninMemory::free(destroyableLevel);
                     destroyableLevel = nullptr;
                 }
 

@@ -59,8 +59,8 @@ namespace RoninEngine
 
             CI uid push_label(const std::string& text, const RoninEngine::Runtime::Rect& rect, const int& fontWidth = 13, uid parent = NOPARENT);
             CI uid push_label(const std::string& text, const Runtime::Vec2Int& point, const int& fontWidth = 13, uid parent = NOPARENT);
-            CI uid push_button(const std::string& text, const RoninEngine::Runtime::Rect& rect, uid parent = NOPARENT);
-            CI uid push_button(const std::string& text, const Runtime::Vec2Int& point, uid parent = NOPARENT);
+            CI uid push_button(const std::string& text, const Runtime::Vec2Int& point, ui_callback* event_callback = nullptr, uid parent = NOPARENT);
+            CI uid push_button(const std::string& text, const Runtime::Rect& point, ui_callback* event_callback = nullptr, uid parent = NOPARENT);
             CI uid push_edit(const std::string& text, const Runtime::Vec2Int& point, uid parent = NOPARENT);
             CI uid push_edit(const std::string& text, const Runtime::Rect& rect, uid parent = NOPARENT);
             CI uid push_display_randomizer(TextRandomizer_Format format, const Vec2Int& point, uid parent = NOPARENT);
@@ -71,8 +71,7 @@ namespace RoninEngine
             CI uid push_texture_stick(Texture* texture, const Runtime::Vec2Int& point, uid parent = NOPARENT);
             CI uid push_texture_animator(Timeline* timeline, const RoninEngine::Runtime::Rect& rect, uid parent = NOPARENT);
             CI uid push_texture_animator(Timeline* timeline, const Vec2Int& point, uid parent = NOPARENT);
-            CI uid push_texture_animator(const std::list<Texture*>& roads, float duration, TimelineOptions option, const RoninEngine::Runtime::Rect& rect,
-                                         uid parent = NOPARENT); // 930923840293840
+            CI uid push_texture_animator(const std::list<Texture*>& roads, float duration, TimelineOptions option, const RoninEngine::Runtime::Rect& rect, uid parent = NOPARENT);
             CI uid push_texture_animator(const std::list<Texture*>& roads, float duration, TimelineOptions option, const Vec2Int& point, uid parent = NOPARENT);
 
             template <typename Container>
@@ -85,8 +84,6 @@ namespace RoninEngine
             {
                 return push_drop_down(elements, index, Runtime::Rect(point.x, point.y, defaultMakets.dropdownSize.x, defaultMakets.dropdownSize.y), changed, parent);
             }
-            //         template <typename Container>
-            //        CI uid Push_DropDown(const Container& elements, int index, const Runtime::Rect& rect, event_index_changed* changed = nullptr, uid parent = NOPARENT);
             CI uid push_drop_down(const std::vector<int>& elements, int index, const Runtime::Rect& rect, event_index_changed* changed, uid parent);
             CI uid push_drop_down(const std::vector<float>& elements, int index, const Runtime::Rect& rect, event_index_changed* changed, uid parent);
             CI uid push_drop_down(const std::vector<std::string>& elements, int index, const Runtime::Rect& rect, event_index_changed* changed, uid parent);

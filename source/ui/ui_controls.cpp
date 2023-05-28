@@ -408,8 +408,10 @@ namespace RoninEngine::UI
 
         switch (element->prototype) {
         case RGUI_DROPDOWN:
-
-            ((event_index_changed)(element->event))(element->id, ((DROPDOWN_RESOURCE*)element->resources)->first);
+            ((event_index_changed)(element->event))(element->id+1, ((DROPDOWN_RESOURCE*)element->resources)->first);
+            break;
+        case RGUI_BUTTON:
+            ((ui_callback)(element->event))(element->id+1, element->resources);
             break;
         }
     }

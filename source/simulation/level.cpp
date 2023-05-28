@@ -23,58 +23,56 @@ namespace RoninEngine::Runtime
 
         lastLevel = switched_level;
         switched_level = level;
-        try {
-            level->request_unload();
 
-            // unloading owner
-            level->on_unloading();
+        level->request_unload();
 
-            if (level->_firstRunScripts) {
-                RoninMemory::free(level->_firstRunScripts);
-                level->_firstRunScripts = nullptr;
-            }
-            if (level->_realtimeScripts) {
-                RoninMemory::free(level->_realtimeScripts);
-                level->_realtimeScripts = nullptr;
-            }
-            if (level->_destructTasks) {
-                RoninMemory::free(level->_destructTasks);
-                level->_destructTasks = nullptr;
-            }
+        // unloading owner
+        level->on_unloading();
 
-            // free GUI objects
-            if (level->ui) {
-                RoninMemory::free(level->ui);
-                level->ui = nullptr;
-            }
-
-            // free objects
-            while (target) {
-                for (Transform* e : *Level::get_hierarchy(target->transform())) {
-                    stacks.emplace_front(e->game_object());
-                }
-
-                // destroy
-                destroy_immediate(target);
-
-                if (stacks.empty()) {
-                    target = nullptr;
-                } else {
-                    target = stacks.front();
-                    stacks.pop_front();
-                }
-            }
-
-            level->main_object = nullptr;
-
-            if (!level->_objects.empty()) {
-                throw std::runtime_error("that's objects isn't release");
-                // this->_objects.clear();
-            }
-        } catch (ex) {
-            switched_level = lastLevel;
-            throw ex;
+        if (level->_firstRunScripts) {
+            RoninMemory::free(level->_firstRunScripts);
+            level->_firstRunScripts = nullptr;
         }
+        if (level->_realtimeScripts) {
+            RoninMemory::free(level->_realtimeScripts);
+            level->_realtimeScripts = nullptr;
+        }
+        if (level->_destructTasks) {
+            RoninMemory::free(level->_destructTasks);
+            level->_destructTasks = nullptr;
+        }
+
+        // free GUI objects
+        if (level->ui) {
+            RoninMemory::free(level->ui);
+            level->ui = nullptr;
+        }
+
+        // free objects
+        while (target) {
+            for (Transform* e : *Level::get_hierarchy(target->transform())) {
+                stacks.emplace_front(e->game_object());
+            }
+
+            // destroy
+            destroy_immediate(target);
+
+            if (stacks.empty()) {
+                target = nullptr;
+            } else {
+                target = stacks.front();
+                stacks.pop_front();
+            }
+        }
+
+        level->main_object = nullptr;
+
+        if (!level->_objects.empty()) {
+            throw std::runtime_error("that's objects isn't release");
+            // this->_objects.clear();
+        }
+
+        switched_level = lastLevel;
         return true;
     }
 }
