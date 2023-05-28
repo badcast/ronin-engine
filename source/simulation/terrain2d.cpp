@@ -21,7 +21,7 @@ namespace RoninEngine::Runtime
         DESCRIBE_AS_MAIN(Terrain2D);
     }
 
-    Terrain2D::Terrain2D(const Terrain2D& source) { RoninMemory::alloc_self(navigation, source.navigation->Width(), source.navigation->Height()); }
+    Terrain2D::Terrain2D(const Terrain2D& source) { RoninMemory::alloc_self(navigation, source.navigation->width(), source.navigation->height()); }
     Terrain2D::~Terrain2D() { RoninMemory::free(navigation); }
 
     AIPathFinder::NavMesh* Terrain2D::surfaceMesh() { return this->navigation; }
@@ -30,7 +30,7 @@ namespace RoninEngine::Runtime
 
     const bool Terrain2D::is_collider(const Vec2 destination)
     {
-        auto n = this->navigation->GetNeuron(destination);
+        auto n = this->navigation->get_neuron(destination);
         return n && navigation->neuronLocked(navigation->neuronGetPoint(n));
     }
 
@@ -42,8 +42,8 @@ namespace RoninEngine::Runtime
         Rect rect;
 
         if (navigation) {
-            rect.w = navigation->Width();
-            rect.h = navigation->Height();
+            rect.w = navigation->width();
+            rect.h = navigation->height();
         }
 
         return rect;

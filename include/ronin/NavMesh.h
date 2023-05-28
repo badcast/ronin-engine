@@ -48,18 +48,18 @@ namespace RoninEngine::AIPathFinder
 
         ~NavMesh();
 
-        void Clear(bool clearLocks = false);
-        void Fill(bool fillLocks = false);
-        void Randomize(int flagFilter = 0xffffff);
+        void clear(bool clearLocks = false);
+        void fill(bool fillLocks = false);
+        void randomize(int flagFilter = 0xffffff);
         void stress();
 
-        int Width();
-        int Height();
+        int width();
+        int height();
 
-        Neuron* GetNeuron(int x, int y);
-        Neuron* GetNeuron(const Runtime::Vec2Int& point);
-        Neuron* GetNeuron(const Runtime::Vec2& worldPoint);
-        Neuron* GetNeuron(const Runtime::Vec2& worldPoint, Runtime::Vec2Int& outPoint);
+        Neuron* get_neuron(int x, int y);
+        Neuron* get_neuron(const Runtime::Vec2Int& point);
+        Neuron* get_neuron(const Runtime::Vec2& worldPoint);
+        Neuron* get_neuron(const Runtime::Vec2& worldPoint, Runtime::Vec2Int& outPoint);
 
         bool neuronContains(const Runtime::Vec2Int& point);
 
@@ -86,9 +86,9 @@ namespace RoninEngine::AIPathFinder
         void neuronLock(const Neuron* neuron, const bool state);
 
 
-        void Find(NavResult& navResult, NavMethodRule method, Runtime::Vec2 worldPointFirst, Runtime::Vec2 worldPointLast);
-        void Find(NavResult& navResult, NavMethodRule method, Neuron* firstNeuron, Neuron* lastNeuron);
-        void Find(NavResult& navResult, NavMethodRule method, Runtime::Vec2Int first, Runtime::Vec2Int last);
+        void find(NavResult& navResult, NavMethodRule method, Runtime::Vec2 worldPointFirst, Runtime::Vec2 worldPointLast);
+        void find(NavResult& navResult, NavMethodRule method, Neuron* firstNeuron, Neuron* lastNeuron);
+        void find(NavResult& navResult, NavMethodRule method, Runtime::Vec2Int first, Runtime::Vec2Int last);
 
         const Runtime::Vec2Int WorldPointToPoint(const Runtime::Vec2& worldPoint);
         const Runtime::Vec2 PointToWorldPosition(const Runtime::Vec2Int& point);

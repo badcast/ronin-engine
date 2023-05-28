@@ -165,12 +165,12 @@ namespace RoninEngine::Runtime
         res = Application::get_resolution();
         prev = get_color();
         set_color(next = 0xfff6f723);
-        mesh->GetNeuron(Camera::screen_2_world(Vec2::zero), p1);
-        mesh->GetNeuron(Camera::screen_2_world(Vec2(res.width, res.height)), p2);
+        mesh->get_neuron(Camera::screen_2_world(Vec2::zero), p1);
+        mesh->get_neuron(Camera::screen_2_world(Vec2(res.width, res.height)), p2);
         yDefault = p1.y;
         while (p1.x <= p2.x) {
             while (p1.y <= p2.y) {
-                p = mesh->GetNeuron(p1);
+                p = mesh->get_neuron(p1);
                 lastPoint = mesh->PointToWorldPosition(p1);
                 if (!p || mesh->neuronLocked(p1)) {
                     next.r = 255;

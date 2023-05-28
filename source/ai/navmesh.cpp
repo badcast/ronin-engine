@@ -23,35 +23,35 @@ namespace RoninEngine::AIPathFinder
 
     NavMesh::~NavMesh() { RoninMemory::free(shedule); }
 
-    void NavMesh::Randomize(int flagFilter) { shedule->randomize(flagFilter); }
+    void NavMesh::randomize(int flagFilter) { shedule->randomize(flagFilter); }
 
     void NavMesh::stress() { }
 
-    int NavMesh::Width() { return shedule->widthSpace; }
+    int NavMesh::width() { return shedule->widthSpace; }
 
-    int NavMesh::Height() { return shedule->heightSpace; }
+    int NavMesh::height() { return shedule->heightSpace; }
 
-    void NavMesh::Clear(bool clearLocks) { shedule->clear(clearLocks); }
+    void NavMesh::clear(bool clearLocks) { shedule->clear(clearLocks); }
 
-    void NavMesh::Fill(bool fillLocks) { shedule->fill(fillLocks); }
+    void NavMesh::fill(bool fillLocks) { shedule->fill(fillLocks); }
 
-    Neuron* NavMesh::GetNeuron(int x, int y) { shedule->get(x, y); }
+    Neuron* NavMesh::get_neuron(int x, int y) { shedule->get(x, y); }
 
-    Neuron* NavMesh::GetNeuron(const Runtime::Vec2Int& range) { return shedule->get(range); }
+    Neuron* NavMesh::get_neuron(const Runtime::Vec2Int& range) { return shedule->get(range); }
 
-    Neuron* NavMesh::GetNeuron(const Vec2& worldPoint)
+    Neuron* NavMesh::get_neuron(const Vec2& worldPoint)
     {
         Vec2Int p;
         p.x = Math::ceil(shedule->widthSpace / 2 + worldPoint.x / worldScale.x);
         p.y = Math::ceil(shedule->heightSpace / 2 - worldPoint.y / worldScale.y);
-        return GetNeuron(p);
+        return get_neuron(p);
     }
 
-    Neuron* NavMesh::GetNeuron(const Runtime::Vec2& worldPoint, Runtime::Vec2Int& outPoint)
+    Neuron* NavMesh::get_neuron(const Runtime::Vec2& worldPoint, Runtime::Vec2Int& outPoint)
     {
         outPoint.x = Math::ceil(shedule->widthSpace / 2 + (worldPoint.x + worldOffset.x) / worldScale.x);
         outPoint.y = Math::ceil(shedule->heightSpace / 2 - (worldPoint.y + worldOffset.y) / worldScale.y);
-        return GetNeuron(outPoint);
+        return get_neuron(outPoint);
     }
 
     const Vec2Int NavMesh::WorldPointToPoint(const Vec2& worldPoint)
@@ -64,7 +64,7 @@ namespace RoninEngine::AIPathFinder
 
     std::uint32_t NavMesh::getCachedSize() { return shedule->get_cached_size(); }
 
-    void NavMesh::Find(NavResult& navResult, NavMethodRule method, Runtime::Vec2 worldPointFirst, Runtime::Vec2 worldPointLast)
+    void NavMesh::find(NavResult& navResult, NavMethodRule method, Runtime::Vec2 worldPointFirst, Runtime::Vec2 worldPointLast)
     {
         NavContainer::NavigateionResult _nr;
 
@@ -83,13 +83,13 @@ namespace RoninEngine::AIPathFinder
         return vec2 + worldOffset;
     }
 
-    bool NavMesh::neuronLocked(const Runtime::Vec2Int& range) { return shedule->neuronLocked(range); }
+    bool NavMesh::neuronLocked(const Runtime::Vec2Int& range) { return shedule->get_nlocked(range); }
 
     bool NavMesh::neuronContains(const Runtime::Vec2Int& range) { return shedule->contains(range); }
 
-    std::uint8_t& RoninEngine::AIPathFinder::NavMesh::neuronGetFlag(const Runtime::Vec2Int& range)
+    std::uint8_t& NavMesh::neuronGetFlag(const Runtime::Vec2Int& range)
     {
-        Neuron* n = GetNeuron(range);
+        Neuron* n = get_neuron(range);
         if (!n)
             throw std::out_of_range("range");
         return n->flags;
@@ -97,7 +97,7 @@ namespace RoninEngine::AIPathFinder
 
     std::uint32_t& RoninEngine::AIPathFinder::NavMesh::neuronGetCost(const Runtime::Vec2Int& range)
     {
-        Neuron* n = GetNeuron(range);
+        Neuron* n = get_neuron(range);
         if (!n)
             throw std::out_of_range("range");
         return n->cost;
@@ -105,7 +105,7 @@ namespace RoninEngine::AIPathFinder
 
     std::uint32_t& RoninEngine::AIPathFinder::NavMesh::neuronHeuristic(const Runtime::Vec2Int& range)
     {
-        Neuron* n = GetNeuron(range);
+        Neuron* n = get_neuron(range);
         if (!n)
             throw std::out_of_range("range");
         return n->h;
@@ -120,7 +120,7 @@ namespace RoninEngine::AIPathFinder
 
     const std::uint32_t RoninEngine::AIPathFinder::NavMesh::neuronGetTotal(const Runtime::Vec2Int& range)
     {
-        Neuron* n = GetNeuron(range);
+        Neuron* n = get_neuron(range);
         if (!n)
             throw std::out_of_range("range");
         return n->cost + n->h;
@@ -144,17 +144,17 @@ namespace RoninEngine::AIPathFinder
 
     void NavMesh::neuronLock(const Neuron* neuron, const bool state) { neuronLock(neuronGetPoint(neuron), state); }
 
-    const Vec2Int NavMesh::neuronGetPoint(const Neuron* neuron) { return shedule->get_point(neuron); }
+    const Vec2Int NavMesh::neuronGetPoint(const Neuron* neuron) { return shedule->get_npoint(neuron); }
 
-    void NavMesh::neuronLock(const Runtime::Vec2Int& range, const bool state) { shedule->neuronLock(range, state); }
+    void NavMesh::neuronLock(const Runtime::Vec2Int& range, const bool state) { shedule->set_nlock(range, state); }
 
     void NavMesh::load(const NavMeshData& navmeshData) { shedule->load(*reinterpret_cast<const across::AcrossData*>(&navmeshData)); }
 
     void NavMesh::save(NavMeshData* navmeshData) { shedule->save(reinterpret_cast<across::AcrossData*>(navmeshData)); }
 
-    void NavMesh::Find(NavResult& navResult, NavMethodRule method, Neuron* firstNeuron, Neuron* lastNeuron) { Find(navResult, method, neuronGetPoint(firstNeuron), neuronGetPoint(lastNeuron)); }
+    void NavMesh::find(NavResult& navResult, NavMethodRule method, Neuron* firstNeuron, Neuron* lastNeuron) { find(navResult, method, neuronGetPoint(firstNeuron), neuronGetPoint(lastNeuron)); }
 
-    void NavMesh::Find(NavResult& navResult, NavMethodRule method, Vec2Int first, Vec2Int last)
+    void NavMesh::find(NavResult& navResult, NavMethodRule method, Vec2Int first, Vec2Int last)
     {
         NavContainer::NavigateionResult _rt;
         shedule->find(_rt, static_cast<across::NavMethodRule>(method), first, last);
