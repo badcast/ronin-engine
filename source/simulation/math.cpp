@@ -6,15 +6,14 @@ using namespace RoninEngine::Runtime;
 constexpr auto periodic_fahren = 5.0 / 9;
 
 // get random value
-int getRVal()
+inline int get_internal_rand()
 {
-    int value;
-    char* p = reinterpret_cast<char*>(&value);
-    p[0] = (char)rand() % 0xff;
-    p[1] = (char)rand() % 0xff;
-    p[2] = (char)rand() % 0xff;
-    p[3] = (char)rand() % 0xff;
-    return Math::abs(value);
+    int result = rand();
+#ifdef WIN32
+    // WIN32 RAND_MAX = 0x7fff - ISSUE
+    result |= (result << 16);
+#endif
+    return result;
 }
 
 void Random::srand(int seed) { std::srand(static_cast<uint32_t>(seed)); }
@@ -33,7 +32,7 @@ float Random::range(float min, float max)
 
 float Random::value()
 {
-    float result = getRVal() * static_cast<float>(4.6566128752458E-10);
+    float result = get_internal_rand() * static_cast<float>(4.6566128752458E-10);
     return result;
 }
 

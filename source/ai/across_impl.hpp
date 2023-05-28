@@ -243,7 +243,7 @@ bool basic_across_map<Tp, TpNeuron>::get_nlocked(const Tp& range)
 template <typename Tp, typename TpNeuron>
 bool basic_across_map<Tp, TpNeuron>::contains(const Tp& range)
 {
-    return range.x < widthSpace && range.y < heightSpace && range.x > ~0 && range.y > ~0;
+    return range.x < widthSpace && range.y < heightSpace && range.x > -1 && range.y > -1;
 }
 
 template <typename Tp, typename TpNeuron>

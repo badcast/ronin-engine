@@ -3,45 +3,82 @@
 
 Color::Color() { memset(this, 0, sizeof(Color)); }
 
-Color::Color(const Color &assign) : r(assign.r), g(assign.g), b(assign.b), a(assign.a) {}
+Color::Color(const Color& assign)
+    : r(assign.r)
+    , g(assign.g)
+    , b(assign.b)
+    , a(assign.a)
+{
+}
 
-Color::Color(const int32_t rgba) { memcpy(this, &rgba, sizeof(Color)); }
+Color::Color(int rgb)
+{
+    memcpy(this, &rgb, sizeof(Color));
+    a = SDL_ALPHA_OPAQUE;
+}
 
-Color::Color(const uint32_t rgba) { memcpy(this, &rgba, sizeof(Color)); }
+Color::Color(std::uint32_t rgb)
+{
+    memcpy(this, &rgb, sizeof(std::uint32_t));
+    a = SDL_ALPHA_OPAQUE;
+}
 
-Color::Color(const char *colorHex) {}
+Color::Color(const char* colorHex) { }
 
-Color::Color(const std::string &colorHex) : Color(colorHex.c_str()) {}
+Color::Color(const std::string& colorHex)
+    : Color(colorHex.c_str())
+{
+}
 
-Color::Color(const uint8_t r, const uint8_t g, const uint8_t b) {
+Color::Color(const SDL_Color& color) { (*this) = color; }
+
+Color::Color(const uint8_t r, const uint8_t g, const uint8_t b)
+{
     this->r = r;
     this->g = g;
     this->b = b;
     this->a = 255;
 }
 
-Color::Color(const uint8_t r, const uint8_t g, const uint8_t b, const uint8_t a) {
+Color::Color(const uint8_t r, const uint8_t g, const uint8_t b, const uint8_t a)
+{
     this->r = r;
     this->g = g;
     this->b = b;
     this->a = a;
 }
 
-Color Color::operator=(const Color &rhs) {
-    (*reinterpret_cast<int *>(this)) = *reinterpret_cast<int *>(&const_cast<Color &>(rhs));
+Color Color::operator=(const Color& rhs)
+{
+    (*reinterpret_cast<int*>(this)) = *reinterpret_cast<int*>(&const_cast<Color&>(rhs));
     return *this;
 }
 
-Color Color::operator=(const int &rhs) {
-    (*reinterpret_cast<int *>(this)) = *(&const_cast<int &>(rhs));
+Color Color::operator=(const int& rhs)
+{
+    (*reinterpret_cast<int*>(this)) = *(&const_cast<int&>(rhs));
     return *this;
 }
 
-Color Color::operator=(const std::uint32_t &rhs) {
-    (*reinterpret_cast<std::uint32_t *>(this)) = *(&const_cast<std::uint32_t &>(rhs));
+Color Color::operator=(const SDL_Color& rhs)
+{
+    memcpy(this, &rhs, sizeof(rhs));
     return *this;
 }
 
-Color::operator int() const { return *(const int *)(this); }
+Color Color::operator=(const std::uint32_t& rhs)
+{
+    (*reinterpret_cast<std::uint32_t*>(this)) = *(&const_cast<std::uint32_t&>(rhs));
+    return *this;
+}
 
-Color::operator std::uint32_t() const { return *(std::uint32_t *)(this); }
+Color::operator int() const { return *reinterpret_cast<const int*>(this); }
+
+Color::operator std::uint32_t() const { return *reinterpret_cast<const std::uint32_t*>(this); }
+
+Color::operator SDL_Color() const
+{
+    SDL_Color col;
+    memcpy(&col, this, sizeof(col));
+    return col;
+}

@@ -109,8 +109,8 @@ namespace RoninEngine::Runtime
 
         if (renders.empty()) {
             Resolution res = Application::get_resolution();
-            Vec2Int wpLeftTop = Vec2::round_to_int(screen_2_world(Vec2::zero));
-            Vec2Int wpRightBottom = Vec2::round_to_int(screen_2_world(Vec2(res.width, res.height)));
+            Vec2Int wpLeftTop = Vec2::round_to_int(screen_to_world(Vec2::zero));
+            Vec2Int wpRightBottom = Vec2::round_to_int(screen_to_world(Vec2(res.width, res.height)));
             // RUN STORM CAST
             std::list<Transform*> storm_result = Physics2D::storm_cast(transform()->p, Math::number(Math::max(wpRightBottom.x - transform()->p.x, wpRightBottom.y - transform()->p.y)) + 1 + distanceEvcall);
             std::list<Renderer*> _removes;
@@ -145,7 +145,7 @@ namespace RoninEngine::Runtime
         return make_tuple(&renders, &_lightsOutResults);
     }
 
-    const Vec2 Camera::screen_2_world(Vec2 screenPoint)
+    const Vec2 Camera::screen_to_world(Vec2 screenPoint)
     {
         Resolution res = Application::get_resolution();
         Vec2 offset = _main->transform()->position();
@@ -157,7 +157,7 @@ namespace RoninEngine::Runtime
         screenPoint += offset;
         return screenPoint;
     }
-    const Vec2 Camera::world_2_screen(Vec2 worldPoint)
+    const Vec2 Camera::world_to_screen(Vec2 worldPoint)
     {
         Resolution res = Application::get_resolution();
         Vec2 scale;
@@ -171,7 +171,7 @@ namespace RoninEngine::Runtime
         return worldPoint;
     }
 
-    const Vec2 Camera::viewport_2_world(Vec2 viewportPoint)
+    const Vec2 Camera::viewport_to_world(Vec2 viewportPoint)
     {
         Resolution res = Application::get_resolution();
         Vec2 scale, offset = _main->transform()->position();
@@ -185,7 +185,7 @@ namespace RoninEngine::Runtime
         return viewportPoint;
     }
 
-    const Vec2 Camera::world_2_viewport(Vec2 worldPoint)
+    const Vec2 Camera::world_to_viewport(Vec2 worldPoint)
     {
         Resolution res = Application::get_resolution();
         Vec2 scale;
@@ -199,9 +199,9 @@ namespace RoninEngine::Runtime
         return worldPoint;
     }
 
-    const Vec2 Camera::world_2_viewport_clamp(Vec2 worldPoint)
+    const Vec2 Camera::world_to_viewport_clamp(Vec2 worldPoint)
     {
-        worldPoint = world_2_viewport(worldPoint);
+        worldPoint = world_to_viewport(worldPoint);
         worldPoint.x = Math::clamp01(worldPoint.x);
         worldPoint.y = Math::clamp01(worldPoint.y);
         return worldPoint;

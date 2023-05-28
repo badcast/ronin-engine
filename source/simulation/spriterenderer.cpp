@@ -75,7 +75,7 @@ namespace RoninEngine::Runtime
     void SpriteRenderer::offset_from_world_position(Vec2 position)
     {
         // Convert world position to Screen Point
-        offset = Camera::world_2_screen(transform()->position()) - Camera::world_2_screen(position);
+        offset = Camera::world_to_screen(transform()->position()) - Camera::world_to_screen(position);
     }
 
     void SpriteRenderer::render(Rendering* rendering)
@@ -83,8 +83,8 @@ namespace RoninEngine::Runtime
         static std::uint16_t x, y;
         static SDL_Rect dest;
         SDL_Texture* textureCache = nullptr;
-        auto&& _srcRect = (rendering->src);
-        auto&& _dstRect = (rendering->dst);
+        auto& _srcRect = (rendering->src);
+        auto& _dstRect = (rendering->dst);
         //    auto& _srcRect = (render->src);
         //    auto& _dstRect = (render->dst);
 
@@ -134,7 +134,7 @@ namespace RoninEngine::Runtime
                 _srcRect.x = _srcRect.w / dest.w;
                 _srcRect.y = _srcRect.h / dest.h;
 
-                SDL_Texture* _texture = SDL_CreateTextureFromSurface(Application::get_renderer(), sprite->source);
+                SDL_Texture* _texture = SDL_CreateTextureFromSurface(rendering->renderer, sprite->source);
 
                 // render tile
                 switch (this->renderPresentMode) {

@@ -58,7 +58,7 @@ namespace RoninEngine::Runtime
                 robject.emplace_back(*ib);
             }
             int size = robject.size();
-#pragma omp parallel for private(sourcePoint) private(wrapper) private(point)
+//#pragma omp parallel for private(sourcePoint) private(wrapper) private(point)
             for (std::size_t pointer = 0; pointer < size; ++pointer) {
                 Renderer* renderSource = robject[pointer];
                 memset(&wrapper, 0, sizeof(wrapper));

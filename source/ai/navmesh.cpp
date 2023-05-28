@@ -54,7 +54,7 @@ namespace RoninEngine::AIPathFinder
         return get_neuron(outPoint);
     }
 
-    const Vec2Int NavMesh::WorldPointToPoint(const Vec2& worldPoint)
+    const Vec2Int NavMesh::world_position_to_point(const Vec2& worldPoint)
     {
         Vec2Int p;
         p.x = Math::ceil(shedule->widthSpace / 2 + (worldPoint.x + worldOffset.x) / worldScale.x);
@@ -68,14 +68,14 @@ namespace RoninEngine::AIPathFinder
     {
         NavContainer::NavigateionResult _nr;
 
-        shedule->find(_nr, across::NavMethodRule(method), this->WorldPointToPoint(worldPointFirst), WorldPointToPoint(worldPointLast));
+        shedule->find(_nr, across::NavMethodRule(method), this->world_position_to_point(worldPointFirst), world_position_to_point(worldPointLast));
     }
 
-    const Runtime::Vec2 NavMesh::PointToWorldPosition(const Runtime::Vec2Int& range) { return PointToWorldPosition(range.x, range.y); }
+    const Runtime::Vec2 NavMesh::point_to_world_position(const Runtime::Vec2Int& range) { return point_to_world_position(range.x, range.y); }
 
-    const Runtime::Vec2 NavMesh::PointToWorldPosition(Neuron* neuron) { return PointToWorldPosition(neuronGetPoint(neuron)); }
+    const Runtime::Vec2 NavMesh::point_to_world_position(Neuron* neuron) { return point_to_world_position(neuronGetPoint(neuron)); }
 
-    const Runtime::Vec2 NavMesh::PointToWorldPosition(const int& x, const int& y)
+    const Runtime::Vec2 NavMesh::point_to_world_position(const int& x, const int& y)
     {
         Vec2 vec2(shedule->widthSpace / 2.f, shedule->heightSpace / 2.f);
         vec2.x = (x - vec2.x) * worldScale.x;

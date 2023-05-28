@@ -85,15 +85,14 @@ namespace RoninEngine::AIPathFinder
         const bool neuronEmpty(const Neuron* neuron);
         void neuronLock(const Neuron* neuron, const bool state);
 
-
         void find(NavResult& navResult, NavMethodRule method, Runtime::Vec2 worldPointFirst, Runtime::Vec2 worldPointLast);
         void find(NavResult& navResult, NavMethodRule method, Neuron* firstNeuron, Neuron* lastNeuron);
         void find(NavResult& navResult, NavMethodRule method, Runtime::Vec2Int first, Runtime::Vec2Int last);
 
-        const Runtime::Vec2Int WorldPointToPoint(const Runtime::Vec2& worldPoint);
-        const Runtime::Vec2 PointToWorldPosition(const Runtime::Vec2Int& point);
-        const Runtime::Vec2 PointToWorldPosition(Neuron* neuron);
-        const Runtime::Vec2 PointToWorldPosition(const int& x, const int& y);
+        const Runtime::Vec2Int world_position_to_point(const Runtime::Vec2& worldPoint);
+        const Runtime::Vec2 point_to_world_position(const Runtime::Vec2Int& point);
+        const Runtime::Vec2 point_to_world_position(Neuron* neuron);
+        const Runtime::Vec2 point_to_world_position(const int& x, const int& y);
         void load(const NavMeshData& navmeshData);
         void save(NavMeshData* navmeshData);
 

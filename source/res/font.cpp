@@ -18,7 +18,7 @@ namespace RoninEngine::UI
     SDL_Texture* pfontTexture = nullptr;
     SDL_Texture* pfontTextureHilight = nullptr;
 
-    void Initialize_Fonts(bool optimizeDeffects)
+    void init_fonts(bool optimizeDeffects)
     {
         if (pfontTexture) {
             throw std::runtime_error("Re initialization fail");
@@ -149,15 +149,8 @@ namespace RoninEngine::UI
         return width;
     }
 
-    Rect Multiline_TextWidth_WithCyrilic(const std::string& text, int fontSize)
-    {
-        // todo: вычисление мультистрок
-        Rect rect;
-        throw std::exception();
-        return rect;
-    }
 
-    void Render_String(SDL_Renderer* renderer, Rect rect, const char* text, int len, int pfontWidth, RoninEngine::UI::TextAlign textAlign, bool textWrap, bool hilight)
+    void render_string_legacy(SDL_Renderer* renderer, Rect rect, const char* text, int len, int pfontWidth, RoninEngine::UI::TextAlign textAlign, bool textWrap, bool hilight)
     {
         if (len <= 0 || !pfontTexture || hilight && !pfontTextureHilight)
             return;

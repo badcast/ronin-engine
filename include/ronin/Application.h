@@ -25,7 +25,7 @@ namespace RoninEngine
     public:
         static void init();
 
-        static void create_window(const int& width, const int& height, bool fullscreen = false);
+        static void create_window(const int width, const int height, bool fullscreen = false);
         static void load_level(Runtime::Level* level);
         static bool simulate();
         static void get_screen(const char* filename);

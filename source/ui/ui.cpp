@@ -4,8 +4,6 @@ enum { ElementEnableMask = 1, ElementVisibleMask = 2, ElementGroupMask = 4 };
 
 namespace RoninEngine::UI
 {
-    GUI* guiInstance;
-
     extern void* factory_resource(GUIControlPresents type);
     extern void factory_free(UIElement* element);
     extern bool general_render_ui_section(GUI* gui, UIElement& element, SDL_Renderer* render, const bool hovering, bool& focus);
@@ -43,7 +41,6 @@ namespace RoninEngine::UI
         , visible(true)
         , _focusedUI(false)
     {
-        guiInstance = this;
     }
 
     GUI::~GUI() { remove_all(); }
@@ -191,7 +188,7 @@ namespace RoninEngine::UI
     uid GUI::push_texture_animator(const std::list<Texture*>& roads, float duration, TimelineOptions option, const Vec2Int& point, uid parent) { return push_texture_animator(roads, duration, option, { point.x, point.y, 0, 0 }, parent); }
 
     template <typename Container>
-    uid internal_push_dropdown(const Container& container, int index, const Runtime::Rect& rect, event_index_changed* changed, uid parent)
+    uid internal_push_dropdown(GUI* guiInstance, const Container& container, int index, const Runtime::Rect& rect, event_index_changed* changed, uid parent)
     {
         using T = typename std::iterator_traits<decltype(container.cbegin())>::value_type;
 
@@ -225,22 +222,22 @@ namespace RoninEngine::UI
         return id;
     }
 
-    uid GUI::push_drop_down(const std::vector<int>& elements, int index, const Runtime::Rect& rect, event_index_changed* changed, uid parent) { return internal_push_dropdown(elements, index, rect, changed, parent); }
+    uid GUI::push_drop_down(const std::vector<int>& elements, int index, const Runtime::Rect& rect, event_index_changed* changed, uid parent) { return internal_push_dropdown(this,elements, index, rect, changed, parent); }
 
-    uid GUI::push_drop_down(const std::vector<float>& elements, int index, const Runtime::Rect& rect, event_index_changed* changed, uid parent) { return internal_push_dropdown(elements, index, rect, changed, parent); }
+    uid GUI::push_drop_down(const std::vector<float>& elements, int index, const Runtime::Rect& rect, event_index_changed* changed, uid parent) { return internal_push_dropdown(this,elements, index, rect, changed, parent); }
 
-    uid GUI::push_drop_down(const std::vector<std::string>& elements, int index, const Runtime::Rect& rect, event_index_changed* changed, uid parent) { return internal_push_dropdown(elements, index, rect, changed, parent); }
+    uid GUI::push_drop_down(const std::vector<std::string>& elements, int index, const Runtime::Rect& rect, event_index_changed* changed, uid parent) { return internal_push_dropdown(this,elements, index, rect, changed, parent); }
 
-    uid GUI::push_drop_down(const std::list<float>& elements, int index, const Runtime::Rect& rect, event_index_changed* changed, uid parent) { return internal_push_dropdown(elements, index, rect, changed, parent); }
+    uid GUI::push_drop_down(const std::list<float>& elements, int index, const Runtime::Rect& rect, event_index_changed* changed, uid parent) { return internal_push_dropdown(this,elements, index, rect, changed, parent); }
 
-    uid GUI::push_drop_down(const std::list<int>& elements, int index, const Runtime::Rect& rect, event_index_changed* changed, uid parent) { return internal_push_dropdown(elements, index, rect, changed, parent); }
+    uid GUI::push_drop_down(const std::list<int>& elements, int index, const Runtime::Rect& rect, event_index_changed* changed, uid parent) { return internal_push_dropdown(this,elements, index, rect, changed, parent); }
 
-    uid GUI::push_drop_down(const std::list<std::string>& elements, int index, const Runtime::Rect& rect, event_index_changed* changed, uid parent) { return internal_push_dropdown(elements, index, rect, changed, parent); }
+    uid GUI::push_drop_down(const std::list<std::string>& elements, int index, const Runtime::Rect& rect, event_index_changed* changed, uid parent) { return internal_push_dropdown(this,elements, index, rect, changed, parent); }
 
     uid GUI::push_slider(float value, float min, float max, const Rect& rect, event_value_changed* changed, uid parent)
     {
-        uid id = call_register_ui(guiInstance, parent);
-        auto& element = call_get_element(guiInstance, id);
+        uid id = call_register_ui(this, parent);
+        auto& element = call_get_element(this, id);
         element.prototype = RGUI_HSLIDER;
         element.rect = rect;
         element.resources = factory_resource(element.prototype);

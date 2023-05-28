@@ -97,8 +97,8 @@ namespace RoninEngine
 
             static const Vec2 abs(const Vec2& value);
             static const Vec2 nabs(const Vec2& value);
-            static Vec2 slerp(const Vec2& a, const Vec2& b, float t);
-            static Vec2 slerp_unclamped(const Vec2& a, const Vec2& b, float t);
+            static Vec2 slerp(Vec2 a, Vec2 b, float t);
+            static Vec2 slerp_unclamped(Vec2 a, Vec2 b, float t);
             static Vec2 lerp(const Vec2& a, const Vec2& b, float t);
             static Vec2 lerp_unclamped(const Vec2& a, const Vec2& b, float t);
             static Vec2 max(const Vec2& lhs, const Vec2& rhs);

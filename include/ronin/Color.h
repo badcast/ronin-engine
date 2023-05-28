@@ -5,22 +5,24 @@
 namespace RoninEngine::Runtime
 {
     struct RONIN_API Color {
-        std::uint8_t r;
-        std::uint8_t g;
-        std::uint8_t b;
-        std::uint8_t a;
+        Uint8 r;
+        Uint8 g;
+        Uint8 b;
+        Uint8 a;
 
         Color();
 
         Color(const Color&);
 
-        Color(const std::int32_t rgba);
+        Color(int rgb);
 
-        Color(const std::uint32_t rgba);
+        Color(std::uint32_t rgb);
 
         Color(const char* colorHex);
 
         Color(const std::string& colorHex);
+
+        Color(const SDL_Color& color);
 
         Color(const std::uint8_t r, const std::uint8_t g, const std::uint8_t b);
 
@@ -29,11 +31,13 @@ namespace RoninEngine::Runtime
         Color operator=(const Color& rhs);
         Color operator=(const int& rhs);
         Color operator=(const std::uint32_t& rhs);
+        Color operator=(const SDL_Color& rhs);
 
         // bool operator==(const Color& rhs);
         // bool operator!=(const Color& rhs);
         operator int() const;
         operator std::uint32_t() const;
+        operator SDL_Color() const;
 
         // Basic Collors
         API_EXPORT static const Color transparent;
@@ -190,7 +194,7 @@ namespace RoninEngine::Runtime
     // NOTE: Optimized thats
     // TODO: Optimize to static members (release an reinitialize)
     // Basic Colors
-    API_EXPORT inline const Color Color::transparent(0);
+    API_EXPORT inline const Color Color::transparent(0, 0, 0, 0);
     API_EXPORT inline const Color Color::black(0, 0, 0);
     API_EXPORT inline const Color Color::silver(192, 192, 192);
     API_EXPORT inline const Color Color::gray(128, 128, 128);

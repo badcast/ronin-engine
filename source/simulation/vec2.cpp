@@ -13,8 +13,6 @@ using namespace RoninEngine;
 // const Vec2 Vec2::infinity = Vec2(Mathf::Infinity, Mathf::Infinity);
 // const Vec2 Vec2::negativeInfinity = infinity * -1;
 
-int countRun = 0;
-
 Vec2::Vec2()
     : x(0)
     , y(0)
@@ -31,7 +29,6 @@ Vec2::Vec2(const float& x, const float& y)
 {
     this->x = x;
     this->y = y;
-    ++countRun;
 }
 
 float Vec2::magnitude() const { return Math::sqrt(x * x + y * y); }
@@ -59,7 +56,7 @@ const Vec2 Vec2::abs(const Vec2& value) { return { Math::abs(value.x), Math::abs
 
 const Vec2 Vec2::nabs(const Vec2& value) { return { Math::nabs(value.x), Math::nabs(value.y) }; }
 
-Vec2 Vec2::slerp(const Vec2& a, const Vec2& b, float t)
+Vec2 Vec2::slerp(Vec2 a, Vec2 b, float t)
 {
     t = Math::clamp01(t);
 
@@ -74,9 +71,10 @@ Vec2 Vec2::slerp(const Vec2& a, const Vec2& b, float t)
     float t2 = Math::sin(t * Alpha) / SinAlpha;
 
     // interpolate src disposition
-    return a * t1 + b * t2;
+    Vec2 p = a * t1 + b * t2;
+    return p;
 }
-Vec2 Vec2::slerp_unclamped(const Vec2& a, const Vec2& b, float t)
+Vec2 Vec2::slerp_unclamped( Vec2 a,  Vec2 b, float t)
 {
     // get cosine of angle between disposition (-1 -> 1)
     float CosAlpha = dot(a, b);

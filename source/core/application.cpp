@@ -110,7 +110,7 @@ namespace RoninEngine
         isQuiting = false;
     }
 
-    void Application::create_window(const int& width, const int& height, bool fullscreen)
+    void Application::create_window(const int width, const int height, bool fullscreen)
     {
         if (!m_inited || windowOwner)
             Application::fail("Application not Inited");
@@ -123,14 +123,6 @@ namespace RoninEngine
         windowOwner = SDL_CreateWindow("Ronin Engine", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, __flags);
         if (!windowOwner)
             fail(SDL_GetError());
-
-        renderer = SDL_CreateRenderer(windowOwner, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE /*| SDL_RENDERER_PRESENTVSYNC*/);
-
-        if (!renderer)
-            fail(SDL_GetError());
-
-        //        SDL_RendererInfo rfio;
-        //        SDL_GetRendererInfo(renderer, &rfio);
 
         // Brightness - Яркость
         SDL_SetWindowBrightness(windowOwner, 1);
@@ -226,13 +218,32 @@ namespace RoninEngine
             return false;
         }
 
-        internal_init_TimeEngine();
         flags = static_cast<SDL_WindowFlags>(SDL_GetWindowFlags(windowOwner));
         displayMode = Application::get_display_mode();
         secPerFrame = 1000.f / displayMode.refresh_rate; // refresh screen from Monitor Settings
-        game_time_score = secPerFrame * 0.001f;
+        game_time_score = secPerFrame / 1000;
         while (!isQuiting) {
             // TODO: m_level->request_unloading use as WNILE block (list proc)
+
+            if (!m_levelLoaded) {
+                // free cache
+                if (destroyableLevel) {
+                    // RoninMemory::free(destroyableLevel);
+                    SDL_DestroyRenderer(renderer);
+                    destroyableLevel = nullptr;
+                }
+                renderer = SDL_CreateRenderer(windowOwner, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE /*| SDL_RENDERER_PRESENTVSYNC*/);
+
+                if (!renderer)
+                    fail(SDL_GetError());
+
+                //        SDL_RendererInfo rfio;
+                //        SDL_GetRendererInfo(renderer, &rfio);
+                internal_init_TimeEngine();
+                // Start first init
+                switched_level->on_awake();
+                m_levelLoaded = true;
+            }
 
             // delaying
             SDL_Delay(delayed);
@@ -246,6 +257,7 @@ namespace RoninEngine
 
             TimeEngine::begin_watch();
 
+            SDL_RenderFlush(renderer); // flush renderer before first render
             while (SDL_PollEvent(&event)) {
                 internal_update_input(&event);
                 if (event.type == SDL_QUIT)
@@ -260,19 +272,6 @@ namespace RoninEngine
 
             input_movement_update();
 
-            if (!m_levelLoaded) {
-                // free cache
-                if (destroyableLevel) {
-                    // RoninMemory::free(destroyableLevel);
-                    destroyableLevel = nullptr;
-                }
-
-                SDL_RenderFlush(renderer); // flush renderer before first render
-
-                // Start first init
-                switched_level->on_awake();
-                m_levelLoaded = true;
-            }
             _wwatcher.ms_wait_internal_instructions = TimeEngine::end_watch();
 
             // update level
@@ -338,16 +337,8 @@ namespace RoninEngine
             if (!_watcher_time.empty())
                 throw std::runtime_error("TimeEngine::end_watcher() - not released stack.");
 
-            internal_delta_time = delayed / 1000.f;
-            if (internal_delta_time < 0.01f) {
-                internal_delta_time = 0.01f;
-            }
-            //                        if (internal_delta_time > 1) {
-            //                            internal_delta_time -= 1;
-            //                            internal_delta_time = Math::clamp01(internal_delta_time);
-            //                        }
-
-            internal_game_time += game_time_score;
+            internal_delta_time = Math::min<float>(1.f, Math::max<float>(delayed / 1000.f, game_time_score));
+            internal_game_time += internal_delta_time;
 
             if (TimeEngine::startUpTime() > fpsRound) {
                 // SDL_METHOD:
@@ -372,17 +363,21 @@ namespace RoninEngine
         // unload level
         Runtime::unload_level(switched_level);
 
+        switched_level = nullptr;
+
         SDL_DestroyRenderer(renderer);
         SDL_DestroyWindow(windowOwner);
 
         UI::ui_free_controls();
-        // sdl quit
+
         Mix_Quit();
         IMG_Quit();
         SDL_Quit();
 
         m_inited = false;
-        int r = Runtime::RoninMemory::total_allocated();
+        int memory_leak = Runtime::RoninMemory::total_allocated();
+        if (memory_leak > 0)
+            SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "ronin-memory-leak count: %d", memory_leak);
         return isQuiting;
     }
 

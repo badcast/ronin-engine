@@ -102,7 +102,7 @@ namespace RoninEngine::Runtime
         internalText.resize(0);
     }
 
-    const bool Input::is_mouse_up(int button) { return mouseState == 1; }
+    const bool Input::is_mouse_up(int button) { return mouseState == button; }
 
     const bool Input::is_mouse_down(int button) { return SDL_GetMouseState(nullptr, nullptr) & SDL_BUTTON_LMASK != 0; }
 

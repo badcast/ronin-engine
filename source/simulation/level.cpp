@@ -301,7 +301,7 @@ void Level::level_render_world(SDL_Renderer* renderer, ScoreWatcher* watcher)
     TimeEngine::begin_watch();
     // Render on main camera
     Camera* cam = Camera::main_camera(); // Draw level from active camera (main)
-    if (cam) {
+    if (!switched_level->request_unloading && cam) {
         Resolution res = Application::get_resolution();
 
         // FlushCache last result
@@ -315,7 +315,7 @@ void Level::level_render_world(SDL_Renderer* renderer, ScoreWatcher* watcher)
 
     // begin watcher
     TimeEngine::begin_watch();
-    if (Camera::main_camera()) {
+    if (!switched_level->request_unloading && Camera::main_camera()) {
         if (_realtimeScripts) {
             for (auto exec : *_realtimeScripts) {
                 if (exec->game_object()->m_active)
@@ -328,7 +328,8 @@ void Level::level_render_world(SDL_Renderer* renderer, ScoreWatcher* watcher)
     // end watcher
 
     TimeEngine::begin_watch();
-    runtime_destructs();
+    if (!switched_level->request_unloading)
+        runtime_destructs();
     watcher->ms_wait_destructions = TimeEngine::end_watch();
 }
 

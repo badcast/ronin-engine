@@ -29,11 +29,11 @@ namespace RoninEngine::Runtime
 
         std::tuple<std::map<int, std::set<Renderer*>>*, std::set<Light*>*> matrix_select();
 
-        static const Vec2 screen_2_world(Vec2 screenPoint);
-        static const Vec2 world_2_screen(Vec2 worldPoint);
-        static const Vec2 viewport_2_world(Vec2 viewportPoint);
-        static const Vec2 world_2_viewport(Vec2 worldPoint);
-        static const Vec2 world_2_viewport_clamp(Vec2 worldPoint);
+        static const Vec2 screen_to_world(Vec2 screenPoint);
+        static const Vec2 world_to_screen(Vec2 worldPoint);
+        static const Vec2 viewport_to_world(Vec2 viewportPoint);
+        static const Vec2 world_to_viewport(Vec2 worldPoint);
+        static const Vec2 world_to_viewport_clamp(Vec2 worldPoint);
         static Camera* main_camera();
     };
 
