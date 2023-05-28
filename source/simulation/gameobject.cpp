@@ -48,6 +48,7 @@ namespace RoninEngine::Runtime
         transform()->parent_notify_active_state(this);
     }
 
+    // TODO: Recursivelly set active all hierarchy
     void GameObject::set_active_recursivelly(bool state) { this->set_active(false); }
 
     Transform* GameObject::transform()
