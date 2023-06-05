@@ -112,8 +112,11 @@ namespace RoninEngine
 
     void Application::create_window(const int width, const int height, bool fullscreen)
     {
-        if (!m_inited || windowOwner)
+        if (!m_inited)
             Application::fail("Application not Inited");
+
+        if (windowOwner)
+            Application::fail("Window exists, active self");
 
         std::uint32_t __flags = SDL_WINDOW_SHOWN;
 
@@ -410,7 +413,7 @@ namespace RoninEngine
         fprintf(stderr, "%s", _template.data());
 
         SDL_LogMessage(SDL_LogCategory::SDL_LOG_CATEGORY_APPLICATION, SDL_LogPriority::SDL_LOG_PRIORITY_CRITICAL, "%s", _template.c_str());
-        SDL_ShowSimpleMessageBox(SDL_MessageBoxFlags::SDL_MESSAGEBOX_INFORMATION, "Ronin Engine: failed", _template.c_str(), windowOwner);
+        SDL_ShowSimpleMessageBox(SDL_MessageBoxFlags::SDL_MESSAGEBOX_ERROR, "Ronin Engine: failed", _template.c_str(), windowOwner);
         back_fail();
     }
 

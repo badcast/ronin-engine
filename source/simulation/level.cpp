@@ -48,6 +48,19 @@ namespace RoninEngine::Runtime
             level->ui = nullptr;
         }
 
+        // free resources
+        if (level->internal_resources) {
+            for (auto sprite : level->internal_resources->offload_sprites) {
+                RoninMemory::free(sprite);
+            }
+
+            for (auto surface : level->internal_resources->offload_surfaces) {
+                SDL_FreeSurface(surface);
+            }
+            RoninMemory::free(level->internal_resources);
+            level->internal_resources = nullptr;
+        }
+
         // free objects
         while (target) {
             for (Transform* e : *Level::get_hierarchy(target->transform())) {
@@ -95,7 +108,7 @@ Level::Level(const std::string& name)
     if (switched_level != nullptr) {
         static_assert(true, "current level replaced by new");
     }
-
+    RoninMemory::alloc_self(internal_resources);
     RoninMemory::alloc_self(ui, this);
 }
 Level::~Level()

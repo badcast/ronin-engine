@@ -14,6 +14,7 @@ namespace RoninEngine::Runtime
         friend class Camera;
         friend class Camera2D;
         friend class Physics2D;
+        friend class Primitive;
 
         friend bool instanced(Object* obj);
         friend void destroy(Object* obj);
@@ -23,6 +24,7 @@ namespace RoninEngine::Runtime
         friend bool unload_level(Level* level);
 
     private:
+        struct LevelResources* internal_resources;
         std::uint32_t _level_ids_;
         bool request_unloading;
         int _destroyed;

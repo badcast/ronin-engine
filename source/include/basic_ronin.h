@@ -57,4 +57,9 @@ namespace RoninEngine::Runtime
         SDL_Texture* texture;
         SDL_Renderer* renderer;
     };
+
+    struct LevelResources {
+        std::list<Sprite*> offload_sprites;
+        std::list<SDL_Surface*> offload_surfaces;
+    };
 }
