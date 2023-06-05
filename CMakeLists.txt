@@ -24,15 +24,16 @@ endif()
 message(STATUS "Architecture select ${ARCHITECTURE}")
 
 set(RONINENGINE_VERSION_MIN 1.0)
-set(RUNTIME_OUTPUT_NAME "ronin_engine")
+set(RUNTIME_OUTPUT_NAME "ronin_framework")
 
 # compilling sources
 add_subdirectory(source)
 
 add_library(RoninEngineLibrary SHARED ${ronin_targets} ${RONIN_ENGINE_HEADERS})
 
-set_target_properties(RoninEngineLibrary PROPERTIES OUTPUT_NAME
-                                                    ${RUNTIME_OUTPUT_NAME})
+set_target_properties(RoninEngineLibrary
+    PROPERTIES
+        OUTPUT_NAME ${RUNTIME_OUTPUT_NAME})
 
 # include to #include <ronin/...>
 target_include_directories(RoninEngineLibrary
