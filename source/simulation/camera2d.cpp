@@ -71,7 +71,7 @@ namespace RoninEngine::Runtime
                     Vec2 point = transform()->p;
                     Transform* rTrans = renderSource->transform();
 
-                    if (rTrans->m_parent && renderSource->transform()->m_parent != Level::self()->main_object->transform()) {
+                    if (rTrans->m_parent && renderSource->transform()->m_parent != World::self()->main_object->transform()) {
                         Vec2 direction = rTrans->p;
                         sourcePoint = Vec2::rotate_around(rTrans->m_parent->position(), direction, rTrans->angle() * Math::deg2rad);
                         //                rTrans->localPosition(

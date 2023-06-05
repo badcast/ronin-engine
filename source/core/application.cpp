@@ -6,7 +6,7 @@ namespace RoninEngine
 {
     namespace Runtime
     {
-        Level* switched_level;
+        World* switched_world;
 
         float internal_time_scale, internal_game_time, internal_delta_time;
 
@@ -31,7 +31,7 @@ namespace RoninEngine
         extern void input_movement_update();
         extern void internal_update_input(SDL_Event* e);
 
-        extern bool unload_level(Level* level);
+        extern bool unload_world(World* world);
     }
 
     namespace UI
@@ -42,15 +42,15 @@ namespace RoninEngine
     }
 
     static bool m_inited = false;
-    static bool m_levelLoaded = false;
+    static bool internal_level_loaded = false;
     static bool m_levelAccept = false;
-    static Runtime::Level* destroyableLevel = nullptr;
+    static Runtime::World* destroyableLevel = nullptr;
     static SDL_Renderer* renderer = nullptr;
     static SDL_Window* windowOwner = nullptr;
     static bool isQuiting;
     static ScoreWatcher _wwatcher = {};
 
-    void internal_init_TimeEngine()
+    void internal_init_timer()
     {
         internal_game_time = 0;
         internal_time_scale = 1;
@@ -99,7 +99,7 @@ namespace RoninEngine
         }*/
 
         // Init level
-        switched_level = nullptr;
+        switched_world = nullptr;
 
         // Инициализация инструментов
         UI::ui_controls_init();
@@ -133,52 +133,33 @@ namespace RoninEngine
 
     void Application::request_quit() { isQuiting = true; }
 
-    void Application::load_level(Level* level)
+    void Application::load_world(World* world)
     {
-        if (windowOwner == nullptr || !level || switched_level == level)
+        if (windowOwner == nullptr || !world || switched_world == world)
             throw std::bad_cast();
 
-        if (switched_level) {
-            destroyableLevel = switched_level;
+        if (switched_world) {
+            destroyableLevel = switched_world;
             destroyableLevel->request_unload();
         }
 
-        switched_level = level;
-        switched_level->request_unloading = false;
-        if (!level->is_hierarchy()) {
+        switched_world = world;
+
+        // on swtiched and init resources
+        switched_world->on_switching();
+
+        switched_world->internal_resources->request_unloading = false;
+        if (!world->is_hierarchy()) {
             // init main object
-            level->main_object = create_empty_gameobject();
-            level->main_object->name("Main Object");
-            level->main_object->transform()->name("Root");
+            world->main_object = create_empty_gameobject();
+            world->main_object->name("Main Object");
+            world->main_object->transform()->name("Root");
             // pickup from renders
-            level->matrix_nature_pickup(level->main_object->transform());
+            world->matrix_nature_pickup(world->main_object->transform());
         }
 
         m_levelAccept = false;
-        m_levelLoaded = false;
-    }
-
-    SDL_Surface* Application::get_screen()
-    {
-        SDL_Rect rect;
-        void* pixels;
-        int pitch;
-
-        SDL_RenderGetViewport(renderer, &rect);
-        pitch = (rect.w - rect.x) * 4;
-        pixels = malloc(pitch * (rect.h - rect.y));
-        // read the Texture buffer
-        SDL_RenderReadPixels(renderer, nullptr, SDL_PIXELFORMAT_RGBA8888, pixels, pitch);
-
-        SDL_Surface* su = SDL_CreateRGBSurfaceFrom(pixels, pitch / 4, rect.h - rect.y, 32, pitch, 0x000000ff, 0x0000ff00, 0x00ff0000, 0xff000000);
-        return su;
-    }
-
-    void Application::get_screen(const char* filename)
-    {
-        SDL_Surface* surf = get_screen();
-        IMG_SavePNG(surf, filename);
-        SDL_FreeSurface(surf);
+        internal_level_loaded = false;
     }
 
     SDL_DisplayMode Application::get_display_mode()
@@ -211,8 +192,8 @@ namespace RoninEngine
         SDL_DisplayMode displayMode;
         SDL_WindowFlags flags;
 
-        if (switched_level == nullptr) {
-            show_message("Level not loaded");
+        if (switched_world == nullptr) {
+            show_message("World not loaded");
             return false;
         }
 
@@ -228,7 +209,7 @@ namespace RoninEngine
         while (!isQuiting) {
             // TODO: m_level->request_unloading use as WNILE block (list proc)
 
-            if (!m_levelLoaded) {
+            if (!internal_level_loaded) {
                 // free cache
                 if (destroyableLevel) {
                     // RoninMemory::free(destroyableLevel);
@@ -242,10 +223,11 @@ namespace RoninEngine
 
                 //        SDL_RendererInfo rfio;
                 //        SDL_GetRendererInfo(renderer, &rfio);
-                internal_init_TimeEngine();
-                // Start first init
-                switched_level->on_awake();
-                m_levelLoaded = true;
+                internal_init_timer();
+
+                // on first load level
+                switched_world->on_awake();
+                internal_level_loaded = true;
             }
 
             // delaying
@@ -278,18 +260,18 @@ namespace RoninEngine
             _wwatcher.ms_wait_internal_instructions = TimeEngine::end_watch();
 
             // update level
-            if (!switched_level->request_unloading) {
+            if (!switched_world->internal_resources->request_unloading) {
                 // begin watcher
                 TimeEngine::begin_watch();
 
                 if (!m_levelAccept) {
 
-                    switched_level->on_start();
+                    switched_world->on_start();
                     m_levelAccept = true;
                 }
-                if (!switched_level->request_unloading) {
+                if (!switched_world->internal_resources->request_unloading) {
 
-                    switched_level->on_update();
+                    switched_world->on_update();
 
                     // end watcher
                     _wwatcher.ms_wait_exec_level = TimeEngine::end_watch();
@@ -303,9 +285,9 @@ namespace RoninEngine
             } else
                 goto end_simulate; // break on unload state
 
-            switched_level->level_render_world(renderer, &_wwatcher);
+            switched_world->level_render_world(renderer, &_wwatcher);
 
-            if (switched_level->request_unloading)
+            if (switched_world->internal_resources->request_unloading)
                 goto end_simulate; // break on unload state
 
             // Set scale as default
@@ -313,11 +295,11 @@ namespace RoninEngine
 
             // begin watcher
             TimeEngine::begin_watch();
-            switched_level->level_render_ui(renderer);
+            switched_world->level_render_ui(renderer);
             _wwatcher.ms_wait_render_ui = TimeEngine::end_watch();
             // end watcher
 
-            if (switched_level->request_unloading)
+            if (switched_world->internal_resources->request_unloading)
                 goto end_simulate; // break on unload state
 
             if (!destroyableLevel) {
@@ -327,7 +309,7 @@ namespace RoninEngine
                 _wwatcher.ms_wait_render_level = TimeEngine::end_watch();
                 // end watcher
 
-                switched_level->level_render_world_late(renderer);
+                switched_world->level_render_world_late(renderer);
             }
 
         end_simulate:
@@ -356,7 +338,7 @@ namespace RoninEngine
                 fpsRound = TimeEngine::startUpTime() + .5f; // updater per 1 seconds
             }
 
-            if (switched_level->request_unloading)
+            if (switched_world->internal_resources->request_unloading)
                 break; // break on unload state
 
             // delay elapsed
@@ -364,9 +346,9 @@ namespace RoninEngine
         }
 
         // unload level
-        Runtime::unload_level(switched_level);
+        Runtime::unload_world(switched_world);
 
-        switched_level = nullptr;
+        switched_world = nullptr;
 
         SDL_DestroyRenderer(renderer);
         SDL_DestroyWindow(windowOwner);

@@ -16,7 +16,7 @@ namespace RoninEngine::Runtime
         _angle = 0;
         layer = 1;
         // set as default
-        Level::self()->matrix_nature(this, Vec2::round_to_int(p + Vec2::one));
+        World::self()->matrix_nature(this, Vec2::round_to_int(p + Vec2::one));
     }
 
     Transform::~Transform() { }
@@ -137,7 +137,7 @@ namespace RoninEngine::Runtime
             Vec2Int lastPoint = Vec2::round_to_int(position());
             p = value;
             if (game_object()->is_active())
-                Level::self()->matrix_nature(this, lastPoint);
+                World::self()->matrix_nature(this, lastPoint);
         }
         return value;
     }
@@ -150,7 +150,7 @@ namespace RoninEngine::Runtime
             Vec2 lastPoint = position();
             p = (this->m_parent) ? this->m_parent->position() + value : value; // set the position
             if (game_object()->is_active())
-                Level::self()->matrix_nature(this, Vec2::round_to_int(lastPoint));
+                World::self()->matrix_nature(this, Vec2::round_to_int(lastPoint));
             for (Transform* chlid : hierarchy)
                 chlid->parent_notify(lastPoint);
         }
@@ -161,7 +161,7 @@ namespace RoninEngine::Runtime
     {
         Vec2 lastPoint = lastParentPoint + p; // world cordinates
         if (game_object()->is_active())
-            Level::self()->matrix_nature(this, Vec2::round_to_int(lastPoint));
+            World::self()->matrix_nature(this, Vec2::round_to_int(lastPoint));
         for (Transform* chlid : hierarchy)
             chlid->parent_notify(lastPoint);
     }
@@ -170,17 +170,17 @@ namespace RoninEngine::Runtime
     {
         Vec2Int pos = Vec2::round_to_int(this->position());
         if (!from->is_active()) {
-            decltype(Level::self()->matrixWorld)::iterator iter = Level::self()->matrixWorld.find(pos);
+            decltype(World::self()->internal_resources->matrixWorld)::iterator iter = World::self()->internal_resources->matrixWorld.find(pos);
             // Delete from matrix
-            if (iter != std::end(Level::self()->matrixWorld)) {
+            if (iter != std::end(World::self()->internal_resources->matrixWorld)) {
                 iter->second.erase(transform());
                 if (iter->second.empty()) {
-                    Level::self()->matrixWorld.erase(iter);
+                    World::self()->internal_resources->matrixWorld.erase(iter);
                 }
             }
         } else {
             // Add to matrix
-            Level::self()->matrixWorld[pos].insert(this);
+            World::self()->internal_resources->matrixWorld[pos].insert(this);
         }
         // send in hierarchy
         for (Transform* chlid : hierarchy)
@@ -226,7 +226,7 @@ namespace RoninEngine::Runtime
         }
 
         if (!newParent)
-            hierarchy_append(Level::self()->main_object->transform(),
+            hierarchy_append(World::self()->main_object->transform(),
                              from); // nullptr as Root
         else {
             from->m_parent = newParent;

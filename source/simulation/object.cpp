@@ -42,13 +42,13 @@ namespace RoninEngine
 
             if constexpr (std::is_same<T, GameObject>::value) {
                 if (initInHierarchy) {
-                    if (Level::self() == nullptr)
+                    if (World::self() == nullptr)
                         throw std::runtime_error("pCurrentScene is null");
 
-                    if (!Level::self()->is_hierarchy())
+                    if (!World::self()->is_hierarchy())
                         throw std::runtime_error("pCurrentScene->mainObject is null");
 
-                    auto mainObj = Level::self()->main_object;
+                    auto mainObj = World::self()->main_object;
                     auto root = mainObj->transform();
                     Transform* tr = ((GameObject*)clone)->transform();
                     root->child_append(tr);
@@ -86,13 +86,13 @@ namespace RoninEngine
 
         void destroy(Object* obj, float t)
         {
-            if (!obj || !Level::self() || t < 0)
+            if (!obj || !World::self() || t < 0)
                 throw std::bad_exception();
 
-            auto& destructors = Level::self()->_destructTasks;
+            auto& destructors = World::self()->internal_resources->_destructTasks;
 
             if (!destructors) {
-                destructors = Level::self()->_destructTasks = RoninMemory::alloc<std::remove_pointer<decltype(Level::self()->_destructTasks)>::type>();
+                destructors = World::self()->internal_resources->_destructTasks = RoninMemory::alloc<std::remove_pointer<decltype(World::self()->internal_resources->_destructTasks)>::type>();
             } else {
                 // get error an exists destructed @object
                 for (std::pair<float, std::set<Object*>> mapIter : *destructors) {
@@ -131,17 +131,16 @@ namespace RoninEngine
                         Transform::hierarchy_remove(t->parent(), t);
                     }
                     Transform::hierarchy_removeAll(t);
-                    Level::self()->matrix_nature_pickup(t);
+                    World::self()->matrix_nature_pickup(t);
                 } else if ((exec = dynamic_cast<Behaviour*>(obj))) {
-
-                    if (Level::self()->_firstRunScripts)
-                        Level::self()->_firstRunScripts->remove(exec);
-                    if (Level::self()->_realtimeScripts)
-                        Level::self()->_realtimeScripts->remove(exec);
+                    if (World::self()->internal_resources->_firstRunScripts)
+                        World::self()->internal_resources->_firstRunScripts->remove(exec);
+                    if (World::self()->internal_resources->_realtimeScripts)
+                        World::self()->internal_resources->_realtimeScripts->remove(exec);
                 }
             }
 
-            Level::self()->_objects.erase(obj);
+            World::self()->internal_resources->world_objects.erase(obj);
 
             // START FREE OBJECT
             RoninMemory::free(obj);
@@ -151,10 +150,10 @@ namespace RoninEngine
         {
             if (!obj)
                 return false;
-            if (!Level::self())
+            if (!World::self())
                 throw std::bad_exception();
-            auto iter = Level::self()->_objects.find(obj);
-            return iter != end(Level::self()->_objects);
+            auto iter = World::self()->internal_resources->world_objects.find(obj);
+            return iter != end(World::self()->internal_resources->world_objects);
         }
 
         GameObject* instantiate(GameObject* obj)
@@ -224,20 +223,20 @@ namespace RoninEngine
         {
             DESCRIBE_AS_MAIN(Object);
             ::check_object(this);
-            if (Level::self() == nullptr)
+            if (World::self() == nullptr)
                 throw std::bad_exception();
 
-            id = Level::self()->_level_ids_++;
-            Level::self()->push_object(this);
+            id = World::self()->internal_resources->_level_ids_++;
+            World::self()->push_object(this);
         }
 
         const bool Object::exists() { return (this->operator bool()); }
 
         void Object::destroy() { RoninEngine::Runtime::destroy(this); }
 
-        const bool Object::destroy_cancel() { return Level::self()->object_desctruction_cancel(this); }
+        const bool Object::destroy_cancel() { return World::self()->object_desctruction_cancel(this); }
 
-        const bool Object::is_destruction() { return Level::self()->object_destruction_state(this); }
+        const bool Object::is_destruction() { return World::self()->object_destruction_state(this); }
 
         std::string& Object::name(const std::string& newName) { return (m_name = newName); }
 

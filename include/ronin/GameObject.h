@@ -42,7 +42,7 @@ namespace RoninEngine
         {
             friend class Camera2D;
             friend class Component;
-            friend class Level;
+            friend class World;
             friend RONIN_API GameObject* instantiate(GameObject* obj);
             friend RONIN_API GameObject* instantiate(GameObject* obj, Vec2 position, float angle);
             friend RONIN_API GameObject* instantiate(GameObject* obj, Vec2 position, Transform* parent, bool worldPositionState);

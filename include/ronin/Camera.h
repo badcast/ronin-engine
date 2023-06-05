@@ -6,7 +6,7 @@ namespace RoninEngine::Runtime
 {
     class RONIN_API Camera : public Component
     {
-        friend class Level;
+        friend class World;
 
     protected:
         bool targetClear;

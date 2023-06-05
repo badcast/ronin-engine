@@ -11,7 +11,7 @@ namespace RoninEngine
         class RONIN_API Component : public Object
         {
         private:
-            friend class Level;
+            friend class World;
             friend class Object;
             friend class GameObject;
             friend RONIN_API GameObject* instantiate(GameObject* obj);

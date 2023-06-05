@@ -3,7 +3,7 @@
 
 namespace RoninEngine::Runtime
 {
-    class RONIN_API Level
+    class RONIN_API World
     {
         friend class RoninEngine::Application;
         friend class RoninEngine::UI::GUI;
@@ -21,32 +21,21 @@ namespace RoninEngine::Runtime
         friend void destroy(Object* obj, float t);
         friend void destroy_immediate(Object* obj);
 
-        friend bool unload_level(Level* level);
+        friend bool unload_world(World*);
 
     private:
-        struct LevelResources* internal_resources;
-        std::uint32_t _level_ids_;
-        bool request_unloading;
-        int _destroyed;
-        float _destroy_delay_time;
-        std::string m_name;
-        std::list<Behaviour*>* _firstRunScripts;
-        std::list<Behaviour*>* _realtimeScripts;
-
-        std::map<float, std::set<Object*>>* _destructTasks;
-        std::unordered_map<Vec2Int, std::set<Transform*>> matrixWorld;
-
-        std::list<Light*> _assoc_lightings;
-
-        std::map<Object*, float> _objects;
+        struct WorldResources* internal_resources;
 
         void intenal_bind_script(Behaviour* obj);
         void push_light_object(Light* light);
         void push_object(Object* obj);
 
+        void on_switching();
+
         static std::list<Transform*>* get_hierarchy(Transform* parent);
 
     protected:
+        std::string m_name;
         UI::GUI* ui;
         virtual void runtime_destructs();
 
@@ -68,10 +57,10 @@ namespace RoninEngine::Runtime
         // Main or Root object
         GameObject* main_object;
 
-        Level();
-        Level(const std::string& name);
+        World();
+        World(const std::string& name);
 
-        virtual ~Level();
+        virtual ~World();
 
         std::string& name();
 
@@ -100,11 +89,11 @@ namespace RoninEngine::Runtime
 
         static void get_render_info(int* culled, int* fullobjects);
 
-        static Level* self();
+        static World* self();
     };
 
     template <typename T>
-    std::list<T*> Level::find_objects_with_type()
+    std::list<T*> World::find_objects_with_type()
     {
         T* _target;
         std::list<T*> __classes;

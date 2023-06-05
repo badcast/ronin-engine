@@ -24,7 +24,7 @@ namespace RoninEngine
 
     namespace Runtime
     {
-        class Level;
+        class World;
 
         struct Vec2;
 

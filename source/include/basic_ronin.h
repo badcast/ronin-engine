@@ -58,8 +58,22 @@ namespace RoninEngine::Runtime
         SDL_Renderer* renderer;
     };
 
-    struct LevelResources {
+    struct WorldResources {
         std::list<Sprite*> offload_sprites;
         std::list<SDL_Surface*> offload_surfaces;
+
+        std::uint32_t _level_ids_;
+        bool request_unloading;
+        int _destroyed;
+        float _destroy_delay_time;
+        std::list<Behaviour*>* _firstRunScripts;
+        std::list<Behaviour*>* _realtimeScripts;
+
+        std::map<float, std::set<Object*>>* _destructTasks;
+        std::unordered_map<Vec2Int, std::set<Transform*>> matrixWorld;
+
+        std::list<Light*> _assoc_lightings;
+
+        std::map<Object*, float> world_objects;
     };
 }

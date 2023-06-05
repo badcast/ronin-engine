@@ -34,9 +34,9 @@ namespace RoninEngine::Runtime
         SDL_LockSurface(surface);
         SDL_memset4(surface->pixels, fillColor, (int)size.x * (int)size.y);
         SDL_UnlockSurface(surface);
-        Level::self()->internal_resources->offload_surfaces.push_back(surface);
+        World::self()->internal_resources->offload_surfaces.push_back(surface);
         ResourceManager::gc_alloc_sprite_with(&sprite, surface, { 0, 0, size.x, size.y });
-        Level::self()->internal_resources->offload_sprites.push_back(sprite);
+        World::self()->internal_resources->offload_sprites.push_back(sprite);
         return sprite;
     }
 
@@ -55,9 +55,9 @@ namespace RoninEngine::Runtime
         filledCircleColor(renderer, size.x / 2, size.y / 2, static_cast<std::uint16_t>(radius * pixelsPerPoint / 2) - 1, fillColor);
 
         SDL_DestroyRenderer(renderer);
-        Level::self()->internal_resources->offload_surfaces.push_back(surface);
+        World::self()->internal_resources->offload_surfaces.push_back(surface);
         ResourceManager::gc_alloc_sprite_with(&sprite, surface, { 0, 0, size.x, size.y });
-        Level::self()->internal_resources->offload_sprites.push_back(sprite);
+        World::self()->internal_resources->offload_sprites.push_back(sprite);
         return sprite;
     }
 
@@ -88,9 +88,9 @@ namespace RoninEngine::Runtime
         //            }
         //        }
         //        SDL_UnlockSurface(surface);
-        Level::self()->internal_resources->offload_surfaces.push_back(surface);
+        World::self()->internal_resources->offload_surfaces.push_back(surface);
         ResourceManager::gc_alloc_sprite_with(&sprite, surface, { 0, 0, size.x, size.y });
-        Level::self()->internal_resources->offload_sprites.push_back(sprite);
+        World::self()->internal_resources->offload_sprites.push_back(sprite);
         return sprite;
     }
 }

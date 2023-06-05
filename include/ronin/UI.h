@@ -35,7 +35,7 @@ namespace RoninEngine
 
             CI ui_callback callback;
             CI void* callbackData;
-            CI Level* m_level;
+            CI World* m_level;
             CI bool hitCast;
             CI bool _focusedUI;
 
@@ -49,7 +49,7 @@ namespace RoninEngine
         public:
             bool visible;
 
-            CI GUI(Level*);
+            CI GUI(Runtime::World*);
             CI virtual ~GUI();
 
             CI bool has_ui(uid id);

@@ -30,7 +30,7 @@
 #include "../../include/ronin/Camera2D.h"
 #include "../../include/ronin/Component.h"
 #include "../../include/ronin/GameObject.h"
-#include "../../include/ronin/Level.h"
+#include "../../include/ronin/World.h"
 #include "../../include/ronin/Light.h"
 #include "../../include/ronin/Player.h"
 #include "../../include/ronin/Renderer.h"

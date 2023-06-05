@@ -139,7 +139,7 @@ namespace RoninEngine::Runtime
         }
 
         if (_lightsOutResults.empty()) {
-            _lightsOutResults.insert(Level::self()->_assoc_lightings.begin(), Level::self()->_assoc_lightings.end());
+            _lightsOutResults.insert(World::self()->internal_resources->_assoc_lightings.begin(), World::self()->internal_resources->_assoc_lightings.end());
         }
 
         return make_tuple(&renders, &_lightsOutResults);

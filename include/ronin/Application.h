@@ -23,20 +23,28 @@ namespace RoninEngine
     class RONIN_API Application
     {
     public:
+        // First initing RoninEngine Library
         static void init();
-
+        // Create main window for renderer
         static void create_window(const int width, const int height, bool fullscreen = false);
-        static void load_level(Runtime::Level* level);
+        // Load world for simmulate
+        static void load_world(Runtime::World* world);
+        // Simulate world
         static bool simulate();
-        static void get_screen(const char* filename);
-        static SDL_Surface* get_screen();
+        // Get display mode
         static SDL_DisplayMode get_display_mode();
+        // Request sent Quiting (Destroy current world)
         static void request_quit();
+        // Get SDL Window
         static SDL_Window* get_window();
+        // Get SDL Renderer
         static SDL_Renderer* get_renderer();
+        // Get resolution of screen
         static Resolution get_resolution();
-
+        // Get timming watches
         static ScoreWatcher get_watches();
+
+        // Message handler
 
         static void back_fail(void);
         static void show_message(const std::string& message);

@@ -56,7 +56,7 @@ namespace RoninEngine::Runtime
                 std::sprintf(msg_info, "origin=(x)%f (y)%f edges=%d layer=%d", origin.x, origin.y, edges, layer);
                 Application::show_message(msg_info);
         */
-        std::unordered_map<Vec2Int, std::set<Transform*>>& mx = Level::self()->matrixWorld;
+        std::unordered_map<Vec2Int, std::set<Transform*>>& mx = World::self()->internal_resources->matrixWorld;
         Vec2Int ray = Vec2::round_to_int(origin);
         std::uint64_t stormMember = 0;
         std::uint64_t stormFlags = 1;
@@ -132,7 +132,7 @@ namespace RoninEngine::Runtime
 
     std::list<Transform*> Physics2D::rect_cast(Vec2 origin, float distance, int layer)
     {
-        auto& mx = Level::self()->matrixWorld;
+        auto& mx = World::self()->internal_resources->matrixWorld;
         std::list<Transform*> _cont;
 
         Vec2Int env;

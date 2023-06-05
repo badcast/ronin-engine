@@ -33,7 +33,7 @@ namespace RoninEngine::UI
     }
     inline UIElement& call_get_element(GUI* gui, uid id) { return gui->ui_layer.elements[id - 1]; }
 
-    GUI::GUI(Level* level)
+    GUI::GUI(RoninEngine::Runtime::World *level)
         : m_level(level)
         , hitCast(true)
         , callback(nullptr)
@@ -386,7 +386,7 @@ namespace RoninEngine::UI
                     _focusedUI = uiFocus;
             }
 
-            if (this->m_level->request_unloading)
+            if (this->m_level->internal_resources->request_unloading)
                 break;
 
             for (auto iter = begin(uielement->childs); iter != end(uielement->childs); ++iter)
