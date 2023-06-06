@@ -27,7 +27,7 @@ set(RONINENGINE_VERSION_MIN 1.0)
 set(RUNTIME_OUTPUT_NAME "ronin_framework")
 
 # compilling sources
-add_subdirectory(source)
+add_subdirectory(src)
 
 add_library(RoninEngineLibrary SHARED ${ronin_targets} ${RONIN_ENGINE_HEADERS})
 

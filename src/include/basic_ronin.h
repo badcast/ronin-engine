@@ -59,21 +59,29 @@ namespace RoninEngine::Runtime
     };
 
     struct WorldResources {
+        // unique ids for Object types in current world
+        std::uint32_t _level_ids_;
+        // state is unloading
+        bool request_unloading;
+
         std::list<Sprite*> offload_sprites;
         std::list<SDL_Surface*> offload_surfaces;
 
-        std::uint32_t _level_ids_;
-        bool request_unloading;
+        // destroy queue object
         int _destroyed;
+        // destroy last delaying for action
         float _destroy_delay_time;
+
         std::list<Behaviour*>* _firstRunScripts;
         std::list<Behaviour*>* _realtimeScripts;
 
+        // destruction task (queue object)
         std::map<float, std::set<Object*>>* _destructTasks;
         std::unordered_map<Vec2Int, std::set<Transform*>> matrixWorld;
 
         std::list<Light*> _assoc_lightings;
 
+        // World object (use)
         std::map<Object*, float> world_objects;
 
         // Main UI Object
