@@ -8,6 +8,26 @@ using namespace RoninEngine::Runtime;
 namespace RoninEngine::Runtime
 {
     extern World* switched_world;
+
+    void load_world(World* world)
+    {
+        if (world == nullptr) {
+            throw std::runtime_error("arg is null");
+        }
+
+        if (world->internal_resources == nullptr) {
+            RoninMemory::alloc_self(world->internal_resources);
+            RoninMemory::alloc_self(world->internal_resources->gui, world);
+        }
+        // world->internal_resources->_firstRunScripts = nullptr;
+        // world->internal_resources->_realtimeScripts = nullptr;
+        // world->internal_resources->_destructTasks = nullptr;
+        // world->internal_resources->_destroyed = 0;
+        // world->internal_resources->_level_ids_ = 0;
+        // world->internal_resources->_destroy_delay_time = 0;
+        // world->internal_resources->request_unloading = false;
+    }
+
     bool unload_world(World* world)
     {
         World* lastLevel;
@@ -17,8 +37,10 @@ namespace RoninEngine::Runtime
             throw std::runtime_error("arg is null");
         }
 
-        if ((target = world->main_object) == nullptr)
+        if (world->internal_resources == nullptr)
             return false;
+
+        target = world->internal_resources->main_object;
 
         lastLevel = switched_world;
         switched_world = world;
@@ -42,9 +64,9 @@ namespace RoninEngine::Runtime
         }
 
         // free GUI objects
-        if (world->ui) {
-            RoninMemory::free(world->ui);
-            world->ui = nullptr;
+        if (world->internal_resources->gui) {
+            RoninMemory::free(world->internal_resources->gui);
+            world->internal_resources->gui = nullptr;
         }
 
         std::list<GameObject*> stacks;
@@ -65,29 +87,30 @@ namespace RoninEngine::Runtime
             }
         }
 
-        world->main_object = nullptr;
+        world->internal_resources->main_object = nullptr;
 
         if (!world->internal_resources->world_objects.empty()) {
             throw std::runtime_error("that's objects isn't release");
-            // this->_objects.clear();
         }
 
-        // free resources
-        if (world->internal_resources) {
-            for (auto sprite : world->internal_resources->offload_sprites) {
-                RoninMemory::free(sprite);
-            }
-
-            for (auto surface : world->internal_resources->offload_surfaces) {
-                SDL_FreeSurface(surface);
-            }
-            RoninMemory::free(world->internal_resources);
-            world->internal_resources = nullptr;
+        // free native resources
+        for (auto sprite : world->internal_resources->offload_sprites) {
+            RoninMemory::free(sprite);
         }
+
+        for (auto surface : world->internal_resources->offload_surfaces) {
+            SDL_FreeSurface(surface);
+        }
+
+        RoninMemory::free(world->internal_resources);
+        world->internal_resources = nullptr;
 
         switched_world = lastLevel;
         return true;
     }
+
+    Transform* get_root(World* world) { return world->internal_resources->main_object->transform(); }
+
 }
 
 World::World()
@@ -95,8 +118,7 @@ World::World()
 {
 }
 World::World(const std::string& name)
-    : main_object(nullptr)
-    , m_name(name)
+    : m_name(name)
 {
 }
 
@@ -209,22 +231,6 @@ void World::push_light_object(Light* light) { internal_resources->_assoc_lightin
 
 void World::push_object(Object* obj) { internal_resources->world_objects.insert(std::make_pair(obj, TimeEngine::time())); }
 
-void World::on_switching()
-{
-    if (!this->internal_resources)
-        RoninMemory::alloc_self(this->internal_resources);
-    if (!this->ui)
-        RoninMemory::alloc_self(this->ui, this);
-
-    //    internal_resources->_firstRunScripts = nullptr;
-    //    internal_resources->_realtimeScripts = nullptr;
-    //    internal_resources->_destructTasks = nullptr;
-    //    internal_resources->_destroyed = 0;
-    //    internal_resources->_level_ids_ = 0;
-    //    internal_resources->_destroy_delay_time = 0;
-    //    internal_resources->request_unloading = false;
-}
-
 std::list<Transform*>* World::get_hierarchy(Runtime::Transform* parent)
 {
     if (!parent) {
@@ -328,7 +334,7 @@ void World::level_render_world(SDL_Renderer* renderer, ScoreWatcher* watcher)
             cam->renders.clear();
 
         // draw world in world size
-        cam->render(renderer, { 0, 0, res.width, res.height }, main_object);
+        cam->render(renderer, { 0, 0, res.width, res.height }, internal_resources->main_object);
     }
     watcher->ms_wait_render_collect = TimeEngine::end_watch();
 
@@ -355,7 +361,7 @@ void World::level_render_world(SDL_Renderer* renderer, ScoreWatcher* watcher)
 void World::level_render_ui(SDL_Renderer* renderer)
 {
     // render UI
-    ui->native_draw_render(renderer);
+    internal_resources->gui->native_draw_render(renderer);
 }
 
 void World::level_render_world_late(SDL_Renderer* renderer)
@@ -368,11 +374,11 @@ void World::level_render_world_late(SDL_Renderer* renderer)
         }
     }
 }
-bool World::is_hierarchy() { return this->main_object != nullptr; }
+bool World::is_hierarchy() { return this->internal_resources->main_object != nullptr; }
 
 std::string& World::name() { return this->m_name; }
 
-UI::GUI* World::get_gui() { return this->ui; }
+UI::GUI* World::get_gui() { return this->internal_resources->gui; }
 
 void World::request_unload() { this->internal_resources->request_unloading = true; }
 
@@ -381,7 +387,7 @@ int World::get_destroyed_frames() { return internal_resources->_destroyed; }
 std::list<GameObject*> World::get_all_gameobjects()
 {
     std::list<GameObject*> all_gobjects;
-    GameObject* next = main_object;
+    GameObject* next = internal_resources->main_object;
 
     while (next) {
         for (Transform* e : *World::get_hierarchy(next->transform())) {

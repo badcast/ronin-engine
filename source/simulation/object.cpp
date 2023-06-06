@@ -4,9 +4,9 @@ namespace RoninEngine
 {
     namespace Runtime
     {
-
         constexpr char _cloneStr[] = " (clone)";
 
+        extern Transform* get_root(World*);
         template <typename T>
         T* internal_factory_base(bool initInHierarchy, T* clone, const char* name)
         {
@@ -48,7 +48,7 @@ namespace RoninEngine
                     if (!World::self()->is_hierarchy())
                         throw std::runtime_error("pCurrentScene->mainObject is null");
 
-                    auto mainObj = World::self()->main_object;
+                    auto mainObj = get_root(World::self())->game_object();
                     auto root = mainObj->transform();
                     Transform* tr = ((GameObject*)clone)->transform();
                     root->child_append(tr);

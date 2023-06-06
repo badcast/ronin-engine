@@ -5,7 +5,7 @@ project(RoninEngineLibrary VERSION 1.0)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} -fopenmp)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp")
 
 option(BUILD_SHARED_LIBS "BUILD a shared lib ?" ON)
 option(RGIO "Define Input and Ouput system" ON)

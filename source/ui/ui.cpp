@@ -16,7 +16,7 @@ namespace RoninEngine::UI
     uid call_register_ui(GUI* gui, uid parent = NOPARENT)
     {
         if (!gui->has_ui(parent))
-            throw std::runtime_error("Is not end parent");
+            throw std::runtime_error("Isn't parent");
 
         UIElement data {};
         data.parentId = parent;
@@ -33,8 +33,8 @@ namespace RoninEngine::UI
     }
     inline UIElement& call_get_element(GUI* gui, uid id) { return gui->ui_layer.elements[id - 1]; }
 
-    GUI::GUI(RoninEngine::Runtime::World *level)
-        : m_level(level)
+    GUI::GUI(RoninEngine::Runtime::World* world)
+        : __level_owner(world)
         , hitCast(true)
         , callback(nullptr)
         , callbackData(nullptr)
@@ -129,7 +129,7 @@ namespace RoninEngine::UI
         data.text = text;
         return id;
     }
-    uid GUI::Push_DisplayRandomizer_Number(const int& min, const int& max, TextAlign textAlign, uid parent)
+    uid GUI::push_display_randomizer_number(const int min, const int max, TextAlign textAlign, uid parent)
     {
         uid id = push_display_randomizer(OnlyNumber, parent);
         // TODO: min and max не реализованы.
@@ -222,17 +222,17 @@ namespace RoninEngine::UI
         return id;
     }
 
-    uid GUI::push_drop_down(const std::vector<int>& elements, int index, const Runtime::Rect& rect, event_index_changed* changed, uid parent) { return internal_push_dropdown(this,elements, index, rect, changed, parent); }
+    uid GUI::push_drop_down(const std::vector<int>& elements, int index, const Runtime::Rect& rect, event_index_changed* changed, uid parent) { return internal_push_dropdown(this, elements, index, rect, changed, parent); }
 
-    uid GUI::push_drop_down(const std::vector<float>& elements, int index, const Runtime::Rect& rect, event_index_changed* changed, uid parent) { return internal_push_dropdown(this,elements, index, rect, changed, parent); }
+    uid GUI::push_drop_down(const std::vector<float>& elements, int index, const Runtime::Rect& rect, event_index_changed* changed, uid parent) { return internal_push_dropdown(this, elements, index, rect, changed, parent); }
 
-    uid GUI::push_drop_down(const std::vector<std::string>& elements, int index, const Runtime::Rect& rect, event_index_changed* changed, uid parent) { return internal_push_dropdown(this,elements, index, rect, changed, parent); }
+    uid GUI::push_drop_down(const std::vector<std::string>& elements, int index, const Runtime::Rect& rect, event_index_changed* changed, uid parent) { return internal_push_dropdown(this, elements, index, rect, changed, parent); }
 
-    uid GUI::push_drop_down(const std::list<float>& elements, int index, const Runtime::Rect& rect, event_index_changed* changed, uid parent) { return internal_push_dropdown(this,elements, index, rect, changed, parent); }
+    uid GUI::push_drop_down(const std::list<float>& elements, int index, const Runtime::Rect& rect, event_index_changed* changed, uid parent) { return internal_push_dropdown(this, elements, index, rect, changed, parent); }
 
-    uid GUI::push_drop_down(const std::list<int>& elements, int index, const Runtime::Rect& rect, event_index_changed* changed, uid parent) { return internal_push_dropdown(this,elements, index, rect, changed, parent); }
+    uid GUI::push_drop_down(const std::list<int>& elements, int index, const Runtime::Rect& rect, event_index_changed* changed, uid parent) { return internal_push_dropdown(this, elements, index, rect, changed, parent); }
 
-    uid GUI::push_drop_down(const std::list<std::string>& elements, int index, const Runtime::Rect& rect, event_index_changed* changed, uid parent) { return internal_push_dropdown(this,elements, index, rect, changed, parent); }
+    uid GUI::push_drop_down(const std::list<std::string>& elements, int index, const Runtime::Rect& rect, event_index_changed* changed, uid parent) { return internal_push_dropdown(this, elements, index, rect, changed, parent); }
 
     uid GUI::push_slider(float value, float min, float max, const Rect& rect, event_value_changed* changed, uid parent)
     {
@@ -275,7 +275,7 @@ namespace RoninEngine::UI
     void GUI::show_group_unique(uid id) throw()
     {
         if (!is_group(id))
-            throw std::runtime_error("Is't group");
+            throw std::runtime_error("Isn't group");
 
         this->ui_layer.layers.remove_if([this](auto v) { return this->is_group(v); });
 
@@ -284,7 +284,7 @@ namespace RoninEngine::UI
     void GUI::show_group(uid id) throw()
     {
         if (!is_group(id))
-            throw std::runtime_error("Is't group");
+            throw std::runtime_error("Isn't group");
 
         auto iter = find_if(begin(ui_layer.layers), end(ui_layer.layers), [&id](auto& _id) { return _id == id; });
 
@@ -297,7 +297,7 @@ namespace RoninEngine::UI
     bool GUI::close_group(uid id) throw()
     {
         if (!is_group(id))
-            throw std::runtime_error("Is't group");
+            throw std::runtime_error("Isn't group");
         ui_layer.layers.remove(id);
         set_visible(id, false);
     }
@@ -333,13 +333,14 @@ namespace RoninEngine::UI
         UIElement* uielement;
         Vec2Int ms;
         std::list<uid> ui_drains;
-        ui_reset_controls(); // Reset
         bool uiFocus;
         bool uiHover;
         bool uiContex;
 
         ms = Input::get_mouse_point();
+
         _focusedUI = false;
+        ui_reset_controls(); // Reset
 
         for (auto iter = begin(ui_layer.layers); iter != end(ui_layer.layers); ++iter)
             ui_drains.emplace_back(*iter);
@@ -386,15 +387,15 @@ namespace RoninEngine::UI
                     _focusedUI = uiFocus;
             }
 
-            if (this->m_level->internal_resources->request_unloading)
+            if (this->__level_owner->internal_resources->request_unloading)
                 break;
 
             for (auto iter = begin(uielement->childs); iter != end(uielement->childs); ++iter)
                 ui_drains.emplace_back(*iter + 1);
         }
     }
-    void GUI::set_color_rgb(uint32_t RGB) { set_color_rgba(RGB << 8 | SDL_ALPHA_OPAQUE); }
-    void GUI::set_color_rgba(uint32_t ARGB) { SDL_SetRenderDrawColor(Application::get_renderer(), (uid)(ARGB >> 24) & 0xFF, (uid)(ARGB >> 16) & 0xFF, (uid)(ARGB >> 8) & 0xFF, (uid)ARGB & 0xFF); }
+    void GUI::set_color_rgb(std::uint32_t rgb) { set_color_rgba(rgb << 8 | SDL_ALPHA_OPAQUE); }
+    void GUI::set_color_rgba(std::uint32_t argb) { SDL_SetRenderDrawColor(Application::get_renderer(), (uid)(argb >> 24) & 0xFF, (uid)(argb >> 16) & 0xFF, (uid)(argb >> 8) & 0xFF, (uid)argb & 0xFF); }
     bool GUI::has_focused_ui() { return _focusedUI; }
 
 } // namespace RoninEngine::UI

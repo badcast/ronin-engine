@@ -21,22 +21,21 @@ namespace RoninEngine::Runtime
         friend void destroy(Object* obj, float t);
         friend void destroy_immediate(Object* obj);
 
+        friend void load_world(World*);
         friend bool unload_world(World*);
+        friend Transform* get_root(World*);
 
     private:
-        struct WorldResources* internal_resources;
-
         void intenal_bind_script(Behaviour* obj);
         void push_light_object(Light* light);
         void push_object(Object* obj);
 
-        void on_switching();
-
         static std::list<Transform*>* get_hierarchy(Transform* parent);
 
     protected:
+        struct WorldResources* internal_resources = nullptr;
+
         std::string m_name;
-        UI::GUI* ui;
         virtual void runtime_destructs();
 
         virtual void level_render_world(SDL_Renderer* renderer, RoninEngine::ScoreWatcher* watcher);
@@ -54,9 +53,6 @@ namespace RoninEngine::Runtime
         virtual void on_unloading();
 
     public:
-        // Main or Root object
-        GameObject* main_object;
-
         World();
         World(const std::string& name);
 

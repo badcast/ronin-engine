@@ -75,5 +75,17 @@ namespace RoninEngine::Runtime
         std::list<Light*> _assoc_lightings;
 
         std::map<Object*, float> world_objects;
+
+        // Main UI Object
+        UI::GUI* gui = nullptr;
+
+        // Main or Root object
+        GameObject* main_object = nullptr;
     };
+
+    // pre-decloration
+    void load_world(World*);
+    bool unload_world(World*);
+    Transform* get_root(World*);
+
 }

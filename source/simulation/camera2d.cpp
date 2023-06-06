@@ -58,7 +58,7 @@ namespace RoninEngine::Runtime
                 robject.emplace_back(*ib);
             }
             int size = robject.size();
-//#pragma omp parallel for private(sourcePoint) private(wrapper) private(point)
+            // #pragma omp parallel for private(sourcePoint) private(wrapper) private(point)
             for (std::size_t pointer = 0; pointer < size; ++pointer) {
                 Renderer* renderSource = robject[pointer];
                 memset(&wrapper, 0, sizeof(wrapper));
@@ -71,7 +71,7 @@ namespace RoninEngine::Runtime
                     Vec2 point = transform()->p;
                     Transform* rTrans = renderSource->transform();
 
-                    if (rTrans->m_parent && renderSource->transform()->m_parent != World::self()->main_object->transform()) {
+                    if (rTrans->m_parent && renderSource->transform()->m_parent != get_root(World::self())) {
                         Vec2 direction = rTrans->p;
                         sourcePoint = Vec2::rotate_around(rTrans->m_parent->position(), direction, rTrans->angle() * Math::deg2rad);
                         //                rTrans->localPosition(

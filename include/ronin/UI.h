@@ -35,7 +35,7 @@ namespace RoninEngine
 
             CI ui_callback callback;
             CI void* callbackData;
-            CI World* m_level;
+            CI World* __level_owner;
             CI bool hitCast;
             CI bool _focusedUI;
 
@@ -66,7 +66,7 @@ namespace RoninEngine
             CI uid push_display_randomizer(TextRandomizer_Format format, const Vec2Int& point, uid parent = NOPARENT);
             CI uid push_display_randomizer(TextRandomizer_Format format = TextRandomizer_Format::All, uid parent = NOPARENT);
             CI uid push_display_randomizer_text(const std::string& text, const Vec2Int& point, uid parent = NOPARENT);
-            CI uid Push_DisplayRandomizer_Number(const int& min, const int& max, TextAlign textAlign, uid parent = NOPARENT);
+            CI uid push_display_randomizer_number(const int min, const int max, TextAlign textAlign, uid parent = NOPARENT);
             CI uid push_texture_stick(Texture* texture, const Runtime::Rect& rect, uid parent = NOPARENT);
             CI uid push_texture_stick(Texture* texture, const Runtime::Vec2Int& point, uid parent = NOPARENT);
             CI uid push_texture_animator(Timeline* timeline, const RoninEngine::Runtime::Rect& rect, uid parent = NOPARENT);
@@ -135,8 +135,8 @@ namespace RoninEngine
 
             CI void native_draw_render(SDL_Renderer* renderer);
 
-            CI void set_color_rgb(uint32_t RGB);
-            CI void set_color_rgba(uint32_t ARGB);
+            CI void set_color_rgb(std::uint32_t rgb);
+            CI void set_color_rgba(std::uint32_t argb);
 
             CI bool has_focused_ui();
         };

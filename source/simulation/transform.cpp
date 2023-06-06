@@ -226,8 +226,7 @@ namespace RoninEngine::Runtime
         }
 
         if (!newParent)
-            hierarchy_append(World::self()->main_object->transform(),
-                             from); // nullptr as Root
+            hierarchy_append(get_root(World::self()), from); // nullptr as Root
         else {
             from->m_parent = newParent;
             hierarchy_append(newParent, from);

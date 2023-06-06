@@ -28,7 +28,7 @@ namespace RoninEngine
         // Create main window for renderer
         static void create_window(const int width, const int height, bool fullscreen = false);
         // Load world for simmulate
-        static void load_world(Runtime::World* world);
+        static void load_world(Runtime::World* world, bool unloadPrevious = true);
         // Simulate world
         static bool simulate();
         // Get display mode

@@ -31,6 +31,7 @@ namespace RoninEngine
         extern void input_movement_update();
         extern void internal_update_input(SDL_Event* e);
 
+        extern void load_world(World* world);
         extern bool unload_world(World* world);
     }
 
@@ -133,31 +134,36 @@ namespace RoninEngine
 
     void Application::request_quit() { isQuiting = true; }
 
-    void Application::load_world(World* world)
+    void Application::load_world(World* world, bool unloadPrevious)
     {
-        if (windowOwner == nullptr || !world || switched_world == world)
-            throw std::bad_cast();
+        if (windowOwner == nullptr || world == nullptr)
+            Application::fail("world is null object, widowOwner have-nullpointer");
+
+        if (switched_world == world)
+            Application::fail("Current world is reloading state. Failed.");
 
         if (switched_world) {
             destroyableLevel = switched_world;
             destroyableLevel->request_unload();
         }
 
+        // switching as main
         switched_world = world;
 
-        // on swtiched and init resources
-        switched_world->on_switching();
+        // on swtiched and init resources, even require
+        Runtime::load_world(world);
 
-        switched_world->internal_resources->request_unloading = false;
+        // set state load
+        world->internal_resources->request_unloading = false;
+
         if (!world->is_hierarchy()) {
             // init main object
-            world->main_object = create_empty_gameobject();
-            world->main_object->name("Main Object");
-            world->main_object->transform()->name("Root");
+            world->internal_resources->main_object = create_empty_gameobject();
+            world->internal_resources->main_object->name("Main Object");
+            world->internal_resources->main_object->transform()->name("Root");
             // pickup from renders
-            world->matrix_nature_pickup(world->main_object->transform());
+            world->matrix_nature_pickup(world->internal_resources->main_object->transform());
         }
-
         m_levelAccept = false;
         internal_level_loaded = false;
     }

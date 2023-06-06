@@ -25,7 +25,7 @@ function(find_packages)
     find_package(SDL2_ttf REQUIRED)
   endif()
 
-  find_package(OpenMP REQUIRED)
+  find_package(OpenMP)
 
 endfunction()
 
