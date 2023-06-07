@@ -61,14 +61,16 @@ namespace RoninEngine::Runtime
     struct WorldResources {
         // unique ids for Object types in current world
         std::uint32_t _level_ids_;
+
         // state is unloading
         bool request_unloading;
 
         std::list<Sprite*> offload_sprites;
         std::list<SDL_Surface*> offload_surfaces;
 
-        // destroy queue object
+        // destroyed queue object
         int _destroyed;
+
         // destroy last delaying for action
         float _destroy_delay_time;
 
