@@ -318,6 +318,9 @@ namespace RoninEngine
             }
 
         end_simulate:
+            // awake
+            SDL_RenderFlush(renderer); // flush renderer
+
             delayed = TimeEngine::tick_millis() - delayed;
 
             _wwatcher.ms_wait_frame = TimeEngine::end_watch();
@@ -342,8 +345,6 @@ namespace RoninEngine
                 SDL_SetWindowTitle(Application::get_window(), windowTitle);
                 fpsRound = TimeEngine::startUpTime() + .5f; // updater per 1 seconds
             }
-
-            SDL_RenderFlush(renderer); // flush renderer
 
             if (switched_world->internal_resources->request_unloading)
                 break; // break on unload state
