@@ -14,7 +14,7 @@ namespace RoninEngine
         std::uint32_t internal_frames; // framecounter
         std::vector<std::uint32_t> _watcher_time;
 
-        Vec2Int m_mousePoint;
+        Vec2Int internal_mouse_point;
         std::uint8_t mouseState;
         std::uint8_t lastMouseState;
         std::uint8_t mouseWheels;
@@ -248,7 +248,6 @@ namespace RoninEngine
 
             TimeEngine::begin_watch();
 
-            SDL_RenderFlush(renderer); // flush renderer before first render
             while (SDL_PollEvent(&event)) {
                 internal_update_input(&event);
                 if (event.type == SDL_QUIT)
@@ -343,6 +342,8 @@ namespace RoninEngine
                 SDL_SetWindowTitle(Application::get_window(), windowTitle);
                 fpsRound = TimeEngine::startUpTime() + .5f; // updater per 1 seconds
             }
+
+            SDL_RenderFlush(renderer); // flush renderer
 
             if (switched_world->internal_resources->request_unloading)
                 break; // break on unload state

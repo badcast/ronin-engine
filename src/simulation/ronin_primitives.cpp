@@ -14,9 +14,8 @@ namespace RoninEngine::Runtime
     GameObject* Primitive::create_box2d(Vec2 position, float angle)
     {
         GameObject* obj = create_empty_game_object(position);
-
         obj->add_component<SpriteRenderer>()->set_sprite(create_sprite2D_box());
-
+        obj->transform()->angle(angle);
         return obj;
     }
 

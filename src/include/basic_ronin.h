@@ -49,53 +49,87 @@ extern void check_object(RoninEngine::Runtime::Object* obj);
 
 #define DESCRIBE_AS_MAIN(TYPE) (DESCRIBE_TYPE(TYPE, this, &_type_, name.c_str()))
 
-namespace RoninEngine::Runtime
+namespace RoninEngine
 {
-    struct Rendering {
-        Rect src;
-        Rectf dst;
-        SDL_Texture* texture;
-        SDL_Renderer* renderer;
-    };
+    namespace UI
+    {
+        struct UIElement {
+            Runtime::Rect rect;
+            Runtime::Rect contextRect;
+            std::uint8_t options;
+            uid id;
+            uid parentId;
+            std::string text;
+            GUIControlPresents prototype;
+            std::list<uint8_t> childs;
+            void* resources;
+            void* event;
+        };
+        struct GUIResources {
+            struct {
+                // controls
+                std::vector<UIElement> elements;
+                std::list<uid> layers;
+                uid focusedID;
+            } ui_layer;
 
-    struct WorldResources {
-        // unique ids for Object types in current world
-        std::uint32_t _level_ids_;
+            ui_callback callback;
+            void* callbackData;
+            World* __level_owner;
+            bool hitCast;
+            bool _focusedUI;
+            bool visible;
+        };
 
-        // state is unloading
-        bool request_unloading;
+    }
+    namespace Runtime
+    {
+        struct Rendering {
+            Rect src;
+            Rectf dst;
+            SDL_Texture* texture;
+            SDL_Renderer* renderer;
+        };
 
-        std::list<Sprite*> offload_sprites;
-        std::list<SDL_Surface*> offload_surfaces;
+        struct WorldResources {
+            // unique ids for Object types in current world
+            std::uint32_t _level_ids_;
 
-        // destroyed queue object
-        int _destroyed;
+            // state is unloading
+            bool request_unloading;
 
-        // destroy last delaying for action
-        float _destroy_delay_time;
+            std::list<Sprite*> offload_sprites;
+            std::list<SDL_Surface*> offload_surfaces;
 
-        std::list<Behaviour*>* _firstRunScripts;
-        std::list<Behaviour*>* _realtimeScripts;
+            // destroyed queue object
+            int _destroyed;
 
-        // destruction task (queue object)
-        std::map<float, std::set<Object*>>* _destructTasks;
-        std::unordered_map<Vec2Int, std::set<Transform*>> matrixWorld;
+            // destroy last delaying for action
+            float _destroy_delay_time;
 
-        std::list<Light*> _assoc_lightings;
+            std::list<Behaviour*>* _firstRunScripts;
+            std::list<Behaviour*>* _realtimeScripts;
 
-        // World object (use)
-        std::map<Object*, float> world_objects;
+            // destruction task (queue object)
+            std::map<float, std::set<Object*>>* _destructTasks;
+            std::unordered_map<Vec2Int, std::set<Transform*>> matrixWorld;
 
-        // Main UI Object
-        UI::GUI* gui = nullptr;
+            std::list<Light*> _assoc_lightings;
 
-        // Main or Root object
-        GameObject* main_object = nullptr;
-    };
+            // World object (use)
+            std::map<Object*, float> world_objects;
 
-    // pre-decloration
-    void load_world(World*);
-    bool unload_world(World*);
-    Transform* get_root(World*);
+            // Main UI Object
+            UI::GUI* gui = nullptr;
 
+            // Main or Root object
+            GameObject* main_object = nullptr;
+        };
+
+        // pre-decloration
+        void load_world(World*);
+        bool unload_world(World*);
+        Transform* get_root(World*);
+
+    }
 }

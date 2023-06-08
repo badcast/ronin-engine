@@ -21,23 +21,12 @@ namespace RoninEngine
             Runtime::Vec2Int buttonSize = Runtime::Vec2Int(240, 30);
             Runtime::Vec2Int editSize = Runtime::Vec2Int(240, 30);
             Runtime::Vec2Int sliderSize = Runtime::Vec2Int(240, 30);
-        } defaultMakets;
+        } const defaultMakets;
 
         class RONIN_API GUI final
         {
         private:
-            struct {
-                // controls
-                std::vector<UIElement> elements;
-                std::list<uid> layers;
-                uid focusedID;
-            } ui_layer;
-
-            CI ui_callback callback;
-            CI void* callbackData;
-            CI World* __level_owner;
-            CI bool hitCast;
-            CI bool _focusedUI;
+            struct GUIResources* resources;
 
             /// Register ui element and get unique ID
             CI std::list<uid> get_groups();
@@ -47,7 +36,6 @@ namespace RoninEngine
             CI bool has_action(void* outPos);
 
         public:
-            bool visible;
 
             CI GUI(Runtime::World*);
             CI virtual ~GUI();

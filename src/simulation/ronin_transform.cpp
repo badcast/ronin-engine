@@ -13,7 +13,7 @@ namespace RoninEngine::Runtime
     {
         DESCRIBE_AS_MAIN(Transform);
         m_parent = nullptr;
-        _angle = 0;
+        _angle_ = 0;
         layer = 1;
         // set as default
         World::self()->matrix_nature(this, Vec2::round_to_int(p + Vec2::one));
@@ -50,23 +50,23 @@ namespace RoninEngine::Runtime
 
     void Transform::look_at(Vec2 target, Vec2 axis)
     {
-        _angle = Vec2::angle(axis, target - position()) * Math::rad2deg;
+        _angle_ = Vec2::angle(axis, target - position()) * Math::rad2deg;
 
         // normalize horz
         if (axis.x == 1) {
             if (p.y < target.y)
-                _angle = -_angle;
+                _angle_ = -_angle_;
         } else if (axis.x == -1) {
             if (p.y > target.y)
-                _angle = -_angle;
+                _angle_ = -_angle_;
         }
         // normalize vert
         if (axis.y == 1) {
             if (p.x > target.x)
-                _angle = -_angle;
+                _angle_ = -_angle_;
         } else if (axis.y == -1) {
             if (p.x < target.x)
-                _angle = -_angle;
+                _angle_ = -_angle_;
         }
     }
 
@@ -91,7 +91,7 @@ namespace RoninEngine::Runtime
                 a = -a;
         }
 
-        local_angle(Math::lerp_angle(_angle, a, t));
+        local_angle(Math::lerp_angle(_angle_, a, t));
     }
 
     void Transform::look_at_lerp(Transform* target, float t) { look_at_lerp(target->p, t); }
@@ -116,7 +116,7 @@ namespace RoninEngine::Runtime
         hierarchy_remove(t, child);
     }
 
-    const Vec2 Transform::forward() { return transformDirection(Vec2::up); }
+    const Vec2 Transform::forward() { return transformDirection(p); }
 
     const Vec2 Transform::right() { return transformDirection(Vec2::right); }
 
@@ -126,9 +126,9 @@ namespace RoninEngine::Runtime
 
     const Vec2 Transform::down() { return transformDirection(Vec2::down); }
 
-    const Vec2 Transform::transformDirection(Vec2 direction) { return Vec2::rotate_around(p, direction, _angle * Math::deg2rad); }
+    const Vec2 Transform::transformDirection(Vec2 direction) { return Vec2::rotate_around(position(), direction, _angle_ * Math::deg2rad); }
 
-    const Vec2 Transform::transformDirection(float x, float y) { return transformDirection(Vec2(x, y)); }
+    const Vec2 Transform::transformDirection(float x, float y) { return transformDirection({ x, y }); }
 
     Vec2 Transform::local_position() { return p; }
     const Vec2& Transform::local_position(const Vec2& value)
@@ -187,17 +187,17 @@ namespace RoninEngine::Runtime
             chlid->parent_notify_active_state(from);
     }
 
-    float Transform::angle() { return (this->m_parent) ? this->m_parent->_angle + this->_angle : this->_angle; }
+    float Transform::angle() { return (this->m_parent) ? this->m_parent->_angle_ + this->_angle_ : this->_angle_; }
 
-    void Transform::angle(float value) { this->_angle = (this->m_parent) ? this->m_parent->angle() - value : value; }
+    void Transform::angle(float value) { this->_angle_ = (this->m_parent) ? this->m_parent->angle() - value : value; }
 
-    float Transform::local_angle() { return this->_angle; }
+    float Transform::local_angle() { return this->_angle_; }
 
     void Transform::local_angle(float value)
     {
         while (value > 360)
             value -= 360;
-        this->_angle = value;
+        this->_angle_ = value;
     }
     Transform* Transform::parent() { return m_parent; }
 

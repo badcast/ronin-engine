@@ -6,22 +6,10 @@ namespace RoninEngine
 {
     namespace UI
     {
+        struct UIElement;
         class GUI;
 
         enum GUIControlPresents : std::uint8_t { _UC, RGUI_TEXT, RGUI_BUTTON, RGUI_EDIT, RGUI_HSLIDER, RGUI_VSLIDER, RGUI_IMAGEANIMATOR, RGUI_TEXTRAND, RGUI_IMAGE, RGUI_DROPDOWN };
-
-        struct UIElement {
-            Runtime::Rect rect;
-            Runtime::Rect contextRect;
-            std::uint8_t options;
-            uid id;
-            uid parentId;
-            std::string text;
-            GUIControlPresents prototype;
-            std::list<uint8_t> childs;
-            void* resources;
-            void* event;
-        };
 
         // main callback for elements
         typedef void (*ui_callback)(uid id, void* userdata);

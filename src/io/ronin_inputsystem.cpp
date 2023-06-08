@@ -2,7 +2,7 @@
 
 namespace RoninEngine::Runtime
 {
-    extern Runtime::Vec2Int m_mousePoint;
+    extern Runtime::Vec2Int internal_mouse_point;
     extern std::uint8_t mouseState;
     extern std::uint8_t lastMouseState;
     extern std::uint8_t mouseWheels;
@@ -35,8 +35,8 @@ namespace RoninEngine::Runtime
             internalText += e->text.text;
             break;
         case SDL_EventType::SDL_MOUSEMOTION:
-            m_mousePoint.x = e->motion.x;
-            m_mousePoint.y = e->motion.y;
+            internal_mouse_point.x = e->motion.x;
+            internal_mouse_point.y = e->motion.y;
             break;
         case SDL_MOUSEWHEEL:
             mouseWheels = e->wheel.y;
@@ -110,9 +110,9 @@ namespace RoninEngine::Runtime
 
     const char Input::wheel_radix() { return mouseWheels; }
 
-    const Vec2Int Input::get_mouse_point() { return m_mousePoint; }
+    const Vec2Int Input::get_mouse_point() { return internal_mouse_point; }
 
-    const Vec2 Input::get_mouse_pointf() { return { static_cast<float>(m_mousePoint.x), static_cast<float>(m_mousePoint.y) }; }
+    const Vec2 Input::get_mouse_pointf() { return { static_cast<float>(internal_mouse_point.x), static_cast<float>(internal_mouse_point.y) }; }
 
     const Vec2 Input::get_axis() { return m_axis; }
 

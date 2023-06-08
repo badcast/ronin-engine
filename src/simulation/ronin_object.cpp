@@ -165,7 +165,7 @@ namespace RoninEngine
                 Component* replacement = *iter;
                 if (Transform* t = dynamic_cast<Transform*>(replacement)) {
                     Transform* existent = clone->transform();
-                    existent->_angle = t->_angle;
+                    existent->_angle_ = t->_angle_;
                     existent->position(t->position());
                     // BUG: Hierarchy cnage is bug, fix now;
                     //  Clone childs recursive

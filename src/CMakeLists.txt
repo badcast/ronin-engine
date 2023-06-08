@@ -14,7 +14,7 @@ function(find_packages)
     # next use
 
     if(NOT EXISTS "${LIBS_DIR}")
-      message(FATAL_ERROR "directory-libs not found, error binding SDL2")
+      message(WARNING "directory-libs not found, error binding SDL2")
     endif()
 
     set(CMAKE_PREFIX_PATH ${LIBS_DIR})

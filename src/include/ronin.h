@@ -7,8 +7,6 @@
 // base headers
 #include "../../include/ronin/begin.h"
 
-#include "basic_ronin.h"
-
 #include "just-parser.h"
 
 // applications
@@ -45,6 +43,8 @@
 #include "../../include/ronin/NavMesh.h"
 #include "../../include/ronin/Physics2D.h"
 #include "../../include/ronin/Atlas.h"
+
+#include "basic_ronin.h"
 
 #include "static.h"
 #include "levelentity.h"

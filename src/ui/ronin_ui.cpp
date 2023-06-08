@@ -21,29 +21,34 @@ namespace RoninEngine::UI
         UIElement data {};
         data.parentId = parent;
         data.options = ElementVisibleMask | ElementEnableMask;
-        gui->ui_layer.elements.emplace_back(data);
-        data.id = gui->ui_layer.elements.size();
+        gui->resources->ui_layer.elements.emplace_back(data);
+        data.id = gui->resources->ui_layer.elements.size();
         // add the child
         if (parent)
-            gui->ui_layer.elements[parent - 1].childs.emplace_back(gui->ui_layer.elements.size() - 1);
+            gui->resources->ui_layer.elements[parent - 1].childs.emplace_back(gui->resources->ui_layer.elements.size() - 1);
         else
-            gui->ui_layer.layers.push_back(data.id);
+            gui->resources->ui_layer.layers.push_back(data.id);
 
         return data.id;
     }
-    inline UIElement& call_get_element(GUI* gui, uid id) { return gui->ui_layer.elements[id - 1]; }
+    inline UIElement& call_get_element(GUI* gui, uid id) { return gui->resources->ui_layer.elements[id - 1]; }
 
     GUI::GUI(RoninEngine::Runtime::World* world)
-        : __level_owner(world)
-        , hitCast(true)
-        , callback(nullptr)
-        , callbackData(nullptr)
-        , visible(true)
-        , _focusedUI(false)
     {
-    }
+        RoninMemory::alloc_self(resources);
+        resources->__level_owner = world;
+        resources->hitCast = true;
+        resources->visible = true;
+        // resources->callback = nullptr;
+        // resources->callbackData = nullptr;
+        // resources->_focusedUI = false;
+    };
 
-    GUI::~GUI() { remove_all(); }
+    GUI::~GUI()
+    {
+        remove_all();
+        RoninMemory::free(resources);
+    }
 
     // private--------------------------------------
 
@@ -51,8 +56,8 @@ namespace RoninEngine::UI
     {
         std::list<uid> __;
 
-        for (auto& iter : ui_layer.elements) {
-            if (this->is_group(iter.id))
+        for (auto& iter : resources->ui_layer.elements) {
+            if (is_group(iter.id))
                 __.push_back(iter.id);
         };
 
@@ -63,7 +68,7 @@ namespace RoninEngine::UI
 
     // public---------------------------------------
 
-    bool GUI::has_ui(uid id) { return ui_layer.elements.size() >= id; }
+    bool GUI::has_ui(uid id) { return resources->ui_layer.elements.size() >= id; }
     uid GUI::push_group(const Runtime::Rect& rect)
     {
         uid id = call_register_ui(this);
@@ -277,7 +282,7 @@ namespace RoninEngine::UI
         if (!is_group(id))
             throw std::runtime_error("Isn't group");
 
-        this->ui_layer.layers.remove_if([this](auto v) { return this->is_group(v); });
+        resources->ui_layer.layers.remove_if([this](auto v) { return is_group(v); });
 
         show_group(id);
     }
@@ -286,10 +291,10 @@ namespace RoninEngine::UI
         if (!is_group(id))
             throw std::runtime_error("Isn't group");
 
-        auto iter = find_if(begin(ui_layer.layers), end(ui_layer.layers), [&id](auto& _id) { return _id == id; });
+        auto iter = std::find_if(begin(resources->ui_layer.layers), end(resources->ui_layer.layers), std::bind2nd(std::equal_to<uid>(), id));
 
-        if (iter == end(ui_layer.layers)) {
-            ui_layer.layers.emplace_back(id);
+        if (iter == std::end(resources->ui_layer.layers)) {
+            resources->ui_layer.layers.emplace_back(id);
             set_visible(id, true);
         }
     }
@@ -298,35 +303,35 @@ namespace RoninEngine::UI
     {
         if (!is_group(id))
             throw std::runtime_error("Isn't group");
-        ui_layer.layers.remove(id);
+        resources->ui_layer.layers.remove(id);
         set_visible(id, false);
     }
 
-    void GUI::set_cast(bool state) { hitCast = state; }
-    bool GUI::get_cast() { return hitCast; }
+    void GUI::set_cast(bool state) { resources->hitCast = state; }
+    bool GUI::get_cast() { return resources->hitCast; }
 
     void GUI::register_callback(ui_callback callback, void* userData)
     {
-        this->callback = callback;
-        this->callbackData = userData;
+        resources->callback = callback;
+        resources->callbackData = userData;
     }
     bool GUI::pop_element(uid id)
     {
         // TODO: мда. Тут проблема. ID которое удаляется может задеть так же и другие. Нужно исправить и найти способ! T``T
-
+        // BUG: GUI PopElement
         return false;
     }
     void GUI::remove_all()
     {
-        for (int x = 0; x < ui_layer.elements.size(); ++x) {
-            factory_free(&ui_layer.elements[x]);
+        for (int x = 0; x < resources->ui_layer.elements.size(); ++x) {
+            factory_free(&(resources->ui_layer.elements[x]));
         }
-        ui_layer.layers.clear();
-        ui_layer.elements.clear();
+        resources->ui_layer.layers.clear();
+        resources->ui_layer.elements.clear();
     }
     void GUI::native_draw_render(SDL_Renderer* renderer)
     {
-        if (!visible)
+        if (resources->visible == false)
             return;
 
         uid id;
@@ -339,10 +344,10 @@ namespace RoninEngine::UI
 
         ms = Input::get_mouse_point();
 
-        _focusedUI = false;
+        resources->_focusedUI = false;
         ui_reset_controls(); // Reset
 
-        for (auto iter = begin(ui_layer.layers); iter != end(ui_layer.layers); ++iter)
+        for (auto iter = begin(resources->ui_layer.layers); iter != end(resources->ui_layer.layers); ++iter)
             ui_drains.emplace_back(*iter);
 
         while (ui_drains.size()) {
@@ -354,40 +359,40 @@ namespace RoninEngine::UI
 
             ui_drains.pop_front();
             if (!(uielement->options & ElementGroupMask) && uielement->options & ElementVisibleMask) {
-                uiFocus = id == ui_layer.focusedID;
+                uiFocus = id == resources->ui_layer.focusedID;
 
                 // unfocus on click an not hovered
                 if (uiFocus && (!uiHover || !uiContex) && Input::is_mouse_up()) {
                     uiFocus = false;
-                    ui_layer.focusedID = 0;
+                    resources->ui_layer.focusedID = 0;
                 }
 
-                if (general_render_ui_section(this, *uielement, renderer, uiHover, uiFocus) && hitCast) {
+                if (general_render_ui_section(this, *uielement, renderer, uiHover, uiFocus) && resources->hitCast) {
                     // Избавляемся от перекликов в UI
-                    _focusedUI = true;
+                    resources->_focusedUI = true;
 
                     if (uiFocus) {
-                        ui_layer.focusedID = id;
+                        resources->ui_layer.focusedID = id;
                     }
 
                     if (uielement->options & ElementEnableMask) {
-                        if (callback) {
+                        if (resources->callback) {
                             // Отправка сообщения о действий.
-                            callback(id, callbackData);
+                            resources->callback(id, resources->callbackData);
                         }
                         // run event
                         event_action(uielement);
                     }
                 } else { // disabled state
                     // TODO: disabled state for UI element's
-                    if (id == ui_layer.focusedID && !uiFocus)
-                        ui_layer.focusedID = 0;
+                    if (id == resources->ui_layer.focusedID && !uiFocus)
+                        resources->ui_layer.focusedID = 0;
                 }
-                if (!_focusedUI)
-                    _focusedUI = uiFocus;
+                if (!resources->_focusedUI)
+                    resources->_focusedUI = uiFocus;
             }
 
-            if (this->__level_owner->internal_resources->request_unloading)
+            if (resources->__level_owner->internal_resources->request_unloading)
                 break;
 
             for (auto iter = begin(uielement->childs); iter != end(uielement->childs); ++iter)
@@ -396,6 +401,6 @@ namespace RoninEngine::UI
     }
     void GUI::set_color_rgb(std::uint32_t rgb) { set_color_rgba(rgb << 8 | SDL_ALPHA_OPAQUE); }
     void GUI::set_color_rgba(std::uint32_t argb) { SDL_SetRenderDrawColor(Application::get_renderer(), (uid)(argb >> 24) & 0xFF, (uid)(argb >> 16) & 0xFF, (uid)(argb >> 8) & 0xFF, (uid)argb & 0xFF); }
-    bool GUI::has_focused_ui() { return _focusedUI; }
+    bool GUI::has_focused_ui() { return resources->_focusedUI; }
 
 } // namespace RoninEngine::UI

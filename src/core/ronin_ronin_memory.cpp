@@ -5,7 +5,6 @@ namespace RoninEngine::Runtime
     namespace RoninMemory
     {
         using namespace RoninEngine;
-        using namespace RoninEngine::Runtime;
 
         std::uint64_t __ronin_allocated = 0;
 
@@ -15,6 +14,7 @@ namespace RoninEngine::Runtime
             if (mem == nullptr) {
                 Application::fail_oom_kill();
             }
+            // Set up controls memory pointer. Set zero.
             memset(mem, 0, size);
             ++__ronin_allocated;
             return mem;

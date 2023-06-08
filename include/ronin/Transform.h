@@ -22,7 +22,7 @@ namespace RoninEngine::Runtime
 
         Transform* m_parent;
         Vec2 p;
-        float _angle;
+        float _angle_;
 
         void parent_notify(Vec2 lastParentPoint);
         void parent_notify_active_state(GameObject* from);
