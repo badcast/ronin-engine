@@ -51,6 +51,18 @@ namespace RoninEngine::Runtime
     void Gizmos::set_color(const Color& newColor) { SDL_SetRenderDrawColor(Application::get_renderer(), newColor.r, newColor.g, newColor.b, newColor.a); }
 
     void Gizmos::draw_line(Vec2 a, Vec2 b) { internal_drawLine(a, b); }
+
+    void Gizmos::draw_line_pivot(Vec2 ared, Vec2 bblue)
+    {
+        Color last = get_color();
+        draw_line(ared, bblue);
+
+        set_color(Color::red);
+        draw_circle(ared, 0.1f);
+        set_color(Color::blue);
+        draw_circle(bblue, 0.1f);
+        set_color(last);
+    }
     void drawBox()
     {
         Vec2 a, b;
