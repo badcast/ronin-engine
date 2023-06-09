@@ -27,7 +27,6 @@
 #include "../../include/ronin/Camera.h"
 #include "../../include/ronin/Camera2D.h"
 #include "../../include/ronin/Component.h"
-#include "../../include/ronin/GameObject.h"
 #include "../../include/ronin/World.h"
 #include "../../include/ronin/Light.h"
 #include "../../include/ronin/Player.h"
@@ -43,6 +42,8 @@
 #include "../../include/ronin/NavMesh.h"
 #include "../../include/ronin/Physics2D.h"
 #include "../../include/ronin/Atlas.h"
+
+#include "../../include/ronin/GameObject.h"
 
 #include "basic_ronin.h"
 

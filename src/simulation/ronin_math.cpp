@@ -40,15 +40,15 @@ Vec2 Random::randomVector() { return Vec2(Random::value() * 2 - 1, Random::value
 
 float Random::randomAngle() { return value() * 360; }
 
-float Math::cos(float x) { return ::cosf(x); }
+float Math::cos(float x) { return SDL_cosf(x); }
 
-float Math::sin(float x) { return ::sinf(x); }
+float Math::sin(float x) { return SDL_sinf(x); }
 
-float Math::tan(float x) { return ::tanf(x); }
+float Math::tan(float x) { return SDL_tanf(x); }
 
-float Math::acos(float x) { return ::acosf(x); }
+float Math::acos(float x) { return SDL_acosf(x); }
 
-float Math::atan(float x) { return ::atanf(x); }
+float Math::atan(float x) { return SDL_atanf(x); }
 
 float Math::atan2(float y, float x) { return ::atan2f(y, x); }
 
@@ -84,11 +84,11 @@ float Math::pow2(float x) { return ::powf(x, 2); }
 
 int Math::pow2(int x) { return ::pow(x, 2); }
 
-int Math::pow(int x, int y) { return ::pow(x, y); }
+int Math::pow(int x, int y) { return std::pow(x, y); }
 
-float Math::pow(float x, float y) { return ::powf(x, y); }
+float Math::pow(float x, float y) { return SDL_powf(x, y); }
 
-float Math::sqrt(float x) { return std::sqrt(x); }
+float Math::sqrt(float x) { return SDL_sqrtf(x); }
 
 float Math::repeat(float t, float length) { return clamp(t - floor(t / length) * length, 0.f, length); }
 

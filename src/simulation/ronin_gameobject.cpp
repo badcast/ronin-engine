@@ -20,6 +20,13 @@ namespace RoninEngine::Runtime
     template RONIN_API Spotlight* GameObject::get_component<Spotlight>();
     template RONIN_API Terrain2D* GameObject::get_component<Terrain2D>();
     template RONIN_API Transform* GameObject::get_component<Transform>();
+    // Remove Component
+    template RONIN_API bool GameObject::remove_component<MoveController2D>();
+    template RONIN_API bool GameObject::remove_component<SpriteRenderer>();
+    template RONIN_API bool GameObject::remove_component<Camera2D>();
+    template RONIN_API bool GameObject::remove_component<Spotlight>();
+    template RONIN_API bool GameObject::remove_component<Terrain2D>();
+    template RONIN_API bool GameObject::remove_component<Transform>();
 
     GameObject::GameObject()
         : GameObject(DESCRIBE_AS_MAIN_OFF(GameObject))
@@ -57,11 +64,11 @@ namespace RoninEngine::Runtime
         return static_cast<Transform*>(m_components.front());
     }
 
-    template <typename T>
-    T* GameObject::get_component()
-    {
-        return GameObjectTypeHelper<T>::get_type(this->m_components);
-    }
+    SpriteRenderer* GameObject::get_sprite_renderer() { return get_component<SpriteRenderer>(); }
+
+    Camera2D* GameObject::get_camera2D() { return get_component<Camera2D>(); }
+
+    Terrain2D* GameObject::get_terrain2D() { return get_component<Terrain2D>(); }
 
     Component* GameObject::add_component(Component* component)
     {
@@ -87,6 +94,19 @@ namespace RoninEngine::Runtime
         }
 
         return component;
+    }
+
+    bool GameObject::remove_component(Component* component)
+    {
+        if (component == nullptr)
+            throw std::runtime_error("arg value is null");
+
+        if (component->_owner != this) {
+            throw std::runtime_error("Component is not binded this GameObject");
+        }
+
+        // destroy this component
+        destroy_immediate(component);
     }
 
     // template Transform* GameObject::get_component() { return transform(); }

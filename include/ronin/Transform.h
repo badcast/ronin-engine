@@ -29,7 +29,7 @@ namespace RoninEngine::Runtime
 
         static void hierarchy_parent_change(Transform* from, Transform* newParent);
         static void hierarchy_remove(Transform* from, Transform* off);
-        static void hierarchy_removeAll(Transform* from);
+        static void hierarchy_remove_all(Transform* from);
         static void hierarchy_append(Transform* from, Transform* off);
         static bool hierarchy_sibiling(Transform* from, int index);
 

@@ -116,7 +116,7 @@ namespace RoninEngine::Runtime
         hierarchy_remove(t, child);
     }
 
-    const Vec2 Transform::forward() { return transformDirection(p); }
+    const Vec2 Transform::forward() { return transformDirection(Vec2::one); }
 
     const Vec2 Transform::right() { return transformDirection(Vec2::right); }
 
@@ -243,7 +243,7 @@ namespace RoninEngine::Runtime
         from->hierarchy.erase(iter);
         off->m_parent = nullptr; // not parent
     }
-    void Transform::hierarchy_removeAll(Transform* from)
+    void Transform::hierarchy_remove_all(Transform* from)
     {
         for (auto t : from->hierarchy) {
             t->m_parent = nullptr;

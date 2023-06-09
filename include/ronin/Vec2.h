@@ -74,14 +74,14 @@ namespace RoninEngine
 
             Vec2();
             explicit Vec2(const Vec2Int& rhs);
-            Vec2(const float& x, const float& y);
+            Vec2(const float x, const float y);
             // extern Vec2(float && x, float && y);
             Vec2(const Vec2&) = default;
             ~Vec2() = default;
 
             float magnitude() const;
             float sqr_magnitude() const;
-            Vec2 normalized();
+            Vec2 normalized() const;
             void normalize();
 
             static const Vec2 one;
@@ -116,9 +116,7 @@ namespace RoninEngine
             static float sqr_magnitude(const Vec2& lhs);
             static Vec2 round(Vec2 lhs);
             static Vec2Int round_to_int(const Vec2& lhs);
-            //	static bool AreaEnclosePoints(const Rectf_t* points, int count, const
-            // Rectf_t* clip, Rectf_t* result);
-            static bool area_point_in_rect(const Vec2& p, const Rectf& rhs);
+            static bool has_intersection(const Vec2& p, const Rectf& rhs);
             static bool has_intersection(const Rectf& lhs, const Rectf& rhs);
             static bool in_area(const Vec2& p, const Rectf& rhs);
             static const Vec2 rotate(Vec2 vec, Vec2 normal, float angleRadian);

@@ -116,6 +116,7 @@ namespace RoninEngine
             if ((gObj = dynamic_cast<GameObject*>(obj)) != nullptr) {
 
                 // FIXME: destroy other types from gameobject->m_components (delete a list)
+                // FIXME: Replace Recursive method to stack linear
                 // Recursive method
                 for (Component* component : gObj->m_components) {
                     destroy_immediate(component);
@@ -126,11 +127,11 @@ namespace RoninEngine
                 Transform* t;
                 Behaviour* exec;
                 if ((t = dynamic_cast<Transform*>(obj))) {
-                    // picking from matrix
                     if (t->parent()) {
                         Transform::hierarchy_remove(t->parent(), t);
                     }
-                    Transform::hierarchy_removeAll(t);
+                    Transform::hierarchy_remove_all(t);
+                    // picking from matrix
                     World::self()->matrix_nature_pickup(t);
                 } else if ((exec = dynamic_cast<Behaviour*>(obj))) {
                     if (World::self()->internal_resources->_firstRunScripts)

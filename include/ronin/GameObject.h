@@ -6,38 +6,6 @@ namespace RoninEngine
 {
     namespace Runtime
     {
-        //[attrib class]
-        template <typename T>
-        class GameObjectTypeHelper
-        {
-        public:
-            static constexpr T* get_type(const std::list<Component*>& container)
-            {
-                if constexpr (std::is_same<T, Transform>::value) {
-                    return reinterpret_cast<Transform*>(container.front());
-                } else {
-                    auto iter = std::find_if(begin(container), end(container), [](Component* c) { return dynamic_cast<T*>(c) != nullptr; });
-
-                    if (iter != end(container))
-                        return reinterpret_cast<T*>(*iter);
-                }
-                return nullptr;
-            }
-
-            static std::list<T*> get_types(const std::list<Component*>& container)
-            {
-                std::list<T*> types;
-                T* cast;
-                for (auto iter = std::begin(container); iter != std::end(container); ++iter) {
-                    if ((cast = dynamic_cast<T*>(*iter)) != nullptr) {
-                        types.emplace_back(cast);
-                    }
-                }
-
-                return types;
-            }
-        };
-
         class RONIN_API GameObject final : public Object
         {
             friend class Camera2D;
@@ -70,22 +38,26 @@ namespace RoninEngine
 
             Transform* transform();
 
+            SpriteRenderer* get_sprite_renderer();
+
+            Camera2D* get_camera2D();
+
+            Terrain2D* get_terrain2D();
+
+            Component* add_component(Component* component);
+            bool remove_component(Component* component);
+
             template <typename T>
             std::enable_if_t<std::is_base_of<Component, T>::value, T*> add_component();
 
-            Component* add_component(Component* component);
-
-            SpriteRenderer* get_sprite_renderer() { return get_component<SpriteRenderer>(); }
-
-            Camera2D* get_camera2D() { return get_component<Camera2D>(); }
-
-            Terrain2D* get_terrain2D() { return get_component<Terrain2D>(); }
+            template <typename T>
+            std::enable_if_t<std::is_base_of<Component, T>::value, T*> get_component();
 
             template <typename T>
-            T* get_component();
+            std::enable_if_t<std::is_base_of<Component, T>::value, bool> remove_component();
 
             template <typename T>
-            std::list<T*> get_components();
+            std::enable_if_t<std::is_base_of<Component, T>::value, std::list<T*>> get_components();
         };
 
         template <typename T>
@@ -98,10 +70,40 @@ namespace RoninEngine
         }
 
         template <typename T>
-        // std::enable_if<!std::is_same<RoninEngine::Runtime::Transform,T>::value, std::list<T*>>
-        std::list<T*> GameObject::get_components()
+        std::enable_if_t<std::is_base_of<Component, T>::value, bool> GameObject::remove_component()
         {
-            return GameObjectTypeHelper<T>::get_types(this->m_components);
+            T* target = get_component<T>();
+            if (target == nullptr)
+                return false;
+            return remove_component(target);
+        }
+
+        template <typename T>
+        std::enable_if_t<std::is_base_of<Component, T>::value, std::list<T*>> GameObject::get_components()
+        {
+            std::list<T*> types;
+            T* cast;
+            for (auto iter = std::begin(m_components); iter != std::end(m_components); ++iter) {
+                if ((cast = dynamic_cast<T*>(*iter)) != nullptr) {
+                    types.emplace_back(cast);
+                }
+            }
+
+            return types;
+        }
+
+        template <typename T>
+        std::enable_if_t<std::is_base_of<Component, T>::value, T*> GameObject::get_component()
+        {
+            if constexpr (std::is_same<T, Transform>::value) {
+                return reinterpret_cast<Transform*>(m_components.front());
+            } else {
+                auto iter = std::find_if(begin(m_components), end(m_components), [](Component* c) { return dynamic_cast<T*>(c) != nullptr; });
+
+                if (iter != end(m_components))
+                    return reinterpret_cast<T*>(*iter);
+            }
+            return nullptr;
         }
 
     } // namespace Runtime

@@ -25,7 +25,7 @@ Vec2::Vec2(const Vec2Int& rhs)
 {
 }
 
-Vec2::Vec2(const float& x, const float& y)
+Vec2::Vec2(const float x, const float y)
 {
     this->x = x;
     this->y = y;
@@ -35,7 +35,7 @@ float Vec2::magnitude() const { return Math::sqrt(x * x + y * y); }
 
 float Vec2::sqr_magnitude() const { return x * x + y * y; }
 
-Vec2 Vec2::normalized()
+Vec2 Vec2::normalized() const
 {
     Vec2 result = *this;
     result.normalize();
@@ -74,7 +74,7 @@ Vec2 Vec2::slerp(Vec2 a, Vec2 b, float t)
     Vec2 p = a * t1 + b * t2;
     return p;
 }
-Vec2 Vec2::slerp_unclamped( Vec2 a,  Vec2 b, float t)
+Vec2 Vec2::slerp_unclamped(Vec2 a, Vec2 b, float t)
 {
     // get cosine of angle between disposition (-1 -> 1)
     float CosAlpha = dot(a, b);
@@ -163,16 +163,16 @@ Vec2 Vec2::clamp_magnitude(Vec2 vector, float maxLength)
 Vec2 Vec2::smooth_damp(Vec2 current, Vec2 target, Vec2& currentVelocity, float smoothTime, float maxSpeed, float deltaTime)
 {
     smoothTime = Math::max(0.f, Math::max(0001.f, smoothTime));
-    float num = 2 / smoothTime;
-    float num2 = num * deltaTime;
-    float d = 1 / (1 + num2 + 0, 48 * num2 * num2 + 0, 235 * num2 * num2 * num2);
+    float n0 = 2 / smoothTime;
+    float n1 = n0 * deltaTime;
+    float d = 1 / (1 + n1 + 0, 48 * n1 * n1 + 0, 235 * n1 * n1 * n1);
     Vec2 vector = current - target;
     Vec2 vector2 = target;
     float maxLength = maxSpeed * smoothTime;
     vector = clamp_magnitude(vector, maxLength);
     target = current - vector;
-    Vec2 vector3 = (currentVelocity + num * vector) * deltaTime;
-    currentVelocity = (currentVelocity - num * vector3) * d;
+    Vec2 vector3 = (currentVelocity + n0 * vector) * deltaTime;
+    currentVelocity = (currentVelocity - n0 * vector3) * d;
     Vec2 vector4 = target + (vector + vector3) * d;
     if (Vec2::dot(vector2 - current, vector4 - vector2) > 0) {
         vector4 = vector2;
@@ -200,7 +200,7 @@ Vec2Int Vec2::round_to_int(const Vec2& lhs)
     return p;
 }
 
-bool Vec2::area_point_in_rect(const Vec2& p, const Rectf& r) { return ((p.x >= r.x) && (p.x < (r.x + r.w)) && (p.y >= r.y) && (p.y < (r.y + r.h))); }
+bool Vec2::has_intersection(const Vec2& p, const Rectf& r) { return ((p.x >= r.x) && (p.x < (r.x + r.w)) && (p.y >= r.y) && (p.y < (r.y + r.h))); }
 
 bool Vec2::has_intersection(const Rectf& lhs, const Rectf& rhs) { return SDL_HasIntersectionF(reinterpret_cast<const SDL_FRect*>(&lhs), reinterpret_cast<const SDL_FRect*>(&rhs)); }
 
@@ -208,7 +208,7 @@ bool Vec2::in_area(const Vec2& p, const Rectf& r) { return p.x >= r.x && p.x <= 
 
 const Vec2 Vec2::rotate(Vec2 vec, Vec2 normal, float angleRadian)
 {
-    normal = Vec2::rotate_clockwise(normal, angleRadian * Math::deg2rad);
+    normal = Vec2::rotate_clockwise(normal, angleRadian);
     normal.x *= vec.x;
     normal.y *= vec.y;
     return normal;
