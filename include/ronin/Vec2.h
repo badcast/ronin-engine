@@ -123,6 +123,7 @@ namespace RoninEngine
             static const Vec2 rotate(Vec2 position, float angleRadian);
             static const Vec2 rotate_clockwise(Vec2 position, float angleRadian);
             static const Vec2 rotate_around(Vec2 center, Vec2 localPosition, float angleRadian);
+            static const Vec2 mirror(Vec2 position, Vec2 offset = Vec2::zero);
 
             static const Vec2 perpendicular(Vec2 inDirection);
 

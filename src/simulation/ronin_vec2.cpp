@@ -2,17 +2,6 @@
 
 using namespace RoninEngine;
 
-// const Vec2 Vec2::one = Vec2(1, 1);
-// const Vec2 Vec2::half = Vec2::one / 2;
-// const Vec2 Vec2::minusOne = Vec2(-1, -1);
-// const Vec2 Vec2::zero = Vec2(0, 0);
-// const Vec2 Vec2::down = Vec2(0, -1);
-// const Vec2 Vec2::left = Vec2(-1, 0);
-// const Vec2 Vec2::right = Vec2(1, 0);
-// const Vec2 Vec2::up = Vec2(0, 1);
-// const Vec2 Vec2::infinity = Vec2(Mathf::Infinity, Mathf::Infinity);
-// const Vec2 Vec2::negativeInfinity = infinity * -1;
-
 Vec2::Vec2()
     : x(0)
     , y(0)
@@ -240,6 +229,8 @@ const Vec2 Vec2::rotate_around(Vec2 center, Vec2 localPosition, float angleRadia
     center.y = center.y + localPosition.y * Cos;
     return center;
 }
+
+const Vec2 Vec2::mirror(Vec2 position, Vec2 offset) { return Vec2::rotate(position + offset, Math::pi); }
 
 const Vec2 Vec2::perpendicular(Vec2 inDirection) { return Vec2(0.f - inDirection.y, inDirection.x); }
 
