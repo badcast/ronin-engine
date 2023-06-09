@@ -189,7 +189,6 @@ namespace RoninEngine
 
     bool Application::simulate()
     {
-
         char windowTitle[96];
         float fps, fpsRound = 0;
         int delayed = 0;

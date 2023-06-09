@@ -80,6 +80,7 @@ namespace RoninEngine::Runtime
         // set position in local space from parent
         const Vec2& local_position(const Vec2& value);
 
+        // Angle with Degress
         float angle();
         void angle(float value);
         float local_angle();

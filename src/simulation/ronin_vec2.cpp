@@ -90,7 +90,7 @@ Vec2 Vec2::max(const Vec2& lhs, const Vec2& rhs) { return Vec2(Math::max(lhs.x, 
 
 Vec2 Vec2::min(const Vec2& lhs, const Vec2& rhs) { return Vec2(Math::min(lhs.x, rhs.x), Math::min(lhs.y, rhs.y)); }
 
-Vec2 Vec2::move_towards(const Vec2& current, const Vec2& target, float maxDistanceDelta)
+Vec2 Vec2::move_towards(const Vec2 &current, const Vec2 &target, float maxDistanceDelta)
 {
     Vec2 a = target - current;
     float mag = a.magnitude();
@@ -230,7 +230,7 @@ const Vec2 Vec2::rotate_around(Vec2 center, Vec2 localPosition, float angleRadia
     return center;
 }
 
-const Vec2 Vec2::mirror(Vec2 position, Vec2 offset) { return Vec2::rotate(position + offset, Math::pi); }
+const Vec2 Vec2::mirror(Vec2 position) { return Vec2::rotate(position, Math::pi); }
 
 const Vec2 Vec2::perpendicular(Vec2 inDirection) { return Vec2(0.f - inDirection.y, inDirection.x); }
 

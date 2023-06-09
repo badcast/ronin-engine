@@ -234,6 +234,7 @@ namespace RoninEngine
         const bool Object::exists() { return (this->operator bool()); }
 
         void Object::destroy() { RoninEngine::Runtime::destroy(this); }
+        void Object::destroy(float time) { RoninEngine::Runtime::destroy(this, time); }
 
         const bool Object::destroy_cancel() { return World::self()->object_desctruction_cancel(this); }
 

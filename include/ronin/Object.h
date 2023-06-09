@@ -63,6 +63,7 @@ namespace RoninEngine
             const char* get_type() const;
 
             void destroy();
+            void destroy(float time);
             const bool destroy_cancel();
             const bool is_destruction();
 
