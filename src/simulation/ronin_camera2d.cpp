@@ -21,12 +21,12 @@ namespace RoninEngine::Runtime
         DESCRIBE_AS_MAIN(Camera2D);
     }
 
-    RoninEngine::Runtime::Camera2D::Camera2D(const Camera2D& proto)
-        : Camera(proto.m_name)
-        , visibleBorders(proto.visibleBorders)
-        , visibleGrids(proto.visibleGrids)
-        , visibleObjects(proto.visibleObjects)
-        , scale(proto.scale)
+    Camera2D::Camera2D(const Camera2D& other)
+        : Camera(other.m_name)
+        , visibleBorders(other.visibleBorders)
+        , visibleGrids(other.visibleGrids)
+        , visibleObjects(other.visibleObjects)
+        , scale(other.scale)
     {
     }
 

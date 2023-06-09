@@ -6,13 +6,11 @@ namespace RoninEngine
     {
         // base component
         Component::Component()
-
             : Component(DESCRIBE_AS_MAIN_OFF(Component))
         {
         }
 
         Component::Component(const std::string& name)
-
             : _owner(nullptr)
             , Object(DESCRIBE_AS_ONLY_NAME(Component))
         {
@@ -27,7 +25,7 @@ namespace RoninEngine
         {
             if (!is_binded())
                 throw std::runtime_error("This component isn't binded");
-            return static_cast<Transform*>(_owner->m_components.front());
+            return _owner->transform();
         }
     } // namespace Runtime
 } // namespace RoninEngine

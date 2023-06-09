@@ -63,15 +63,19 @@ namespace RoninEngine
         template <typename T>
         std::enable_if_t<std::is_base_of<Component, T>::value, T*> GameObject::add_component()
         {
+            static_assert(!(std::is_same<T, Transform>::value || std::is_base_of<Transform, T>::value), "Transform component can't assign");
+
             // init component
             T* component = RoninMemory::alloc<T>();
             this->add_component(static_cast<Component*>(component));
+
             return component;
         }
 
         template <typename T>
         std::enable_if_t<std::is_base_of<Component, T>::value, bool> GameObject::remove_component()
         {
+            static_assert(!(std::is_same<T, Transform>::value || std::is_base_of<Transform, T>::value), "Transform component can't remove, basic component type");
             T* target = get_component<T>();
             if (target == nullptr)
                 return false;
@@ -101,7 +105,7 @@ namespace RoninEngine
                 auto iter = std::find_if(begin(m_components), end(m_components), [](Component* c) { return dynamic_cast<T*>(c) != nullptr; });
 
                 if (iter != end(m_components))
-                    return reinterpret_cast<T*>(*iter);
+                    return static_cast<T*>(*iter);
             }
             return nullptr;
         }

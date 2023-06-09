@@ -26,7 +26,6 @@ namespace RoninEngine::Runtime
     template RONIN_API bool GameObject::remove_component<Camera2D>();
     template RONIN_API bool GameObject::remove_component<Spotlight>();
     template RONIN_API bool GameObject::remove_component<Terrain2D>();
-    template RONIN_API bool GameObject::remove_component<Transform>();
 
     GameObject::GameObject()
         : GameObject(DESCRIBE_AS_MAIN_OFF(GameObject))
@@ -105,9 +104,11 @@ namespace RoninEngine::Runtime
             throw std::runtime_error("Component is not binded this GameObject");
         }
 
-        // destroy this component
+        if (dynamic_cast<Transform*>(component) != nullptr)
+            return false;
+        //BUG: Destroying object canceled with signal SIGILL
+        component->_owner = nullptr; // remove owner
+        m_components.remove(component);
         destroy_immediate(component);
     }
-
-    // template Transform* GameObject::get_component() { return transform(); }
 }
