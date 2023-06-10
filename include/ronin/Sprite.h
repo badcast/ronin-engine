@@ -30,8 +30,8 @@ namespace RoninEngine::Runtime
         const Rect rect();
         void rect(Runtime::Rect rect);
 
-        const Vec2 Center();
-        void Center(Vec2 center);
+        const Vec2 center();
+        void center(Vec2 center);
 
         const bool valid();
 

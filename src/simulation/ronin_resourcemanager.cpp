@@ -202,6 +202,17 @@ namespace RoninEngine::Runtime
         return cur;
     }
 
+    AudioClip* ResourceManager::load_clip(const std::string& path)
+    {
+
+        Mix_Chunk* chunk = Mix_LoadWAV(path.c_str());
+        if (chunk == nullptr) {
+            return nullptr;
+        }
+
+        return &(World::self()->internal_resources->offload_audioclips.emplace_back(AudioClip{ chunk, nullptr }));
+    }
+
     int ResourceManager::resource_bitmap(const std::string& resourceName, SDL_Surface** sdlsurfacePtr)
     {
         SDL_Surface* surf = nullptr;

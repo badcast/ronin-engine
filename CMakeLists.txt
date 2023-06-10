@@ -14,6 +14,7 @@ option(RGRESOURCES "Define resources control" ON)
 option(RGSIMULATION "Define level render" ON)
 option(RGGUI "Define User Control system" ON)
 option(RGAI "Define Navigation and AI system" ON)
+option(RGAUDIO "Define Audio Source and clips, based on SDL_Mixer" ON)
 
 if(CMAKE_SIZEOF_VOID_P STREQUAL "4")
   set(ARCHITECTURE "x86")

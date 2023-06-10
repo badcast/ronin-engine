@@ -46,7 +46,7 @@ constexpr bool object_base_of(base* obj, _derived* compare)
 
 // this method for replacing C++ dynamic_cast
 template <typename T>
-static typename std::enable_if<std::is_base_of<RoninEngine::Runtime::Object, T>::value, const char*>::type runtime_define_type(const char* typestr, T* self, char** _type_, const char* name)
+static std::enable_if_t<std::is_base_of<RoninEngine::Runtime::Object, T>::value, const char*> runtime_define_type(const char* typestr, T* self, char** _type_, const char* name)
 {
     // param @self not use
     if (_type_ != nullptr && *_type_ == nullptr) {
@@ -124,7 +124,7 @@ namespace RoninEngine
 
             std::list<Sprite*> offload_sprites;
             std::list<SDL_Surface*> offload_surfaces;
-
+            std::list<AudioClip> offload_audioclips;
             // destroyed queue object
             int _destroyed;
 
@@ -148,6 +148,16 @@ namespace RoninEngine
 
             // Main or Root object
             GameObject* main_object = nullptr;
+        };
+
+        struct AudioClip {
+            Mix_Chunk* mix_chunk;
+            Mix_Music* mix_music;
+        };
+
+        struct AudioSourceData {
+            AudioClip* m_clip;
+            float m_volume;
         };
 
         // pre-decloration

@@ -7,6 +7,7 @@ namespace RoninEngine::Runtime
     {
         friend class RoninEngine::Application;
         friend class RoninEngine::UI::GUI;
+        friend class ResourceManager;
         friend class Object;
         friend class Transform;
         friend class GameObject;

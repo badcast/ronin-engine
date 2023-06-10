@@ -97,9 +97,17 @@ namespace RoninEngine
                 // get error an exists destructed @object
                 for (std::pair<float, std::set<Object*>> mapIter : *destructors) {
                     auto _set = mapIter.second;
+                    auto i = _set.find(obj);
+                    if (i != std::end(_set)) {
+                        if (t == 0) {
+                            _set.erase(i);
+                            obj->destroy_cancel();
 
-                    if (_set.find(obj) != std::end(_set)) {
-                        throw std::runtime_error("Object an prev destruct state");
+                            //destroy now
+                            destroy_immediate(obj);
+                            return;
+                        } else
+                            throw std::runtime_error("Object an prev destruct state");
                     }
                 }
             }
@@ -234,6 +242,7 @@ namespace RoninEngine
         const bool Object::exists() { return (this->operator bool()); }
 
         void Object::destroy() { RoninEngine::Runtime::destroy(this); }
+
         void Object::destroy(float time) { RoninEngine::Runtime::destroy(this, time); }
 
         const bool Object::destroy_cancel() { return World::self()->object_desctruction_cancel(this); }

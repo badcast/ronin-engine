@@ -221,7 +221,7 @@ namespace RoninEngine
                     SDL_DestroyRenderer(renderer);
                     destroyableLevel = nullptr;
                 }
-                renderer = SDL_CreateRenderer(windowOwner, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE /*| SDL_RENDERER_PRESENTVSYNC*/);
+                renderer = SDL_CreateRenderer(windowOwner, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE);
 
                 if (!renderer)
                     fail(SDL_GetError());

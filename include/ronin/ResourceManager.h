@@ -28,6 +28,8 @@ namespace RoninEngine
             [[deprecated]] static SDL_Cursor* GetCursor(const std::string& resourceName, const Vec2Int& hotspot, bool autoUnload = true);
             [[deprecated]] static SDL_Cursor* GetCursor(SDL_Surface* texture, const Vec2Int& hotspot);
 
+            static AudioClip* load_clip(const std::string& path);
+
             static int resource_bitmap(const std::string& resourceName, SDL_Surface** sdlsurfacePtr);
 
             static SDL_Surface* resource_bitmap(const std::string& resourceName);

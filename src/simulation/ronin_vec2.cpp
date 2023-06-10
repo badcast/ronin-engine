@@ -282,8 +282,8 @@ namespace RoninEngine::Runtime
     {
         float Cos = Math::cos(angleRadian);
         float Sin = Math::sin(angleRadian);
-        center.x = center.x + localPosition.x * Sin;
-        center.y = center.y + localPosition.y * Cos;
+        center.x += localPosition.x * Sin;
+        center.y += localPosition.y * Cos;
         return center;
     }
 
@@ -347,9 +347,9 @@ namespace RoninEngine::Runtime
 
     bool operator!=(const Vec2Int& lhs, const Vec2& rhs) { return !operator==(lhs, rhs); }
 
-    Vec2 operator+(const Vec2& lhs, const Vec2& rhs) { return Vec2(lhs.x + rhs.x, lhs.y + rhs.y); }
+    Vec2 operator+(const Vec2& lhs, const Vec2& rhs) { return { lhs.x + rhs.x, lhs.y + rhs.y }; }
 
-    Vec2 operator-(const Vec2& lhs, const Vec2& rhs) { return Vec2(lhs.x - rhs.x, lhs.y - rhs.y); }
+    Vec2 operator-(const Vec2& lhs, const Vec2& rhs) { return { lhs.x - rhs.x, lhs.y - rhs.y }; }
 
     bool operator==(const Vec2& lhs, const Vec2& rhs)
     {

@@ -2,7 +2,7 @@
 
 namespace RoninEngine::Runtime
 {
-
+    static const Vec2 around_frwd { 1, 1 };
     Transform::Transform()
         : Transform(DESCRIBE_AS_MAIN_OFF(Transform))
     {
@@ -41,7 +41,7 @@ namespace RoninEngine::Runtime
 
     void Transform::look_at(Transform* target) { look_at(target, Vec2::up); }
 
-    void Transform::look_at(Transform* target, Vec2 axis) { look_at(target->p, axis); }
+    void Transform::look_at(Transform* target, Vec2 axis) { look_at(target->position(), axis); }
 
     void Transform::look_at(Vec2 target) { look_at(target, Vec2::up); }
 
@@ -116,10 +116,14 @@ namespace RoninEngine::Runtime
     const Vec2 Transform::forward()
     {
         Vec2 pos = position();
-        return pos - Vec2::rotate_around(pos, Vec2::one, _angle_ * Math::deg2rad);
+        return Vec2::rotate_around(pos, around_frwd, _angle_ * Math::deg2rad);
     }
 
-    const Vec2 Transform::back() { return -forward(); }
+    const Vec2 Transform::back()
+    {
+        Vec2 pos = position();
+        return Vec2::rotate_around(pos, around_frwd, (_angle_ - 180) * Math::deg2rad);
+    }
 
     const Vec2 Transform::right() { return transform_direction(Vec2::right); }
 

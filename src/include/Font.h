@@ -1,5 +1,4 @@
-#ifndef _FONT__H_
-#define _FONT__H_
+#pragma once
 
 #include "ronin.h"
 
@@ -22,4 +21,3 @@ namespace RoninEngine::UI
 
     void render_string_legacy(SDL_Renderer* renerer, Runtime::Rect rect, const char* text, int len, int fontWidth = fontWidth, RoninEngine::UI::TextAlign textAlign = RoninEngine::UI::TextAlign::Left, bool textWrap = true, bool hilight = false);
 } // namespace RoninEngine::UI
-#endif

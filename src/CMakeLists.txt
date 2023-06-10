@@ -105,6 +105,10 @@ endif()
 if(RGAI)
   libdef(ronin_art_intel "ai")
 endif()
+# audio sources
+if(RGAUDIO)
+  libdef(ronin_audio_mixer "audio")
+endif()
 
 set(ronin_targets
     "${ronin_targets}"

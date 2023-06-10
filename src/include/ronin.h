@@ -42,6 +42,7 @@
 #include "../../include/ronin/NavMesh.h"
 #include "../../include/ronin/Physics2D.h"
 #include "../../include/ronin/Atlas.h"
+#include "../../include/ronin/AudioSource.h"
 
 #include "../../include/ronin/GameObject.h"
 

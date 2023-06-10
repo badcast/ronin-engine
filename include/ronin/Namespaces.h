@@ -32,6 +32,8 @@ namespace RoninEngine
 
         struct Rendering;
 
+        struct AudioClip;
+
         template <typename T>
         class RRect;
 
@@ -66,6 +68,7 @@ namespace RoninEngine
         class Camera;
         class Camera2D;
         class MoveController2D;
+        class AudioSource;
 
     } // namespace Runtime
 } // namespace RoninEngine
