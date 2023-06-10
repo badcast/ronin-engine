@@ -206,7 +206,7 @@ namespace RoninEngine::Runtime
                 maxTotal = 0;
                 upplow = TimeEngine::time() + 1;
             }
-            std::uint32_t totalC = mesh->getCachedSize();
+            std::uint32_t totalC = mesh->get_cache_size();
             maxTotal = std::max(maxTotal, totalC);
 
             Gizmos::draw_text(Camera::screen_to_world(Vec2::zero), "Cached " + std::to_string(totalC) + " (" + std::to_string(maxTotal) + ")");

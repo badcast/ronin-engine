@@ -96,6 +96,6 @@ namespace RoninEngine::AIPathFinder
         void load(const NavMeshData& navmeshData);
         void save(NavMeshData* navmeshData);
 
-        std::uint32_t getCachedSize();
+        std::uint32_t get_cache_size();
     };
 } // namespace RoninEngine::AIPathFinder

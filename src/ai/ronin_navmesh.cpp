@@ -62,7 +62,7 @@ namespace RoninEngine::AIPathFinder
         return p;
     }
 
-    std::uint32_t NavMesh::getCachedSize() { return shedule->get_cached_size(); }
+    std::uint32_t NavMesh::get_cache_size() { return shedule->get_cached_size(); }
 
     void NavMesh::find(NavResult& navResult, NavMethodRule method, Runtime::Vec2 worldPointFirst, Runtime::Vec2 worldPointLast)
     {
