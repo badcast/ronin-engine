@@ -44,6 +44,8 @@ namespace RoninEngine::Runtime
         return *this;
     }
 
+    Vec2Int Vec2Int::operator-() const { return *this * -1; }
+
     Vec2Int& Vec2Int::operator=(Vec2Int&& rhs)
     {
         this->x = rhs.x;
@@ -285,7 +287,7 @@ namespace RoninEngine::Runtime
         return center;
     }
 
-    const Vec2 Vec2::mirror(Vec2 position) { return Vec2::rotate(position, Math::pi); }
+    const Vec2 Vec2::mirror(Vec2 position) { return Vec2::rotate(position, Math::Pi); }
 
     const Vec2 Vec2::perpendicular(Vec2 inDirection) { return Vec2(0.f - inDirection.y, inDirection.x); }
 

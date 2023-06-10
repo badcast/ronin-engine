@@ -141,7 +141,7 @@ namespace RoninEngine
             std::list<Light*> _assoc_lightings;
 
             // World object (use)
-            std::map<Object*, float> world_objects;
+            std::set<Object*> world_objects;
 
             // Main UI Object
             UI::GUI* gui = nullptr;

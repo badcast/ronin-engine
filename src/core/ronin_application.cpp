@@ -214,7 +214,7 @@ namespace RoninEngine
         while (!isQuiting) {
             // TODO: m_level->request_unloading use as WNILE block (list proc)
 
-            if (!internal_level_loaded) {
+            if (internal_level_loaded == false) {
                 // free cache
                 if (destroyableLevel) {
                     // RoninMemory::free(destroyableLevel);
@@ -339,8 +339,10 @@ namespace RoninEngine
                 std::sprintf(
                     windowTitle,
                     "FPS:%.1f Memory:%sMiB, "
-                    "Ronin_Allocated:%s, SDL_Allocated:%s, Frames:%u",
-                    fps, Math::num_beautify(get_process_sizeMemory() / 1024 / 1024).c_str(), Math::num_beautify(RoninMemory::total_allocated()).c_str(), Math::num_beautify(SDL_GetNumAllocations()).c_str(), internal_frames);
+                    "Ronin_Allocated:%s, SDL_Allocated:%s, Frames:%s",
+                    fps, Math::num_beautify(get_process_sizeMemory() / 1024 / 1024).c_str(),
+                    Math::num_beautify(RoninMemory::total_allocated()).c_str(),
+                    Math::num_beautify(SDL_GetNumAllocations()).c_str(), Math::num_beautify(internal_frames).c_str());
                 SDL_SetWindowTitle(Application::get_window(), windowTitle);
                 fpsRound = TimeEngine::startUpTime() + .5f; // updater per 1 seconds
             }

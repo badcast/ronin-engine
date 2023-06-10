@@ -32,6 +32,8 @@ namespace RoninEngine
 
             Vec2Int& operator=(Vec2Int&& rhs);
 
+            Vec2Int operator-() const;
+
             RONIN_API static const Vec2Int one;
             RONIN_API static const Vec2Int minusOne;
             RONIN_API static const Vec2Int zero;

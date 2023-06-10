@@ -53,7 +53,7 @@ namespace RoninEngine::Runtime
         virtual void on_unloading();
 
     public:
-        World();
+        World() = delete;
         World(const std::string& name);
 
         virtual ~World();

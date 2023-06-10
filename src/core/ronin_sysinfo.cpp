@@ -1,6 +1,7 @@
 #include "ronin.h"
 
 #ifdef __linux__
+#include <cstdio>
 #include <sys/sysinfo.h>
 #include <sys/types.h>
 #endif
@@ -27,68 +28,32 @@ __declspec(dllimport) int __stdcall K32GetProcessMemoryInfo(void* Process, PROCE
 }
 #elif __unix__
 
-typedef struct {
-    std::size_t virtualMem;
-    std::size_t physicalMem;
-    std::size_t totalRam;
-    std::size_t totalSwap;
-    std::size_t cpuCount;
-    char cpuName[32];
-} system_info;
-
-std::size_t unix_proc_parse(char* line)
+int parseLine(char* line)
 {
     // This assumes that a digit will be found and the line ends in " Kb".
-    std::size_t i;
+    int i = strlen(line);
     const char* p = line;
-    while (*p < '0' || *p > '9')
+    while (*(p) < '0' || *(p) > '9')
         p++;
-    //  line[i - 3] = '\0';
+    line[i - 3] = '\0';
     i = atoi(p);
     return i;
 }
 
-system_info unix_process_info_from_proc()
+int get_memory_used()
 {
-    system_info upm;
-    const char* fself = "/proc/self/status";
-    FILE* f = fopen(fself, "r");
+    char line[128];
+    int result = -1;
+    FILE* file = fopen("/proc/self/status", "r");
 
-    char buffer[64];
-    if (f == nullptr)
-        RoninEngine::Application::fail("unix: invalid read \"" + std::string(fself) + "\" access denied");
-    while (fgets(buffer, static_cast<int>(sizeof(buffer)), f) != nullptr) {
-        if (!strncmp(buffer, "VmSize:", 7)) {
-            upm.virtualMem = unix_proc_parse(buffer) * 1024; // read in KB
-            continue;
-        }
-        if (!strncmp(buffer, "VmRSS:", 6)) {
-            upm.physicalMem = unix_proc_parse(buffer) * 1024; // read in KB
+    while (fgets(line, sizeof(line), file) != NULL) {
+        if (strncmp(line, "VmRSS:", 6) == 0) {
+            result = parseLine(line);
             break;
         }
     }
-
-    fclose(f);
-
-    return upm;
-}
-system_info unix_process_info()
-{
-    system_info upm;
-    struct sysinfo s;
-
-    // get
-    ::sysinfo(&s);
-
-    upm.totalRam = s.totalram;
-    upm.totalSwap = s.totalswap;
-
-    upm.physicalMem = s.totalswap - s.freeswap;
-    upm.physicalMem *= s.mem_unit;
-
-    upm.virtualMem = s.totalram - s.freeram;
-    upm.virtualMem *= s.mem_unit;
-    return upm;
+    fclose(file);
+    return result * 1024;
 }
 
 #endif
@@ -108,19 +73,6 @@ TODO: % CPU в настоящее время используется этим �
 
 */
 
-const size_t get_process_privateMemory()
-{
-
-#ifdef WIN32
-    PROCESS_MEMORY_COUNTERS_EX pm;
-    K32GetProcessMemoryInfo(GetCurrentProcess(), &pm, sizeof(pm));
-    size_t total = pm.PrivateUsage;
-#elif __unix__
-    size_t total = unix_process_info_from_proc().virtualMem;
-#endif
-    return total;
-}
-
 const size_t get_process_sizeMemory()
 {
 #ifdef WIN32
@@ -128,7 +80,8 @@ const size_t get_process_sizeMemory()
     K32GetProcessMemoryInfo(GetCurrentProcess(), &pm, sizeof(pm));
     size_t total = pm.WorkingSetSize;
 #elif __unix__
-    size_t total = unix_process_info_from_proc().physicalMem;
+
+    size_t total = get_memory_used();
 #endif
     return total;
 }

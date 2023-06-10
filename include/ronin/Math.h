@@ -15,21 +15,23 @@ namespace RoninEngine::Runtime
 
         static float value();
 
-        static Vec2 randomVector();
+        static Vec2 random_vector();
 
-        static float randomAngle();
+        static float random_angle_deg();
+
+        static float random_angle_rad();
     };
 
     class RONIN_API Math
     {
     public:
-        static constexpr long double long_pi = 3.14159265358979323846264338327950288;
-        static constexpr float pi = static_cast<float>(long_pi); // calc PI formula l / d (Length circle div diameter)
+        static constexpr long double long_Pi = 3.14159265358979323846264338327950288;
+        static constexpr float Pi = static_cast<float>(long_Pi); // calc PI formula l / d (Length circle div diameter)
+        static constexpr float Pi2 = Pi * 2;
         static constexpr float infinity = std::numeric_limits<float>::infinity();
         static constexpr float negative_infinity = -infinity;
         static constexpr float deg2rad = 0.01745329;
-        static constexpr float rad2deg = 180 / pi;
-        static constexpr int r_level_digits = 10000;
+        static constexpr float rad2deg = 180 / Pi;
 
         static float cos(float x);
 

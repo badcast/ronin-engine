@@ -33,6 +33,7 @@ namespace RoninEngine
         class RONIN_API Object
         {
         private:
+            friend RONIN_API bool instanced(Object* obj);
             friend RONIN_API GameObject* instantiate(GameObject* obj);
             friend RONIN_API GameObject* instantiate(GameObject* obj, Vec2 position, float angle);
             friend RONIN_API GameObject* instantiate(GameObject* obj, Vec2 position, Transform* parent, bool worldPositionStay);

@@ -132,7 +132,7 @@ namespace RoninEngine::Runtime
     const Vec2 Transform::transform_direction(Vec2 direction)
     {
         Vec2 pos = position();
-        return  Vec2::rotate(direction, _angle_ * Math::deg2rad);
+        return Vec2::rotate(pos + direction, _angle_);
     }
 
     const Vec2 Transform::transform_direction(float x, float y) { return transform_direction({ x, y }); }

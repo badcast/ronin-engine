@@ -113,10 +113,6 @@ namespace RoninEngine::Runtime
 
 }
 
-World::World()
-    : World("Untitled")
-{
-}
 World::World(const std::string& name)
     : m_name(name)
 {
@@ -229,7 +225,7 @@ void World::matrix_nature_pickup(Runtime::Transform* target)
 
 void World::push_light_object(Light* light) { internal_resources->_assoc_lightings.emplace_front(light); }
 
-void World::push_object(Object* obj) { internal_resources->world_objects.insert(std::make_pair(obj, TimeEngine::time())); }
+void World::push_object(Object* obj) { internal_resources->world_objects.insert(obj); }
 
 std::list<Transform*>* World::get_hierarchy(Runtime::Transform* parent)
 {

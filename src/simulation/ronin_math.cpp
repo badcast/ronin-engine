@@ -36,9 +36,11 @@ float Random::value()
     return result;
 }
 
-Vec2 Random::randomVector() { return Vec2(Random::value() * 2 - 1, Random::value() * 2 - 1); }
+Vec2 Random::random_vector() { return Vec2(Random::value() * 2 - 1, Random::value() * 2 - 1); }
 
-float Random::randomAngle() { return value() * 360; }
+float Random::random_angle_deg() { return value() * 360; }
+
+float Random::random_angle_rad() { return value() * Math::Pi2; }
 
 float Math::cos(float x) { return SDL_cosf(x); }
 
@@ -256,7 +258,7 @@ float Math::smooth_step(float from, float to, float t)
     return to * t + from * (1 - t);
 }
 
-uint64_t Math::num_lastof(uint64_t number, int level)
+std::uint64_t Math::num_lastof(std::uint64_t number, int level)
 {
     std::uint64_t x = std::pow(10, level);
     auto d = std::ldiv(number, x);
@@ -295,7 +297,7 @@ float Math::square_circle(float radius)
      *      S = (PI * d^2) / 4
      *
      */
-    return Math::pi * Math::pow2(radius);
+    return Math::Pi * Math::pow2(radius);
 }
 float Math::square_mesh(std::list<Vec2>& vecs)
 {
