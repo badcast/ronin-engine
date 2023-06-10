@@ -6,6 +6,30 @@
 
 #include "ronin.h"
 
+namespace std
+{
+    // this for Hashtable function
+
+    template <>
+    struct hash<RoninEngine::Runtime::Vec2> {
+        std::size_t operator()(const RoninEngine::Runtime::Vec2& val) const noexcept
+        {
+            std::int64_t fake = (*reinterpret_cast<std::int64_t*>(&const_cast<RoninEngine::Runtime::Vec2&>(val)));
+            return std::hash<std::int64_t> {}(fake);
+        }
+    };
+
+    template <>
+    struct hash<RoninEngine::Runtime::Vec2Int> {
+        std::size_t operator()(const RoninEngine::Runtime::Vec2Int& val) const noexcept
+        {
+            std::int64_t fake = (*reinterpret_cast<std::int64_t*>(&const_cast<RoninEngine::Runtime::Vec2Int&>(val)));
+            return std::hash<std::int64_t> {}(fake);
+        }
+    };
+
+} // namespace std
+
 static std::unordered_map<std::type_index, const char*> main_ronin_types;
 
 template <typename base, typename _derived>

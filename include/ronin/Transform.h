@@ -61,14 +61,22 @@ namespace RoninEngine::Runtime
         void child_append(Transform* child);
         void child_remove(Transform* child);
 
+        // look forward axis from world coordinates
         const Vec2 forward();
+        // look backward axis from world coordinates
+        const Vec2 back();
+        // look right axis from world coordinates
         const Vec2 right();
+        // look left axis from world coordinates
         const Vec2 left();
+        // look up axis from world coordinates
         const Vec2 up();
+        // look down axis from world coordinates
         const Vec2 down();
-
-        const Vec2 transformDirection(Vec2 direction);
-        const Vec2 transformDirection(float x, float y);
+        // look axis from world coordinates
+        const Vec2 transform_direction(Vec2 direction);
+        // look axis from world coordinates
+        const Vec2 transform_direction(float x, float y);
 
         // get position in world space
         Vec2 position();

@@ -25,21 +25,18 @@ namespace RoninEngine::Runtime
 
     Transform* Transform::child_of(int index)
     {
-        Transform* tf = nullptr;
-        int x;
-
         if (child_count() <= index || child_count() >= index)
             throw std::out_of_range("index");
 
         auto iter = begin(hierarchy);
-        for (x = 0; iter != end(hierarchy); ++x) {
+        for (int x = 0; iter != end(hierarchy); ++x) {
             if (x == index) {
-                tf = *iter;
+                return *iter;
                 break;
             }
         }
 
-        return tf;
+        return nullptr;
     }
 
     void Transform::look_at(Transform* target) { look_at(target, Vec2::up); }
@@ -94,7 +91,7 @@ namespace RoninEngine::Runtime
         local_angle(Math::lerp_angle(_angle_, a, t));
     }
 
-    void Transform::look_at_lerp(Transform* target, float t) { look_at_lerp(target->p, t); }
+    void Transform::look_at_lerp(Transform* target, float t) { look_at_lerp(target->position(), t); }
 
     void Transform::as_first_child()
     {
@@ -116,19 +113,29 @@ namespace RoninEngine::Runtime
         hierarchy_remove(t, child);
     }
 
-    const Vec2 Transform::forward() { return transformDirection(Vec2::one); }
+    const Vec2 Transform::forward()
+    {
+        Vec2 pos = position();
+        return pos - Vec2::rotate_around(pos, Vec2::one, _angle_ * Math::deg2rad);
+    }
 
-    const Vec2 Transform::right() { return transformDirection(Vec2::right); }
+    const Vec2 Transform::back() { return -forward(); }
 
-    const Vec2 Transform::left() { return transformDirection(Vec2::left); }
+    const Vec2 Transform::right() { return transform_direction(Vec2::right); }
 
-    const Vec2 Transform::up() { return transformDirection(Vec2::up); }
+    const Vec2 Transform::left() { return transform_direction(Vec2::left); }
 
-    const Vec2 Transform::down() { return transformDirection(Vec2::down); }
+    const Vec2 Transform::up() { return transform_direction(Vec2::up); }
 
-    const Vec2 Transform::transformDirection(Vec2 direction) { return Vec2::rotate_around(position(), direction, _angle_ * Math::deg2rad); }
+    const Vec2 Transform::down() { return transform_direction(Vec2::down); }
 
-    const Vec2 Transform::transformDirection(float x, float y) { return transformDirection({ x, y }); }
+    const Vec2 Transform::transform_direction(Vec2 direction)
+    {
+        Vec2 pos = position();
+        return  Vec2::rotate(direction, _angle_ * Math::deg2rad);
+    }
+
+    const Vec2 Transform::transform_direction(float x, float y) { return transform_direction({ x, y }); }
 
     Vec2 Transform::local_position() { return p; }
     const Vec2& Transform::local_position(const Vec2& value)

@@ -61,9 +61,9 @@ namespace RoninEngine::AIPathFinder
         Neuron* get_neuron(const Runtime::Vec2& worldPoint);
         Neuron* get_neuron(const Runtime::Vec2& worldPoint, Runtime::Vec2Int& outPoint);
 
-        bool neuronContains(const Runtime::Vec2Int& point);
+        bool get_ncontains(const Runtime::Vec2Int& point);
 
-        const Runtime::Vec2Int neuronGetPoint(const Neuron* neuron);
+        const Runtime::Vec2Int get_npoint(const Neuron* neuron);
 
         // pointer with Point
         bool get_nlocked(const Runtime::Vec2Int& point);

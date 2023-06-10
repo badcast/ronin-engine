@@ -159,7 +159,7 @@ namespace RoninEngine::UI
         Rect* src;
         std::uint16_t pos;
         SDL_Rect dst = *(SDL_Rect*)&rect;
-        Vec2Int fontSize = pLegacyFont->fontSize + Vec2Int(1, 1) * (pfontWidth - fontWidth);
+        Vec2Int fontSize = pLegacyFont->fontSize + Vec2Int::one * (pfontWidth - fontWidth);
         SDL_Texture* targetpfont = nullptr;
         int textWidth = Single_TextWidth_WithCyrilic(text, pfontWidth);
 
