@@ -181,13 +181,13 @@ namespace RoninEngine::Runtime
             while (p1.y <= p2.y) {
                 p = mesh->get_neuron(p1);
                 lastPoint = mesh->point_to_world_position(p1);
-                if (p == nullptr || mesh->neuronLocked(p)) {
+                if (p == nullptr || mesh->get_nlocked(p)) {
                     next.r = 255;
                     next.g = 0;
                     next.b = 0;
                 } else {
                     next.r = 53;
-                    next.g = mesh->neuronGetTotal(p1) ? 200 : 0;
+                    next.g = mesh->get_ntotal(p1) ? 200 : 0;
                     next.b = 246;
                 }
                 set_color(next);

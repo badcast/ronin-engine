@@ -31,7 +31,7 @@ namespace RoninEngine::Runtime
     const bool Terrain2D::is_collider(const Vec2 destination)
     {
         auto n = this->navigation->get_neuron(destination);
-        return n && navigation->neuronLocked(navigation->neuronGetPoint(n));
+        return n && navigation->get_nlocked(navigation->neuronGetPoint(n));
     }
 
     Vec2 Terrain2D::get_size() { return {}; }

@@ -66,24 +66,24 @@ namespace RoninEngine::AIPathFinder
         const Runtime::Vec2Int neuronGetPoint(const Neuron* neuron);
 
         // pointer with Point
-        bool neuronLocked(const Runtime::Vec2Int& point);
-        std::uint8_t& neuronGetFlag(const Runtime::Vec2Int& point);
-        std::uint32_t& neuronGetCost(const Runtime::Vec2Int& point);
-        std::uint32_t& neuronHeuristic(const Runtime::Vec2Int& point);
-        const int neuronGetWeight(const Runtime::Vec2Int& point);
-        const std::uint32_t neuronGetTotal(const Runtime::Vec2Int& point);
-        const bool neuronEmpty(const Runtime::Vec2Int& point);
-        void neuronLock(const Runtime::Vec2Int& point, const bool state);
+        bool get_nlocked(const Runtime::Vec2Int& point);
+        std::uint8_t& get_nflag(const Runtime::Vec2Int& point);
+        std::uint32_t& get_ncost(const Runtime::Vec2Int& point);
+        std::uint32_t& get_nheuristic(const Runtime::Vec2Int& point);
+        const int get_nweight(const Runtime::Vec2Int& point);
+        const std::uint32_t get_ntotal(const Runtime::Vec2Int& point);
+        const bool get_nempty(const Runtime::Vec2Int& point);
+        void get_nlock(const Runtime::Vec2Int& point, const bool state);
 
         // pointer with pointer
-        bool neuronLocked(const Neuron* neuron);
-        std::uint8_t& neuronGetFlag(const Neuron* neuron);
-        std::uint32_t& neuronGetCost(const Neuron* neuron);
-        std::uint32_t& neuronHeuristic(const Neuron* neuron);
-        const int neuronGetWeight(const Neuron* neuron);
-        const std::uint32_t neuronGetTotal(const Neuron* neuron);
-        const bool neuronEmpty(const Neuron* neuron);
-        void neuronLock(const Neuron* neuron, const bool state);
+        bool get_nlocked(const Neuron* neuron);
+        std::uint8_t& get_nflag(const Neuron* neuron);
+        std::uint32_t& get_ncost(const Neuron* neuron);
+        std::uint32_t& get_nheuristic(const Neuron* neuron);
+        const int get_nweight(const Neuron* neuron);
+        const std::uint32_t get_ntotal(const Neuron* neuron);
+        const bool get_nempty(const Neuron* neuron);
+        void get_nlock(const Neuron* neuron, const bool state);
 
         void find(NavResult& navResult, NavMethodRule method, Runtime::Vec2 worldPointFirst, Runtime::Vec2 worldPointLast);
         void find(NavResult& navResult, NavMethodRule method, Neuron* firstNeuron, Neuron* lastNeuron);
