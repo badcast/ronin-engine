@@ -126,7 +126,7 @@ const size_t get_process_sizeMemory()
 #ifdef WIN32
     PROCESS_MEMORY_COUNTERS_EX pm;
     K32GetProcessMemoryInfo(GetCurrentProcess(), &pm, sizeof(pm));
-    size_t total = pm.PeakWorkingSetSize;
+    size_t total = pm.WorkingSetSize;
 #elif __unix__
     size_t total = unix_process_info_from_proc().physicalMem;
 #endif
