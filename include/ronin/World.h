@@ -27,7 +27,7 @@ namespace RoninEngine::Runtime
         friend Transform* get_root(World*);
 
     private:
-        void intenal_bind_script(Behaviour* obj);
+        void internal_bind_script(Behaviour* obj);
         void push_light_object(Light* light);
         void push_object(Object* obj);
 

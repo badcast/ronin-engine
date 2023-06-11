@@ -69,6 +69,12 @@ namespace RoninEngine::Runtime
             world->internal_resources->gui = nullptr;
         }
 
+        // free Audio objects
+        for (AudioClip& ac : world->internal_resources->offload_audioclips) {
+            Mix_FreeChunk(ac.mix_chunk);
+            Mix_FreeMusic(ac.mix_music);
+        }
+
         std::list<GameObject*> stacks;
         // free objects
         while (target) {
@@ -235,7 +241,7 @@ std::list<Transform*>* World::get_hierarchy(Runtime::Transform* parent)
     return &parent->hierarchy;
 }
 
-void World::intenal_bind_script(Behaviour* script)
+void World::internal_bind_script(Behaviour* script)
 {
     if (!internal_resources->_firstRunScripts)
         RoninMemory::alloc_self(internal_resources->_firstRunScripts);

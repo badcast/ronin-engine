@@ -83,7 +83,7 @@ namespace RoninEngine::Runtime
             component->_owner = this;
 
             if (Behaviour* script = dynamic_cast<Behaviour*>(component)) {
-                World::self()->intenal_bind_script(script);
+                World::self()->internal_bind_script(script);
                 script->OnAwake();
             } else if (Renderer* rend = dynamic_cast<Renderer*>(component)) {
                 // awake on renderer
