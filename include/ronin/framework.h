@@ -1,5 +1,5 @@
-#ifndef _RONINENGINE_H
-#define _RONINENGINE_H
+#ifndef _RONIN_ENGINE_SIM_H
+#define _RONIN_ENGINE_SIM_H
 
 // base headers
 #include "begin.h"

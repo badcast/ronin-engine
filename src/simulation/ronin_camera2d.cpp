@@ -7,16 +7,16 @@ using namespace RoninEngine;
 namespace RoninEngine::Runtime
 {
     Camera2D::Camera2D()
-        : Camera(DESCRIBE_AS_MAIN_OFF(Camera2D))
-        , scale(Vec2::one)
+        : Camera2D(DESCRIBE_AS_MAIN_OFF(Camera2D))
     {
-        this->visibleBorders = false;
-        this->visibleGrids = false;
-        this->visibleObjects = false;
     }
 
     Camera2D::Camera2D(const std::string& name)
         : Camera(DESCRIBE_AS_ONLY_NAME(Camera2D))
+        , scale(Vec2::one)
+        , visibleBorders(false)
+        , visibleGrids(false)
+        , visibleObjects(false)
     {
         DESCRIBE_AS_MAIN(Camera2D);
     }
@@ -37,6 +37,7 @@ namespace RoninEngine::Runtime
         Vec2 sourcePoint;
         Color prevColor = Gizmos::get_color();
         SDL_mutex* m = SDL_CreateMutex();
+
         Gizmos::set_color(0xffc4c4c4);
         if (visibleGrids) {
             Gizmos::draw_2D_world_space(Vec2::zero);

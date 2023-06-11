@@ -23,6 +23,7 @@ namespace RoninEngine::Runtime
         static void draw_text(Vec2 origin, const std::string& text);
         static void draw_text_legacy(Vec2 origin, const std::string& text);
         static void draw_circle(Vec2 origin, float distance);
+        static void draw_arrow(Vec2 origin, Vec2 dir, float tailLength = 0.5f);
 
         static void draw_fill_rect(Vec2 origin, float width, float height);
         static void draw_fill_rect_rounded(Vec2 origin, float width, float height, std::uint16_t radius);

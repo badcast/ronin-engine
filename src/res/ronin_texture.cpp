@@ -98,21 +98,5 @@ namespace RoninEngine::Runtime
 
     const Rect Texture::getRect() { return { 0, 0, width(), height() }; }
 
-    const Texture* Texture::clone() { return clone(Application::get_renderer()); }
-
-    const Texture* Texture::clone(SDL_Renderer* renderer)
-    {
-        SDL_Texture* lastTarget = SDL_GetRenderTarget(renderer);
-        Texture* newTexture;
-        Resources::gc_alloc_texture(&newTexture, width(), height(), format(), access());
-        newTexture->blendMode(blendMode());
-        newTexture->scaleMode(scaleMode());
-        newTexture->color(color());
-        SDL_SetRenderTarget(renderer, newTexture->m_native);
-        SDL_RenderCopy(renderer, m_native, nullptr, nullptr);
-        SDL_SetRenderTarget(renderer, lastTarget);
-        return newTexture;
-    }
-
     const std::string Texture::name() { return std::string(_name.empty() ? "Unknown" : _name); }
 } // namespace RoninEngine::Runtime

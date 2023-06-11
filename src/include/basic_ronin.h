@@ -77,6 +77,8 @@ namespace RoninEngine
 {
     namespace UI
     {
+        enum GUIControlPresents : std::uint8_t { _UC, RGUI_TEXT, RGUI_BUTTON, RGUI_EDIT, RGUI_HSLIDER, RGUI_VSLIDER, RGUI_IMAGEANIMATOR, RGUI_TEXTRAND, RGUI_IMAGE, RGUI_DROPDOWN };
+
         struct UIElement {
             Runtime::Rect rect;
             Runtime::Rect contextRect;
@@ -105,6 +107,7 @@ namespace RoninEngine
             bool visible;
         };
 
+        extern void draw_font_at(SDL_Renderer* renderer, const std::string& text, int fontSize, Runtime::Vec2Int screenPoint, const Runtime::Color color, bool alignCenter = false);
     }
     namespace Runtime
     {

@@ -21,7 +21,7 @@ namespace RoninEngine::Runtime
 
     Transform::~Transform() { }
 
-    int Transform::child_count() { return hierarchy.size(); }
+    int Transform::child_count() const { return hierarchy.size(); }
 
     Transform* Transform::child_of(int index)
     {
@@ -110,19 +110,31 @@ namespace RoninEngine::Runtime
     void Transform::child_remove(Transform* child)
     {
         Transform* t = this;
-        hierarchy_remove(t, child);
+        hierarchy_remove(this, child);
     }
 
-    const Vec2 Transform::forward()
+    const Vec2 Transform::forward() const
     {
         Vec2 pos = position();
         return Vec2::rotate_around(pos, around_frwd, _angle_ * Math::deg2rad);
     }
 
-    const Vec2 Transform::back()
+    const Vec2 Transform::forward(float force) const
+    {
+        Vec2 pos = position();
+        return Vec2::rotate_around(pos, around_frwd * force, _angle_ * Math::deg2rad);
+    }
+
+    const Vec2 Transform::back() const
     {
         Vec2 pos = position();
         return Vec2::rotate_around(pos, around_frwd, (_angle_ - 180) * Math::deg2rad);
+    }
+
+    const Vec2 Transform::back(float force) const
+    {
+        Vec2 pos = position();
+        return Vec2::rotate_around(pos, around_frwd * force, (_angle_ - 180) * Math::deg2rad);
     }
 
     const Vec2 Transform::right() { return transform_direction(Vec2::right); }
@@ -141,7 +153,18 @@ namespace RoninEngine::Runtime
 
     const Vec2 Transform::transform_direction(float x, float y) { return transform_direction({ x, y }); }
 
-    Vec2 Transform::local_position() { return p; }
+    const bool Transform::look_of_angle(Transform* target, float maxAngle) const { return look_of_angle(target->position(), maxAngle); }
+
+    const bool Transform::look_of_angle(Vec2 target, float maxAngle) const
+    {
+        // float viewed_angle = Vec2::angle(turrets.front()->position() - __target, turrets.front()->position() - turrets.front()->forward());
+
+        float angle = Vec2::angle(this->position() - target, this->position() - this->forward());
+        return angle <= maxAngle * Math::deg2rad;
+    }
+
+    Vec2 Transform::local_position() const { return p; }
+
     const Vec2& Transform::local_position(const Vec2& value)
     {
         if (value != p) {
@@ -153,7 +176,7 @@ namespace RoninEngine::Runtime
         return value;
     }
 
-    Vec2 Transform::position() { return (this->m_parent) ? this->m_parent->position() + p : p; }
+    Vec2 Transform::position() const { return (this->m_parent) ? this->m_parent->position() + p : p; }
 
     const Vec2& Transform::position(const Vec2& value)
     {
@@ -198,11 +221,11 @@ namespace RoninEngine::Runtime
             chlid->parent_notify_active_state(from);
     }
 
-    float Transform::angle() { return (this->m_parent) ? this->m_parent->_angle_ + this->_angle_ : this->_angle_; }
+    float Transform::angle() const { return (this->m_parent) ? this->m_parent->_angle_ + this->_angle_ : this->_angle_; }
 
     void Transform::angle(float value) { this->_angle_ = (this->m_parent) ? this->m_parent->angle() - value : value; }
 
-    float Transform::local_angle() { return this->_angle_; }
+    float Transform::local_angle() const { return this->_angle_; }
 
     void Transform::local_angle(float value)
     {
@@ -210,7 +233,7 @@ namespace RoninEngine::Runtime
             value -= 360;
         this->_angle_ = value;
     }
-    Transform* Transform::parent() { return m_parent; }
+    Transform* Transform::parent() const { return m_parent; }
 
     void Transform::set_parent(Transform* parent, bool worldPositionStays)
     {

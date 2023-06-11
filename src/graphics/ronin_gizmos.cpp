@@ -11,7 +11,6 @@ namespace RoninEngine::Runtime
     extern std::uint32_t const_storm_yDeterminant_inverse;
 
     float Gizmos::angle;
-
     void internal_drawLine(Vec2 a, Vec2 b)
     {
         if (!Camera::main_camera())
@@ -71,43 +70,42 @@ namespace RoninEngine::Runtime
         a.y = pixelsPerPoint;
         b.x = -pixelsPerPoint;
         b.y = pixelsPerPoint;
-        internal_drawLine(std::move(a), std::move(b));
+        internal_drawLine(a, b);
 
         a.x = pixelsPerPoint;
         a.y = -pixelsPerPoint;
         b.x = -pixelsPerPoint;
         b.y = -pixelsPerPoint;
-        internal_drawLine(std::move(a), std::move(b));
+        internal_drawLine(a, b);
 
         a.x = -pixelsPerPoint;
         a.y = pixelsPerPoint;
         b.x = -pixelsPerPoint;
         b.y = -pixelsPerPoint;
-        internal_drawLine(std::move(a), std::move(b));
+        internal_drawLine(a, b);
 
         a.x = pixelsPerPoint;
         a.y = pixelsPerPoint;
         b.x = pixelsPerPoint;
         b.y = -pixelsPerPoint;
-        internal_drawLine(std::move(a), std::move(b));
+        internal_drawLine(a, b);
     }
 
     void Gizmos::draw_position(const Vec2& origin, float scalar)
     {
-        Vec2 a = Vec2::zero, b = Vec2::zero;
+        Vec2 a(origin), b(origin);
 
         // Draw Line H
-        b = a = origin;
         a.x -= scalar;
         b.x += scalar;
 
-        internal_drawLine(std::move(a), std::move(b));
+        internal_drawLine(a, b);
 
         // Draw Line V
         b = a = origin;
         a.y -= scalar;
         b.y += scalar;
-        internal_drawLine(std::move(a), std::move(b));
+        internal_drawLine(a, b);
     }
 
     void Gizmos::draw_square(Vec2 origin, float width) { draw_rectangle(origin, width, width); }
@@ -223,13 +221,13 @@ namespace RoninEngine::Runtime
         pivot.y += height;
 
         // draw base
-        draw_line(std::move(a), std::move(b));
+        draw_line(a, b);
 
         // draw left side
-        draw_line(std::move(a), std::move(pivot));
+        draw_line(a, pivot);
 
         // draw right side
-        draw_line(std::move(b), std::move(pivot));
+        draw_line(b, pivot);
 
         if (fill) {
             base /= 2;
@@ -266,6 +264,19 @@ namespace RoninEngine::Runtime
         Color m_color = get_color();
 
         circleRGBA(Application::get_renderer(), x, y, r, m_color.r, m_color.g, m_color.b, m_color.a);
+    }
+
+    void Gizmos::draw_arrow(Vec2 origin, Vec2 dir, float tailLength)
+    {
+        // tail
+        tailLength = Math::abs(tailLength);
+        Vec2 pos2 = origin + (dir - origin) * tailLength; // world to local and set point to dir
+
+        internal_drawLine(origin, pos2);
+        float angle = Vec2::angle(pos2, dir);
+
+        origin = pos2 + Vec2::rotate_around(pos2, Vec2::one * tailLength, angle);
+        internal_drawLine(pos2, origin);
     }
 
     void Gizmos::draw_fill_rect(Vec2 center, float width, float height)

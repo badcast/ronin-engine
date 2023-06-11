@@ -14,15 +14,19 @@ namespace RoninEngine::Runtime
 
         Color(const Color&);
 
+        Color(Color&&);
+
         Color(int rgb);
 
         Color(std::uint32_t rgb);
 
-        Color(const char* colorHex);
-
         Color(const std::string& colorHex);
 
+        Color(const char* colorHex);
+
         Color(const SDL_Color& color);
+
+        Color(SDL_Color&& color);
 
         Color(const std::uint8_t r, const std::uint8_t g, const std::uint8_t b);
 

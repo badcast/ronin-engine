@@ -21,22 +21,22 @@ namespace RoninEngine::Runtime
         Rect m_rect;
 
     public:
-        SDL_Surface* source;
+        SDL_Surface* surface;
 
         Sprite() = default;
-
+        Sprite(SDL_Surface* src, const Rect& rect);
         Sprite(const Sprite&) = default;
 
-        const Rect rect();
-        void rect(Runtime::Rect rect);
+        const Rect rect() const;
+        void rect(const Rect& rect);
 
-        const Vec2 center();
+        const Vec2 center() const;
         void center(Vec2 center);
 
-        const bool valid();
+        const bool valid() const;
 
-        int width();
-        int height();
+        int width() const;
+        int height() const;
 
         Rect realityRect(float&& opaque = 1.f);
 

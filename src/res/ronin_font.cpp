@@ -26,16 +26,16 @@ namespace RoninEngine::UI
 
         if (RoninMemory::alloc_self(pLegacyFont) == nullptr)
             Application::fail_oom_kill();
+        /* TODO: Load internal font
+                if ((pLegacyFont->surfNormal = Resources::GetSurface("font-arealike")) == nullptr)
+                    throw std::bad_alloc();
 
-        if ((pLegacyFont->surfNormal = Resources::GetSurface("font-arealike")) == nullptr)
-            throw std::bad_alloc();
+                if ((pLegacyFont->surfHilight = Resources::GetSurface("font-arealike-hi")) == nullptr)
+                    throw std::bad_alloc();
 
-        if ((pLegacyFont->surfHilight = Resources::GetSurface("font-arealike-hi")) == nullptr)
-            throw std::bad_alloc();
-
-        pLegacyFont->fontSize = { fontWidth, fontHeight };
-
-        //Структурирование шрифта
+                pLegacyFont->fontSize = { fontWidth, fontHeight };
+        */
+        // Структурирование шрифта
         {
             uint8_t target;
             uint8_t i;
@@ -83,8 +83,8 @@ namespace RoninEngine::UI
         }
 
         // convert surface to texture
-        Resources::gc_alloc_sdl_texture(&pfontTexture, pLegacyFont->surfNormal);
-        Resources::gc_alloc_sdl_texture(&pfontTextureHilight, pLegacyFont->surfHilight);
+        /*  TODO:: Resources::gc_alloc_sdl_texture(&pfontTexture, pLegacyFont->surfNormal);
+           Resources::gc_alloc_sdl_texture(&pfontTextureHilight, pLegacyFont->surfHilight);*/
 
         if (pfontTexture == nullptr || pfontTextureHilight == nullptr)
             Application::fail("error initialization fonts");
@@ -99,14 +99,14 @@ namespace RoninEngine::UI
                 rect_point = pLegacyFont->data[i];
                 uint8_t flagBreaker = 0;
                 // pitch это строка (ширина с объеденением в байтах) то есть x по оси
-                //если умножить pitch * на h-высоту то можно получить последний пиксель
+                // если умножить pitch * на h-высоту то можно получить последний пиксель
                 for (x = 0; x < pLegacyFont->data[i].w / 2; ++x) {
-                    //оптимизация с левой до правой
+                    // оптимизация с левой до правой
                     if (!(flagBreaker & 1)) {
                         for (y = rect_point.h - 1; y >= 0; --y) {
                             cx = rect_point.x + x;
                             cy = rect_point.y + y;
-                            //NOTE: Формула пикселей для SDL :: Y Offset * (Pitch/BytesPerPixel) + X Offset
+                            // NOTE: Формула пикселей для SDL :: Y Offset * (Pitch/BytesPerPixel) + X Offset
                             pixel = (SDL_Color*)pLegacyFont->surfNormal->pixels + (cy * (model->pitch / model->format->BytesPerPixel) + cx);
                             if (pixel->a) // isn't transparent
                                 break;
@@ -116,10 +116,10 @@ namespace RoninEngine::UI
                         else
                             flagBreaker |= 1;
                     }
-                    //оптимизация с права на лева
+                    // оптимизация с права на лева
                     if (!(flagBreaker & 2)) {
                         for (y = rect_point.h - 1; y >= 0; --y) {
-                            //Формула Y Offset * (Pitch/BytesPerPixel) + X Offset
+                            // Формула Y Offset * (Pitch/BytesPerPixel) + X Offset
                             cx = rect_point.x + pLegacyFont->data[i].w - 1 - x;
                             cy = rect_point.y + y;
                             pixel = (SDL_Color*)pLegacyFont->surfNormal->pixels + (cy * (model->pitch / model->format->BytesPerPixel) + cx);
@@ -148,7 +148,6 @@ namespace RoninEngine::UI
             width += pLegacyFont->data[(unsigned char)*iter].w;
         return width;
     }
-
 
     void render_string_legacy(SDL_Renderer* renderer, Rect rect, const char* text, int len, int pfontWidth, RoninEngine::UI::TextAlign textAlign, bool textWrap, bool hilight)
     {
@@ -208,7 +207,7 @@ namespace RoninEngine::UI
                     continue;
                 }
 
-                //отрисовываем остаток входящую в область
+                // отрисовываем остаток входящую в область
                 dst.w = Math::max(0, Math::min(deltax - dst.x, dst.w));
                 // if (dst.x <= src.x + src.w && dst.y <= src.y + src.h)
                 SDL_RenderCopy(renderer, targetpfont, (SDL_Rect*)src, &dst);

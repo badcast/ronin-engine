@@ -90,8 +90,6 @@ namespace RoninEngine::UI
         }
     }
 
-    bool general_control_default_state() { return false; }
-
     bool general_render_ui_section(GUI* gui, UIElement& element, SDL_Renderer* renderer, const bool uiHover, bool& focus)
     {
         static float dropDownLinear = 0;
@@ -159,18 +157,17 @@ namespace RoninEngine::UI
             }
 
             // draw main text
-            Texture* texture;
+            SDL_Texture* texture;
             SDL_Surface* surf = TTF_RenderUTF8_Solid(pfont, element.text.c_str(), *reinterpret_cast<SDL_Color*>(&colorSpace.editText));
-            if (Resources::gc_alloc_texture_from(&texture, surf) != GCInvalidID) {
+            if ((texture = SDL_CreateTextureFromSurface(renderer, surf)) != nullptr) {
                 r = element.rect;
+                SDL_QueryTexture(texture, nullptr, nullptr, &r.w, &r.h);
                 r.x += 5;
-                r.y += +r.h / 2 - texture->height() / 2;
-                r.w = texture->width();
-                r.h = texture->height();
+                r.y += element.rect.h / 2 - r.h / 2;
 
-                SDL_RenderCopy(renderer, texture->native(), nullptr, (SDL_Rect*)&(r));
+                SDL_RenderCopy(renderer, texture, nullptr, (SDL_Rect*)&(r));
 
-                RoninMemory::free(texture);
+                SDL_DestroyTexture(texture);
                 SDL_FreeSurface(surf);
             }
 
@@ -244,6 +241,13 @@ namespace RoninEngine::UI
             roundedBoxColor(renderer, rect.x, rect.y, rect.x + rect.w, rect.y + rect.h, 3, color);
             color = Color::gray;
             roundedRectangleColor(renderer, rect.x, rect.y, rect.x + rect.w, rect.y + rect.h, 3, color);
+
+            // Draw text
+            Vec2Int tpos = { element.rect.x + element.rect.w-22, element.rect.y + element.rect.h - 10};
+            char __[32];
+            sprintf(__,"%.1f", *value);
+            draw_font_at(renderer, __, 1, tpos, color);
+
             break;
         }
 
@@ -252,8 +256,6 @@ namespace RoninEngine::UI
             float* min = value + 1;
             float* max = min + 1;
             *value = Math::clamp(*value, *min, *max);
-
-            // Minimal support
 
             break;
         }
@@ -324,18 +326,17 @@ namespace RoninEngine::UI
             }
 
             // draw main text
-            Texture* texture;
+            SDL_Texture* texture;
             SDL_Surface* surf = TTF_RenderUTF8_Solid(pfont, element.text.c_str(), *reinterpret_cast<SDL_Color*>(&colorSpace.dropdownText));
-            if (Resources::gc_alloc_texture_from(&texture, surf) != GCInvalidID) {
+            if ((texture = SDL_CreateTextureFromSurface(renderer, surf)) != nullptr) {
                 r = element.rect;
                 r.x += 5;
-                r.y += +r.h / 2 - texture->height() / 2;
-                r.w = texture->width();
-                r.h = texture->height();
+                SDL_QueryTexture(texture, nullptr, nullptr, &r.w, &r.h);
+                r.y += element.rect.h / 2 - r.h / 2;
 
-                SDL_RenderCopy(renderer, texture->native(), nullptr, (SDL_Rect*)&(r));
+                SDL_RenderCopy(renderer, texture, nullptr, (SDL_Rect*)&(r));
 
-                RoninMemory::free(texture);
+                SDL_DestroyTexture(texture);
                 texture = nullptr;
                 SDL_FreeSurface(surf);
             }
@@ -375,14 +376,13 @@ namespace RoninEngine::UI
                         Gizmos::set_color(colorSpace.defaultInteraction.hoverState);
                         // Draw element text
                         surf = TTF_RenderUTF8_Solid(pfont, iter->c_str(), *reinterpret_cast<SDL_Color*>(&(link->first != index ? colorSpace.dropdownText : colorSpace.dropdownSelectedText)));
-                        Resources::gc_alloc_texture_from(&texture, surf);
-                        r.h = texture->height();
-                        r.w = texture->width();
+                        texture = SDL_CreateTextureFromSurface(renderer, surf);
+                        SDL_QueryTexture(texture, nullptr, nullptr, &r.w, &r.h);
 
                         r.y = elrect.y + elrect.h / 2 - r.h / 2;
-                        SDL_RenderCopy(renderer, texture->native(), nullptr, (SDL_Rect*)&(r));
+                        SDL_RenderCopy(renderer, texture, nullptr, (SDL_Rect*)&(r));
 
-                        RoninMemory::free(texture);
+                        SDL_DestroyTexture(texture);
                         texture = nullptr;
                         SDL_FreeSurface(surf);
                         elrect.y += sz;
@@ -412,10 +412,10 @@ namespace RoninEngine::UI
 
         switch (element->prototype) {
         case RGUI_DROPDOWN:
-            ((event_index_changed)(element->event))(element->id + 1, ((DROPDOWN_RESOURCE*)element->resources)->first);
+            ((event_index_changed)(element->event))(element->id, ((DROPDOWN_RESOURCE*)element->resources)->first);
             break;
         case RGUI_BUTTON:
-            ((ui_callback)(element->event))(element->id + 1, element->resources);
+            ((ui_callback)(element->event))(element->id, element->resources);
             break;
         }
     }
@@ -423,7 +423,6 @@ namespace RoninEngine::UI
     void draw_font_at(SDL_Renderer* renderer, const std::string& text, int fontSize, Runtime::Vec2Int screenPoint, const Color color, bool alignCenter)
     {
         SDL_Rect r;
-
 
         SDL_Surface* surf = TTF_RenderUTF8_Blended(pfont, text.c_str(), color);
         if (surf) {

@@ -317,8 +317,7 @@ namespace RoninEngine
             }
 
         end_simulate:
-            // awake
-            SDL_RenderFlush(renderer); // flush renderer
+
 
             delayed = TimeEngine::tick_millis() - delayed;
 

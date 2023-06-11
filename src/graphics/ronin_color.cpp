@@ -1,13 +1,24 @@
 
 #include "ronin.h"
 
-Color::Color() { memset(this, 0, sizeof(Color)); }
+Color::Color()
+    : Color(0)
+{
+}
 
-Color::Color(const Color& assign)
-    : r(assign.r)
-    , g(assign.g)
-    , b(assign.b)
-    , a(assign.a)
+Color::Color(const Color& other)
+    : r(other.r)
+    , g(other.g)
+    , b(other.b)
+    , a(other.a)
+{
+}
+
+Color::Color(Color&& other)
+    : r(other.r)
+    , g(other.g)
+    , b(other.b)
+    , a(other.a)
 {
 }
 
@@ -31,6 +42,8 @@ Color::Color(const std::string& colorHex)
 }
 
 Color::Color(const SDL_Color& color) { (*this) = color; }
+
+Color::Color(SDL_Color&& color) { (*this) = color; }
 
 Color::Color(const uint8_t r, const uint8_t g, const uint8_t b)
 {

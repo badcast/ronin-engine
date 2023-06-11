@@ -87,6 +87,7 @@ namespace RoninEngine::UI
         data.text = text;
         data.rect = rect;
         data.prototype = RGUI_TEXT;
+        data.id = id;
         return id;
     }
     uid GUI::push_label(const std::string& text, const Vec2Int& point, const int& fontWidth, uid parent) { return push_label(text, { point.x, point.y, 0, 0 }, fontWidth, parent); }
@@ -101,6 +102,7 @@ namespace RoninEngine::UI
         data.text = text;
         data.prototype = RGUI_BUTTON;
         data.event = event_callback;
+        data.id = id;
         return id;
     }
 

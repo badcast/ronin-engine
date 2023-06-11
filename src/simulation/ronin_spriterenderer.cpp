@@ -91,7 +91,7 @@ namespace RoninEngine::Runtime
         if (sprite && sprite->width() && sprite->height()) {
             switch (this->renderType) {
             case SpriteRenderType::Simple:
-                textureCache = SDL_CreateTextureFromSurface(rendering->renderer, sprite->source);
+                textureCache = SDL_CreateTextureFromSurface(rendering->renderer, sprite->surface);
                 _srcRect.w = sprite->width();
                 _srcRect.h = sprite->height();
                 _dstRect.w = sprite->width() * abs(this->size.x) / pixelsPerPoint;
@@ -134,7 +134,7 @@ namespace RoninEngine::Runtime
                 _srcRect.x = _srcRect.w / dest.w;
                 _srcRect.y = _srcRect.h / dest.h;
 
-                SDL_Texture* _texture = SDL_CreateTextureFromSurface(rendering->renderer, sprite->source);
+                SDL_Texture* _texture = SDL_CreateTextureFromSurface(rendering->renderer, sprite->surface);
 
                 // render tile
                 switch (this->renderPresentMode) {
