@@ -4,7 +4,7 @@
 
 namespace RoninEngine::Runtime
 {
-    class AudioSource : public Component
+    class RONIN_API AudioSource : public Component
     {
     protected:
        struct AudioSourceData* data;
