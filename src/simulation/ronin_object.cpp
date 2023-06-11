@@ -96,18 +96,16 @@ namespace RoninEngine
             } else {
                 // get error an exists destructed @object
                 for (std::pair<float, std::set<Object*>> mapIter : *destructors) {
-                    auto _set = mapIter.second;
+                    auto& _set = mapIter.second;
                     auto i = _set.find(obj);
                     if (i != std::end(_set)) {
-                        if (t == 0) {
-                            _set.erase(i);
-                            obj->destroy_cancel();
+                        _set.erase(i);
 
-                            //destroy now
+                        if (t == 0) {
+                            // destroy now
                             destroy_immediate(obj);
                             return;
-                        } else
-                            throw std::runtime_error("Object an prev destruct state");
+                        }
                     }
                 }
             }
@@ -127,8 +125,10 @@ namespace RoninEngine
                 // FIXME: Replace Recursive method to stack linear
                 // Recursive method
                 for (Component* component : gObj->m_components) {
-                    destroy_immediate(component);
+                    if (component->exists())
+                        destroy_immediate(component);
                 }
+
                 // other types
             } else {
                 Renderer* r;

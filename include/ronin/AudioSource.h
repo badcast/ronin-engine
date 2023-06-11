@@ -7,7 +7,7 @@ namespace RoninEngine::Runtime
     class RONIN_API AudioSource : public Component
     {
     protected:
-       struct AudioSourceData* data;
+        struct AudioSourceData* data;
 
     public:
         AudioSource();
@@ -21,9 +21,11 @@ namespace RoninEngine::Runtime
         // Get volume at range 0.0 ... 1.0
         float volume() const;
         // Set volume at range 0.0 ... 1.0
-        void volume(float value);
+        void volume(const float value);
         // Set volume at range 0.0 ... 1.0
         void volume(float&& value);
+        // Set Clip position to begin
+        void rewind();
         // Set play audio source
         void play();
         // Set pause state
@@ -32,6 +34,8 @@ namespace RoninEngine::Runtime
         void stop();
         // Is played now?
         bool is_playing();
+        // Is paused now?
+        bool is_paused();
     };
 
 } // namespace RoninEngine::Runtime

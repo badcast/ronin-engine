@@ -14,7 +14,7 @@ namespace RoninEngine::Runtime
         friend class Renderer;
         friend class SpriteRenderer;
         friend class Atlas;
-        friend class ResourceManager;
+        friend class Resources;
 
     protected:
         Vec2 m_center;

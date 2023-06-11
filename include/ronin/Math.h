@@ -47,10 +47,16 @@ namespace RoninEngine::Runtime
 
         static float clamp01(float val);
 
+        template <typename InT, typename OutT>
+        static OutT map(const InT x, const InT in_min, const InT in_max, const OutT out_min, const OutT out_max)
+        {
+            return static_cast<OutT>((x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min);
+        }
+
         template <typename T>
         static T map(const T x, const T in_min, const T in_max, const T out_min, const T out_max)
         {
-            return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+            return map<T, T>(x, in_min, in_max, out_min, out_max);
         }
 
         template <typename T>

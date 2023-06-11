@@ -9,7 +9,7 @@ namespace RoninEngine
 
         enum { GCInvalidID = 0xffffffff };
 
-        class RONIN_API ResourceManager
+        class RONIN_API Resources
         {
             friend class RoninEngine::Application;
             friend class Scene;

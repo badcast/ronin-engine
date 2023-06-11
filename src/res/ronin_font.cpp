@@ -3,7 +3,7 @@
 namespace RoninEngine::UI
 {
 
-    using RoninEngine::Runtime::ResourceManager;
+    using RoninEngine::Runtime::Resources;
 
     struct Font_t {
         SDL_Surface* surfNormal;
@@ -27,10 +27,10 @@ namespace RoninEngine::UI
         if (RoninMemory::alloc_self(pLegacyFont) == nullptr)
             Application::fail_oom_kill();
 
-        if ((pLegacyFont->surfNormal = ResourceManager::GetSurface("font-arealike")) == nullptr)
+        if ((pLegacyFont->surfNormal = Resources::GetSurface("font-arealike")) == nullptr)
             throw std::bad_alloc();
 
-        if ((pLegacyFont->surfHilight = ResourceManager::GetSurface("font-arealike-hi")) == nullptr)
+        if ((pLegacyFont->surfHilight = Resources::GetSurface("font-arealike-hi")) == nullptr)
             throw std::bad_alloc();
 
         pLegacyFont->fontSize = { fontWidth, fontHeight };
@@ -83,8 +83,8 @@ namespace RoninEngine::UI
         }
 
         // convert surface to texture
-        ResourceManager::gc_alloc_sdl_texture(&pfontTexture, pLegacyFont->surfNormal);
-        ResourceManager::gc_alloc_sdl_texture(&pfontTextureHilight, pLegacyFont->surfHilight);
+        Resources::gc_alloc_sdl_texture(&pfontTexture, pLegacyFont->surfNormal);
+        Resources::gc_alloc_sdl_texture(&pfontTextureHilight, pLegacyFont->surfHilight);
 
         if (pfontTexture == nullptr || pfontTextureHilight == nullptr)
             Application::fail("error initialization fonts");

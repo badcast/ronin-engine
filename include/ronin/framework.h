@@ -13,7 +13,7 @@
 // applications
 #include "Application.h"
 #include "SystemInformation.h"
-#include "ResourceManager.h"
+#include "Resources.h"
 
 // objects
 #include "Behaviour.h"

@@ -125,6 +125,10 @@ namespace RoninEngine
             std::list<Sprite*> offload_sprites;
             std::list<SDL_Surface*> offload_surfaces;
             std::list<AudioClip> offload_audioclips;
+
+            int audio_channels;
+            int audio_reserved_channels = MIX_CHANNELS;
+
             // destroyed queue object
             int _destroyed;
 
@@ -151,19 +155,26 @@ namespace RoninEngine
         };
 
         struct AudioClip {
+            int used;
             Mix_Chunk* mix_chunk;
-            Mix_Music* mix_music;
+        };
+
+        struct MusicClip {
+            int used;
+            Mix_Music* handle;
         };
 
         struct AudioSourceData {
             AudioClip* m_clip;
-            float m_volume;
+            int target_channel;
+            std::uint8_t m_volume;
         };
 
         // pre-decloration
         void load_world(World*);
         bool unload_world(World*);
         Transform* get_root(World*);
+        WorldResources* get_world_resources(World*);
 
     }
 }

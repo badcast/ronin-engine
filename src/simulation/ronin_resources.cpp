@@ -9,8 +9,6 @@ using namespace RoninEngine::UI;
 using namespace RoninEngine::AIPathFinder;
 using namespace jno;
 
-// ResourceManager::ResourceManager () { }
-
 std::map<int, std::list<std::string>>* _assocMultiFiles;
 std::map<int, std::list<SDL_Surface*>*>* _assocMultiLoadedImages;
 std::map<std::list<SDL_Surface*>*, std::list<Texture*>*>* _assocMultiCacheTextures;
@@ -48,7 +46,7 @@ namespace RoninEngine::Runtime
         _assocLoadedMusic = (decltype(_assocLoadedMusic))(_assocCacheCursors + 1);
         _paste_oop_init(_assocLoadedMusic);
     }
-    void ResourceManager::gc_release()
+    void Resources::gc_release()
     {
         if (_assocMultiFiles == nullptr)
             return;
@@ -65,7 +63,7 @@ namespace RoninEngine::Runtime
         _assocMultiFiles = nullptr;
     }
 
-    void ResourceManager::LoadImages(const char* filename)
+    void Resources::LoadImages(const char* filename)
     {
         jno_object_parser parser;
 
@@ -91,7 +89,7 @@ namespace RoninEngine::Runtime
 
     // Для автоматического уничтожения ресурса, обязательно его нужно скинуть на
     //  ResourceManager::Unload()
-    std::list<SDL_Surface*>* ResourceManager::LoadSurfaces(const std::string& packName)
+    std::list<SDL_Surface*>* Resources::LoadSurfaces(const std::string& packName)
     {
         std::list<SDL_Surface*>* surfs = nullptr;
         std::string path = getDataFrom(FolderKind::SPRITES);
@@ -118,7 +116,7 @@ namespace RoninEngine::Runtime
 
     // Для автоматического уничтожения ресурса, обязательно его нужно скинуть на
     //  ResourceManager::Unload()
-    std::list<Texture*>* ResourceManager::LoadTextures(const std::string& packName, bool autoUnload)
+    std::list<Texture*>* Resources::LoadTextures(const std::string& packName, bool autoUnload)
     {
         std::list<Texture*>* _textures = nullptr;
         std::list<SDL_Surface*>* surfaces = LoadSurfaces(packName);
@@ -142,11 +140,11 @@ namespace RoninEngine::Runtime
     }
 
     //  ResourceManager::Unload()
-    SDL_Surface* ResourceManager::GetSurface(const std::string& surfaceName) { return resource_bitmap(surfaceName); }
+    SDL_Surface* Resources::GetSurface(const std::string& surfaceName) { return resource_bitmap(surfaceName); }
 
     // Для автоматического уничтожения ресурса, обязательно его нужно скинуть на
     //  ResourceManager::Unload()
-    Texture* ResourceManager::GetTexture(const std::string& resourceName, bool autoUnload)
+    Texture* Resources::GetTexture(const std::string& resourceName, bool autoUnload)
     {
         SDL_Surface* surf;
         Texture* texture;
@@ -168,9 +166,9 @@ namespace RoninEngine::Runtime
     }
 
     // Create texture format RGBA 8888
-    Texture* ResourceManager::GetTexture(const int w, const int h) { return GetTexture(w, h, SDL_PixelFormatEnum::SDL_PIXELFORMAT_RGBA8888); }
-    Texture* ResourceManager::GetTexture(const int w, const int h, const ::SDL_PixelFormatEnum format) { return GetTexture(w, h, format, SDL_TextureAccess::SDL_TEXTUREACCESS_STREAMING); }
-    Texture* ResourceManager::GetTexture(const int w, const int h, const ::SDL_PixelFormatEnum format, const ::SDL_TextureAccess access)
+    Texture* Resources::GetTexture(const int w, const int h) { return GetTexture(w, h, SDL_PixelFormatEnum::SDL_PIXELFORMAT_RGBA8888); }
+    Texture* Resources::GetTexture(const int w, const int h, const ::SDL_PixelFormatEnum format) { return GetTexture(w, h, format, SDL_TextureAccess::SDL_TEXTUREACCESS_STREAMING); }
+    Texture* Resources::GetTexture(const int w, const int h, const ::SDL_PixelFormatEnum format, const ::SDL_TextureAccess access)
     {
         Texture* tex;
         gc_alloc_texture(&tex, w, h, format, access);
@@ -182,11 +180,11 @@ namespace RoninEngine::Runtime
 
     // Для автоматического уничтожения ресурса, обязательно его нужно скинуть на
     //  ResourceManager::Unload()
-    SDL_Cursor* ResourceManager::GetCursor(const std::string& resourceName, const Vec2Int& hotspot, bool autoUnload) { return GetCursor(GetSurface(resourceName), hotspot); }
+    SDL_Cursor* Resources::GetCursor(const std::string& resourceName, const Vec2Int& hotspot, bool autoUnload) { return GetCursor(GetSurface(resourceName), hotspot); }
 
     // Для автоматического уничтожения ресурса, обязательно его нужно скинуть на
     //  ResourceManager::Unload()
-    SDL_Cursor* ResourceManager::GetCursor(SDL_Surface* texture, const Vec2Int& hotspot)
+    SDL_Cursor* Resources::GetCursor(SDL_Surface* texture, const Vec2Int& hotspot)
     {
         SDL_Cursor* cur = nullptr;
         auto find = _assocCacheCursors->find(texture);
@@ -202,7 +200,7 @@ namespace RoninEngine::Runtime
         return cur;
     }
 
-    AudioClip* ResourceManager::load_clip(const std::string& path)
+    AudioClip* Resources::load_clip(const std::string& path)
     {
 
         Mix_Chunk* chunk = Mix_LoadWAV(path.c_str());
@@ -210,10 +208,10 @@ namespace RoninEngine::Runtime
             return nullptr;
         }
 
-        return &(World::self()->internal_resources->offload_audioclips.emplace_back(AudioClip{ chunk, nullptr }));
+        return &(World::self()->internal_resources->offload_audioclips.emplace_back(AudioClip { 0, chunk }));
     }
 
-    int ResourceManager::resource_bitmap(const std::string& resourceName, SDL_Surface** sdlsurfacePtr)
+    int Resources::resource_bitmap(const std::string& resourceName, SDL_Surface** sdlsurfacePtr)
     {
         SDL_Surface* surf = nullptr;
         std::string path = getDataFrom(FolderKind::SPRITES);
@@ -252,7 +250,7 @@ namespace RoninEngine::Runtime
         return 1;
     }
 
-    SDL_Surface* ResourceManager::resource_bitmap(const std::string& resourceName)
+    SDL_Surface* Resources::resource_bitmap(const std::string& resourceName)
     {
         SDL_Surface* sdlsurf;
 
@@ -265,9 +263,9 @@ namespace RoninEngine::Runtime
 
     // GC SDL Surface ---------------------------------------------------
 
-    int ResourceManager::gc_alloc_sdl_surface(SDL_Surface** sdlsurfacePtr, const int& w, const int& h) { return gc_alloc_sdl_surface(sdlsurfacePtr, w, h, SDL_PixelFormatEnum::SDL_PIXELFORMAT_RGBA8888); }
+    int Resources::gc_alloc_sdl_surface(SDL_Surface** sdlsurfacePtr, const int& w, const int& h) { return gc_alloc_sdl_surface(sdlsurfacePtr, w, h, SDL_PixelFormatEnum::SDL_PIXELFORMAT_RGBA8888); }
 
-    int ResourceManager::gc_alloc_sdl_surface(SDL_Surface** sdlsurfacePtr, const int& w, const int& h, const SDL_PixelFormatEnum& format)
+    int Resources::gc_alloc_sdl_surface(SDL_Surface** sdlsurfacePtr, const int& w, const int& h, const SDL_PixelFormatEnum& format)
     {
         int id;
         SDL_CreateRGBSurfaceWithFormat(0, w, h, 32, format);
@@ -277,11 +275,11 @@ namespace RoninEngine::Runtime
 
     // GC Texture---------------------
 
-    int ResourceManager::gc_alloc_sdl_texture(SDL_Texture** sdltexturePtr, const int& w, const int& h) { return gc_alloc_sdl_texture(sdltexturePtr, w, h, SDL_PixelFormatEnum::SDL_PIXELFORMAT_RGBA8888); }
+    int Resources::gc_alloc_sdl_texture(SDL_Texture** sdltexturePtr, const int& w, const int& h) { return gc_alloc_sdl_texture(sdltexturePtr, w, h, SDL_PixelFormatEnum::SDL_PIXELFORMAT_RGBA8888); }
 
-    int ResourceManager::gc_alloc_sdl_texture(SDL_Texture** sdltexturePtr, const int& w, const int& h, const SDL_PixelFormatEnum& format) { return gc_alloc_sdl_texture(sdltexturePtr, w, h, format, SDL_TextureAccess::SDL_TEXTUREACCESS_STATIC); }
+    int Resources::gc_alloc_sdl_texture(SDL_Texture** sdltexturePtr, const int& w, const int& h, const SDL_PixelFormatEnum& format) { return gc_alloc_sdl_texture(sdltexturePtr, w, h, format, SDL_TextureAccess::SDL_TEXTUREACCESS_STATIC); }
 
-    int ResourceManager::gc_alloc_sdl_texture(SDL_Texture** sdltexturePtr, const int& w, const int& h, const SDL_PixelFormatEnum& format, const SDL_TextureAccess& access)
+    int Resources::gc_alloc_sdl_texture(SDL_Texture** sdltexturePtr, const int& w, const int& h, const SDL_PixelFormatEnum& format, const SDL_TextureAccess& access)
     {
         int id;
 
@@ -293,7 +291,7 @@ namespace RoninEngine::Runtime
         return id;
     }
 
-    int ResourceManager::gc_alloc_sdl_texture(SDL_Texture** sdltexturePtr, SDL_Surface* from)
+    int Resources::gc_alloc_sdl_texture(SDL_Texture** sdltexturePtr, SDL_Surface* from)
     {
         SDL_Texture* texture;
 
@@ -311,14 +309,14 @@ namespace RoninEngine::Runtime
         return 1;
     }
 
-    int ResourceManager::gc_alloc_texture_empty(Texture** texturePtr) { return gc_alloc_texture(texturePtr, 32, 32); }
+    int Resources::gc_alloc_texture_empty(Texture** texturePtr) { return gc_alloc_texture(texturePtr, 32, 32); }
 
-    int ResourceManager::gc_alloc_texture(Texture** texturePtr, const int& w, const int& h) { return gc_alloc_texture(texturePtr, w, h, SDL_PixelFormatEnum::SDL_PIXELFORMAT_RGBA8888); }
-    int ResourceManager::gc_alloc_texture(Texture** texturePtr, const int& w, const int& h, const SDL_PixelFormatEnum& format)
+    int Resources::gc_alloc_texture(Texture** texturePtr, const int& w, const int& h) { return gc_alloc_texture(texturePtr, w, h, SDL_PixelFormatEnum::SDL_PIXELFORMAT_RGBA8888); }
+    int Resources::gc_alloc_texture(Texture** texturePtr, const int& w, const int& h, const SDL_PixelFormatEnum& format)
     {
         return gc_alloc_texture(texturePtr, w, h, SDL_PixelFormatEnum::SDL_PIXELFORMAT_RGBA8888, SDL_TextureAccess::SDL_TEXTUREACCESS_STATIC);
     }
-    int ResourceManager::gc_alloc_texture(Texture** texturePtr, const int& w, const int& h, const SDL_PixelFormatEnum& format, const SDL_TextureAccess& access)
+    int Resources::gc_alloc_texture(Texture** texturePtr, const int& w, const int& h, const SDL_PixelFormatEnum& format, const SDL_TextureAccess& access)
     {
         Texture* texture;
 
@@ -333,7 +331,7 @@ namespace RoninEngine::Runtime
         return 1;
     }
 
-    int ResourceManager::gc_alloc_texture_from(Texture** texturePtr, SDL_Surface* from)
+    int Resources::gc_alloc_texture_from(Texture** texturePtr, SDL_Surface* from)
     {
         if (!from || !texturePtr) {
             Application::fail("init");
@@ -345,7 +343,7 @@ namespace RoninEngine::Runtime
         return 1;
     }
 
-    int ResourceManager::gc_alloc_texture_from(Texture** texturePtr, SDL_Texture* sdltexture)
+    int Resources::gc_alloc_texture_from(Texture** texturePtr, SDL_Texture* sdltexture)
     {
         if (!sdltexture || !texturePtr) {
             Application::fail("init");
@@ -362,13 +360,13 @@ namespace RoninEngine::Runtime
 
     // GC Sprite---------------------
 
-    int ResourceManager::gc_alloc_sprite_empty(Sprite** spritePtr) { return gc_alloc_sprite_empty(spritePtr, { 0, 0, 0, 0 }); }
+    int Resources::gc_alloc_sprite_empty(Sprite** spritePtr) { return gc_alloc_sprite_empty(spritePtr, { 0, 0, 0, 0 }); }
 
-    int ResourceManager::gc_alloc_sprite_empty(Sprite** spritePtr, const Rect& rect) { return gc_alloc_sprite_with(spritePtr, nullptr, rect, Vec2::half); }
+    int Resources::gc_alloc_sprite_empty(Sprite** spritePtr, const Rect& rect) { return gc_alloc_sprite_with(spritePtr, nullptr, rect, Vec2::half); }
 
-    int ResourceManager::gc_alloc_sprite_with(Sprite** spritePtr, SDL_Surface* src) { return gc_alloc_sprite_with(spritePtr, src, Vec2::half); }
+    int Resources::gc_alloc_sprite_with(Sprite** spritePtr, SDL_Surface* src) { return gc_alloc_sprite_with(spritePtr, src, Vec2::half); }
 
-    int ResourceManager::gc_alloc_sprite_with(Sprite** spritePtr, SDL_Surface* src, const Vec2& center)
+    int Resources::gc_alloc_sprite_with(Sprite** spritePtr, SDL_Surface* src, const Vec2& center)
     {
         Rect rect {};
         if (src == nullptr) {
@@ -381,7 +379,7 @@ namespace RoninEngine::Runtime
         return gc_alloc_sprite_with(spritePtr, src, rect, center);
     }
 
-    int ResourceManager::gc_alloc_sprite_with(Sprite** spritePtr, SDL_Surface* src, const Rect& rect, const Vec2& center)
+    int Resources::gc_alloc_sprite_with(Sprite** spritePtr, SDL_Surface* src, const Rect& rect, const Vec2& center)
     {
         if (spritePtr == nullptr) {
             Application::fail("init");

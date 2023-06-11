@@ -81,7 +81,7 @@ namespace RoninEngine
         if (!Mix_Init(MIX_InitFlags::MIX_INIT_OGG | MIX_InitFlags::MIX_INIT_MP3))
             fail("Fail init audio.");
 
-        if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 1024))
+        if (Mix_OpenAudio(MIX_DEFAULT_FREQUENCY, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS, 1024))
             fail("Fail open audio.");
 
         /*if (initResources) {

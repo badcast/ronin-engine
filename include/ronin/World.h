@@ -3,11 +3,12 @@
 
 namespace RoninEngine::Runtime
 {
+
     class RONIN_API World
     {
         friend class RoninEngine::Application;
         friend class RoninEngine::UI::GUI;
-        friend class ResourceManager;
+        friend class Resources;
         friend class Object;
         friend class Transform;
         friend class GameObject;
@@ -25,6 +26,7 @@ namespace RoninEngine::Runtime
         friend void load_world(World*);
         friend bool unload_world(World*);
         friend Transform* get_root(World*);
+        friend struct WorldResources* get_world_resources(World*);
 
     private:
         void internal_bind_script(Behaviour* obj);

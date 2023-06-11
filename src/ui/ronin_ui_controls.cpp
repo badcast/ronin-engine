@@ -161,7 +161,7 @@ namespace RoninEngine::UI
             // draw main text
             Texture* texture;
             SDL_Surface* surf = TTF_RenderUTF8_Solid(pfont, element.text.c_str(), *reinterpret_cast<SDL_Color*>(&colorSpace.editText));
-            if (ResourceManager::gc_alloc_texture_from(&texture, surf) != GCInvalidID) {
+            if (Resources::gc_alloc_texture_from(&texture, surf) != GCInvalidID) {
                 r = element.rect;
                 r.x += 5;
                 r.y += +r.h / 2 - texture->height() / 2;
@@ -326,7 +326,7 @@ namespace RoninEngine::UI
             // draw main text
             Texture* texture;
             SDL_Surface* surf = TTF_RenderUTF8_Solid(pfont, element.text.c_str(), *reinterpret_cast<SDL_Color*>(&colorSpace.dropdownText));
-            if (ResourceManager::gc_alloc_texture_from(&texture, surf) != GCInvalidID) {
+            if (Resources::gc_alloc_texture_from(&texture, surf) != GCInvalidID) {
                 r = element.rect;
                 r.x += 5;
                 r.y += +r.h / 2 - texture->height() / 2;
@@ -375,7 +375,7 @@ namespace RoninEngine::UI
                         Gizmos::set_color(colorSpace.defaultInteraction.hoverState);
                         // Draw element text
                         surf = TTF_RenderUTF8_Solid(pfont, iter->c_str(), *reinterpret_cast<SDL_Color*>(&(link->first != index ? colorSpace.dropdownText : colorSpace.dropdownSelectedText)));
-                        ResourceManager::gc_alloc_texture_from(&texture, surf);
+                        Resources::gc_alloc_texture_from(&texture, surf);
                         r.h = texture->height();
                         r.w = texture->width();
 

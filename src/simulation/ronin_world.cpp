@@ -69,10 +69,17 @@ namespace RoninEngine::Runtime
             world->internal_resources->gui = nullptr;
         }
 
+        // TODO: Not released world (Prev-unload), freed audio channels too...
+
+        // Halt all channels
+        Mix_HaltChannel(-1);
+
+        // reallocate channels
+        Mix_AllocateChannels(MIX_CHANNELS);
+
         // free Audio objects
         for (AudioClip& ac : world->internal_resources->offload_audioclips) {
             Mix_FreeChunk(ac.mix_chunk);
-            Mix_FreeMusic(ac.mix_music);
         }
 
         std::list<GameObject*> stacks;
@@ -117,6 +124,7 @@ namespace RoninEngine::Runtime
 
     Transform* get_root(World* world) { return world->internal_resources->main_object->transform(); }
 
+    WorldResources* get_world_resources(World* world) { return world->internal_resources; }
 }
 
 World::World(const std::string& name)
@@ -425,7 +433,7 @@ const bool World::object_desctruction_cancel(Object* obj)
 
     if (World::self()->internal_resources->_destructTasks) {
         for (std::pair<float, std::set<Object*>> mapIter : *World::self()->internal_resources->_destructTasks) {
-            auto _set = mapIter.second;
+            auto& _set = mapIter.second;
             auto iter = _set.find(obj);
             if (iter != std::end(_set)) {
                 _set.erase(iter);

@@ -104,7 +104,7 @@ namespace RoninEngine::Runtime
     {
         SDL_Texture* lastTarget = SDL_GetRenderTarget(renderer);
         Texture* newTexture;
-        ResourceManager::gc_alloc_texture(&newTexture, width(), height(), format(), access());
+        Resources::gc_alloc_texture(&newTexture, width(), height(), format(), access());
         newTexture->blendMode(blendMode());
         newTexture->scaleMode(scaleMode());
         newTexture->color(color());

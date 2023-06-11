@@ -15,7 +15,7 @@ namespace RoninEngine::Runtime
         range = 1.f;
         intensity = 1.f;
         if (!spotlightMask) {
-            spotlightMask = ResourceManager::resource_bitmap("spotlight");
+            spotlightMask = Resources::resource_bitmap("spotlight");
         }
     }
 

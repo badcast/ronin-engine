@@ -41,7 +41,7 @@ namespace RoninEngine
         typedef RRect<float> Rectf;
 
         // core
-        class ResourceManager;
+        class Resources;
         class TimeEngine;
 
         // base

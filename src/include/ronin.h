@@ -12,7 +12,7 @@
 // applications
 #include "../../include/ronin/Time.h"
 #include "../../include/ronin/Application.h"
-#include "../../include/ronin/ResourceManager.h"
+#include "../../include/ronin/Resources.h"
 #include "../../include/ronin/SystemInformation.h"
 
 #include "../../include/ronin/Controls.h"
