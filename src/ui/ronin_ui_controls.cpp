@@ -243,9 +243,9 @@ namespace RoninEngine::UI
             roundedRectangleColor(renderer, rect.x, rect.y, rect.x + rect.w, rect.y + rect.h, 3, color);
 
             // Draw text
-            Vec2Int tpos = { element.rect.x + element.rect.w-22, element.rect.y + element.rect.h - 10};
+            Vec2Int tpos = { element.rect.x + element.rect.w - 22, element.rect.y + element.rect.h - 10 };
             char __[32];
-            sprintf(__,"%.1f", *value);
+            sprintf(__, "%.1f", *value);
             draw_font_at(renderer, __, 1, tpos, color);
 
             break;
