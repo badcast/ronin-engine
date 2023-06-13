@@ -4,7 +4,7 @@ enum { ElementEnableMask = 1, ElementVisibleMask = 2, ElementGroupMask = 4 };
 
 namespace RoninEngine::UI
 {
-    extern void* factory_resource(GUIControlPresents type);
+    extern ui_resource* factory_resource(GUIControlPresents type);
     extern void factory_free(UIElement* element);
     extern bool general_render_ui_section(GUI* gui, UIElement& element, SDL_Renderer* render, const bool hovering, bool& focus);
     extern void event_action(UIElement* element);
@@ -18,10 +18,9 @@ namespace RoninEngine::UI
         if (!gui->has_ui(parent))
             throw std::runtime_error("Isn't parent");
 
-        UIElement data {};
+        UIElement& data = gui->resources->ui_layer.elements.emplace_back();
         data.parentId = parent;
         data.options = ElementVisibleMask | ElementEnableMask;
-        gui->resources->ui_layer.elements.emplace_back(data);
         data.id = gui->resources->ui_layer.elements.size();
         // add the child
         if (parent)
@@ -35,7 +34,7 @@ namespace RoninEngine::UI
 
     GUI::GUI(RoninEngine::Runtime::World* world)
     {
-        RoninMemory::alloc_self(resources);
+        RoninMemory::alloc_self<GUIResources>(resources);
         resources->__level_owner = world;
         resources->hitCast = true;
         resources->visible = true;
@@ -75,9 +74,12 @@ namespace RoninEngine::UI
         auto& data = getElement(id);
         data.rect = rect;
         data.options |= ElementGroupMask;
+
         return id;
     }
     uid GUI::push_group() { return push_group(Rect::zero); }
+
+    uid GUI::begin_layment(const Runtime::Rect region) { }
 
     uid GUI::push_label(const std::string& text, const ::Rect& rect, const int& fontWidth, uid parent)
     {
@@ -96,13 +98,13 @@ namespace RoninEngine::UI
 
     uid GUI::push_button(const std::string& text, const Rect& rect, ui_callback* event_callback, uid parent)
     {
-        int id = call_register_ui(this, parent);
+        uid id = call_register_ui(this, parent);
         auto& data = getElement(id);
         data.rect = rect;
         data.text = text;
         data.prototype = RGUI_BUTTON;
         data.event = event_callback;
-        data.id = id;
+
         return id;
     }
 
@@ -115,31 +117,6 @@ namespace RoninEngine::UI
         element.text = text;
         element.rect = rect;
         element.prototype = RGUI_EDIT;
-        return id;
-    }
-
-    uid GUI::push_display_randomizer(TextRandomizer_Format format, const Vec2Int& point, uid parent)
-    {
-        uid id = call_register_ui(this, parent);
-
-        auto& data = getElement(id);
-
-        data.resources = reinterpret_cast<void*>(format);
-        data.prototype = RGUI_TEXTRAND;
-        return id;
-    }
-    uid GUI::push_display_randomizer(TextRandomizer_Format format, uid parent) { return push_display_randomizer(format, Vec2Int(std::numeric_limits<int>::max(), std::numeric_limits<int>::max()), parent); }
-    uid GUI::push_display_randomizer_text(const std::string& text, const Vec2Int& point, uid parent)
-    {
-        uid id = push_display_randomizer(TextRandomizer_Format::OnlyText, point, parent);
-        auto& data = getElement(id);
-        data.text = text;
-        return id;
-    }
-    uid GUI::push_display_randomizer_number(const int min, const int max, TextAlign textAlign, uid parent)
-    {
-        uid id = push_display_randomizer(OnlyNumber, parent);
-        // TODO: min and max не реализованы.
         return id;
     }
 
@@ -195,7 +172,7 @@ namespace RoninEngine::UI
     uid GUI::push_texture_animator(const std::list<Texture*>& roads, float duration, TimelineOptions option, const Vec2Int& point, uid parent) { return push_texture_animator(roads, duration, option, { point.x, point.y, 0, 0 }, parent); }
 
     template <typename Container>
-    uid internal_push_dropdown(GUI* guiInstance, const Container& container, int index, const Runtime::Rect& rect, event_index_changed* changed, uid parent)
+    uid internal_push_dropdown(GUI* guiInstance, const Container& container, int index, const Runtime::Rect& rect, ui_callback_integer changed, uid parent)
     {
         using T = typename std::iterator_traits<decltype(container.cbegin())>::value_type;
 
@@ -204,7 +181,7 @@ namespace RoninEngine::UI
         element.prototype = RGUI_DROPDOWN;
         element.rect = rect;
         element.resources = factory_resource(element.prototype);
-        element.event = changed;
+        element.event = &changed;
 
         if (!element.resources)
             Application::fail_oom_kill();
@@ -229,19 +206,19 @@ namespace RoninEngine::UI
         return id;
     }
 
-    uid GUI::push_drop_down(const std::vector<int>& elements, int index, const Runtime::Rect& rect, event_index_changed* changed, uid parent) { return internal_push_dropdown(this, elements, index, rect, changed, parent); }
+    uid GUI::push_drop_down(const std::vector<int>& elements, int index, const Runtime::Rect& rect, ui_callback_integer changed, uid parent) { return internal_push_dropdown(this, elements, index, rect, changed, parent); }
 
-    uid GUI::push_drop_down(const std::vector<float>& elements, int index, const Runtime::Rect& rect, event_index_changed* changed, uid parent) { return internal_push_dropdown(this, elements, index, rect, changed, parent); }
+    uid GUI::push_drop_down(const std::vector<float>& elements, int index, const Runtime::Rect& rect, ui_callback_integer changed, uid parent) { return internal_push_dropdown(this, elements, index, rect, changed, parent); }
 
-    uid GUI::push_drop_down(const std::vector<std::string>& elements, int index, const Runtime::Rect& rect, event_index_changed* changed, uid parent) { return internal_push_dropdown(this, elements, index, rect, changed, parent); }
+    uid GUI::push_drop_down(const std::vector<std::string>& elements, int index, const Runtime::Rect& rect, ui_callback_integer changed, uid parent) { return internal_push_dropdown(this, elements, index, rect, changed, parent); }
 
-    uid GUI::push_drop_down(const std::list<float>& elements, int index, const Runtime::Rect& rect, event_index_changed* changed, uid parent) { return internal_push_dropdown(this, elements, index, rect, changed, parent); }
+    uid GUI::push_drop_down(const std::list<float>& elements, int index, const Runtime::Rect& rect, ui_callback_integer changed, uid parent) { return internal_push_dropdown(this, elements, index, rect, changed, parent); }
 
-    uid GUI::push_drop_down(const std::list<int>& elements, int index, const Runtime::Rect& rect, event_index_changed* changed, uid parent) { return internal_push_dropdown(this, elements, index, rect, changed, parent); }
+    uid GUI::push_drop_down(const std::list<int>& elements, int index, const Runtime::Rect& rect, ui_callback_integer changed, uid parent) { return internal_push_dropdown(this, elements, index, rect, changed, parent); }
 
-    uid GUI::push_drop_down(const std::list<std::string>& elements, int index, const Runtime::Rect& rect, event_index_changed* changed, uid parent) { return internal_push_dropdown(this, elements, index, rect, changed, parent); }
+    uid GUI::push_drop_down(const std::list<std::string>& elements, int index, const Runtime::Rect& rect, ui_callback_integer changed, uid parent) { return internal_push_dropdown(this, elements, index, rect, changed, parent); }
 
-    uid GUI::push_slider(float value, float min, float max, const Rect& rect, event_value_changed* changed, uid parent)
+    uid GUI::push_slider(float value, float min, float max, const Rect& rect, ui_callback_float changed, uid parent)
     {
         uid id = call_register_ui(this, parent);
         auto& element = call_get_element(this, id);
@@ -253,7 +230,7 @@ namespace RoninEngine::UI
         (*(float*)(element.resources + sizeof(float))) = min;
         (*(float*)(element.resources + sizeof(float) * 2)) = max;
 
-        element.event = changed;
+        element.event = &changed;
         return id;
     }
 

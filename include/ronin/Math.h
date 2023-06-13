@@ -166,6 +166,10 @@ namespace RoninEngine::Runtime
 
         static std::string num_beautify(std::uint64_t num, char seperate = ' ', int digits = 3);
 
+        static std::uint16_t float_to_half(float value);
+
+        static float half_to_float(std::uint16_t value);
+
         static float square(float x);
         static float square_rectangle(float a, float b);
         static float square_rectangle(Vec2 p1, Vec2 p2, Vec2 p3, Vec2 p4);

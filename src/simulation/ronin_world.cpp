@@ -266,11 +266,11 @@ void World::internal_bind_script(Behaviour* script)
 void World::runtime_destructs()
 {
     internal_resources->_destroyed = 0;
-    // Destroy req objects
+    // Destroy queue objects
     if (internal_resources->_destructTasks && internal_resources->_destroy_delay_time < TimeEngine::time()) {
         float time = TimeEngine::time();
-        std::map<float, std::set<Object*>>::iterator xiter = std::end(*(internal_resources->_destructTasks)), yiter = std::end(*(internal_resources->_destructTasks));
-        for (auto pair : *(internal_resources->_destructTasks)) {
+        std::map<float, std::set<GameObject*>>::iterator xiter = std::end(*(internal_resources->_destructTasks)), yiter = std::end(*(internal_resources->_destructTasks));
+        for (std::pair<const float, std::set<GameObject*>>& pair : *(internal_resources->_destructTasks)) {
             // The time for the destruction of the object has not yet come
             if (pair.first > time) {
                 internal_resources->_destroy_delay_time = pair.first;
@@ -424,7 +424,7 @@ std::list<Component*> World::get_all_components()
     return components;
 }
 
-const bool World::object_desctruction_cancel(Object* obj)
+const bool World::object_desctruction_cancel(GameObject* obj)
 {
     if (!obj || !obj->exists()) {
         Application::fail_oom_kill();
@@ -432,11 +432,10 @@ const bool World::object_desctruction_cancel(Object* obj)
     }
 
     if (World::self()->internal_resources->_destructTasks) {
-        for (std::pair<float, std::set<Object*>> mapIter : *World::self()->internal_resources->_destructTasks) {
-            auto& _set = mapIter.second;
-            auto iter = _set.find(obj);
-            if (iter != std::end(_set)) {
-                _set.erase(iter);
+        for (std::pair<const float, std::set<GameObject*>>& mapIter : *World::self()->internal_resources->_destructTasks) {
+            auto iter = mapIter.second.find(obj);
+            if (iter != std::end(mapIter.second)) {
+                mapIter.second.erase(iter);
                 return true; // canceled
             }
         }
@@ -444,7 +443,7 @@ const bool World::object_desctruction_cancel(Object* obj)
     return false;
 }
 
-const int World::object_destruction_cost(Object* obj)
+const int World::object_destruction_cost(GameObject* obj)
 {
     int x;
     if (!obj || !obj->exists()) {
@@ -453,9 +452,8 @@ const int World::object_destruction_cost(Object* obj)
     }
     if (World::self()->internal_resources->_destructTasks) {
         x = 0;
-        for (std::pair<float, std::set<Object*>> mapIter : *World::self()->internal_resources->_destructTasks) {
-            auto _set = mapIter.second;
-            if (_set.find(obj) != std::end(_set)) {
+        for (std::pair<const float, std::set<GameObject*>>& mapIter : *World::self()->internal_resources->_destructTasks) {
+            if (mapIter.second.find(obj) != std::end(mapIter.second)) {
                 return x;
             }
             ++x;
@@ -465,13 +463,13 @@ const int World::object_destruction_cost(Object* obj)
     return -1;
 }
 
-const bool World::object_destruction_state(Object* obj) { return object_destruction_cost(obj) > ~0; }
+const bool World::object_destruction_state(GameObject* obj) { return object_destruction_cost(obj) > ~0; }
 
 const int World::object_destruction_count()
 {
     int x = 0;
     if (World::self()->internal_resources->_destructTasks) {
-        for (std::pair<float, std::set<Object*>> mapIter : *World::self()->internal_resources->_destructTasks) {
+        for (std::pair<const float, std::set<GameObject*>>& mapIter : *World::self()->internal_resources->_destructTasks) {
             x += mapIter.second.size();
         }
     }

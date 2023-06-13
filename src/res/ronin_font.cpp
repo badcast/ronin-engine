@@ -101,7 +101,7 @@ namespace RoninEngine::UI
                 // pitch это строка (ширина с объеденением в байтах) то есть x по оси
                 // если умножить pitch * на h-высоту то можно получить последний пиксель
                 for (x = 0; x < pLegacyFont->data[i].w / 2; ++x) {
-                    // оптимизация с левой до правой
+                    // оптимизация с левой по правой
                     if (!(flagBreaker & 1)) {
                         for (y = rect_point.h - 1; y >= 0; --y) {
                             cx = rect_point.x + x;

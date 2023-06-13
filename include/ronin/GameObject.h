@@ -11,12 +11,12 @@ namespace RoninEngine
             friend class Camera2D;
             friend class Component;
             friend class World;
-            friend RONIN_API GameObject* instantiate(GameObject* obj);
-            friend RONIN_API GameObject* instantiate(GameObject* obj, Vec2 position, float angle);
-            friend RONIN_API GameObject* instantiate(GameObject* obj, Vec2 position, Transform* parent, bool worldPositionState);
-            friend RONIN_API void destroy(Object* obj);
-            friend RONIN_API void destroy(Object* obj, float t);
-            friend RONIN_API void destroy_immediate(Object* obj);
+            friend GameObject* instantiate(GameObject* obj);
+            friend GameObject* instantiate(GameObject* obj, Vec2 position, float angle);
+            friend GameObject* instantiate(GameObject* obj, Vec2 position, Transform* parent, bool worldPositionState);
+            friend void destroy(GameObject* obj);
+            friend void destroy(GameObject* obj, float t);
+            friend void destroy_immediate(GameObject* obj);
 
         private:
             std::list<Component*> m_components;
@@ -43,6 +43,11 @@ namespace RoninEngine
             Camera2D* get_camera2D();
 
             Terrain2D* get_terrain2D();
+
+            void destroy();
+            void destroy(float time);
+            const bool destroy_cancel();
+            const bool is_destruction();
 
             Component* add_component(Component* component);
             bool remove_component(Component* component);

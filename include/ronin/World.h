@@ -6,6 +6,8 @@ namespace RoninEngine::Runtime
 
     class RONIN_API World
     {
+        struct WorldResources* internal_resources = nullptr;
+
         friend class RoninEngine::Application;
         friend class RoninEngine::UI::GUI;
         friend class Resources;
@@ -19,9 +21,9 @@ namespace RoninEngine::Runtime
         friend class Primitive;
 
         friend bool instanced(Object* obj);
-        friend void destroy(Object* obj);
-        friend void destroy(Object* obj, float t);
-        friend void destroy_immediate(Object* obj);
+        friend void destroy(GameObject* obj, float t);
+        friend void destroy_immediate(GameObject* obj);
+        friend void internal_destroy_object(Object* obj);
 
         friend void load_world(World*);
         friend bool unload_world(World*);
@@ -36,8 +38,6 @@ namespace RoninEngine::Runtime
         static std::list<Transform*>* get_hierarchy(Transform* parent);
 
     protected:
-        struct WorldResources* internal_resources = nullptr;
-
         std::string m_name;
         virtual void runtime_destructs();
 
@@ -77,9 +77,9 @@ namespace RoninEngine::Runtime
         template <typename T>
         std::list<T*> find_objects_with_type();
 
-        const bool object_desctruction_cancel(Object* obj);
-        const int object_destruction_cost(Object* obj);
-        const bool object_destruction_state(Object* obj);
+        const bool object_desctruction_cancel(GameObject* obj);
+        const int object_destruction_cost(GameObject* obj);
+        const bool object_destruction_state(GameObject* obj);
         const int object_destruction_count();
 
         static std::list<Transform*> matrix_check_damaged();

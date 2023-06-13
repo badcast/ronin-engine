@@ -14,8 +14,7 @@ namespace RoninEngine
             friend class World;
             friend class Object;
             friend class GameObject;
-            friend RONIN_API GameObject* instantiate(GameObject* obj);
-            friend RONIN_API void destroy_immediate(Object* obj);
+            friend GameObject* instantiate(GameObject* obj);
 
             GameObject* _owner;
 

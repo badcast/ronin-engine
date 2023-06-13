@@ -1,5 +1,7 @@
 #pragma once
+
 #include "begin.h"
+#include "Controls.h"
 
 namespace RoninEngine
 {
@@ -36,7 +38,6 @@ namespace RoninEngine
             CI bool has_action(void* outPos);
 
         public:
-
             CI GUI(Runtime::World*);
             CI virtual ~GUI();
 
@@ -45,16 +46,27 @@ namespace RoninEngine
             CI uid push_group(const RoninEngine::Runtime::Rect& rect);
             CI uid push_group();
 
+            /**
+             * After layment require end_layment() for end selection layer
+             *
+             * \param region - the region of drawing object
+             *
+             * \see end_layment()
+             */
+            CI uid begin_layment(const Runtime::Rect region);
+            CI void end_layment();
+
+            CI uid push_layment_label(const std::string& text);
+            CI uid push_layment_button(const std::string& text, ui_callback_chars event_callback = nullptr);
+            CI uid push_layment_edit(const std::string& text, ui_callback_chars event_callback = nullptr);
+            CI uid push_layment_slider(float value, float min = 0.f, float max = 1.f, ui_callback_float value_changed = nullptr);
+
             CI uid push_label(const std::string& text, const RoninEngine::Runtime::Rect& rect, const int& fontWidth = 13, uid parent = NOPARENT);
             CI uid push_label(const std::string& text, const Runtime::Vec2Int& point, const int& fontWidth = 13, uid parent = NOPARENT);
             CI uid push_button(const std::string& text, const Runtime::Vec2Int& point, ui_callback* event_callback = nullptr, uid parent = NOPARENT);
             CI uid push_button(const std::string& text, const Runtime::Rect& point, ui_callback* event_callback = nullptr, uid parent = NOPARENT);
             CI uid push_edit(const std::string& text, const Runtime::Vec2Int& point, uid parent = NOPARENT);
             CI uid push_edit(const std::string& text, const Runtime::Rect& rect, uid parent = NOPARENT);
-            CI uid push_display_randomizer(TextRandomizer_Format format, const Vec2Int& point, uid parent = NOPARENT);
-            CI uid push_display_randomizer(TextRandomizer_Format format = TextRandomizer_Format::All, uid parent = NOPARENT);
-            CI uid push_display_randomizer_text(const std::string& text, const Vec2Int& point, uid parent = NOPARENT);
-            CI uid push_display_randomizer_number(const int min, const int max, TextAlign textAlign, uid parent = NOPARENT);
             CI uid push_texture_stick(Texture* texture, const Runtime::Rect& rect, uid parent = NOPARENT);
             CI uid push_texture_stick(Texture* texture, const Runtime::Vec2Int& point, uid parent = NOPARENT);
             CI uid push_texture_animator(Timeline* timeline, const RoninEngine::Runtime::Rect& rect, uid parent = NOPARENT);
@@ -63,29 +75,29 @@ namespace RoninEngine
             CI uid push_texture_animator(const std::list<Texture*>& roads, float duration, TimelineOptions option, const Vec2Int& point, uid parent = NOPARENT);
 
             template <typename Container>
-            CI uid push_drop_down(const Container& elements, const Runtime::Vec2Int& point, event_index_changed* changed = nullptr, uid parent = NOPARENT)
+            CI uid push_drop_down(const Container& elements, const Runtime::Vec2Int& point, ui_callback_integer changed = nullptr, uid parent = NOPARENT)
             {
                 return push_drop_down(elements, 0, point, changed, parent);
             }
             template <typename Container>
-            CI uid push_drop_down(const Container& elements, int index, const Runtime::Vec2Int& point, event_index_changed* changed = nullptr, uid parent = NOPARENT)
+            CI uid push_drop_down(const Container& elements, int index, const Runtime::Vec2Int& point, ui_callback_integer changed = nullptr, uid parent = NOPARENT)
             {
                 return push_drop_down(elements, index, Runtime::Rect(point.x, point.y, defaultMakets.dropdownSize.x, defaultMakets.dropdownSize.y), changed, parent);
             }
-            CI uid push_drop_down(const std::vector<int>& elements, int index, const Runtime::Rect& rect, event_index_changed* changed, uid parent);
-            CI uid push_drop_down(const std::vector<float>& elements, int index, const Runtime::Rect& rect, event_index_changed* changed, uid parent);
-            CI uid push_drop_down(const std::vector<std::string>& elements, int index, const Runtime::Rect& rect, event_index_changed* changed, uid parent);
-            CI uid push_drop_down(const std::list<float>& elements, int index, const Runtime::Rect& rect, event_index_changed* changed, uid parent);
-            CI uid push_drop_down(const std::list<int>& elements, int index, const Runtime::Rect& rect, event_index_changed* changed, uid parent);
-            CI uid push_drop_down(const std::list<std::string>& elements, int index, const Runtime::Rect& rect, event_index_changed* changed, uid parent);
+            CI uid push_drop_down(const std::vector<int>& elements, int index, const Runtime::Rect& rect, ui_callback_integer changed, uid parent);
+            CI uid push_drop_down(const std::vector<float>& elements, int index, const Runtime::Rect& rect, ui_callback_integer changed, uid parent);
+            CI uid push_drop_down(const std::vector<std::string>& elements, int index, const Runtime::Rect& rect, ui_callback_integer changed, uid parent);
+            CI uid push_drop_down(const std::list<float>& elements, int index, const Runtime::Rect& rect, ui_callback_integer changed, uid parent);
+            CI uid push_drop_down(const std::list<int>& elements, int index, const Runtime::Rect& rect, ui_callback_integer changed, uid parent);
+            CI uid push_drop_down(const std::list<std::string>& elements, int index, const Runtime::Rect& rect, ui_callback_integer changed, uid parent);
 
-            CI uid push_slider(float value, const Runtime::Vec2Int& point, event_value_changed* changed = nullptr, uid parent = NOPARENT) { return push_slider(value, 0.f, 1.f, point, changed, parent); }
+            CI uid push_slider(float value, const Runtime::Vec2Int& point, ui_callback_float changed = nullptr, uid parent = NOPARENT) { return push_slider(value, 0.f, 1.f, point, changed, parent); }
 
-            CI uid push_slider(float value, float min, float max, const Runtime::Vec2Int& point, event_value_changed* changed = nullptr, uid parent = NOPARENT)
+            CI uid push_slider(float value, float min, float max, const Runtime::Vec2Int& point, ui_callback_float changed = nullptr, uid parent = NOPARENT)
             {
                 return push_slider(value, min, max, Runtime::Rect(point.x, point.y, defaultMakets.sliderSize.x, defaultMakets.sliderSize.y), changed, parent);
             }
-            CI uid push_slider(float value, float min, float max, const Runtime::Rect& rect, event_value_changed* changed = nullptr, uid parent = NOPARENT);
+            CI uid push_slider(float value, float min, float max, const Runtime::Rect& rect, ui_callback_float changed = nullptr, uid parent = NOPARENT);
 
             // property-----------------------------------------------------------------------------------------------------------
 

@@ -54,6 +54,10 @@ namespace RoninEngine::Runtime
         transform()->parent_notify_active_state(this);
     }
 
+    const bool GameObject::destroy_cancel() { return World::self()->object_desctruction_cancel(this); }
+
+    const bool GameObject::is_destruction() { return World::self()->object_destruction_state(this); }
+
     // TODO: Recursivelly set active all hierarchy
     void GameObject::set_active_recursivelly(bool state) { this->set_active(false); }
 
@@ -68,6 +72,10 @@ namespace RoninEngine::Runtime
     Camera2D* GameObject::get_camera2D() { return get_component<Camera2D>(); }
 
     Terrain2D* GameObject::get_terrain2D() { return get_component<Terrain2D>(); }
+
+    void GameObject::destroy() { this->destroy(0); }
+
+    void GameObject::destroy(float t) { Runtime::destroy(this, t); }
 
     Component* GameObject::add_component(Component* component)
     {
@@ -106,9 +114,9 @@ namespace RoninEngine::Runtime
 
         if (dynamic_cast<Transform*>(component) != nullptr)
             return false;
-        //BUG: Destroying object canceled with signal SIGILL
+        // BUG: Destroying object canceled with signal SIGILL
         component->_owner = nullptr; // remove owner
         m_components.remove(component);
-        destroy_immediate(component);
+        Runtime::internal_destroy_object(component);
     }
 }

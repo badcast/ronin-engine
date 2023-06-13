@@ -14,8 +14,9 @@ namespace RoninEngine::Runtime
         friend class Camera;
         friend class Camera2D;
         friend class Physics2D;
-        friend RONIN_API GameObject* instantiate(GameObject* obj);
-        friend RONIN_API void destroy_immediate(Object* obj);
+        friend GameObject* instantiate(GameObject* obj);
+
+        friend void internal_destroy_object(Transform* obj);
 
     protected:
         std::list<Transform*> hierarchy;

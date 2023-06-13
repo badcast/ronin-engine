@@ -14,13 +14,12 @@ namespace RoninEngine
                 if (name == nullptr)
                     RoninMemory::alloc_self(clone);
                 else
-                    RoninMemory::alloc_self(clone, std::string(name));
+                    RoninMemory::alloc_self(clone, name);
             } else {
                 T* newTComponent;
                 if constexpr (std::is_same<T, GameObject>::value)
                     newTComponent = instantiate(clone);
                 else if constexpr (std::is_same<T, Transform>::value) {
-                    // TODO: Required cloning for Transform
                     RoninMemory::alloc_self(newTComponent);
                 } else if constexpr (std::is_same<T, SpriteRenderer>::value) {
                     RoninMemory::alloc_self(newTComponent, *clone);
@@ -31,7 +30,6 @@ namespace RoninEngine
                 } else if constexpr (std::is_same<T, Behaviour>::value) {
                     RoninMemory::alloc_self(newTComponent, *clone);
                 } else {
-                    static_assert(true, "undefined type");
                     newTComponent = nullptr;
                 }
                 clone = newTComponent;
@@ -58,6 +56,43 @@ namespace RoninEngine
             return clone;
         }
 
+        template <typename T>
+        void internal_destroy_object(T* obj)
+        {
+            static_assert(std::is_base_of<Object, T>::value, "obj var not based of Object");
+            if constexpr (std::is_same<T, Transform>::value) {
+                if (obj->parent()) {
+                    Transform::hierarchy_remove(obj->parent(), obj);
+                }
+                Transform::hierarchy_remove_all(obj);
+                // picking from matrix
+                World::self()->matrix_nature_pickup(obj);
+            } else if constexpr (std::is_same<T, Behaviour>::value) {
+                if (World::self()->internal_resources->_firstRunScripts)
+                    World::self()->internal_resources->_firstRunScripts->remove(obj);
+                if (World::self()->internal_resources->_realtimeScripts)
+                    World::self()->internal_resources->_realtimeScripts->remove(obj);
+            }
+        }
+
+        template <>
+        void internal_destroy_object<Transform>(Transform*);
+
+        template <>
+        void internal_destroy_object<Behaviour>(Behaviour*);
+
+        void internal_destroy_object(Object* obj)
+        {
+            Renderer* r;
+            Transform* t;
+            Behaviour* b;
+            if ((t = dynamic_cast<Transform*>(obj))) {
+                internal_destroy_object<Transform>(t);
+            } else if ((b = dynamic_cast<Behaviour*>(obj))) {
+                internal_destroy_object<Behaviour>(b);
+            }
+        }
+
         Transform* create_empty_transform() { return internal_factory_base<Transform>(false, nullptr, nullptr); }
 
         GameObject* create_empty_gameobject() { return internal_factory_base<GameObject>(false, nullptr, nullptr); }
@@ -82,20 +117,20 @@ namespace RoninEngine
 
         RONIN_API GameObject* create_game_object(const std::string& name) { return internal_factory_base<GameObject>(true, nullptr, name.data()); }
 
-        void destroy(Object* obj) { destroy(obj, 0); }
+        void destroy(GameObject* obj) { destroy(obj, 0); }
 
-        void destroy(Object* obj, float t)
+        void destroy(GameObject* obj, float t)
         {
             if (!obj || !World::self() || t < 0)
                 throw std::bad_exception();
 
-            auto& destructors = World::self()->internal_resources->_destructTasks;
+            auto provider = World::self()->internal_resources->_destructTasks;
 
-            if (!destructors) {
-                destructors = World::self()->internal_resources->_destructTasks = RoninMemory::alloc<std::remove_pointer<decltype(World::self()->internal_resources->_destructTasks)>::type>();
+            if (!provider) {
+                provider = World::self()->internal_resources->_destructTasks = RoninMemory::alloc<std::remove_pointer<decltype(World::self()->internal_resources->_destructTasks)>::type>();
             } else {
                 // get error an exists destructed @object
-                for (std::pair<float, std::set<Object*>> mapIter : *destructors) {
+                for (std::pair<const float, std::set<GameObject*>>& mapIter : *provider) {
                     auto& _set = mapIter.second;
                     auto i = _set.find(obj);
                     if (i != std::end(_set)) {
@@ -110,44 +145,22 @@ namespace RoninEngine
                 }
             }
             t += TimeEngine::time();
-            destructors->operator[](t).emplace(obj);
+            provider->operator[](t).emplace(obj);
         }
 
-        void destroy_immediate(Object* obj)
+        void destroy_immediate(GameObject* obj)
         {
             if (!obj)
                 throw std::runtime_error("Object is null");
 
-            GameObject* gObj;
-            if ((gObj = dynamic_cast<GameObject*>(obj)) != nullptr) {
-
-                // FIXME: destroy other types from gameobject->m_components (delete a list)
-                // FIXME: Replace Recursive method to stack linear
-                // Recursive method
-                for (Component* component : gObj->m_components) {
-                    if (component->exists())
-                        destroy_immediate(component);
-                }
-
-                // other types
-            } else {
-                Renderer* r;
-                Transform* t;
-                Behaviour* exec;
-                if ((t = dynamic_cast<Transform*>(obj))) {
-                    if (t->parent()) {
-                        Transform::hierarchy_remove(t->parent(), t);
-                    }
-                    Transform::hierarchy_remove_all(t);
-                    // picking from matrix
-                    World::self()->matrix_nature_pickup(t);
-                } else if ((exec = dynamic_cast<Behaviour*>(obj))) {
-                    if (World::self()->internal_resources->_firstRunScripts)
-                        World::self()->internal_resources->_firstRunScripts->remove(exec);
-                    if (World::self()->internal_resources->_realtimeScripts)
-                        World::self()->internal_resources->_realtimeScripts->remove(exec);
-                }
+            // FIXME: destroy other types from gameobject->m_components (delete a list)
+            // FIXME: Replace Recursive method to stack linear
+            // Recursive method
+            for (Component* component : obj->m_components) {
+                internal_destroy_object(component);
             }
+
+            obj->m_components.clear();
 
             World::self()->internal_resources->world_objects.erase(obj);
 
@@ -176,7 +189,7 @@ namespace RoninEngine
                     Transform* existent = clone->transform();
                     existent->_angle_ = t->_angle_;
                     existent->position(t->position());
-                    // BUG: Hierarchy cnage is bug, fix now;
+                    // BUG: Hierarchy change is bug, fix now;
                     //  Clone childs recursive
                     for (Transform* y : t->hierarchy) {
                         GameObject* yClone = instantiate(y->game_object());
@@ -240,14 +253,6 @@ namespace RoninEngine
         }
 
         const bool Object::exists() { return (this->operator bool()); }
-
-        void Object::destroy() { RoninEngine::Runtime::destroy(this); }
-
-        void Object::destroy(float time) { RoninEngine::Runtime::destroy(this, time); }
-
-        const bool Object::destroy_cancel() { return World::self()->object_desctruction_cancel(this); }
-
-        const bool Object::is_destruction() { return World::self()->object_destruction_state(this); }
 
         std::string& Object::name(const std::string& newName) { return (m_name = newName); }
 

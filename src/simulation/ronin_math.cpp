@@ -285,6 +285,80 @@ std::string Math::num_beautify(std::uint64_t num, char seperate, int digits)
     return result;
 }
 
+uint16_t Math::float_to_half(float value)
+{
+    uint16_t sign = (std::copysign(1.0f, value) > 0.0f ? 0x0000 : 0x8000);
+
+    // Infinity
+    if (std::isinf(value)) {
+        return sign | 0x7C00;
+    }
+    // NaN
+    else if (std::isnan(value)) {
+        return sign | 0x7FFF;
+    }
+
+    int exponent;
+
+    float significand = std::fabs(std::frexp(value, &exponent));
+
+    // Exponent bias
+    exponent += 15;
+
+    // Crosses upper boundary, clamp to infinity
+    if (exponent > 31) {
+        return sign | 0x7C00;
+    }
+    // Crosses lower boundary, clamp to zero
+    else if (exponent <= 0) {
+        return sign | 0x0000;
+    }
+    // Zero
+    else if (significand < 0.25f) {
+        return sign | 0x0000;
+    }
+
+    // Normal value
+    uint16_t mantissa = static_cast<uint16_t>(std::ldexp(2 * significand - 1, 10));
+
+    uint16_t bits = sign | mantissa | ((exponent - 1) << 10);
+
+    return bits;
+}
+
+float Math::half_to_float(uint16_t value)
+{
+    int exponent = (value >> 10) & 0x001F;
+    int mantissa = (value >> 0) & 0x03FF;
+
+    float result;
+
+    // Zero
+    if ((exponent == 0) && (mantissa == 0)) {
+        result = 0.0f;
+    }
+    // Subnormal
+    else if ((exponent == 0) && (mantissa != 0)) {
+        result = std::ldexp(static_cast<float>(mantissa), -24);
+    }
+    // Infinity
+    else if ((exponent == 31) && (mantissa == 0)) {
+        result = std::numeric_limits<float>::infinity();
+    }
+    // NaN
+    else if ((exponent == 31) && (mantissa != 0)) {
+        result = std::nanf("");
+    }
+    // Normal number
+    else {
+        result = std::ldexp(static_cast<float>(mantissa | 0x0400), exponent - 25);
+    }
+
+    float sign = ((value & 0x8000) == 0 ? 1.0f : -1.0f);
+
+    return std::copysignf(result, sign);
+}
+
 float Math::square_triangle(float base, float height) { return base * height / 2; }
 float Math::square(float x) { return x * x; }
 float Math::square_rectangle(float a, float b) { return a * b; }

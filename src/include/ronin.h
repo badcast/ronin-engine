@@ -22,8 +22,8 @@
 #include "../../include/ronin/InputSystem.h"
 
 // objects
-#include "../../include/ronin/Behaviour.h"
 #include "../../include/ronin/Object.h"
+#include "../../include/ronin/Behaviour.h"
 #include "../../include/ronin/Camera.h"
 #include "../../include/ronin/Camera2D.h"
 #include "../../include/ronin/Component.h"

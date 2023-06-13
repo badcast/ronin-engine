@@ -12,13 +12,13 @@ namespace RoninEngine
         extern RONIN_API GameObject* create_game_object(const std::string& name);
 
         // Уничтожает объект после рендера.
-        extern RONIN_API void destroy(Object* obj);
+        extern RONIN_API void destroy(GameObject* obj);
 
         // Уничтожает объект после прошедшего времени.
-        extern RONIN_API void destroy(Object* obj, float t);
+        extern RONIN_API void destroy(GameObject* obj, float t);
 
         // Уничтожает объект принудительно игнорируя все условия его существования.
-        extern RONIN_API void destroy_immediate(Object* obj);
+        extern RONIN_API void destroy_immediate(GameObject* obj);
 
         // Проверка на существование объекта
         extern RONIN_API bool instanced(Object* obj);
@@ -33,14 +33,10 @@ namespace RoninEngine
         class RONIN_API Object
         {
         private:
-            friend RONIN_API bool instanced(Object* obj);
-            friend RONIN_API GameObject* instantiate(GameObject* obj);
-            friend RONIN_API GameObject* instantiate(GameObject* obj, Vec2 position, float angle);
-            friend RONIN_API GameObject* instantiate(GameObject* obj, Vec2 position, Transform* parent, bool worldPositionStay);
-
-            friend RONIN_API void destroy(Object* obj);
-            friend RONIN_API void destroy(Object* obj, float t);
-            friend RONIN_API void destroy_immediate(Object* obj);
+            friend bool instanced(Object* obj);
+            friend GameObject* instantiate(GameObject* obj);
+            friend GameObject* instantiate(GameObject* obj, Vec2 position, float angle);
+            friend GameObject* instantiate(GameObject* obj, Vec2 position, Transform* parent, bool worldPositionStay);
 
         protected:
             // unique type (static)
@@ -62,11 +58,6 @@ namespace RoninEngine
             std::uint32_t get_id();
 
             const char* get_type() const;
-
-            void destroy();
-            void destroy(float time);
-            const bool destroy_cancel();
-            const bool is_destruction();
 
             const bool exists();
 

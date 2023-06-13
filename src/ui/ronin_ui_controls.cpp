@@ -1,8 +1,6 @@
 #include <SDL2/SDL2_gfxPrimitives.h>
 #include "ronin.h"
 
-// TODO: Change ALL interface SDL_Color as Color
-
 #define DROPDOWN_RESOURCE std::pair<int, std::list<std::string>>
 
 namespace RoninEngine::Runtime
@@ -53,20 +51,20 @@ namespace RoninEngine::UI
 
     void ui_reset_controls() { _controlId = 0; }
 
-    void* factory_resource(GUIControlPresents type)
+    ui_resource* factory_resource(GUIControlPresents type)
     {
-        void* resources;
+        ui_resource* resources;
 
         switch (type) {
         case RGUI_DROPDOWN:
-            resources = RoninMemory::alloc<DROPDOWN_RESOURCE>();
+            resources = reinterpret_cast<ui_resource*>(RoninMemory::alloc<DROPDOWN_RESOURCE>());
             break;
         case RGUI_IMAGEANIMATOR:
-            resources = RoninMemory::alloc<Timeline>();
+            resources = reinterpret_cast<ui_resource*>(RoninMemory::alloc<Timeline>());
             break;
         case RGUI_HSLIDER:
             // value, min, max members
-            resources = RoninMemory::ronin_memory_alloc(sizeof(float) * 3);
+            resources = reinterpret_cast<ui_resource*>(RoninMemory::ronin_memory_alloc(sizeof(float) * 3));
             break;
         default:
             resources = nullptr;
@@ -279,36 +277,6 @@ namespace RoninEngine::UI
             SDL_RenderCopy(renderer, texture->native(), nullptr, (SDL_Rect*)&element.rect);
             break;
         }
-        case RGUI_TEXTRAND: {
-            static float lasttime = 0;
-
-            // todo: Доработать рандомайзера!
-            TextRandomizer_Format format = TextRandomizer_Format::OnlyNumber; // (int)(data.resources);
-
-            element.text.resize(15);
-            size_t i;
-
-            if (TimeEngine::time() > lasttime) {
-                lasttime = TimeEngine::time() + 0.1f;
-                switch (format) {
-                case TextRandomizer_Format::OnlyNumber:
-                    for (i = 0; i < element.text.length(); ++i) {
-                        element.text[i] = '0' + (rand() % ('9'));
-                    }
-                    break;
-                case TextRandomizer_Format::All:
-                default:
-                    for (i = 0; i < element.text.length(); ++i) {
-                        element.text[i] = 32 + rand() % 128;
-                    }
-                    break;
-                }
-            }
-
-            render_string_legacy(Application::get_renderer(), element.rect, element.text.c_str(), element.text.size());
-
-            break;
-        }
         case RGUI_DROPDOWN: {
             static const int thickness = 2;
             static const Rect thick = { thickness, thickness, -thickness, -thickness };
@@ -412,7 +380,7 @@ namespace RoninEngine::UI
 
         switch (element->prototype) {
         case RGUI_DROPDOWN:
-            ((event_index_changed)(element->event))(element->id, ((DROPDOWN_RESOURCE*)element->resources)->first);
+            ((ui_callback_integer)(element->event))(element->id, ((DROPDOWN_RESOURCE*)element->resources)->first);
             break;
         case RGUI_BUTTON:
             ((ui_callback)(element->event))(element->id, element->resources);

@@ -77,8 +77,8 @@ namespace RoninEngine
 {
     namespace UI
     {
-        enum GUIControlPresents : std::uint8_t { _UC, RGUI_TEXT, RGUI_BUTTON, RGUI_EDIT, RGUI_HSLIDER, RGUI_VSLIDER, RGUI_IMAGEANIMATOR, RGUI_TEXTRAND, RGUI_IMAGE, RGUI_DROPDOWN };
-
+        enum GUIControlPresents : std::uint8_t { _UC, RGUI_TEXT, RGUI_BUTTON, RGUI_EDIT, RGUI_HSLIDER, RGUI_VSLIDER, RGUI_IMAGEANIMATOR, RGUI_IMAGE, RGUI_DROPDOWN };
+        struct ui_resource;
         struct UIElement {
             Runtime::Rect rect;
             Runtime::Rect contextRect;
@@ -142,7 +142,7 @@ namespace RoninEngine
             std::list<Behaviour*>* _realtimeScripts;
 
             // destruction task (queue object)
-            std::map<float, std::set<Object*>>* _destructTasks;
+            std::map<float, std::set<GameObject*>>* _destructTasks;
             std::unordered_map<Vec2Int, std::set<Transform*>> matrixWorld;
 
             std::list<Light*> _assoc_lightings;
@@ -173,7 +173,12 @@ namespace RoninEngine
             std::uint8_t m_volume;
         };
 
+        // TODO: Complete that function for types
+        //         template <typename T, typename std::enable_if<std::is_base_of<Object, T>::value, T*>::type = nullptr>
+        //         void internal_destroy_object(T* object);
+
         // pre-decloration
+        void internal_destroy_object(Object*);
         void load_world(World*);
         bool unload_world(World*);
         Transform* get_root(World*);
