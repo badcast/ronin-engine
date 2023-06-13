@@ -58,8 +58,18 @@ namespace RoninEngine::Runtime
 
     const bool GameObject::is_destruction() { return World::self()->object_destruction_state(this); }
 
-    // TODO: Recursivelly set active all hierarchy
-    void GameObject::set_active_recursivelly(bool state) { this->set_active(false); }
+    void GameObject::set_active_recursivelly(bool state)
+    {
+        std::list<GameObject*> __stack;
+        __stack.emplace_back(this);
+        while (__stack.size()) {
+            for (Transform* h : __stack.front()->transform()->hierarchy) {
+                __stack.emplace_back(h->game_object());
+            }
+            __stack.front()->set_active(state);
+            __stack.pop_front();
+        }
+    }
 
     Transform* GameObject::transform()
     {
@@ -81,12 +91,11 @@ namespace RoninEngine::Runtime
     {
         if (!component)
             throw std::exception();
+        if (component->_owner)
+            throw std::runtime_error("Component has Owner GameObject");
 
         if (end(m_components) == std::find_if(begin(m_components), end(m_components), std::bind2nd(std::equal_to<Component*>(), component))) {
             this->m_components.emplace_back(component);
-
-            if (component->_owner)
-                throw std::runtime_error("Component has Owner GameObject");
 
             component->_owner = this;
 
@@ -117,6 +126,6 @@ namespace RoninEngine::Runtime
         // BUG: Destroying object canceled with signal SIGILL
         component->_owner = nullptr; // remove owner
         m_components.remove(component);
-        Runtime::internal_destroy_object(component);
+        Runtime::internal_destroy_object_dyn(component);
     }
 }

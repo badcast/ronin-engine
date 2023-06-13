@@ -9,6 +9,10 @@
 
 #include "just-parser.h"
 
+//PROTECTIVE PRIVATE MEMBERs UNLOCK
+#define private public
+#define protected public
+
 // applications
 #include "../../include/ronin/Time.h"
 #include "../../include/ronin/Application.h"
@@ -36,7 +40,9 @@
 #include "../../include/ronin/SpriteRenderer.h"
 #include "../../include/ronin/Terrain2D.h"
 #include "../../include/ronin/TimeLine.h"
+
 #include "../../include/ronin/Transform.h"
+
 #include "../../include/ronin/UI.h"
 #include "../../include/ronin/Gizmos.h"
 #include "../../include/ronin/NavMesh.h"
@@ -45,6 +51,9 @@
 #include "../../include/ronin/AudioSource.h"
 
 #include "../../include/ronin/GameObject.h"
+
+#undef private
+#undef protected
 
 #include "basic_ronin.h"
 

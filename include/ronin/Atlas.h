@@ -2,19 +2,21 @@
 
 #include "begin.h"
 
-namespace RoninEngine::Runtime {
+namespace RoninEngine::Runtime
+{
 
-   class RONIN_API Atlas {
-         friend class Resources;
-         Texture* texture;
-         std::map<std::string, Sprite> _sprites;
+    class RONIN_API Atlas
+    {
+    private:
+        Texture* texture;
+        std::map<std::string, Sprite> _sprites;
 
-      public:
-         Atlas() = default;
-         Atlas(const Atlas&) = default;
-         ~Atlas() = default;
+    public:
+        Atlas() = default;
+        Atlas(const Atlas&) = default;
+        ~Atlas() = default;
 
-         Sprite* get_sprite(const std::string& spriteName);
-   };
+        Sprite* get_sprite(const std::string& spriteName);
+    };
 
-}  // namespace RoninEngine::Runtime
+} // namespace RoninEngine::Runtime

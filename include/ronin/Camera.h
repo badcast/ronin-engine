@@ -6,9 +6,7 @@ namespace RoninEngine::Runtime
 {
     class RONIN_API Camera : public Component
     {
-        friend class World;
-
-    protected:
+    private:
         bool targetClear;
         std::map<int, std::set<Renderer*>> renders;
         std::set<Renderer*> prev;

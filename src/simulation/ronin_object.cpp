@@ -56,32 +56,7 @@ namespace RoninEngine
             return clone;
         }
 
-        template <typename T>
-        void internal_destroy_object(T* obj)
-        {
-            static_assert(std::is_base_of<Object, T>::value, "obj var not based of Object");
-            if constexpr (std::is_same<T, Transform>::value) {
-                if (obj->parent()) {
-                    Transform::hierarchy_remove(obj->parent(), obj);
-                }
-                Transform::hierarchy_remove_all(obj);
-                // picking from matrix
-                World::self()->matrix_nature_pickup(obj);
-            } else if constexpr (std::is_same<T, Behaviour>::value) {
-                if (World::self()->internal_resources->_firstRunScripts)
-                    World::self()->internal_resources->_firstRunScripts->remove(obj);
-                if (World::self()->internal_resources->_realtimeScripts)
-                    World::self()->internal_resources->_realtimeScripts->remove(obj);
-            }
-        }
-
-        template <>
-        void internal_destroy_object<Transform>(Transform*);
-
-        template <>
-        void internal_destroy_object<Behaviour>(Behaviour*);
-
-        void internal_destroy_object(Object* obj)
+        void internal_destroy_object_dyn(Object* obj)
         {
             Renderer* r;
             Transform* t;
@@ -91,6 +66,30 @@ namespace RoninEngine
             } else if ((b = dynamic_cast<Behaviour*>(obj))) {
                 internal_destroy_object<Behaviour>(b);
             }
+            // else internal_destroy_object(component);}
+        }
+        template <typename T, typename std::enable_if<std::is_base_of<Object, T>::value, std::nullptr_t>::type>
+        void internal_destroy_object(T* obj)
+        {
+            static_assert(std::is_base_of<Object, T>::value && !std::is_same<GameObject, T>::value, "obj var not based of Object");
+
+            if constexpr (std::is_same<T, Transform>::value) {
+                if (obj->parent()) {
+                    // something.*(HackGet<int Something::*>::ptr);
+                    hierarchy_remove(obj->parent(), obj);
+                }
+                hierarchy_remove_all(obj);
+                // picking from matrix
+                World::self()->matrix_nature_pickup(obj);
+            } else if constexpr (std::is_same<T, Behaviour>::value) {
+                WorldResources* wrs = World::self()->internal_resources;
+                if (wrs->_firstRunScripts)
+                    wrs->_firstRunScripts->remove(obj);
+                if (wrs->_realtimeScripts)
+                    wrs->_realtimeScripts->remove(obj);
+            }
+
+            RoninMemory::free(obj);
         }
 
         Transform* create_empty_transform() { return internal_factory_base<Transform>(false, nullptr, nullptr); }
@@ -157,7 +156,7 @@ namespace RoninEngine
             // FIXME: Replace Recursive method to stack linear
             // Recursive method
             for (Component* component : obj->m_components) {
-                internal_destroy_object(component);
+                internal_destroy_object_dyn(component);
             }
 
             obj->m_components.clear();

@@ -9,37 +9,21 @@ namespace RoninEngine::Runtime
     class RONIN_API Transform : public Component
     {
     private:
-        friend class World;
-        friend class GameObject;
-        friend class Camera;
-        friend class Camera2D;
-        friend class Physics2D;
-        friend GameObject* instantiate(GameObject* obj);
-
-        friend void internal_destroy_object(Transform* obj);
-
-    protected:
-        std::list<Transform*> hierarchy;
-
         Transform* m_parent;
         Vec2 p;
         float _angle_;
 
+    protected:
+        std::list<Transform*> hierarchy;
+
         void parent_notify(Vec2 lastParentPoint);
         void parent_notify_active_state(GameObject* from);
-
-        static void hierarchy_parent_change(Transform* from, Transform* newParent);
-        static void hierarchy_remove(Transform* from, Transform* off);
-        static void hierarchy_remove_all(Transform* from);
-        static void hierarchy_append(Transform* from, Transform* off);
-        static bool hierarchy_sibiling(Transform* from, int index);
 
     public:
         int layer;
 
         Transform();
         Transform(const std::string& name);
-        ~Transform();
 
         Transform* parent() const;
         void set_parent(Transform* parent, bool worldPositionStays = true);

@@ -19,13 +19,15 @@ namespace RoninEngine
 
         const bool Component::is_binded() { return _owner != nullptr; }
 
+        Transform* Component::transform() { return _owner->transform(); }
+
         GameObject* Component::game_object() { return _owner; }
 
-        Transform* Component::transform()
-        {
-            if (!is_binded())
-                throw std::runtime_error("This component isn't binded");
-            return _owner->transform();
-        }
+        Camera2D* Component::get_camera2D() { return _owner->get_camera2D(); }
+
+        SpriteRenderer* Component::get_sprite_renderer() { return _owner->get_sprite_renderer(); }
+
+        Terrain2D* Component::get_terrain2D() { return _owner->get_terrain2D(); }
+
     } // namespace Runtime
 } // namespace RoninEngine

@@ -3,6 +3,58 @@
 namespace RoninEngine::Runtime
 {
     static const Vec2 around_frwd { 1, 1 };
+
+    void hierarchy_parent_change(Transform* from, Transform* newParent)
+    {
+        Transform* lastParent = from->m_parent;
+
+        if (newParent && lastParent == newParent)
+            return;
+
+        if (lastParent) {
+            hierarchy_remove(lastParent, from);
+        }
+
+        if (!newParent)
+            hierarchy_append(get_root(World::self()), from); // nullptr as Root
+        else {
+            from->m_parent = newParent;
+            hierarchy_append(newParent, from);
+        }
+    }
+    void hierarchy_remove(Transform* from, Transform* off)
+    {
+        if (off->m_parent != from)
+            return;
+
+        auto iter = std::find(from->hierarchy.begin(), from->hierarchy.end(), off);
+        if (iter == from->hierarchy.end())
+            return;
+        from->hierarchy.erase(iter);
+        off->m_parent = nullptr; // not parent
+    }
+    void hierarchy_remove_all(Transform* from)
+    {
+        for (auto t : from->hierarchy) {
+            t->m_parent = nullptr;
+        }
+
+        from->hierarchy.clear();
+    }
+    void hierarchy_append(Transform* from, Transform* off)
+    {
+        auto iter = find_if(begin(from->hierarchy), end(from->hierarchy), [off](Transform* of) { return of == off; });
+        if (iter == end(from->hierarchy)) {
+            off->m_parent = from;
+            from->hierarchy.emplace_back(off);
+        }
+    }
+    bool hierarchy_sibiling(Transform* from, int index)
+    {
+        // TODO: Set sibling for Transform component
+        return false;
+    }
+
     Transform::Transform()
         : Transform(DESCRIBE_AS_MAIN_OFF(Transform))
     {
@@ -18,8 +70,6 @@ namespace RoninEngine::Runtime
         // set as default
         World::self()->matrix_nature(this, Vec2::round_to_int(p + Vec2::one));
     }
-
-    Transform::~Transform() { }
 
     int Transform::child_count() const { return hierarchy.size(); }
 
@@ -248,54 +298,4 @@ namespace RoninEngine::Runtime
         this->layer = parent->layer + 1;
     }
 
-    void Transform::hierarchy_parent_change(Transform* from, Transform* newParent)
-    {
-        Transform* lastParent = from->m_parent;
-
-        if (newParent && lastParent == newParent)
-            return;
-
-        if (lastParent) {
-            hierarchy_remove(lastParent, from);
-        }
-
-        if (!newParent)
-            hierarchy_append(get_root(World::self()), from); // nullptr as Root
-        else {
-            from->m_parent = newParent;
-            hierarchy_append(newParent, from);
-        }
-    }
-    void Transform::hierarchy_remove(Transform* from, Transform* off)
-    {
-        if (off->m_parent != from)
-            return;
-
-        auto iter = std::find(from->hierarchy.begin(), from->hierarchy.end(), off);
-        if (iter == from->hierarchy.end())
-            return;
-        from->hierarchy.erase(iter);
-        off->m_parent = nullptr; // not parent
-    }
-    void Transform::hierarchy_remove_all(Transform* from)
-    {
-        for (auto t : from->hierarchy) {
-            t->m_parent = nullptr;
-        }
-
-        from->hierarchy.clear();
-    }
-    void Transform::hierarchy_append(Transform* from, Transform* off)
-    {
-        auto iter = find_if(begin(from->hierarchy), end(from->hierarchy), [off](Transform* of) { return of == off; });
-        if (iter == end(from->hierarchy)) {
-            off->m_parent = from;
-            from->hierarchy.emplace_back(off);
-        }
-    }
-    bool Transform::hierarchy_sibiling(Transform* from, int index)
-    {
-        // TODO: Set sibling for Transform component
-        return false;
-    }
 } // namespace RoninEngine::Runtime

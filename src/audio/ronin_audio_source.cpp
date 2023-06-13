@@ -11,7 +11,7 @@ AudioSource::AudioSource(const std::string& name)
     : Component(DESCRIBE_AS_ONLY_NAME(AudioSource))
 {
     DESCRIBE_AS_MAIN(AudioSource);
-    WorldResources* __world_resources = get_world_resources(World::self());
+    WorldResources* __world_resources = World::self()->internal_resources;
 
     RoninMemory::alloc_self(data);
     data->m_volume = MIX_MAX_VOLUME;

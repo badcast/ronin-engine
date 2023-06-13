@@ -6,30 +6,6 @@
 
 #include "ronin.h"
 
-namespace std
-{
-    // this for Hashtable function
-
-    template <>
-    struct hash<RoninEngine::Runtime::Vec2> {
-        std::size_t operator()(const RoninEngine::Runtime::Vec2& val) const noexcept
-        {
-            std::int64_t fake = (*reinterpret_cast<std::int64_t*>(&const_cast<RoninEngine::Runtime::Vec2&>(val)));
-            return std::hash<std::int64_t> {}(fake);
-        }
-    };
-
-    template <>
-    struct hash<RoninEngine::Runtime::Vec2Int> {
-        std::size_t operator()(const RoninEngine::Runtime::Vec2Int& val) const noexcept
-        {
-            std::int64_t fake = (*reinterpret_cast<std::int64_t*>(&const_cast<RoninEngine::Runtime::Vec2Int&>(val)));
-            return std::hash<std::int64_t> {}(fake);
-        }
-    };
-
-} // namespace std
-
 static std::unordered_map<std::type_index, const char*> main_ronin_types;
 
 template <typename base, typename _derived>
@@ -72,6 +48,30 @@ extern void check_object(RoninEngine::Runtime::Object* obj);
 #define DESCRIBE_AS_MAIN_OFF(TYPE) (DESCRIBE_TYPE(TYPE, this, &_type_, nullptr))
 
 #define DESCRIBE_AS_MAIN(TYPE) (DESCRIBE_TYPE(TYPE, this, &_type_, name.c_str()))
+
+namespace std
+{
+    // this for Hashtable function
+
+    template <>
+    struct hash<RoninEngine::Runtime::Vec2> {
+        std::size_t operator()(const RoninEngine::Runtime::Vec2& val) const noexcept
+        {
+            std::int64_t fake = (*reinterpret_cast<std::int64_t*>(&const_cast<RoninEngine::Runtime::Vec2&>(val)));
+            return std::hash<std::int64_t> {}(fake);
+        }
+    };
+
+    template <>
+    struct hash<RoninEngine::Runtime::Vec2Int> {
+        std::size_t operator()(const RoninEngine::Runtime::Vec2Int& val) const noexcept
+        {
+            std::int64_t fake = (*reinterpret_cast<std::int64_t*>(&const_cast<RoninEngine::Runtime::Vec2Int&>(val)));
+            return std::hash<std::int64_t> {}(fake);
+        }
+    };
+
+} // namespace std
 
 namespace RoninEngine
 {
@@ -173,16 +173,22 @@ namespace RoninEngine
             std::uint8_t m_volume;
         };
 
-        // TODO: Complete that function for types
-        //         template <typename T, typename std::enable_if<std::is_base_of<Object, T>::value, T*>::type = nullptr>
-        //         void internal_destroy_object(T* object);
+        void internal_destroy_object_dyn(Object* obj);
 
-        // pre-decloration
-        void internal_destroy_object(Object*);
+        // TODO: Complete that function for types
+        template <typename T, typename std::enable_if<std::is_base_of<Object, T>::value, std::nullptr_t>::type = nullptr>
+        void internal_destroy_object(T* obj);
+
         void load_world(World*);
         bool unload_world(World*);
-        Transform* get_root(World*);
-        WorldResources* get_world_resources(World*);
+
+        inline Transform* get_root(World* world) { return world->internal_resources->main_object->transform(); }
+
+        void hierarchy_parent_change(Transform* from, Transform* newParent);
+        void hierarchy_remove(Transform* from, Transform* off);
+        void hierarchy_remove_all(Transform* from);
+        void hierarchy_append(Transform* from, Transform* off);
+        bool hierarchy_sibiling(Transform* from, int index);
 
     }
 }

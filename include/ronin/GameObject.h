@@ -6,18 +6,8 @@ namespace RoninEngine
 {
     namespace Runtime
     {
-        class RONIN_API GameObject final : public Object
+        class RONIN_API GameObject final : public Object, public IComponents
         {
-            friend class Camera2D;
-            friend class Component;
-            friend class World;
-            friend GameObject* instantiate(GameObject* obj);
-            friend GameObject* instantiate(GameObject* obj, Vec2 position, float angle);
-            friend GameObject* instantiate(GameObject* obj, Vec2 position, Transform* parent, bool worldPositionState);
-            friend void destroy(GameObject* obj);
-            friend void destroy(GameObject* obj, float t);
-            friend void destroy_immediate(GameObject* obj);
-
         private:
             std::list<Component*> m_components;
             bool m_active;
@@ -32,11 +22,14 @@ namespace RoninEngine
             ~GameObject();
 
             bool is_active();
+
             bool is_active_hierarchy();
+
             void set_active(bool state);
+
             void set_active_recursivelly(bool state);
 
-            Transform* transform();
+            Transform* transform() ;
 
             SpriteRenderer* get_sprite_renderer();
 
@@ -45,11 +38,15 @@ namespace RoninEngine
             Terrain2D* get_terrain2D();
 
             void destroy();
+
             void destroy(float time);
+
             const bool destroy_cancel();
+
             const bool is_destruction();
 
             Component* add_component(Component* component);
+
             bool remove_component(Component* component);
 
             template <typename T>
@@ -81,6 +78,7 @@ namespace RoninEngine
         std::enable_if_t<std::is_base_of<Component, T>::value, bool> GameObject::remove_component()
         {
             static_assert(!(std::is_same<T, Transform>::value || std::is_base_of<Transform, T>::value), "Transform component can't remove, basic component type");
+
             T* target = get_component<T>();
             if (target == nullptr)
                 return false;

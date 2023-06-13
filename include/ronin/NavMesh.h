@@ -38,6 +38,7 @@ namespace RoninEngine::AIPathFinder
 
     class RONIN_API NavMesh
     {
+    private:
         NavContainer* shedule;
 
     public:

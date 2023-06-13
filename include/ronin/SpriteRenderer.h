@@ -27,6 +27,7 @@ namespace RoninEngine::Runtime
 
     class RONIN_API SpriteRenderer : public Renderer
     {
+    private:
         Sprite* sprite;
 
     public:

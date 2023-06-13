@@ -121,10 +121,6 @@ namespace RoninEngine::Runtime
         switched_world = lastLevel;
         return true;
     }
-
-    Transform* get_root(World* world) { return world->internal_resources->main_object->transform(); }
-
-    WorldResources* get_world_resources(World* world) { return world->internal_resources; }
 }
 
 World::World(const std::string& name)

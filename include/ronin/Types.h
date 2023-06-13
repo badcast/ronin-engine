@@ -94,6 +94,13 @@ namespace RoninEngine
             static const RRect<T> zero;
             static const RRect<T> one;
         };
+
+        struct IComponents {
+            virtual Transform* transform() = 0;
+            virtual SpriteRenderer* get_sprite_renderer() = 0;
+            virtual Camera2D* get_camera2D() = 0;
+            virtual Terrain2D* get_terrain2D() = 0;
+        };
     } // namespace Runtime
 
 } // namespace RoninEngine

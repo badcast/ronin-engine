@@ -8,14 +8,9 @@ namespace RoninEngine
     namespace Runtime
     {
 
-        class RONIN_API Component : public Object
+        class RONIN_API Component : public Object, public IComponents
         {
         private:
-            friend class World;
-            friend class Object;
-            friend class GameObject;
-            friend GameObject* instantiate(GameObject* obj);
-
             GameObject* _owner;
 
         public:
@@ -28,6 +23,9 @@ namespace RoninEngine
             const bool is_binded();
             GameObject* game_object();
             Transform* transform();
+            SpriteRenderer* get_sprite_renderer();
+            Camera2D* get_camera2D();
+            Terrain2D * get_terrain2D();
         };
     } // namespace Runtime
 } // namespace RoninEngine
