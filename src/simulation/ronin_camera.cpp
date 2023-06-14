@@ -1,33 +1,24 @@
 #include "ronin.h"
 
-static RoninEngine::Runtime::Camera* _main = nullptr;
-
 namespace RoninEngine::Runtime
 {
-
-    Camera::Camera()
-        : Camera(DESCRIBE_AS_MAIN_OFF(Camera))
-    {
-    }
     Camera::Camera(const std::string& name)
         : Component(DESCRIBE_AS_ONLY_NAME(Camera))
     {
         DESCRIBE_AS_MAIN(Camera);
         // using this camera as main
-        _main = this;
-        targetClear = enabled = true;
+        RoninMemory::alloc_self(camera_resources);
+        camera_resources->targetClear = enabled = true;
         distanceEvcall = 2;
-    }
-    Camera::~Camera()
-    {
-        // release using pointer
-        if (_main == this)
-            _main = nullptr;
-    }
 
-    bool Camera::is_focused() { return _main == this; }
+        // set focusing
+        focus();
+    }
+    Camera::~Camera() { }
 
-    void Camera::focus() { _main = this; }
+    bool Camera::is_focused() { return main_camera() == this; }
+
+    void Camera::focus() { World::self()->internal_resources->event_camera_changed(this, CameraEvent::CAM_TARGET); }
 
     /*
     std::tuple<list<Renderer*>*, list<Light*>*> linearSelection() {
@@ -108,7 +99,7 @@ namespace RoninEngine::Runtime
                  ' * * * * * * * * * '
         */
 
-        if (renders.empty()) {
+        if (camera_resources->renders.empty()) {
             Resolution res = Application::get_resolution();
             Vec2Int wpLeftTop = Vec2::round_to_int(screen_to_world(Vec2::zero));
             Vec2Int wpRightBottom = Vec2::round_to_int(screen_to_world(Vec2(res.width, res.height)));
@@ -116,16 +107,16 @@ namespace RoninEngine::Runtime
             std::list<Transform*> storm_result = Physics2D::storm_cast(transform()->p, Math::number(Math::max(wpRightBottom.x - transform()->p.x, wpRightBottom.y - transform()->p.y)) + 1 + distanceEvcall);
             std::list<Renderer*> _removes;
             // собираем оставшиеся которые прикреплены к видимости
-            for (auto x = std::begin(prev); x != std::end(prev); ++x) {
+            for (auto x = std::begin(camera_resources->prev); x != std::end(camera_resources->prev); ++x) {
                 if ((*x)->exists() && area_cast(*x, wpLeftTop, wpRightBottom)) {
-                    renders[(*x)->transform()->layer].insert((*x));
+                    camera_resources->renders[(*x)->transform()->layer].insert((*x));
                 } else {
                     _removes.emplace_back((*x));
                 }
             }
 
             for (Renderer* y : _removes)
-                prev.erase(y);
+                camera_resources->prev.erase(y);
 
             // order by layer component
 
@@ -133,25 +124,25 @@ namespace RoninEngine::Runtime
                 GameObject* touch = (*iter)->game_object();
                 std::list<Renderer*> rends = touch->get_components<Renderer>();
                 for (auto x : rends) {
-                    renders[x->transform()->layer].insert(x);
+                    camera_resources->renders[x->transform()->layer].insert(x);
                     // prev.insert(x);
                 }
             }
         }
 
-        if (_lightsOutResults.empty()) {
-            _lightsOutResults.insert(World::self()->internal_resources->_assoc_lightings.begin(), World::self()->internal_resources->_assoc_lightings.end());
+        if (camera_resources->_lightsOutResults.empty()) {
+            camera_resources->_lightsOutResults.insert(World::self()->internal_resources->_assoc_lightings.begin(), World::self()->internal_resources->_assoc_lightings.end());
         }
 
-        return make_tuple(&renders, &_lightsOutResults);
+        return make_tuple(&(camera_resources->renders), &(camera_resources->_lightsOutResults));
     }
 
     const Vec2 Camera::screen_to_world(Vec2 screenPoint)
     {
         Resolution res = Application::get_resolution();
         Vec2 offset;
-        if (_main)
-            offset = _main->transform()->position();
+        if (main_camera())
+            offset = main_camera()->transform()->position();
         Vec2 scale;
         SDL_RenderGetScale(Application::get_renderer(), &scale.x, &scale.y);
         scale *= pixelsPerPoint;
@@ -165,8 +156,8 @@ namespace RoninEngine::Runtime
         Resolution res = Application::get_resolution();
         Vec2 scale;
         Vec2 offset;
-        if (_main)
-            offset = _main->transform()->position();
+        if (main_camera())
+            offset = main_camera()->transform()->position();
         SDL_RenderGetScale(Application::get_renderer(), &scale.x, &scale.y);
         scale *= pixelsPerPoint;
         // Horizontal position
@@ -180,8 +171,8 @@ namespace RoninEngine::Runtime
     {
         Resolution res = Application::get_resolution();
         Vec2 scale, offset;
-        if (_main)
-            offset = _main->transform()->position();
+        if (main_camera())
+            offset = main_camera()->transform()->position();
         SDL_RenderGetScale(Application::get_renderer(), &scale.x, &scale.y);
         scale *= pixelsPerPoint;
         // Horizontal position
@@ -197,8 +188,8 @@ namespace RoninEngine::Runtime
         Resolution res = Application::get_resolution();
         Vec2 scale;
         Vec2 offset;
-        if (_main)
-            offset = _main->transform()->position();
+        if (main_camera())
+            offset = main_camera()->transform()->position();
         SDL_RenderGetScale(Application::get_renderer(), &scale.x, &scale.y);
         scale *= pixelsPerPoint;
         // Horizontal position
@@ -215,6 +206,6 @@ namespace RoninEngine::Runtime
         worldPoint.y = Math::clamp01(worldPoint.y);
         return worldPoint;
     }
-    Camera* Camera::main_camera() { return _main; }
+    Camera* Camera::main_camera() { return World::self()->internal_resources->main_camera; }
 
 } // namespace RoninEngine::Runtime

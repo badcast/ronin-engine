@@ -6,18 +6,14 @@ namespace RoninEngine::Runtime
 {
     class RONIN_API Camera : public Component
     {
-    private:
-        bool targetClear;
-        std::map<int, std::set<Renderer*>> renders;
-        std::set<Renderer*> prev;
-        std::set<Light*> _lightsOutResults;
+    protected:
+        struct CameraResource* camera_resources;
         virtual void render(SDL_Renderer* renderer, Rect rect, GameObject* root) = 0;
 
     public:
         bool enabled;
         std::uint32_t distanceEvcall;
 
-        Camera();
         Camera(const std::string& name);
 
         virtual ~Camera();

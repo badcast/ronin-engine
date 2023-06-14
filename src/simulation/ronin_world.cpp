@@ -8,7 +8,20 @@ using namespace RoninEngine::Runtime;
 namespace RoninEngine::Runtime
 {
     extern World* switched_world;
+    void WorldResources::event_camera_changed(Camera* target, CameraEvent state)
+    {
 
+        switch (state) {
+        case CameraEvent::CAM_DELETED:
+            // TODO: find free Camera and set as Main
+            if (main_camera == target)
+                main_camera = nullptr;
+            break;
+        case CameraEvent::CAM_TARGET:
+            main_camera = target;
+            break;
+        }
+    }
     void load_world(World* world)
     {
         if (world == nullptr) {
@@ -336,8 +349,8 @@ void World::level_render_world(SDL_Renderer* renderer, ScoreWatcher* watcher)
         Resolution res = Application::get_resolution();
 
         // FlushCache last result
-        if (cam->targetClear)
-            cam->renders.clear();
+        if (cam->camera_resources->targetClear)
+            cam->camera_resources->renders.clear();
 
         // draw world in world size
         cam->render(renderer, { 0, 0, res.width, res.height }, internal_resources->main_object);

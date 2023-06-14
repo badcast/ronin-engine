@@ -61,13 +61,19 @@ namespace RoninEngine
             Renderer* r;
             Transform* t;
             Behaviour* b;
-            if ((t = dynamic_cast<Transform*>(obj))) {
+            Camera* cam;
+            if ((t = dynamic_cast<Transform*>(obj)))
                 internal_destroy_object<Transform>(t);
-            } else if ((b = dynamic_cast<Behaviour*>(obj))) {
+            else if ((b = dynamic_cast<Behaviour*>(obj)))
                 internal_destroy_object<Behaviour>(b);
-            }
-            // else internal_destroy_object(component);}
+            else if ((r = dynamic_cast<Renderer*>(obj)))
+                internal_destroy_object<Renderer>(r);
+            else if ((cam = dynamic_cast<Camera*>(obj)))
+                internal_destroy_object<Camera>(cam);
+            else
+                internal_destroy_object<Object>(obj);
         }
+
         template <typename T, typename std::enable_if<std::is_base_of<Object, T>::value, std::nullptr_t>::type>
         void internal_destroy_object(T* obj)
         {
@@ -87,8 +93,14 @@ namespace RoninEngine
                     wrs->_firstRunScripts->remove(obj);
                 if (wrs->_realtimeScripts)
                     wrs->_realtimeScripts->remove(obj);
+            } else if constexpr (std::is_same<T, Camera>::value) {
+                World::self()->internal_resources->event_camera_changed(obj, CameraEvent::CAM_DELETED);
+
+                // release main object
+                RoninMemory::free(obj->camera_resources);
             }
 
+            World::self()->internal_resources->world_objects.erase(obj);
             RoninMemory::free(obj);
         }
 

@@ -111,11 +111,20 @@ namespace RoninEngine
     }
     namespace Runtime
     {
+        enum class CameraEvent { CAM_DELETED, CAM_TARGET };
+
         struct Rendering {
             Rect src;
             Rectf dst;
             SDL_Texture* texture;
             SDL_Renderer* renderer;
+        };
+
+        struct CameraResource {
+            bool targetClear;
+            std::map<int, std::set<Renderer*>> renders;
+            std::set<Renderer*> prev;
+            std::set<Light*> _lightsOutResults;
         };
 
         struct WorldResources {
@@ -151,10 +160,15 @@ namespace RoninEngine
             std::set<Object*> world_objects;
 
             // Main UI Object
-            UI::GUI* gui = nullptr;
+            UI::GUI* gui;
+
+            // Main camera for render
+            Camera* main_camera;
 
             // Main or Root object
-            GameObject* main_object = nullptr;
+            GameObject* main_object;
+
+            void event_camera_changed(Camera* target, CameraEvent state);
         };
 
         struct AudioClip {
