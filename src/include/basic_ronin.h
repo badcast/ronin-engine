@@ -115,6 +115,46 @@ namespace RoninEngine
             std::set<Light*> _lightsOutResults;
         };
 
+        struct AudioClip {
+            Mix_Chunk* mix_chunk;
+#ifndef NDEBUG
+            int used;
+#endif
+            AudioClip(Mix_Chunk* chunk)
+                : mix_chunk(chunk)
+#ifndef NDEBUG
+                , used(0)
+#endif
+            {
+            }
+        };
+
+        struct MusicClip {
+            Mix_Music* mix_music;
+#ifndef NDEBUG
+            int used;
+#endif
+            MusicClip(Mix_Music* mus)
+                : mix_music(mus)
+#ifndef NDEBUG
+                , used(0)
+#endif
+            {
+            }
+        };
+
+        struct AudioSourceData {
+            AudioClip* m_clip;
+            int target_channel;
+            std::uint8_t m_volume;
+        };
+
+        struct GidResources {
+            std::vector<AudioClip*> gid_audio_clips;
+            std::vector<MusicClip*> gid_music_clips;
+            std::vector<SDL_Surface*> gid_surfaces;
+        };
+
         struct WorldResources {
             // unique ids for Object types in current world
             std::uint32_t _level_ids_;
@@ -144,6 +184,9 @@ namespace RoninEngine
 
             std::list<Light*> _assoc_lightings;
 
+            // Externakl resources
+            GidResources* external_local_resources;
+
             // World object (use)
             std::set<Object*> world_objects;
 
@@ -159,27 +202,13 @@ namespace RoninEngine
             void event_camera_changed(Camera* target, CameraEvent state);
         };
 
-        struct AudioClip {
-            int used;
-            Mix_Chunk* mix_chunk;
-        };
-
-        struct MusicClip {
-            int used;
-            Mix_Music* handle;
-        };
-
-        struct AudioSourceData {
-            AudioClip* m_clip;
-            int target_channel;
-            std::uint8_t m_volume;
-        };
-
         void internal_destroy_object_dyn(Object* obj);
 
         // TODO: Complete that function for types
         template <typename T, typename std::enable_if<std::is_base_of<Object, T>::value, std::nullptr_t>::type = nullptr>
         void internal_destroy_object(T* obj);
+
+        void gid_resources_free(GidResources *gid);
 
         void load_world(World*);
         bool unload_world(World*);

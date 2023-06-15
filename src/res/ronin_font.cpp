@@ -2,7 +2,6 @@
 
 namespace RoninEngine::UI
 {
-
     using RoninEngine::Runtime::Resources;
 
     struct Font_t {
@@ -27,14 +26,14 @@ namespace RoninEngine::UI
         if (RoninMemory::alloc_self(pLegacyFont) == nullptr)
             Application::fail_oom_kill();
         /* TODO: Load internal font
-                if ((pLegacyFont->surfNormal = Resources::GetSurface("font-arealike")) == nullptr)
-                    throw std::bad_alloc();
+        if ((pLegacyFont->surfNormal = Resources::GetSurface("font-arealike")) == nullptr)
+            throw std::bad_alloc();
 
-                if ((pLegacyFont->surfHilight = Resources::GetSurface("font-arealike-hi")) == nullptr)
-                    throw std::bad_alloc();
+        if ((pLegacyFont->surfHilight = Resources::GetSurface("font-arealike-hi")) == nullptr)
+            throw std::bad_alloc();
+*/
+        pLegacyFont->fontSize = { fontWidth, fontHeight };
 
-                pLegacyFont->fontSize = { fontWidth, fontHeight };
-        */
         // Структурирование шрифта
         {
             uint8_t target;

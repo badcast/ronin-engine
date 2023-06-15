@@ -26,14 +26,15 @@ struct SDL_Rect {
 typedef int SDL_BlendMode, SDL_TextureAccess, SDL_ScaleMode, SDL_Scancode, SDL_PixelFormatEnum;
 #endif
 
+
 #include "Defines.h"
 
 #include "Namespaces.h"
+
+#include "RoninMemory.h"
 
 #include "Color.h"
 #include "Vec2.h"
 #include "Paths.h"
 
 #include "Types.h"
-
-#include "ronin_memory.h"

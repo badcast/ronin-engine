@@ -28,10 +28,12 @@ AudioClip* AudioSource::clip() const { return data->m_clip; }
 void AudioSource::clip(AudioClip* clip)
 {
     stop();
+#ifndef NDEBUG
     if (data->m_clip)
         data->m_clip->used--;
     if (clip)
         clip->used++;
+#endif
     data->m_clip = clip;
 }
 

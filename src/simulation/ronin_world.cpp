@@ -82,8 +82,6 @@ namespace RoninEngine::Runtime
             world->internal_resources->gui = nullptr;
         }
 
-        // TODO: Not released world (Prev-unload), freed audio channels too...
-
         // Halt all channels
         Mix_HaltChannel(-1);
 
@@ -94,6 +92,10 @@ namespace RoninEngine::Runtime
         for (AudioClip& ac : world->internal_resources->offload_audioclips) {
             Mix_FreeChunk(ac.mix_chunk);
         }
+
+        // NOTE: Free Local Resources
+        gid_resources_free(world->internal_resources->external_local_resources);
+        world->internal_resources->external_local_resources = nullptr;
 
         std::list<GameObject*> stacks;
         // free objects

@@ -34,6 +34,8 @@ namespace RoninEngine
 
         struct AudioClip;
 
+        struct MusicClip;
+
         template <typename T>
         class RRect;
 

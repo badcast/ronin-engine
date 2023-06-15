@@ -9,20 +9,22 @@ namespace RoninEngine
 
         enum { GCInvalidID = 0xffffffff };
 
+        typedef std::uint32_t resource_id;
+
         class RONIN_API Resources
         {
-            friend class RoninEngine::Application;
-
         public:
-            static int load_resource(const std::string& path);
+            static resource_id load_surface(const std::string& path, bool local = true);
 
-            static Sprite* get_sprite(int resource, bool local = true);
+            static resource_id load_audio_clip(const std::string& path, bool local = true);
 
-            static SDL_Surface* get_surface(int resource, bool local = true);
+            static resource_id load_music_clip(const std::string& path, bool local = true);
 
-            static AudioClip* get_audioclip(int resource, bool local = true);
+            static SDL_Surface* get_surface(resource_id resource);
 
-            static AudioClip* load_clip(const std::string& path);
+            static AudioClip* get_audio_clip(resource_id resource);
+
+            static MusicClip* get_music_clip(resource_id resource);
         };
     } // namespace Runtime
 } // namespace RoninEngine

@@ -8,6 +8,8 @@ namespace RoninEngine
     {
         World* switched_world;
 
+        GidResources* external_global_resources = nullptr;
+
         float internal_time_scale, internal_game_time, internal_delta_time;
 
         std::uint32_t internal_start_engine_time;
@@ -318,7 +320,6 @@ namespace RoninEngine
 
         end_simulate:
 
-
             delayed = TimeEngine::tick_millis() - delayed;
 
             _wwatcher.ms_wait_frame = TimeEngine::end_watch();
@@ -339,9 +340,8 @@ namespace RoninEngine
                     windowTitle,
                     "FPS:%.1f Memory:%sMiB, "
                     "Ronin_Allocated:%s, SDL_Allocated:%s, Frames:%s",
-                    fps, Math::num_beautify(get_process_sizeMemory() / 1024 / 1024).c_str(),
-                    Math::num_beautify(RoninMemory::total_allocated()).c_str(),
-                    Math::num_beautify(SDL_GetNumAllocations()).c_str(), Math::num_beautify(internal_frames).c_str());
+                    fps, Math::num_beautify(get_process_sizeMemory() / 1024 / 1024).c_str(), Math::num_beautify(RoninMemory::total_allocated()).c_str(), Math::num_beautify(SDL_GetNumAllocations()).c_str(),
+                    Math::num_beautify(internal_frames).c_str());
                 SDL_SetWindowTitle(Application::get_window(), windowTitle);
                 fpsRound = TimeEngine::startUpTime() + .5f; // updater per 1 seconds
             }
@@ -362,6 +362,10 @@ namespace RoninEngine
         SDL_DestroyWindow(windowOwner);
 
         UI::ui_free_controls();
+
+        // NOTE: Free Global Resources
+        gid_resources_free(external_global_resources);
+        external_global_resources = nullptr;
 
         Mix_Quit();
         IMG_Quit();
@@ -387,7 +391,7 @@ namespace RoninEngine
         SDL_ShowSimpleMessageBox(SDL_MessageBoxFlags::SDL_MESSAGEBOX_INFORMATION, nullptr, message.c_str(), windowOwner);
     }
 
-    void Application::fail(const std::string& message)
+    void Application::fail(const std::string& message) throw()
     {
         std::string _template = message;
         char _temp[32] { 0 };
