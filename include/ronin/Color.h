@@ -5,10 +5,10 @@
 namespace RoninEngine::Runtime
 {
     struct RONIN_API Color {
-        Uint8 r;
-        Uint8 g;
-        Uint8 b;
-        Uint8 a;
+        std::uint8_t r;
+        std::uint8_t g;
+        std::uint8_t b;
+        std::uint8_t a;
 
         Color();
 
