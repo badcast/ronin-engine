@@ -9,11 +9,9 @@ namespace RoninEngine::Runtime
     private:
         struct WorldResources* internal_resources = nullptr;
 
-        void internal_bind_script(Behaviour* obj);
-        void push_light_object(Light* light);
-        void push_object(Object* obj);
-
-        static std::list<Transform*>* get_hierarchy(Transform* parent);
+        void internal_bind_script(Behaviour*);
+        void push_light_object(Light*);
+        void push_object(Object*);
 
     protected:
         std::string m_name;

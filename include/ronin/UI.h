@@ -32,8 +32,7 @@ namespace RoninEngine
 
             /// Register ui element and get unique ID
             CI std::list<uid> get_groups();
-            CI UIElement& getElement(uid id);
-            CI bool has_action(void* outPos);
+            CI UIElement& ui_get_element (uid id);
 
         public:
             CI GUI(Runtime::World*);
@@ -61,8 +60,8 @@ namespace RoninEngine
 
             CI uid push_label(const std::string& text, const RoninEngine::Runtime::Rect& rect, const int& fontWidth = 13, uid parent = NOPARENT);
             CI uid push_label(const std::string& text, const Runtime::Vec2Int& point, const int& fontWidth = 13, uid parent = NOPARENT);
-            CI uid push_button(const std::string& text, const Runtime::Vec2Int& point, ui_callback* event_callback = nullptr, uid parent = NOPARENT);
-            CI uid push_button(const std::string& text, const Runtime::Rect& point, ui_callback* event_callback = nullptr, uid parent = NOPARENT);
+            CI uid push_button(const std::string& text, const Runtime::Vec2Int& point, ui_callback event_callback = nullptr, uid parent = NOPARENT);
+            CI uid push_button(const std::string& text, const Runtime::Rect& point, ui_callback event_callback = nullptr, uid parent = NOPARENT);
             CI uid push_edit(const std::string& text, const Runtime::Vec2Int& point, uid parent = NOPARENT);
             CI uid push_edit(const std::string& text, const Runtime::Rect& rect, uid parent = NOPARENT);
             CI uid push_texture_stick(Texture* texture, const Runtime::Rect& rect, uid parent = NOPARENT);
@@ -113,6 +112,9 @@ namespace RoninEngine
 
             CI void set_enable(uid id, bool state);
             CI bool get_enable(uid id);
+
+            CI float get_slider_value(uid id);
+            CI void set_slider_value(uid id, float value);
 
             // grouping-----------------------------------------------------------------------------------------------------------
 

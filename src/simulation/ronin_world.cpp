@@ -98,7 +98,7 @@ namespace RoninEngine::Runtime
         std::list<GameObject*> stacks;
         // free objects
         while (target) {
-            for (Transform* e : *World::get_hierarchy(target->transform())) {
+            for (Transform* e : target->transform()->hierarchy) {
                 stacks.emplace_front(e->game_object());
             }
 
@@ -249,14 +249,6 @@ void World::matrix_nature_pickup(Runtime::Transform* target)
 void World::push_light_object(Light* light) { internal_resources->_assoc_lightings.emplace_front(light); }
 
 void World::push_object(Object* obj) { internal_resources->world_objects.insert(obj); }
-
-std::list<Transform*>* World::get_hierarchy(Runtime::Transform* parent)
-{
-    if (!parent) {
-        Application::fail("Argument is null");
-    }
-    return &parent->hierarchy;
-}
 
 void World::internal_bind_script(Behaviour* script)
 {
@@ -409,7 +401,7 @@ std::list<GameObject*> World::get_all_gameobjects()
     GameObject* next = internal_resources->main_object;
 
     while (next) {
-        for (Transform* e : *World::get_hierarchy(next->transform())) {
+        for (Transform* e : next->transform()->hierarchy) {
             all_gobjects.emplace_front(e->game_object());
         }
         if (next == all_gobjects.front())
