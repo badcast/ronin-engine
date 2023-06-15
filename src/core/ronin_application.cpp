@@ -6,11 +6,6 @@ namespace RoninEngine
 {
     namespace Runtime
     {
-
-        namespace RoninMemory
-        {
-            extern std::list<int*> __R;
-        }
         World* switched_world;
 
         GidResources* external_global_resources = nullptr;
@@ -380,15 +375,11 @@ namespace RoninEngine
         m_inited = false;
         int memory_leak = Runtime::RoninMemory::total_allocated();
         if (memory_leak > 0) {
-            auto a = RoninMemory::__R;
-
             SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "ronin-memory-leak count: %d", memory_leak);
         }
 
         memory_leak = SDL_GetNumAllocations();
         if (memory_leak > 0) {
-            auto a = RoninMemory::__R;
-
             SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "sdl-memory-leak count: %d", memory_leak);
         }
 

@@ -10,7 +10,6 @@ namespace RoninEngine::Runtime
     extern World* switched_world;
     void WorldResources::event_camera_changed(Camera* target, CameraEvent state)
     {
-
         switch (state) {
         case CameraEvent::CAM_DELETED:
             // TODO: find free Camera and set as Main
@@ -32,13 +31,6 @@ namespace RoninEngine::Runtime
             RoninMemory::alloc_self(world->internal_resources);
             RoninMemory::alloc_self(world->internal_resources->gui, world);
         }
-        // world->internal_resources->_firstRunScripts = nullptr;
-        // world->internal_resources->_realtimeScripts = nullptr;
-        // world->internal_resources->_destructTasks = nullptr;
-        // world->internal_resources->_destroyed = 0;
-        // world->internal_resources->_level_ids_ = 0;
-        // world->internal_resources->_destroy_delay_time = 0;
-        // world->internal_resources->request_unloading = false;
     }
 
     bool unload_world(World* world)
@@ -128,6 +120,10 @@ namespace RoninEngine::Runtime
 
         for (auto surface : world->internal_resources->offload_surfaces) {
             SDL_FreeSurface(surface);
+        }
+
+        for (CameraResource* cam_res : world->internal_resources->camera_resources) {
+            RoninMemory::free(cam_res);
         }
 
         RoninMemory::free(world->internal_resources);

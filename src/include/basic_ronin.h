@@ -184,6 +184,8 @@ namespace RoninEngine
 
             std::list<Light*> _assoc_lightings;
 
+            std::list<CameraResource*> camera_resources;
+
             // Externakl resources
             GidResources* external_local_resources;
 
@@ -195,6 +197,7 @@ namespace RoninEngine
 
             // Main camera for render
             Camera* main_camera;
+
 
             // Main or Root object
             GameObject* main_object;
