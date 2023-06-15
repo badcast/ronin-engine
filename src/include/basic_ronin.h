@@ -110,7 +110,7 @@ namespace RoninEngine
 
         struct CameraResource {
             bool targetClear;
-            std::map<int, std::set<Renderer*>> renders;
+            std::map<int, std::vector<Renderer*>> renders;
             std::set<Renderer*> prev;
             std::set<Light*> _lightsOutResults;
         };
@@ -208,7 +208,7 @@ namespace RoninEngine
         template <typename T, typename std::enable_if<std::is_base_of<Object, T>::value, std::nullptr_t>::type = nullptr>
         void internal_destroy_object(T* obj);
 
-        void gid_resources_free(GidResources *gid);
+        void gid_resources_free(GidResources* gid);
 
         void load_world(World*);
         bool unload_world(World*);
@@ -220,6 +220,5 @@ namespace RoninEngine
         void hierarchy_remove_all(Transform* from);
         void hierarchy_append(Transform* from, Transform* off);
         bool hierarchy_sibiling(Transform* from, int index);
-
     }
 }

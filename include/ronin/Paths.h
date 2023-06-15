@@ -4,7 +4,6 @@
 
 namespace RoninEngine::Runtime
 {
-
     // serialize
     enum FolderKind {
         // graphics

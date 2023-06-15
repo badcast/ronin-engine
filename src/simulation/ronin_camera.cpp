@@ -3,87 +3,14 @@
 namespace RoninEngine::Runtime
 {
 
-    inline bool area_cast(Renderer* target, const Vec2Int& wpLeftTop, const Vec2Int& wpRightBottom)
-    {
-        Vec2 rSz = target->get_size();
-        Vec2 pos = target->transform()->position();
-        return (pos.x + rSz.x >= wpLeftTop.x && pos.x - rSz.x <= wpRightBottom.x) && (pos.y - rSz.y <= wpLeftTop.y && pos.y + rSz.y >= wpRightBottom.y);
-    }
-    std::tuple<std::map<int, std::set<Renderer*>>*, std::set<Light*>*> matrix_select(Camera* cam)
-    {
-        // TODO: Fixing renderer object and selec matrix element own Set T List
-        /*       This is projection: Algorithm storm member used.
-                x-------------------
-                |                   |      = * - is Vector2 (point)
-                |  r * * * * * * *  |      = r - current point (ray)
-                |  * * * * * * * *  |      = x - wpLeftTop
-                |  * * * * * * * *  |      = y - wpRightBottom
-                |  * * * * * * * *  |
-                |  * * * * * * * *  |
-                |  * * * * * * * *  |
-                |  * * * * * * * *  |
-                |                   |
-                 -------------------y
-
-                Method finder: Storm                    see: Physics2D::storm_cast for details
-                 ' * * * * * * * * * '
-                 ' * * * * * * * * * '   n = 10
-                 ' * * * * * * * * * '   n0 (first input point) = 0
-                 ' * * * 2 3 4 * * * '   n10 (last input point) = 9
-                 ' * * 9 1 0 5 * * * '
-                 ' * * * 8 7 6 * * * '
-                 ' * * * * * * * * * '
-                 ' * * * * * * * * * '
-                 ' * * * * * * * * * '
-        */
-
-        if (cam->camera_resources->renders.empty()) {
-            Resolution res = Application::get_resolution();
-            Vec2Int wpLeftTop = Vec2::round_to_int(Camera::screen_to_world(Vec2::zero));
-            Vec2Int wpRightBottom = Vec2::round_to_int(Camera::screen_to_world(Vec2(res.width, res.height)));
-            Vec2 camPoint = cam->transform()->position();
-            // RUN STORM CAST
-            std::list<Transform*> storm_result = Physics2D::storm_cast(camPoint, Math::number(Math::max(wpRightBottom.x - camPoint.x, wpRightBottom.y - camPoint.y)) + 1 + cam->distanceEvcall);
-            std::list<Renderer*> _removes;
-            // собираем оставшиеся которые прикреплены к видимости
-            for (auto x = std::begin(cam->camera_resources->prev); x != std::end(cam->camera_resources->prev); ++x) {
-                if ((*x)->exists() && area_cast(*x, wpLeftTop, wpRightBottom)) {
-                    cam->camera_resources->renders[(*x)->transform()->layer].insert((*x));
-                } else {
-                    _removes.emplace_back((*x));
-                }
-            }
-
-            for (Renderer* y : _removes)
-                cam->camera_resources->prev.erase(y);
-
-            // order by layer component
-
-            for (auto iter = std::begin(storm_result); iter != std::end(storm_result); ++iter) {
-                GameObject* touch = (*iter)->game_object();
-                std::list<Renderer*> rends = touch->get_components<Renderer>();
-                for (auto x : rends) {
-                    cam->camera_resources->renders[x->transform()->layer].insert(x);
-                    // prev.insert(x);
-                }
-            }
-        }
-
-        if (cam->camera_resources->_lightsOutResults.empty()) {
-            cam->camera_resources->_lightsOutResults.insert(World::self()->internal_resources->_assoc_lightings.begin(), World::self()->internal_resources->_assoc_lightings.end());
-        }
-
-        return std::make_tuple(&(cam->camera_resources->renders), &(cam->camera_resources->_lightsOutResults));
-    }
-
     Camera::Camera(const std::string& name)
         : Component(DESCRIBE_AS_ONLY_NAME(Camera))
     {
         DESCRIBE_AS_MAIN(Camera);
+
         // using this camera as main
         RoninMemory::alloc_self(camera_resources);
-        camera_resources->targetClear = enabled = true;
-        distanceEvcall = 2;
+        camera_resources->targetClear = true;
 
         // set focusing
         focus();
@@ -93,50 +20,6 @@ namespace RoninEngine::Runtime
     bool Camera::is_focused() { return main_camera() == this; }
 
     void Camera::focus() { World::self()->internal_resources->event_camera_changed(this, CameraEvent::CAM_TARGET); }
-
-    /*
-    std::tuple<list<Renderer*>*, list<Light*>*> linearSelection() {
-        constexpr std::uint8_t Nz = 2;
-        list<Renderer*> layers[Nz];
-        std::uint8_t zN = 0;
-        if (__rendererOutResults.empty()) {
-            auto res = Application::getResolution();
-            Vec2 topLeft, rightBottom, rSz;
-            topLeft = this->ScreenToWorldPoint(Vec2::zero);
-            rightBottom = this->ScreenToWorldPoint(Vec2(res.width, res.height));
-
-            for (auto render : RoninEngine::Level::getScene()->_assoc_renderers) {
-                if (render->zOrder >= Nz) throw std::out_of_range("N z range");
-
-                rSz = render->GetSize() / 2;
-
-                Transform* t = render->transform();
-                if (render->zOrder >= 0 &&
-                    //	X
-                    (t->_p.x + rSz.x >= topLeft.x && t->_p.x - rSz.x <= rightBottom.x) &&
-                    //	Y
-                    (t->_p.y - rSz.y <= topLeft.y && t->_p.y + rSz.y >= rightBottom.y)) {
-                    layers[render->zOrder].emplace_front(render);
-                }
-            }
-
-                // ordering and collect
-                list<Renderer*>* target;
-            while ((target = zN < Nz ? &layers[zN++] : nullptr)) {
-                for (auto x = begin(*target); x != end(*target); ++x) {
-                    __rendererOutResults.emplace_back((*x));
-                }
-            }
-        }
-
-        if (__lightsOutResults.empty()) {
-            __lightsOutResults.assign(RoninEngine::Level::getScene()->_assoc_lightings.begin(),
-                                      RoninEngine::Level::getScene()->_assoc_lightings.end());
-        }
-
-        return make_tuple(&__rendererOutResults, &__lightsOutResults);
-    }
-    */
 
     const Vec2 Camera::screen_to_world(Vec2 screenPoint)
     {

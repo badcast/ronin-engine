@@ -9,6 +9,8 @@ namespace RoninEngine::Runtime
         void render(SDL_Renderer* renderer, Rect rect, GameObject* root);
 
     public:
+        std::uint16_t distanceEvcall;
+
         bool visibleBorders;
         bool visibleGrids;
         bool visibleObjects;

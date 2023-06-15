@@ -13,11 +13,12 @@
 #include <new>
 #include <typeindex>
 #include <typeinfo>
+#include <type_traits>
 #include <ctime>
 #include <limits>
 #include <cassert>
 #include <algorithm>
-#include <type_traits>
+#include <functional>
 
 // standard listing include
 #include <initializer_list>

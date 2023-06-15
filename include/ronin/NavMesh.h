@@ -54,17 +54,17 @@ namespace RoninEngine::AIPathFinder
         void randomize(int flagFilter = 0xffffff);
         void stress();
 
-        int width();
-        int height();
+        int width() const;
+        int height() const;
 
         Neuron* get_neuron(int x, int y);
         Neuron* get_neuron(const Runtime::Vec2Int& point);
         Neuron* get_neuron(const Runtime::Vec2& worldPoint);
         Neuron* get_neuron(const Runtime::Vec2& worldPoint, Runtime::Vec2Int& outPoint);
 
-        bool get_ncontains(const Runtime::Vec2Int& point);
+        bool get_ncontains(const Runtime::Vec2Int& point) const;
 
-        const Runtime::Vec2Int get_npoint(const Neuron* neuron);
+        const Runtime::Vec2Int get_npoint(const Neuron* neuron) const;
 
         // pointer with Point
         bool get_nlocked(const Runtime::Vec2Int& point);

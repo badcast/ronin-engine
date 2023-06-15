@@ -10,8 +10,8 @@ const char extNAV[] = ".nav";
 struct Level_t {
     std::string levelName;
     std::string levelDescription;
-    std::uint8_t levelMisson;
     std::string levelMissonText;
+    std::uint8_t levelMisson;
 
     struct {
         float navScalePerNeuron;

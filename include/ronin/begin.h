@@ -35,6 +35,5 @@ typedef int SDL_BlendMode, SDL_TextureAccess, SDL_ScaleMode, SDL_Scancode, SDL_P
 
 #include "Color.h"
 #include "Vec2.h"
-#include "Paths.h"
 
 #include "Types.h"

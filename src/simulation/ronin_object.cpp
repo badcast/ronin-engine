@@ -93,7 +93,7 @@ namespace RoninEngine
                     wrs->_firstRunScripts->remove(obj);
                 if (wrs->_realtimeScripts)
                     wrs->_realtimeScripts->remove(obj);
-            } else if constexpr (std::is_same<T, Camera>::value) {
+            } else if constexpr (std::is_same<T, Camera2D>::value) {
                 World::self()->internal_resources->event_camera_changed(obj, CameraEvent::CAM_DELETED);
 
                 // release main object

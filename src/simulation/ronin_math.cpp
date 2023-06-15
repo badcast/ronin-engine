@@ -52,7 +52,7 @@ float Math::acos(float x) { return SDL_acosf(x); }
 
 float Math::atan(float x) { return SDL_atanf(x); }
 
-float Math::atan2(float y, float x) { return ::atan2f(y, x); }
+float Math::atan2(float y, float x) { return SDL_atan2f(y, x); }
 
 float Math::clamp01(float val) { return clamp(val, 0.f, 1.f); }
 
@@ -70,23 +70,23 @@ float Math::signf(float x) { return x < 0.f ? -1.f : 1.f; }
 
 int Math::sign(int x) { return x < 0 ? -1 : 1; }
 
-float Math::round(float x) { return std::round(x); }
+float Math::round(float x) { return SDL_roundf(x); }
 
-float Math::ceil(float x) { return std::ceil(x); }
+float Math::ceil(float x) { return SDL_ceilf(x); }
 
-float Math::floor(float x) { return std::floor(x); }
+float Math::floor(float x) { return SDL_floorf(x); }
 
 float Math::frac(float x) { return x - number(x); }
 
 int Math::number(float x) { return static_cast<int>(x); }
 
-float Math::exp(float x) { return ::expf(x); }
+float Math::exp(float x) { return SDL_expf(x); }
 
-float Math::pow2(float x) { return ::powf(x, 2); }
+float Math::pow2(float x) { return SDL_powf(x, 2); }
 
-int Math::pow2(int x) { return ::pow(x, 2); }
+int Math::pow2(int x) { return SDL_pow(x, 2); }
 
-int Math::pow(int x, int y) { return std::pow(x, y); }
+int Math::pow(int x, int y) { return SDL_pow(x, y); }
 
 float Math::pow(float x, float y) { return SDL_powf(x, y); }
 

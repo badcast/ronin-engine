@@ -11,9 +11,6 @@ namespace RoninEngine::Runtime
         virtual void render(SDL_Renderer* renderer, Rect rect, GameObject* root) = 0;
 
     public:
-        bool enabled;
-        std::uint32_t distanceEvcall;
-
         Camera(const std::string& name);
 
         virtual ~Camera();

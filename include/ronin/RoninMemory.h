@@ -36,7 +36,7 @@ namespace RoninEngine::Runtime::RoninMemory
     }
 
     template <typename T, typename... Args>
-    T* alloc_self(T*& self, Args&&... args)
+    T*& alloc_self(T*& self, Args&&... args)
     {
         return self = alloc<T>(std::forward<Args&&>(args)...);
     }
