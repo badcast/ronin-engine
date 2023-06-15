@@ -4,6 +4,8 @@
 
 namespace RoninEngine::AIPathFinder
 {
+    using namespace RoninEngine::Runtime;
+
     class NavContainer : public across::basic_across_map<RoninEngine::Runtime::Vec2Int, Neuron>
     {
         friend class NavMesh;

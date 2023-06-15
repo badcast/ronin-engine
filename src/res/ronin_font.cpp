@@ -2,7 +2,7 @@
 
 namespace RoninEngine::UI
 {
-    using RoninEngine::Runtime::Resources;
+    using namespace RoninEngine::Runtime;
 
     struct Font_t {
         SDL_Surface* surfNormal;
@@ -30,8 +30,8 @@ namespace RoninEngine::UI
             throw std::bad_alloc();
 
         if ((pLegacyFont->surfHilight = Resources::GetSurface("font-arealike-hi")) == nullptr)
-            throw std::bad_alloc();
-*/
+            throw std::bad_alloc();*/
+
         pLegacyFont->fontSize = { fontWidth, fontHeight };
 
         // Структурирование шрифта

@@ -58,18 +58,14 @@ namespace RoninEngine
             CI uid push_layment_edit(const std::string& text, ui_callback_chars event_callback = nullptr);
             CI uid push_layment_slider(float value, float min = 0.f, float max = 1.f, ui_callback_float value_changed = nullptr);
 
-            CI uid push_label(const std::string& text, const RoninEngine::Runtime::Rect& rect, const int& fontWidth = 13, uid parent = NOPARENT);
+            CI uid push_label(const std::string& text, const Runtime::Rect &rect, const int& fontWidth = 13, uid parent = NOPARENT);
             CI uid push_label(const std::string& text, const Runtime::Vec2Int& point, const int& fontWidth = 13, uid parent = NOPARENT);
             CI uid push_button(const std::string& text, const Runtime::Vec2Int& point, ui_callback event_callback = nullptr, uid parent = NOPARENT);
             CI uid push_button(const std::string& text, const Runtime::Rect& point, ui_callback event_callback = nullptr, uid parent = NOPARENT);
             CI uid push_edit(const std::string& text, const Runtime::Vec2Int& point, uid parent = NOPARENT);
             CI uid push_edit(const std::string& text, const Runtime::Rect& rect, uid parent = NOPARENT);
-            CI uid push_texture_stick(Texture* texture, const Runtime::Rect& rect, uid parent = NOPARENT);
-            CI uid push_texture_stick(Texture* texture, const Runtime::Vec2Int& point, uid parent = NOPARENT);
-            CI uid push_texture_animator(Timeline* timeline, const RoninEngine::Runtime::Rect& rect, uid parent = NOPARENT);
-            CI uid push_texture_animator(Timeline* timeline, const Vec2Int& point, uid parent = NOPARENT);
-            CI uid push_texture_animator(const std::list<Texture*>& roads, float duration, TimelineOptions option, const RoninEngine::Runtime::Rect& rect, uid parent = NOPARENT);
-            CI uid push_texture_animator(const std::list<Texture*>& roads, float duration, TimelineOptions option, const Vec2Int& point, uid parent = NOPARENT);
+            CI uid push_picture(Runtime::Sprite* sprite, const Runtime::Rect& rect, uid parent = NOPARENT);
+            CI uid push_picture(Runtime::Sprite* sprite, const Runtime::Vec2Int& point, uid parent = NOPARENT);
 
             template <typename Container>
             CI uid push_drop_down(const Container& elements, const Runtime::Vec2Int& point, ui_callback_integer changed = nullptr, uid parent = NOPARENT)
@@ -102,7 +98,7 @@ namespace RoninEngine
             CI void set_resources(uid id, void* data);
 
             CI RoninEngine::Runtime::Rect get_rect(uid id);
-            CI void set_rect(uid id, const RoninEngine::Runtime::Rect& rect);
+            CI void set_rect(uid id, const Runtime::Rect &rect);
 
             CI std::string get_text(uid id);
             CI void set_text(uid id, const std::string& text);

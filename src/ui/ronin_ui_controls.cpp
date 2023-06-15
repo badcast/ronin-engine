@@ -12,6 +12,8 @@ namespace RoninEngine::Runtime
 
 namespace RoninEngine::UI
 {
+    using namespace RoninEngine::Runtime;
+
     struct ElementInteraction {
         Color normalState;
         Color hoverState;
@@ -59,9 +61,6 @@ namespace RoninEngine::UI
         case RGUI_DROPDOWN:
             resources = reinterpret_cast<ui_resource*>(RoninMemory::alloc<DROPDOWN_RESOURCE>());
             break;
-        case RGUI_IMAGEANIMATOR:
-            resources = reinterpret_cast<ui_resource*>(RoninMemory::alloc<Timeline>());
-            break;
         case RGUI_HSLIDER:
             // value, min, max members
             resources = reinterpret_cast<ui_resource*>(RoninMemory::ronin_memory_alloc(sizeof(float) * 3));
@@ -78,9 +77,6 @@ namespace RoninEngine::UI
         switch (element->prototype) {
         case RGUI_DROPDOWN:
             RoninMemory::free(static_cast<DROPDOWN_RESOURCE*>(element->resources));
-            break;
-        case RGUI_IMAGEANIMATOR:
-            RoninMemory::free(static_cast<Timeline*>(element->resources));
             break;
         case RGUI_HSLIDER:
             RoninMemory::ronin_memory_free(element->resources);
@@ -105,8 +101,6 @@ namespace RoninEngine::UI
         }
 
         switch (element.prototype) {
-        case RoninEngine::UI::_UC:
-            break;
         case RGUI_TEXT: {
             draw_font_at(renderer, element.text, 15, element.rect.getXY(), Color::white);
             // Render_String(render, element.rect, element.text.c_str(), element.text.size());
@@ -241,9 +235,11 @@ namespace RoninEngine::UI
             roundedRectangleColor(renderer, rect.x, rect.y, rect.x + rect.w, rect.y + rect.h, 3, color);
 
             // Draw text
-            Vec2Int tpos = { element.rect.x + element.rect.w - 22, element.rect.y + element.rect.h - 10 };
             char __[32];
+
+            TTF_SizeText(pfont, __, &rect.w, &rect.h);
             sprintf(__, "%.1f", *value);
+            Vec2Int tpos = { element.rect.x + element.rect.w - 22, element.rect.y + element.rect.h - 8 };
             draw_font_at(renderer, __, 1, tpos, color);
 
             break;
@@ -260,21 +256,16 @@ namespace RoninEngine::UI
 
         case RGUI_IMAGE: {
             SDL_Rect sdlr;
-            Texture* tex = reinterpret_cast<Texture*>(element.resources);
-            if (tex) {
+            Sprite* sprite = reinterpret_cast<Sprite*>(element.resources);
+            if (sprite && sprite->surface) {
                 sdlr.x = element.rect.x;
                 sdlr.y = element.rect.y;
-                sdlr.w = element.rect.w == 0 ? tex->width() : element.rect.w;
-                sdlr.h = element.rect.h == 0 ? tex->height() : element.rect.h;
-
-                SDL_RenderCopy(renderer, tex->native(), nullptr, &sdlr);
+                sdlr.w = element.rect.w == 0 ? sprite->width() : element.rect.w;
+                sdlr.h = element.rect.h == 0 ? sprite->height() : element.rect.h;
+                SDL_Texture* tex = SDL_CreateTextureFromSurface(renderer, sprite->surface);
+                SDL_RenderCopy(renderer, tex, nullptr, &sdlr);
+                SDL_DestroyTexture(tex);
             }
-            break;
-        }
-        case RGUI_IMAGEANIMATOR: {
-            Timeline* timeline = (Timeline*)element.resources;
-            Texture* texture = timeline->Evaluate(TimeEngine::time())->texture;
-            SDL_RenderCopy(renderer, texture->native(), nullptr, (SDL_Rect*)&element.rect);
             break;
         }
         case RGUI_DROPDOWN: {

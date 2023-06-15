@@ -2,7 +2,7 @@
 
 namespace jno
 {
-
+    using namespace RoninEngine::Runtime;
     enum { Node_ValueFlag = 1, Node_ArrayFlag = 2, Node_StructFlag = 3 };
 
     struct jno_evaluted {

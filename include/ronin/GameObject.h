@@ -65,7 +65,7 @@ namespace RoninEngine
         template <typename T>
         std::enable_if_t<std::is_base_of<Component, T>::value, T*> GameObject::add_component()
         {
-            static_assert(!(std::is_same<T, Transform>::value || std::is_base_of<Transform, T>::value), "Transform component can't assign");
+            static_assert(!(std::is_same<T, Transform>::value || std::is_base_of<Transform, T>::value), "Transform component can't be assigned");
 
             // init component
             T* component = RoninMemory::alloc<T>();

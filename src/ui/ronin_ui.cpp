@@ -4,6 +4,8 @@ enum { ElementEnableMask = 1, ElementVisibleMask = 2, ElementGroupMask = 4 };
 
 namespace RoninEngine::UI
 {
+    using namespace RoninEngine::Runtime;
+
     extern ui_resource* factory_resource(GUIControlPresents type);
     extern void factory_free(UIElement* element);
     extern bool general_render_ui_section(GUI* gui, UIElement& element, SDL_Renderer* render, const bool hovering, bool& focus);
@@ -34,7 +36,7 @@ namespace RoninEngine::UI
 
     GUI::GUI(RoninEngine::Runtime::World* world)
     {
-        RoninMemory::alloc_self<GUIResources>(resources);
+        Runtime::RoninMemory::alloc_self<GUIResources>(resources);
         resources->__level_owner = world;
         resources->hitCast = true;
         resources->visible = true;
@@ -46,7 +48,7 @@ namespace RoninEngine::UI
     GUI::~GUI()
     {
         remove_all();
-        RoninMemory::free(resources);
+        Runtime::RoninMemory::free(resources);
     }
 
     // private--------------------------------------
@@ -82,7 +84,7 @@ namespace RoninEngine::UI
 
     uid GUI::begin_layment(const Runtime::Rect region) { }
 
-    uid GUI::push_label(const std::string& text, const ::Rect& rect, const int& fontWidth, uid parent)
+    uid GUI::push_label(const std::string& text, const Rect& rect, const int& fontWidth, uid parent)
     {
         // todo: fontWidth
         uid id = call_register_ui(this, parent);
@@ -121,56 +123,17 @@ namespace RoninEngine::UI
         return id;
     }
 
-    uid GUI::push_texture_stick(Texture* texture, const Runtime::Rect& rect, uid parent)
+    uid GUI::push_picture(RoninEngine::Runtime::Sprite* sprite, const Runtime::Rect& rect, uid parent)
     {
         uid id = call_register_ui(this, parent);
 
         auto& data = ui_get_element(id);
         data.prototype = RGUI_IMAGE;
         data.rect = rect;
-        data.resources = texture;
+        data.resources = sprite;
         return id;
     }
-    uid GUI::push_texture_stick(Texture* texture, const Vec2Int& point, uid parent) { return push_texture_stick(texture, { point.x, point.y, texture->width(), texture->height() }, parent); }
-    uid GUI::push_texture_animator(Timeline* timeline, const ::Rect& rect, uid parent)
-    {
-        uid id = call_register_ui(this, parent);
-
-        auto& data = ui_get_element(id);
-        data.prototype = RGUI_IMAGE;
-        data.rect = rect;
-        data.resources = timeline;
-        return id;
-    }
-    uid GUI::push_texture_animator(Timeline* timeline, const Vec2Int& point, uid parent) { return push_texture_animator(timeline, { point.x, point.y, 0, 0 }, parent); }
-    uid GUI::push_texture_animator(const std::list<Texture*>& roads, float duration, TimelineOptions option, const ::Rect& rect, uid parent)
-    {
-        Timeline* timeline;
-        uid id = call_register_ui(this, parent);
-        auto& data = ui_get_element(id);
-        data.prototype = RGUI_IMAGEANIMATOR;
-        data.rect = rect;
-        data.resources = timeline = (Timeline*)factory_resource(data.prototype);
-        timeline->SetOptions(option);
-
-        // todo: wBest и hBest - вычисляется даже когда rect.w != 0
-        int wBest = 0;
-        int hBest = 0;
-        for (auto i = begin(roads); i != end(roads); ++i) {
-            timeline->AddRoad(*i, duration);
-            if (wBest < (*i)->width())
-                wBest = (*i)->width();
-            if (hBest < (*i)->height())
-                hBest = (*i)->height();
-        }
-        if (!data.rect.w)
-            data.rect.w = wBest;
-        if (!data.rect.h)
-            data.rect.h = hBest;
-
-        return id;
-    }
-    uid GUI::push_texture_animator(const std::list<Texture*>& roads, float duration, TimelineOptions option, const Vec2Int& point, uid parent) { return push_texture_animator(roads, duration, option, { point.x, point.y, 0, 0 }, parent); }
+    uid GUI::push_picture(RoninEngine::Runtime::Sprite* sprite, const Vec2Int& point, uid parent) { return push_picture(sprite, { point.x, point.y, sprite->width(), sprite->height() }, parent); }
 
     template <typename Container>
     uid internal_push_dropdown(GUI* guiInstance, const Container& container, int index, const Runtime::Rect& rect, ui_callback_integer changed, uid parent)
@@ -242,7 +205,7 @@ namespace RoninEngine::UI
     void GUI::set_resources(uid id, void* data) { ui_get_element(id).resources = data; }
 
     Rect GUI::get_rect(uid id) { return ui_get_element(id).rect; }
-    void GUI::set_rect(uid id, const ::Rect& rect) { ui_get_element(id).rect = rect; }
+    void GUI::set_rect(uid id, const Rect& rect) { ui_get_element(id).rect = rect; }
 
     std::string GUI::get_text(uid id) { return ui_get_element(id).text; }
     void GUI::set_text(uid id, const std::string& text) { ui_get_element(id).text = text; }
@@ -251,7 +214,7 @@ namespace RoninEngine::UI
     bool GUI::get_visible(uid id) { return (ui_get_element(id).options & ElementVisibleMask) != 0; }
 
     void GUI::set_enable(uid id, bool state) { ui_get_element(id).options = ((ui_get_element(id).options & ~ElementEnableMask)) | (ElementEnableMask * (state == true)); }
-    bool GUI::get_enable(uid id) { return ui_get_element(id).options & ElementEnableMask != 0; }
+    bool GUI::get_enable(uid id) { return (ui_get_element(id).options & ElementEnableMask) != 0; }
 
     float GUI::get_slider_value(uid id)
     {

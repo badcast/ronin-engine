@@ -65,7 +65,7 @@ namespace RoninEngine
 {
     namespace UI
     {
-        enum GUIControlPresents : std::uint8_t { _UC, RGUI_TEXT, RGUI_BUTTON, RGUI_EDIT, RGUI_HSLIDER, RGUI_VSLIDER, RGUI_IMAGEANIMATOR, RGUI_IMAGE, RGUI_DROPDOWN };
+        enum GUIControlPresents : std::uint8_t { RGUI_TEXT, RGUI_BUTTON, RGUI_EDIT, RGUI_HSLIDER, RGUI_VSLIDER, RGUI_IMAGE, RGUI_DROPDOWN };
         struct ui_resource;
         struct UIElement {
             Runtime::Rect rect;
@@ -89,7 +89,7 @@ namespace RoninEngine
 
             ui_callback callback;
             void* callbackData;
-            World* __level_owner;
+            Runtime::World* __level_owner;
             bool hitCast;
             bool _focusedUI;
             bool visible;

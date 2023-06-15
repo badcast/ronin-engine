@@ -1,6 +1,8 @@
 
 #include "ronin.h"
 
+using namespace RoninEngine::Runtime;
+
 Color::Color()
     : Color(0)
 {

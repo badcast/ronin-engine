@@ -22,31 +22,31 @@ std::vector<Level_t> m_levels;
 
 using namespace RoninEngine;
 
-std::string RoninEngine::Levels::getHierarchyString(Transform* target)
+std::string RoninEngine::Levels::getHierarchyString(Runtime::Transform* target)
 {
-//    static char delim = 0x32;
-//    std::string delims;
-//    std::string result;
+    static char delim = 0x32;
+    std::string delims;
+    std::string result;
 
-//    std::list<Transform*> stack;
+    std::list<Runtime::Transform*> stack;
 
-//    while (target) {
-//        for (auto& c : target->hierarchy) {
-//            stack.emplace_back(c);
-//        }
+    while (target) {
+        for (auto& c : target->hierarchy) {
+            stack.emplace_back(c);
+        }
 
-//        result += delims;
-//        result += target->name();
-//        result += "\n";
+        result += delims;
+        result += target->name();
+        result += "\n";
 
-//        if (!stack.empty()) {
-//            target = stack.front();
-//            stack.pop_front();
-//        } else
-//            target = nullptr;
-//    }
+        if (!stack.empty()) {
+            target = stack.front();
+            stack.pop_front();
+        } else
+            target = nullptr;
+    }
 
-//    return result;
+    return result;
 }
 
 void RoninEngine::Levels::Level_Init()
@@ -54,11 +54,11 @@ void RoninEngine::Levels::Level_Init()
     if (!m_levels.empty())
         throw std::bad_exception();
 
-return;
+    return;
     jno::jno_object_parser parser;
     Level_t levl;
     jno::jno_object_node* node;
-    std::filesystem::directory_iterator dirIter(getDataFrom(FolderKind::LEVELS));
+    std::filesystem::directory_iterator dirIter(getDataFrom(Runtime::FolderKind::LEVELS));
 
     for (auto file : dirIter) {
         if (!file.is_directory() && file.path().extension() == extMAP) {
@@ -93,4 +93,3 @@ return;
         }
     }
 }
-
