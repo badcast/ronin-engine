@@ -1,15 +1,34 @@
 #ifndef RONINENGINE_H_
 #define RONINENGINE_H_
 
+#include <cstdio>
+#include <cstdint>
+#include <cstdlib>
+#include <new>
 #include <typeindex>
 #include <typeinfo>
+#include <ctime>
+#include <limits>
+#include <cassert>
+#include <algorithm>
+#include <type_traits>
+
+// standard listing include
+#include <initializer_list>
+#include <map>
+#include <memory>
+#include <numeric>
+#include <set>
+#include <stdexcept>
+#include <unordered_map>
+#include <tuple>
 
 // base headers
 #include "../../include/ronin/begin.h"
 
 #include "just-parser.h"
 
-//PROTECTIVE PRIVATE MEMBERs UNLOCK
+// PROTECTIVE PRIVATE MEMBERs UNLOCK
 #define private public
 #define protected public
 

@@ -21,8 +21,6 @@ namespace RoninEngine::Runtime
         bool is_focused();
         void focus();
 
-        std::tuple<std::map<int, std::set<Renderer*>>*, std::set<Light*>*> matrix_select();
-
         static const Vec2 screen_to_world(Vec2 screenPoint);
         static const Vec2 world_to_screen(Vec2 worldPoint);
         static const Vec2 viewport_to_world(Vec2 viewportPoint);

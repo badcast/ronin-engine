@@ -2,6 +2,80 @@
 
 namespace RoninEngine::Runtime
 {
+
+    inline bool area_cast(Renderer* target, const Vec2Int& wpLeftTop, const Vec2Int& wpRightBottom)
+    {
+        Vec2 rSz = target->get_size();
+        Vec2 pos = target->transform()->position();
+        return (pos.x + rSz.x >= wpLeftTop.x && pos.x - rSz.x <= wpRightBottom.x) && (pos.y - rSz.y <= wpLeftTop.y && pos.y + rSz.y >= wpRightBottom.y);
+    }
+    std::tuple<std::map<int, std::set<Renderer*>>*, std::set<Light*>*> matrix_select(Camera* cam)
+    {
+        // TODO: Fixing renderer object and selec matrix element own Set T List
+        /*       This is projection: Algorithm storm member used.
+                x-------------------
+                |                   |      = * - is Vector2 (point)
+                |  r * * * * * * *  |      = r - current point (ray)
+                |  * * * * * * * *  |      = x - wpLeftTop
+                |  * * * * * * * *  |      = y - wpRightBottom
+                |  * * * * * * * *  |
+                |  * * * * * * * *  |
+                |  * * * * * * * *  |
+                |  * * * * * * * *  |
+                |                   |
+                 -------------------y
+
+                Method finder: Storm                    see: Physics2D::storm_cast for details
+                 ' * * * * * * * * * '
+                 ' * * * * * * * * * '   n = 10
+                 ' * * * * * * * * * '   n0 (first input point) = 0
+                 ' * * * 2 3 4 * * * '   n10 (last input point) = 9
+                 ' * * 9 1 0 5 * * * '
+                 ' * * * 8 7 6 * * * '
+                 ' * * * * * * * * * '
+                 ' * * * * * * * * * '
+                 ' * * * * * * * * * '
+        */
+
+        if (cam->camera_resources->renders.empty()) {
+            Resolution res = Application::get_resolution();
+            Vec2Int wpLeftTop = Vec2::round_to_int(Camera::screen_to_world(Vec2::zero));
+            Vec2Int wpRightBottom = Vec2::round_to_int(Camera::screen_to_world(Vec2(res.width, res.height)));
+            Vec2 camPoint = cam->transform()->position();
+            // RUN STORM CAST
+            std::list<Transform*> storm_result = Physics2D::storm_cast(camPoint, Math::number(Math::max(wpRightBottom.x - camPoint.x, wpRightBottom.y - camPoint.y)) + 1 + cam->distanceEvcall);
+            std::list<Renderer*> _removes;
+            // собираем оставшиеся которые прикреплены к видимости
+            for (auto x = std::begin(cam->camera_resources->prev); x != std::end(cam->camera_resources->prev); ++x) {
+                if ((*x)->exists() && area_cast(*x, wpLeftTop, wpRightBottom)) {
+                    cam->camera_resources->renders[(*x)->transform()->layer].insert((*x));
+                } else {
+                    _removes.emplace_back((*x));
+                }
+            }
+
+            for (Renderer* y : _removes)
+                cam->camera_resources->prev.erase(y);
+
+            // order by layer component
+
+            for (auto iter = std::begin(storm_result); iter != std::end(storm_result); ++iter) {
+                GameObject* touch = (*iter)->game_object();
+                std::list<Renderer*> rends = touch->get_components<Renderer>();
+                for (auto x : rends) {
+                    cam->camera_resources->renders[x->transform()->layer].insert(x);
+                    // prev.insert(x);
+                }
+            }
+        }
+
+        if (cam->camera_resources->_lightsOutResults.empty()) {
+            cam->camera_resources->_lightsOutResults.insert(World::self()->internal_resources->_assoc_lightings.begin(), World::self()->internal_resources->_assoc_lightings.end());
+        }
+
+        return std::make_tuple(&(cam->camera_resources->renders), &(cam->camera_resources->_lightsOutResults));
+    }
+
     Camera::Camera(const std::string& name)
         : Component(DESCRIBE_AS_ONLY_NAME(Camera))
     {
@@ -63,79 +137,6 @@ namespace RoninEngine::Runtime
         return make_tuple(&__rendererOutResults, &__lightsOutResults);
     }
     */
-
-    inline bool area_cast(Renderer* target, const Vec2Int& wpLeftTop, const Vec2Int& wpRightBottom)
-    {
-        Vec2 rSz = target->get_size();
-        Vec2 pos = target->transform()->position();
-        return (pos.x + rSz.x >= wpLeftTop.x && pos.x - rSz.x <= wpRightBottom.x) && (pos.y - rSz.y <= wpLeftTop.y && pos.y + rSz.y >= wpRightBottom.y);
-    }
-
-    std::tuple<std::map<int, std::set<Renderer*>>*, std::set<Light*>*> Camera::matrix_select()
-    {
-        // TODO: Fixing renderer object and selec matrix element own Set T List
-        /*       This is projection: Algorithm storm member used.
-                x-------------------
-                |                   |      = * - is Vector2 (point)
-                |  r * * * * * * *  |      = r - current point (ray)
-                |  * * * * * * * *  |      = x - wpLeftTop
-                |  * * * * * * * *  |      = y - wpRightBottom
-                |  * * * * * * * *  |
-                |  * * * * * * * *  |
-                |  * * * * * * * *  |
-                |  * * * * * * * *  |
-                |                   |
-                 -------------------y
-
-                Method finder: Storm                    see: Physics2D::storm_cast for details
-                 ' * * * * * * * * * '
-                 ' * * * * * * * * * '   n = 10
-                 ' * * * * * * * * * '   n0 (first input point) = 0
-                 ' * * * 2 3 4 * * * '   n10 (last input point) = 9
-                 ' * * 9 1 0 5 * * * '
-                 ' * * * 8 7 6 * * * '
-                 ' * * * * * * * * * '
-                 ' * * * * * * * * * '
-                 ' * * * * * * * * * '
-        */
-
-        if (camera_resources->renders.empty()) {
-            Resolution res = Application::get_resolution();
-            Vec2Int wpLeftTop = Vec2::round_to_int(screen_to_world(Vec2::zero));
-            Vec2Int wpRightBottom = Vec2::round_to_int(screen_to_world(Vec2(res.width, res.height)));
-            // RUN STORM CAST
-            std::list<Transform*> storm_result = Physics2D::storm_cast(transform()->p, Math::number(Math::max(wpRightBottom.x - transform()->p.x, wpRightBottom.y - transform()->p.y)) + 1 + distanceEvcall);
-            std::list<Renderer*> _removes;
-            // собираем оставшиеся которые прикреплены к видимости
-            for (auto x = std::begin(camera_resources->prev); x != std::end(camera_resources->prev); ++x) {
-                if ((*x)->exists() && area_cast(*x, wpLeftTop, wpRightBottom)) {
-                    camera_resources->renders[(*x)->transform()->layer].insert((*x));
-                } else {
-                    _removes.emplace_back((*x));
-                }
-            }
-
-            for (Renderer* y : _removes)
-                camera_resources->prev.erase(y);
-
-            // order by layer component
-
-            for (auto iter = std::begin(storm_result); iter != std::end(storm_result); ++iter) {
-                GameObject* touch = (*iter)->game_object();
-                std::list<Renderer*> rends = touch->get_components<Renderer>();
-                for (auto x : rends) {
-                    camera_resources->renders[x->transform()->layer].insert(x);
-                    // prev.insert(x);
-                }
-            }
-        }
-
-        if (camera_resources->_lightsOutResults.empty()) {
-            camera_resources->_lightsOutResults.insert(World::self()->internal_resources->_assoc_lightings.begin(), World::self()->internal_resources->_assoc_lightings.end());
-        }
-
-        return make_tuple(&(camera_resources->renders), &(camera_resources->_lightsOutResults));
-    }
 
     const Vec2 Camera::screen_to_world(Vec2 screenPoint)
     {

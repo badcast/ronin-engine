@@ -11,6 +11,7 @@ namespace RoninEngine::Runtime
     const RRect<int> RRect<int>::zero = {};
     template <>
     const RRect<int> RRect<int>::one = { 1, 1, 1, 1 };
+
 } // namespace RoninEngine
 
 // template<> RONIN_API const char * define_type<RoninEngine::Runtime::GameObject>(char const*,              RoninEngine::Runtime::GameObject*, int*);

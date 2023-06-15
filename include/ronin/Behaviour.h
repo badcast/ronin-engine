@@ -8,8 +8,9 @@ namespace RoninEngine::Runtime {
          public Component
    {
       public:
-         Behaviour() : Behaviour(typeid(*this).name()) {}
-         Behaviour(const std::string& name) : Component(name) {}
+         Behaviour();
+
+         Behaviour(const std::string& name);
          Behaviour(const Behaviour&) = delete;
          Behaviour(Behaviour&&) = delete;
          virtual ~Behaviour() = default;

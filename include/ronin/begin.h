@@ -7,28 +7,12 @@
 #include <SDL2/SDL2_gfxPrimitives.h>
 
 // standard include
-#include <cstdio>
-#include <cstdint>
-#include <cstdlib>
-#include <cassert>
+#include <string>
 #include <functional>
-#include <type_traits>
-#include <ctime>
-#include <limits>
-#include <algorithm>
-#include <new>
-#include <typeinfo>
+
 // standard listing include
 #include <list>
-#include <map>
-#include <memory>
-#include <numeric>
-#include <set>
-#include <stdexcept>
-#include <string>
-#include <unordered_map>
 #include <vector>
-#include <tuple>
 
 #include "Defines.h"
 

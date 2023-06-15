@@ -44,7 +44,7 @@ namespace RoninEngine::Runtime
             Gizmos::draw_position(transform()->position(), maxWorldScalar);
         }
         // get from matrix selection
-        std::tuple<std::map<int, std::set<Renderer*>>*, std::set<Light*>*> filter = matrix_select();
+        std::tuple<std::map<int, std::set<Renderer*>>*, std::set<Light*>*> filter = matrix_select(this);
 
         // scale.x = Mathf::Min(Mathf::Max(scale.x, -10.f), 10.f);
         // scale.y = Mathf::Min(Mathf::Max(scale.y, -10.f), 10.f);

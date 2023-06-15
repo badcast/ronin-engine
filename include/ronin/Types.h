@@ -79,8 +79,7 @@ namespace RoninEngine
                     return Vec2Int(x, y);
                 } else if constexpr (std::is_same<T, float>::value) {
                     return Vec2(x, y);
-                } else
-                    throw std::bad_exception();
+                }
             }
             constexpr auto getWH() const
             {
@@ -88,8 +87,7 @@ namespace RoninEngine
                     return Vec2Int(w, h);
                 } else if constexpr (std::is_same<T, float>::value) {
                     return Vec2(w, h);
-                } else
-                    throw std::bad_exception();
+                }
             }
             static const RRect<T> zero;
             static const RRect<T> one;
