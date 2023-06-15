@@ -8,25 +8,13 @@
 
 static std::unordered_map<std::type_index, const char*> main_ronin_types;
 
-template <typename base, typename _derived>
-constexpr bool object_base_of()
-{
-    return std::is_base_of<base, _derived>();
-}
-
-template <typename base, typename _derived>
-constexpr bool object_base_of(base* obj, _derived* compare)
-{
-    return std::is_base_of<base, _derived>();
-}
-
 // this method for replacing C++ dynamic_cast
 template <typename T>
 static std::enable_if_t<std::is_base_of<RoninEngine::Runtime::Object, T>::value, const char*> runtime_define_type(const char* typestr, T* self, char** _type_, const char* name)
 {
     // param @self not use
     if (_type_ != nullptr && *_type_ == nullptr) {
-        std::type_index index = std::type_index(typeid(T));
+        std::type_index index { typeid(T) };
         if (main_ronin_types.find(index) == std::end(main_ronin_types))
             main_ronin_types[index] = typestr;
 
@@ -195,7 +183,7 @@ namespace RoninEngine
 
         void load_world(World*);
         bool unload_world(World*);
-        std::tuple<std::map<int, std::set<Renderer*>>*, std::set<Light*>*> matrix_select(Camera *cam);
+        std::tuple<std::map<int, std::set<Renderer*>>*, std::set<Light*>*> matrix_select(Camera* cam);
         inline Transform* get_root(World* world) { return world->internal_resources->main_object->transform(); }
 
         void hierarchy_parent_change(Transform* from, Transform* newParent);

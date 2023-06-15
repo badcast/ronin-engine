@@ -29,7 +29,7 @@ namespace RoninEngine::Runtime
 
 void check_object(RoninEngine::Runtime::Object* obj)
 {
-    if (obj->get_type() == nullptr) {
+    if (obj->_type_ == nullptr) {
         throw std::runtime_error("Object not defined!");
     }
 }
