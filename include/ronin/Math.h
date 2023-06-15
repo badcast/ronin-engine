@@ -151,7 +151,7 @@ namespace RoninEngine::Runtime
 
         // Celsius to Fahrenheit
         static float cel2far(float celsius);
-        // Fahre nheit to Celsius
+        // Fahrenheit to Celsius
         static float far2cel(float fahrenheit);
 
         static float smooth_damp_angle(float current, float target, float& currentVelocity, float smoothTime, float maxSpeed);

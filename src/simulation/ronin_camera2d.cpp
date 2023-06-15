@@ -152,12 +152,15 @@ namespace RoninEngine::Runtime
 
     void Camera2D::render(SDL_Renderer* renderer, Rect rect, GameObject* root)
     {
-        Rendering wrapper;
-        Vec2* point;
-        Vec2 sourcePoint;
-        Color prevColor = Gizmos::get_color();
-        SDL_mutex* m = SDL_CreateMutex();
 
+#define USE_OMP 0
+
+        Rendering wrapper;
+        Vec2 sourcePoint, point;
+        Color prevColor = Gizmos::get_color();
+#if USE_OMP
+        SDL_mutex* m = SDL_CreateMutex();
+#endif
         Gizmos::set_color(0xffc4c4c4);
         if (visibleGrids) {
             Gizmos::draw_2D_world_space(Vec2::zero);
@@ -175,29 +178,34 @@ namespace RoninEngine::Runtime
         for (auto& layer : *(std::get<0>(filter))) {
             std::vector<Renderer*>& robject = layer.second;
             int size = robject.size();
-            // #pragma omp parallel for private(sourcePoint) private(wrapper) private(point)
+#if USE_OMP
+#pragma omp parallel for private(sourcePoint) private(wrapper) private(point)
+#endif
             for (std::size_t pointer = 0; pointer < size; ++pointer) {
                 Renderer* renderSource = robject[pointer];
                 memset(&wrapper, 0, sizeof(wrapper));
                 wrapper.renderer = renderer;
+#if USE_OMP
                 SDL_LockMutex(m);
+#endif
                 renderSource->render(&wrapper); // draw
+#if USE_OMP
                 SDL_UnlockMutex(m);
+#endif
                 if (wrapper.texture) {
-                    //BUG: FIX POSITION
-                    Vec2 point = transform()->p;
+                    point = transform()->position();
 
-                    Transform* rTrans = renderSource->transform();
-                    if (rTrans->m_parent && renderSource->transform()->m_parent != get_root(World::self())) {
-                        //get local position
-                        Vec2 direction = rTrans->p;
-                        sourcePoint = Vec2::rotate_around(rTrans->m_parent->position(), direction, rTrans->angle() * Math::deg2rad);
+                    Transform* render_parent = renderSource->transform();
+                    if (render_parent->m_parent && renderSource->transform()->m_parent != get_root(World::self())) {
+                        // get local position
+                        Vec2 direction = render_parent->p;
+                        sourcePoint = Vec2::rotate_around(render_parent->m_parent->position(), direction, render_parent->angle() * Math::deg2rad);
                         //                rTrans->localPosition(
                         //                    Vec2::Max(direction, Vec2::RotateAround(Vec2::zero, direction, rTrans->angle() *
                         //                    Mathf::Deg2Rad)));
 
                     } else {
-                        sourcePoint = rTrans->position();
+                        sourcePoint = render_parent->position();
                     }
 
                     wrapper.dst.w *= pixelsPerPoint; //_scale.x;
@@ -215,16 +223,22 @@ namespace RoninEngine::Runtime
                     wrapper.dst.x = arranged.x + ((rect.w - wrapper.dst.w) / 2.0f - (point.x - sourcePoint.x) * pixelsPerPoint);
                     // Положение по вертикале
                     wrapper.dst.y = arranged.y + ((rect.h - wrapper.dst.h) / 2.0f + (point.y - sourcePoint.y) * pixelsPerPoint);
-
+#if USE_OMP
                     SDL_LockMutex(m);
+#endif
                     // native renderer component
                     SDL_RenderCopyExF(renderer, wrapper.texture, (SDL_Rect*)&wrapper.src, reinterpret_cast<SDL_FRect*>(&wrapper.dst), renderSource->transform()->angle(), nullptr, SDL_RendererFlip::SDL_FLIP_NONE);
                     SDL_DestroyTexture(wrapper.texture);
+#if USE_OMP
                     SDL_UnlockMutex(m);
+#endif
                 }
             }
         }
+#if USE_OMP
         SDL_DestroyMutex(m);
+#endif
+#undef USE_OMP
         // Render Lights
         for (auto lightSource : *std::get<1>(filter)) {
             // drawing
@@ -235,7 +249,7 @@ namespace RoninEngine::Runtime
             lightSource->get_light_source(&wrapper); // draw
 
             if (wrapper.texture) {
-                point = &transform()->p;
+                Vec2 point = transform()->position();
                 sourcePoint = lightSource->transform()->position();
 
                 wrapper.dst.w *= pixelsPerPoint;
@@ -243,9 +257,9 @@ namespace RoninEngine::Runtime
                 wrapper.dst.h *= pixelsPerPoint;
 
                 // h
-                wrapper.dst.x += ((rect.w - wrapper.dst.w) / 2.0f - (point->x - sourcePoint.x) * pixelsPerPoint);
+                wrapper.dst.x += ((rect.w - wrapper.dst.w) / 2.0f - (point.x - sourcePoint.x) * pixelsPerPoint);
                 // v
-                wrapper.dst.y += ((rect.h - wrapper.dst.h) / 2.0f + (point->y - sourcePoint.y) * pixelsPerPoint);
+                wrapper.dst.y += ((rect.h - wrapper.dst.h) / 2.0f + (point.y - sourcePoint.y) * pixelsPerPoint);
 
                 SDL_RenderCopyExF(renderer, wrapper.texture, reinterpret_cast<SDL_Rect*>(&wrapper.src), reinterpret_cast<SDL_FRect*>(&wrapper.dst), lightSource->transform()->_angle_ - transform()->_angle_, nullptr, SDL_RendererFlip::SDL_FLIP_NONE);
             }
