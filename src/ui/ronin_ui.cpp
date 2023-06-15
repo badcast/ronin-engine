@@ -312,7 +312,7 @@ namespace RoninEngine::UI
     void GUI::set_cast(bool state) { resources->hitCast = state; }
     bool GUI::get_cast() { return resources->hitCast; }
 
-    void GUI::register_callback(ui_callback callback, void* userData)
+    void GUI::register_general_callback(ui_callback callback, void* userData)
     {
         resources->callback = callback;
         resources->callbackData = userData;

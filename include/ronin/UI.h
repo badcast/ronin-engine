@@ -128,7 +128,7 @@ namespace RoninEngine
             CI void set_cast(bool state);
             CI bool get_cast();
 
-            CI void register_callback(ui_callback callback, void* userData);
+            CI void register_general_callback(ui_callback callback, void* userData);
 
             CI bool pop_element(uid id);
             CI void remove_all();
