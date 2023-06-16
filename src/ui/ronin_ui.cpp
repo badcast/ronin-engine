@@ -1,3 +1,4 @@
+#include <deque>
 #include "ronin.h"
 
 enum { ElementEnableMask = 1, ElementVisibleMask = 2, ElementGroupMask = 4 };
@@ -145,7 +146,7 @@ namespace RoninEngine::UI
         element.prototype = RGUI_DROPDOWN;
         element.rect = rect;
         element.resources = factory_resource(element.prototype);
-        element.event = &changed;
+        element.event = (void*)changed;
 
         if (!element.resources)
             Application::fail_oom_kill();
@@ -170,16 +171,6 @@ namespace RoninEngine::UI
         return id;
     }
 
-    uid GUI::push_drop_down(const std::vector<int>& elements, int index, const Runtime::Rect& rect, ui_callback_integer changed, uid parent) { return internal_push_dropdown(this, elements, index, rect, changed, parent); }
-
-    uid GUI::push_drop_down(const std::vector<float>& elements, int index, const Runtime::Rect& rect, ui_callback_integer changed, uid parent) { return internal_push_dropdown(this, elements, index, rect, changed, parent); }
-
-    uid GUI::push_drop_down(const std::vector<std::string>& elements, int index, const Runtime::Rect& rect, ui_callback_integer changed, uid parent) { return internal_push_dropdown(this, elements, index, rect, changed, parent); }
-
-    uid GUI::push_drop_down(const std::list<float>& elements, int index, const Runtime::Rect& rect, ui_callback_integer changed, uid parent) { return internal_push_dropdown(this, elements, index, rect, changed, parent); }
-
-    uid GUI::push_drop_down(const std::list<int>& elements, int index, const Runtime::Rect& rect, ui_callback_integer changed, uid parent) { return internal_push_dropdown(this, elements, index, rect, changed, parent); }
-
     uid GUI::push_drop_down(const std::list<std::string>& elements, int index, const Runtime::Rect& rect, ui_callback_integer changed, uid parent) { return internal_push_dropdown(this, elements, index, rect, changed, parent); }
 
     uid GUI::push_slider(float value, float min, float max, const Rect& rect, ui_callback_float changed, uid parent)
@@ -194,7 +185,7 @@ namespace RoninEngine::UI
         (*(float*)(element.resources + sizeof(float))) = min;
         (*(float*)(element.resources + sizeof(float) * 2)) = max;
 
-        element.event = &changed;
+        element.event = (void*)changed;
         return id;
     }
 
@@ -302,7 +293,7 @@ namespace RoninEngine::UI
         uid id;
         UIElement* uielement;
         Vec2Int ms;
-        std::list<uid> ui_drains;
+        std::deque<uid> ui_drains;
         bool uiFocus;
         bool uiHover;
         bool uiContex;
@@ -315,7 +306,7 @@ namespace RoninEngine::UI
         for (auto iter = begin(resources->ui_layer.layers); iter != end(resources->ui_layer.layers); ++iter)
             ui_drains.emplace_back(*iter);
 
-        while (ui_drains.size()) {
+        while (ui_drains.empty() == false) {
             id = ui_drains.front();
             uielement = &ui_get_element(id);
 
@@ -332,7 +323,7 @@ namespace RoninEngine::UI
                     resources->ui_layer.focusedID = 0;
                 }
 
-                if (general_render_ui_section(this, *uielement, renderer, uiHover, uiFocus) && resources->hitCast) {
+                if ((general_render_ui_section(this, *uielement, renderer, uiHover, uiFocus) || uiFocus) && resources->hitCast) {
                     // Избавляемся от перекликов в UI
                     resources->_focusedUI = true;
 
@@ -361,7 +352,7 @@ namespace RoninEngine::UI
                 break;
 
             for (auto iter = begin(uielement->childs); iter != end(uielement->childs); ++iter)
-                ui_drains.emplace_back(*iter + 1);
+                ui_drains.emplace_back(*iter );
         }
     }
     void GUI::set_color_rgb(std::uint32_t rgb) { set_color_rgba(rgb << 8 | SDL_ALPHA_OPAQUE); }

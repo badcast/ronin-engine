@@ -14,11 +14,11 @@ namespace RoninEngine
         class RONIN_API Resources
         {
         public:
-            static resource_id load_surface(const std::string& path, bool local = true);
+            static resource_id load_surface(const std::string& path, bool local);
 
-            static resource_id load_audio_clip(const std::string& path, bool local = true);
+            static resource_id load_audio_clip(const std::string& path, bool local);
 
-            static resource_id load_music_clip(const std::string& path, bool local = true);
+            static resource_id load_music_clip(const std::string& path, bool local);
 
             static SDL_Surface* get_surface(resource_id resource);
 

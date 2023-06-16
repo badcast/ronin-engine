@@ -32,7 +32,7 @@ namespace RoninEngine
 
             /// Register ui element and get unique ID
             CI std::list<uid> get_groups();
-            CI UIElement& ui_get_element (uid id);
+            CI UIElement& ui_get_element(uid id);
 
         public:
             CI GUI(Runtime::World*);
@@ -58,7 +58,7 @@ namespace RoninEngine
             CI uid push_layment_edit(const std::string& text, ui_callback_chars event_callback = nullptr);
             CI uid push_layment_slider(float value, float min = 0.f, float max = 1.f, ui_callback_float value_changed = nullptr);
 
-            CI uid push_label(const std::string& text, const Runtime::Rect &rect, const int& fontWidth = 13, uid parent = NOPARENT);
+            CI uid push_label(const std::string& text, const Runtime::Rect& rect, const int& fontWidth = 13, uid parent = NOPARENT);
             CI uid push_label(const std::string& text, const Runtime::Vec2Int& point, const int& fontWidth = 13, uid parent = NOPARENT);
             CI uid push_button(const std::string& text, const Runtime::Vec2Int& point, ui_callback event_callback = nullptr, uid parent = NOPARENT);
             CI uid push_button(const std::string& text, const Runtime::Rect& point, ui_callback event_callback = nullptr, uid parent = NOPARENT);
@@ -67,22 +67,32 @@ namespace RoninEngine
             CI uid push_picture(Runtime::Sprite* sprite, const Runtime::Rect& rect, uid parent = NOPARENT);
             CI uid push_picture(Runtime::Sprite* sprite, const Runtime::Vec2Int& point, uid parent = NOPARENT);
 
-            template <typename Container>
-            CI uid push_drop_down(const Container& elements, const Runtime::Vec2Int& point, ui_callback_integer changed = nullptr, uid parent = NOPARENT)
-            {
-                return push_drop_down(elements, 0, point, changed, parent);
-            }
-            template <typename Container>
-            CI uid push_drop_down(const Container& elements, int index, const Runtime::Vec2Int& point, ui_callback_integer changed = nullptr, uid parent = NOPARENT)
-            {
-                return push_drop_down(elements, index, Runtime::Rect(point.x, point.y, defaultMakets.dropdownSize.x, defaultMakets.dropdownSize.y), changed, parent);
-            }
-            CI uid push_drop_down(const std::vector<int>& elements, int index, const Runtime::Rect& rect, ui_callback_integer changed, uid parent);
-            CI uid push_drop_down(const std::vector<float>& elements, int index, const Runtime::Rect& rect, ui_callback_integer changed, uid parent);
-            CI uid push_drop_down(const std::vector<std::string>& elements, int index, const Runtime::Rect& rect, ui_callback_integer changed, uid parent);
-            CI uid push_drop_down(const std::list<float>& elements, int index, const Runtime::Rect& rect, ui_callback_integer changed, uid parent);
-            CI uid push_drop_down(const std::list<int>& elements, int index, const Runtime::Rect& rect, ui_callback_integer changed, uid parent);
             CI uid push_drop_down(const std::list<std::string>& elements, int index, const Runtime::Rect& rect, ui_callback_integer changed, uid parent);
+
+            template <typename string_container>
+            CI uid push_drop_down(const string_container& container, int index, const Runtime::Vec2Int& point, ui_callback_integer changed = nullptr, uid parent = NOPARENT)
+            {
+                return push_drop_down(container, index, { point, defaultMakets.dropdownSize }, changed, parent);
+            }
+
+            template <typename string_container>
+            CI uid push_drop_down(const string_container& container, int index, const Runtime::Rect& rect, ui_callback_integer changed = nullptr, uid parent = NOPARENT)
+            {
+                typedef typename string_container::value_type T;
+
+                std::list<std::string> __convert_string;
+
+                for (auto iter = std::begin(container); iter != std::end(container); ++iter) {
+                    if constexpr (std::is_same<std::string, T>::value)
+                        __convert_string.emplace_back(*iter);
+                    else if constexpr (std::is_same<const char*, T>::value)
+                        __convert_string.emplace_back(*iter);
+                    else
+                        __convert_string.emplace_back(std::to_string(*iter));
+                }
+
+                return push_drop_down(__convert_string, index, rect, changed, parent);
+            }
 
             CI uid push_slider(float value, const Runtime::Vec2Int& point, ui_callback_float changed = nullptr, uid parent = NOPARENT) { return push_slider(value, 0.f, 1.f, point, changed, parent); }
 
@@ -98,7 +108,7 @@ namespace RoninEngine
             CI void set_resources(uid id, void* data);
 
             CI RoninEngine::Runtime::Rect get_rect(uid id);
-            CI void set_rect(uid id, const Runtime::Rect &rect);
+            CI void set_rect(uid id, const Runtime::Rect& rect);
 
             CI std::string get_text(uid id);
             CI void set_text(uid id, const std::string& text);

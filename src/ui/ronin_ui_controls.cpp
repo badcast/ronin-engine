@@ -46,7 +46,6 @@ namespace RoninEngine::UI
 
     void ui_free_controls()
     {
-        // TODO: free controls?
         TTF_CloseFont(pfont);
         TTF_Quit();
     }
@@ -84,21 +83,23 @@ namespace RoninEngine::UI
         }
     }
 
-    bool general_render_ui_section(GUI* gui, UIElement& element, SDL_Renderer* renderer, const bool uiHover, bool& focus)
+    bool general_render_ui_section(GUI* gui, UIElement& element, SDL_Renderer* renderer, const bool ms_hover, bool& focus)
     {
+        // TODO: OPTIMIZE HERE (HIGH PRIORITY)
         static float dropDownLinear = 0;
         Vec2Int ms = Input::get_mouse_point();
+        const bool ms_click = ms_hover && Input::is_mouse_up();
         bool result = false;
-        {
-            // TODO: general drawing
+        //        {
+        //            // TODO: general drawing
 
-            if (uiHover) {
-                if (Input::get_key_down(SDL_SCANCODE_LCTRL)) {
-                    element.rect.x = ms.x - element.rect.w / 2;
-                    element.rect.y = ms.y - element.rect.h / 2;
-                }
-            }
-        }
+        //            if (ms_hover) {
+        //                if (Input::get_key_down(SDL_SCANCODE_LCTRL)) {
+        //                    element.rect.x = ms.x - element.rect.w / 2;
+        //                    element.rect.y = ms.y - element.rect.h / 2;
+        //                }
+        //            }
+        //        }
 
         switch (element.prototype) {
         case RGUI_TEXT: {
@@ -112,11 +113,8 @@ namespace RoninEngine::UI
             static Rect inside = Rect(pSize, pSize, -pSize * 2, -pSize * 2);
             Rect rect;
 
-            // border
-            gui->set_color_rgb(0xa75100);
-            SDL_RenderDrawRect(renderer, (SDL_Rect*)&element.rect);
             // fill
-            Color col(uiHover ? Input::is_mouse_down() ? colorSpace.defaultInteraction.hoverState : colorSpace.defaultInteraction.pressState : colorSpace.defaultInteraction.normalState);
+            Color col(ms_hover ? Input::is_mouse_down() ? colorSpace.defaultInteraction.hoverState : colorSpace.defaultInteraction.pressState : colorSpace.defaultInteraction.normalState);
             rect = element.rect;
             rect += inside / 2;
             gui->set_color_rgb(col);
@@ -126,8 +124,7 @@ namespace RoninEngine::UI
             // render text
             // Render_String(render, element.rect, element.text.c_str(), element.text.size(), 13, TextAlign::MiddleCenter, true, uiHover);
             draw_font_at(renderer, element.text, 12, rect.getXY() + rect.getWH() / 2, Color::gray, true);
-            bool msClick = Input::is_mouse_up();
-            result = uiHover && msClick;
+            result = ms_hover && ms_click;
             break;
         }
 
@@ -135,12 +132,11 @@ namespace RoninEngine::UI
             // uielement background
             static const int thickness = 2;
             static const Rect thick = { thickness, thickness, -thickness, -thickness };
-            bool msClick = uiHover && Input::is_mouse_up();
             Rect r = element.rect;
             r += thick;
 
             // uielement background
-            Gizmos::set_color((uiHover) ? colorSpace.defaultInteraction.normalState : colorSpace.defaultInteraction.hoverState);
+            Gizmos::set_color((ms_hover) ? colorSpace.defaultInteraction.normalState : colorSpace.defaultInteraction.hoverState);
             SDL_RenderFillRect(renderer, (SDL_Rect*)&r);
             Gizmos::set_color(Color::gray);
             for (int x = 0; x < thickness; ++x) {
@@ -170,7 +166,7 @@ namespace RoninEngine::UI
                 element.text += linput;
             } else {
                 // clik and focused
-                if (focus = result = msClick) {
+                if (focus = result = ms_click) {
                     text_start_input();
                 } else {
                     text_stop_input();
@@ -185,18 +181,17 @@ namespace RoninEngine::UI
             float* value = (float*)element.resources;
             float* min = value + 1;
             float* max = min + 1;
-            bool msClick = uiHover && Input::is_mouse_down();
             // clamp mouse point an inside
             ms.x = Math::clamp(ms.x, element.rect.x, element.rect.x + element.rect.w);
             ms.y = Math::clamp(ms.y, element.rect.y, element.rect.y + element.rect.h);
             // get rect
             rect = *reinterpret_cast<SDL_Rect*>(&element.rect);
 
-            if (msClick) {
-                focus = msClick;
+            if (ms_click) {
+                focus = ms_click;
             }
 
-            if (uiHover && Input::wheel_radix()) {
+            if (ms_hover && Input::wheel_radix()) {
                 *value += Input::wheel_radix() / 10.f; // step wheel mouse = ±0.1
                 *value = Math::clamp(*value, *min, *max);
                 result = true;
@@ -218,11 +213,10 @@ namespace RoninEngine::UI
             rect.h = 4;
             rect.y += (element.rect.h - rect.h) / 2;
 
-            Gizmos::set_color(uiHover ? Color::lightgray : Color::gray);
+            Gizmos::set_color(ms_hover ? Color::lightgray : Color::gray);
             Color color = Gizmos::get_color();
             roundedBoxColor(renderer, rect.x, rect.y, rect.x + rect.w, rect.y + rect.h, 3, Color::slategray);
             roundedRectangleColor(renderer, rect.x, rect.y, rect.x + rect.w, rect.y + rect.h, 3, color);
-            // SDL_RenderFillRect(render, &rect);
 
             // draw cursor
             rect.w = 9;
@@ -271,12 +265,11 @@ namespace RoninEngine::UI
         case RGUI_DROPDOWN: {
             static const int thickness = 2;
             static const Rect thick = { thickness, thickness, -thickness, -thickness };
-            bool msClick = uiHover && Input::is_mouse_up();
             Rect r = element.rect;
             r += thick;
 
             // uielement background
-            Gizmos::set_color((uiHover) ? colorSpace.defaultInteraction.normalState : colorSpace.defaultInteraction.hoverState);
+            Gizmos::set_color((ms_hover) ? colorSpace.defaultInteraction.normalState : colorSpace.defaultInteraction.hoverState);
             SDL_RenderFillRect(renderer, (SDL_Rect*)&r);
             Gizmos::set_color(Color::gray);
             for (int x = 0; x < thickness; ++x) {
@@ -286,7 +279,7 @@ namespace RoninEngine::UI
 
             // draw main text
             SDL_Texture* texture;
-            SDL_Surface* surf = TTF_RenderUTF8_Solid(pfont, element.text.c_str(), *reinterpret_cast<SDL_Color*>(&colorSpace.dropdownText));
+            SDL_Surface* surf = TTF_RenderUTF8_Blended(pfont, element.text.c_str(), *reinterpret_cast<SDL_Color*>(&colorSpace.dropdownText));
             if ((texture = SDL_CreateTextureFromSurface(renderer, surf)) != nullptr) {
                 r = element.rect;
                 r.x += 5;
@@ -309,7 +302,7 @@ namespace RoninEngine::UI
                 r = element.rect;
                 r.y += r.h;
 
-                r.h = dropDownLinear = Math::ceil(Math::lerp_unclamped(dropDownLinear, link->second.size() * sz, 2 * TimeEngine::deltaTime()));
+                r.h = dropDownLinear = Math::ceil(Math::lerp(dropDownLinear, link->second.size() * sz, TimeEngine::deltaTime()));
 
                 Gizmos::set_color(colorSpace.defaultInteraction.hoverState);
                 // draw background
@@ -325,16 +318,18 @@ namespace RoninEngine::UI
                         if (!result && SDL_PointInRect((SDL_Point*)&(ms), (SDL_Rect*)&elrect)) {
                             Gizmos::set_color(colorSpace.defaultInteraction.pressState);
                             SDL_RenderFillRect(renderer, (SDL_Rect*)&elrect);
-                            if (Input::is_mouse_up()) {
+                            if (Input::is_mouse_down()) {
                                 link->first = index;
                                 element.text = *iter;
-                                result = focus = false;
+                                result = true;
+                                focus = false;
+                                break;
                             }
                         }
 
                         Gizmos::set_color(colorSpace.defaultInteraction.hoverState);
                         // Draw element text
-                        surf = TTF_RenderUTF8_Solid(pfont, iter->c_str(), *reinterpret_cast<SDL_Color*>(&(link->first != index ? colorSpace.dropdownText : colorSpace.dropdownSelectedText)));
+                        surf = TTF_RenderUTF8_Blended(pfont, iter->c_str(), *reinterpret_cast<SDL_Color*>(&(link->first != index ? colorSpace.dropdownText : colorSpace.dropdownSelectedText)));
                         texture = SDL_CreateTextureFromSurface(renderer, surf);
                         SDL_QueryTexture(texture, nullptr, nullptr, &r.w, &r.h);
 
@@ -348,14 +343,15 @@ namespace RoninEngine::UI
                     }
                 }
 
-                if (msClick) {
+                if (ms_click) {
                     focus = false;
                     dropDownLinear = 0;
                 }
 
             } else {
                 // clik and shown
-                if (focus = result = msClick) { }
+                if (ms_click)
+                    focus = ms_click;
             }
             break;
         }

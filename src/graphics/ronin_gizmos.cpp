@@ -19,7 +19,7 @@ namespace RoninEngine::Runtime
         Vec2 p = Camera::main_camera()->transform()->position();
         Vec2 dst;
 
-        Resolution res = Application::get_current_resolution();
+        Resolution resolution = Application::get_current_resolution();
 
         // dst.x = ((rect.w - dst.w) / 2.0f - (point->x + sourcePoint->x) *
         // squarePerPixels); dst.y = ((rect.h - dst.h) / 2.0f + (point->y -
@@ -30,8 +30,8 @@ namespace RoninEngine::Runtime
         Vec2 scale;
         SDL_RenderGetScale(Application::get_renderer(), &scale.x, &scale.y);
         scale *= pixelsPerPoint;
-        dst.x = res.width / 2.f;
-        dst.y = res.height / 2.f;
+        dst.x = resolution.width / 2.f;
+        dst.y = resolution.height / 2.f;
         a.x = dst.x - (p.x - a.x) * scale.x;
         a.y = dst.y + (p.y - a.y) * scale.y;
         b.x = dst.x - (p.x - b.x) * scale.x;

@@ -366,7 +366,6 @@ void World::level_render_ui(SDL_Renderer* renderer)
 
 void World::level_render_world_late(SDL_Renderer* renderer)
 {
-    on_late_update();
     if (internal_resources->_realtimeScripts) {
         for (auto exec : *(internal_resources->_realtimeScripts)) {
             if (exec->game_object()->m_active)
