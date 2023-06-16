@@ -44,13 +44,11 @@ namespace RoninEngine
         extern void ui_reset_controls();
     }
 
-    static bool m_inited = false;
     static bool internal_level_loaded = false;
     static bool m_levelAccept = false;
     static Runtime::World* destroyableLevel = nullptr;
     static SDL_Renderer* renderer = nullptr;
     static SDL_Window* windowOwner = nullptr;
-    static bool isQuiting;
     static ScoreWatcher _wwatcher = {};
 
     void internal_init_timer()
@@ -69,7 +67,7 @@ namespace RoninEngine
 
     void Application::init()
     {
-        if (m_inited)
+        if (windowOwner != nullptr)
             return;
 
         if (SDL_Init(SDL_INIT_AUDIO | SDL_INIT_EVENTS | SDL_INIT_TIMER | SDL_INIT_VIDEO))
@@ -109,17 +107,40 @@ namespace RoninEngine
 
         // Set cursor
         // SDL_SetCursor(GC::GetCursor("cursor", {1, 1}));
-        m_inited = true;
-        isQuiting = false;
+    }
+
+    void Application::utilize()
+    {
+        if (windowOwner == nullptr)
+            return;
+        SDL_DestroyWindow(windowOwner);
+        windowOwner = nullptr;
+
+        UI::ui_free_controls();
+
+        // NOTE: Free Global Resources
+        gid_resources_free(external_global_resources);
+        external_global_resources = nullptr;
+
+        Mix_Quit();
+        IMG_Quit();
+        SDL_Quit();
+
+        int memory_leak = Runtime::RoninMemory::total_allocated();
+        if (memory_leak > 0) {
+            SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "ronin-memory-leak count: %d", memory_leak);
+        }
+
+        memory_leak = SDL_GetNumAllocations();
+        if (memory_leak > 0) {
+            SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "sdl-memory-leak count: %d", memory_leak);
+        }
     }
 
     void Application::create_window(const int width, const int height, bool fullscreen)
     {
-        if (!m_inited)
-            Application::fail("Application not Inited");
-
         if (windowOwner)
-            Application::fail("Window exists, active self");
+            Application::fail("Exists window, reinit failed");
 
         std::uint32_t __flags = SDL_WINDOW_SHOWN;
 
@@ -132,9 +153,23 @@ namespace RoninEngine
 
         // Brightness - Яркость
         SDL_SetWindowBrightness(windowOwner, 1);
+
+        int vd = SDL_GetNumVideoDisplays();
+        int modes = SDL_GetNumDisplayModes(0);
+
+        SDL_DisplayMode _modes[32];
+
+        for (int x = 0; x < modes; ++x)
+            SDL_GetDisplayMode(0, x, &_modes[x]);
+
+        int cc = 0;
     }
 
-    void Application::request_quit() { isQuiting = true; }
+    void Application::request_quit()
+    {
+        if (switched_world)
+            switched_world->request_unload();
+    }
 
     void Application::load_world(World* world, bool unloadPrevious)
     {
@@ -144,7 +179,7 @@ namespace RoninEngine
         if (switched_world == world)
             Application::fail("Current world is reloading state. Failed.");
 
-        if (switched_world) {
+        if (unloadPrevious && switched_world) {
             destroyableLevel = switched_world;
             destroyableLevel->request_unload();
         }
@@ -191,6 +226,7 @@ namespace RoninEngine
 
     bool Application::simulate()
     {
+        bool isQuiting = false;
         char windowTitle[96];
         float fps, fpsRound = 0;
         int delayed = 0;
@@ -359,29 +395,7 @@ namespace RoninEngine
         switched_world = nullptr;
 
         SDL_DestroyRenderer(renderer);
-        SDL_DestroyWindow(windowOwner);
-
-        UI::ui_free_controls();
-
-        // NOTE: Free Global Resources
-        gid_resources_free(external_global_resources);
-        external_global_resources = nullptr;
-
-        Mix_Quit();
-        IMG_Quit();
-        TTF_Quit();
-        SDL_Quit();
-
-        m_inited = false;
-        int memory_leak = Runtime::RoninMemory::total_allocated();
-        if (memory_leak > 0) {
-            SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "ronin-memory-leak count: %d", memory_leak);
-        }
-
-        memory_leak = SDL_GetNumAllocations();
-        if (memory_leak > 0) {
-            SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "sdl-memory-leak count: %d", memory_leak);
-        }
+        renderer = nullptr;
 
         return isQuiting;
     }

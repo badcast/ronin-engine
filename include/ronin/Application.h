@@ -25,6 +25,8 @@ namespace RoninEngine
     public:
         // First initing RoninEngine Library
         static void init();
+        // Close and Utilize
+        static void utilize();
         // Create main window for renderer
         static void create_window(const int width, const int height, bool fullscreen = false);
         // Load world for simmulate

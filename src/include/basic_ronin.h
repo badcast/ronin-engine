@@ -149,6 +149,10 @@ namespace RoninEngine
             std::uint8_t m_volume;
         };
 
+        struct MusicPlayerData {
+            MusicClip* m_clip = nullptr;
+        };
+
         struct GidResources {
             std::vector<AudioClip*> gid_audio_clips;
             std::vector<MusicClip*> gid_music_clips;
@@ -197,7 +201,6 @@ namespace RoninEngine
 
             // Main camera for render
             Camera* main_camera;
-
 
             // Main or Root object
             GameObject* main_object;

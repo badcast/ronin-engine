@@ -32,6 +32,7 @@
 #include "Terrain2D.h"
 #include "Transform.h"
 #include "AudioSource.h"
+#include "MusicPlayer.h"
 #include "UI.h"
 
 #include "NavMesh.h"
