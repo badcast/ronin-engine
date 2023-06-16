@@ -5,29 +5,29 @@
 namespace RoninEngine::Runtime::MusicPlayer
 {
     // Get audio clip
-    MusicClip* clip();
+    RONIN_API MusicClip* clip();
     // Set audio clip
-    void clip(MusicClip* clip);
+    RONIN_API void clip(MusicClip* clip);
     // Get volume at range 0.0 ... 1.0
-    float volume();
+    RONIN_API float volume();
     // Set volume at range 0.0 ... 1.0
-    void volume(float value);
+    RONIN_API void volume(float value);
     // Set Clip position to begin
-    void rewind();
+    RONIN_API void rewind();
     // Set play audio source
-    void play(bool loop = true);
+    RONIN_API void play(bool loop = true);
     // Set pause state
-    void pause();
+    RONIN_API void pause();
     // Set stoping state
-    void stop();
+    RONIN_API void stop();
     // Is played now?
-    bool is_playing();
+    RONIN_API bool is_playing();
     // Is paused now?
-    bool is_paused();
+    RONIN_API bool is_paused();
     // Get length music
-    double duration();
+    RONIN_API double duration();
     // Set music position
-    void set_position(double value);
+    RONIN_API void set_position(double value);
     // Get music position
-    double get_position();
+    RONIN_API double get_position();
 } // namespace RoninEngine::Runtime

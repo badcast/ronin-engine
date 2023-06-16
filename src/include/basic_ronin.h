@@ -29,6 +29,10 @@ static std::enable_if_t<std::is_base_of<RoninEngine::Runtime::Object, T>::value,
 
 extern void check_object(RoninEngine::Runtime::Object* obj);
 
+#ifndef NDEBUG
+#define TEST_MALLOC 0
+#endif
+
 #define DESCRIBE_TYPE(TYPE, self, _type_, name) (runtime_define_type<TYPE>(#TYPE, self, (_type_), name))
 
 #define DESCRIBE_AS_ONLY_NAME(TYPE) (DESCRIBE_TYPE(TYPE, this, &_type_, name.c_str()))

@@ -4,8 +4,24 @@
 namespace RoninEngine
 {
     struct Resolution {
+        // Display width
         int width;
+        // Display height
         int height;
+        // Display refresh rate
+        int hz;
+
+        Resolution(int w, int h, int _hz = 0)
+            : width(w)
+            , height(h)
+            , hz(_hz)
+        {
+        }
+    };
+
+    enum class FullscreenMode {
+        Desktop,
+        Display
     };
 
     struct ScoreWatcher {
@@ -27,22 +43,24 @@ namespace RoninEngine
         static void init();
         // Close and Utilize
         static void utilize();
-        // Create main window for renderer
-        static void create_window(const int width, const int height, bool fullscreen = false);
+        // Show main frame for simulation
+        static void show(Resolution resolution, bool fullscreen = false);
         // Load world for simmulate
         static void load_world(Runtime::World* world, bool unloadPrevious = true);
         // Simulate world
         static bool simulate();
-        // Get display mode
-        static SDL_DisplayMode get_display_mode();
         // Request sent Quiting (Destroy current world)
         static void request_quit();
-        // Get SDL Window
-        static SDL_Window* get_window();
         // Get SDL Renderer
         static SDL_Renderer* get_renderer();
         // Get resolution of screen
-        static Resolution get_resolution();
+        static Resolution get_current_resolution();
+        // Get resolution of active display
+        static std::list<Resolution> get_display_resolutions();
+        // Set resolution of active display
+        static bool set_display_resolution(Resolution new_resolution);
+        // Set active window to fullscreen mode
+        static bool set_display_fullscreen(FullscreenMode mode);
         // Get timming watches
         static ScoreWatcher get_watches();
 

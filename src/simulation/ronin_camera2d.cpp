@@ -87,7 +87,7 @@ namespace RoninEngine::Runtime
         */
 
         if (camera2d->camera_resources->renders.empty()) {
-            Resolution res = Application::get_resolution();
+            Resolution res = Application::get_current_resolution();
             Vec2Int wpLeftTop = Vec2::round_to_int(Camera::screen_to_world(Vec2::zero));
             Vec2Int wpRightBottom = Vec2::round_to_int(Camera::screen_to_world(Vec2(res.width, res.height)));
             Vec2 camera_position = camera2d->transform()->position();

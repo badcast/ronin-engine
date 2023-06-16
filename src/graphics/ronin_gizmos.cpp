@@ -19,7 +19,7 @@ namespace RoninEngine::Runtime
         Vec2 p = Camera::main_camera()->transform()->position();
         Vec2 dst;
 
-        auto res = Application::get_resolution();
+        Resolution res = Application::get_current_resolution();
 
         // dst.x = ((rect.w - dst.w) / 2.0f - (point->x + sourcePoint->x) *
         // squarePerPixels); dst.y = ((rect.h - dst.h) / 2.0f + (point->y -
@@ -164,12 +164,11 @@ namespace RoninEngine::Runtime
         Vec2 a, b;
         AIPathFinder::Neuron* p;
         Vec2Int p1, p2;
-        Resolution res;
         Color prev;
         Color next;
         int yDefault;
+        Resolution res = Application::get_current_resolution();
 
-        res = Application::get_resolution();
         prev = get_color();
         set_color(next = 0xfff6f723);
         mesh->get_neuron(Camera::screen_to_world(Vec2::zero), p1);

@@ -6,13 +6,10 @@ namespace RoninEngine::Runtime
     {
         using namespace RoninEngine;
 
-        std::uint64_t __ronin_allocated = 0;
-
-#define TEST_MEMALLOC 0
-
-#if TEST_MEMALLOC
-        std::list<void*> allocated_leaker;
+#if TEST_MALLOC
+    std::list<void*> allocated_leaker;
 #endif
+        std::uint64_t __ronin_allocated = 0;
         void* ronin_memory_alloc(std::size_t size)
         {
             void* mem = std::malloc(size);
@@ -22,8 +19,8 @@ namespace RoninEngine::Runtime
             // Set up controls memory pointer. Set zero.
             memset(mem, 0, size);
             ++__ronin_allocated;
-#if TEST_MEMALLOC
-            allocated_leaker.emplace_back(mem);
+#if TEST_MALLOC
+            allocated_leaker.push_back(mem);
 #endif
             return mem;
         }
@@ -33,7 +30,7 @@ namespace RoninEngine::Runtime
             std::free(memory);
             if (__ronin_allocated-- == 0)
                 Application::fail("invalid ronin_memory_free()");
-#if TEST_MEMALLOC
+#if TEST_MALLOC
             allocated_leaker.remove(memory);
 #endif
         }

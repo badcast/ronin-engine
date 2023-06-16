@@ -178,16 +178,16 @@ namespace RoninEngine::Runtime
         return _cont;
     }
 
-    template std::list<Transform*> Physics2D::storm_cast(Vec2, int, int);
-    template std::list<Transform*> Physics2D::rect_cast(Vec2, float, int);
-    template std::list<Transform*> Physics2D::sphere_cast(Vec2, float, int);
+    template RONIN_API std::list<Transform*> Physics2D::storm_cast(Vec2, int, int);
+    template RONIN_API std::list<Transform*> Physics2D::rect_cast(Vec2, float, int);
+    template RONIN_API std::list<Transform*> Physics2D::sphere_cast(Vec2, float, int);
 
-    template std::vector<Transform*> Physics2D::storm_cast(Vec2, int, int);
-    template std::vector<Transform*> Physics2D::rect_cast(Vec2, float, int);
-    template std::vector<Transform*> Physics2D::sphere_cast(Vec2, float, int);
+    template RONIN_API std::vector<Transform*> Physics2D::storm_cast(Vec2, int, int);
+    template RONIN_API std::vector<Transform*> Physics2D::rect_cast(Vec2, float, int);
+    template RONIN_API std::vector<Transform*> Physics2D::sphere_cast(Vec2, float, int);
 
-    template std::set<Transform*> Physics2D::storm_cast(Vec2, int, int);
-    template std::set<Transform*> Physics2D::rect_cast(Vec2, float, int);
-    template std::set<Transform*> Physics2D::sphere_cast(Vec2, float, int);
+    template RONIN_API std::set<Transform*> Physics2D::storm_cast(Vec2, int, int);
+    template RONIN_API std::set<Transform*> Physics2D::rect_cast(Vec2, float, int);
+    template RONIN_API std::set<Transform*> Physics2D::sphere_cast(Vec2, float, int);
 
 } // namespace RoninEngine::Runtime

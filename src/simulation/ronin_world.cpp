@@ -45,8 +45,6 @@ namespace RoninEngine::Runtime
         if (world->internal_resources == nullptr)
             return false;
 
-        target = world->internal_resources->main_object;
-
         lastLevel = switched_world;
         switched_world = world;
 
@@ -89,6 +87,7 @@ namespace RoninEngine::Runtime
         gid_resources_free(world->internal_resources->external_local_resources);
         world->internal_resources->external_local_resources = nullptr;
 
+        target = world->internal_resources->main_object;
         std::list<GameObject*> stacks;
         // free objects
         while (target) {
@@ -193,20 +192,12 @@ int World::matrix_restore(const std::list<Runtime::Transform*>& damaged_content)
     return restored;
 }
 
-void World::get_render_info(int* culled, int* fullobjects)
+int World::get_culled()
 {
-    Camera* curCamera = Camera::main_camera();
+    if (internal_resources == nullptr || internal_resources->main_camera == nullptr)
+        return -1;
 
-    if (!curCamera)
-        return;
-
-    if (culled) {
-        (*culled) = -1;
-    }
-
-    if (fullobjects) {
-        (*fullobjects) = -1;
-    }
+    return internal_resources->main_camera->camera_resources->renders.size();
 }
 
 void World::matrix_nature(Transform* target, Vec2Int lastPoint) { matrix_nature(target, Vec2::round_to_int(target->position()), lastPoint); }
@@ -336,7 +327,7 @@ void World::level_render_world(SDL_Renderer* renderer, ScoreWatcher* watcher)
     // Render on main camera
     Camera* cam = Camera::main_camera(); // Draw level from active camera (main)
     if (!switched_world->internal_resources->request_unloading && cam) {
-        Resolution res = Application::get_resolution();
+        Resolution res = Application::get_current_resolution();
 
         // FlushCache last result
         if (cam->camera_resources->targetClear)
@@ -480,8 +471,6 @@ void World::on_awake() { }
 void World::on_start() { }
 
 void World::on_update() { }
-
-void World::on_late_update() { }
 
 void World::on_gizmo() { }
 

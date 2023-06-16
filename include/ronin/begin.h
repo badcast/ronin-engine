@@ -12,9 +12,8 @@
 
 #ifndef RONIN_COMPILLING
 struct SDL_Surface;
-struct SDL_Texture;
 struct SDL_Renderer;
-struct SDL_Window;
+struct SDL_Texture;
 struct SDL_DisplayMode;
 struct SDL_Color {
     std::uint8_t r, g, b, a;

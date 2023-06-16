@@ -40,7 +40,7 @@ namespace RoninEngine::Runtime
 
     bool MusicPlayer::is_paused() { return Mix_PausedMusic() == 1; }
 
-    double MusicPlayer::duration() { Mix_MusicDuration(data.m_clip->mix_music); }
+    double MusicPlayer::duration() { return Mix_MusicDuration(data.m_clip->mix_music); }
 
     double MusicPlayer::get_position() { return Mix_GetMusicPosition(data.m_clip->mix_music); }
 

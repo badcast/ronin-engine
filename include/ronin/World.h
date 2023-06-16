@@ -27,7 +27,6 @@ namespace RoninEngine::Runtime
         virtual void on_awake();
         virtual void on_start();
         virtual void on_update();
-        virtual void on_late_update();
         virtual void on_gizmo();
         virtual void on_unloading();
 
@@ -45,6 +44,7 @@ namespace RoninEngine::Runtime
 
         void request_unload();
 
+        int get_culled();
         int get_destroyed_frames();
 
         std::list<GameObject*> get_all_gameobjects();
@@ -62,7 +62,6 @@ namespace RoninEngine::Runtime
         static int matrix_restore();
         static int matrix_restore(const std::list<Transform*>& damaged_content);
 
-        static void get_render_info(int* culled, int* fullobjects);
 
         static World* self();
     };
