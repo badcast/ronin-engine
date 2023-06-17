@@ -83,12 +83,11 @@ namespace RoninEngine::UI
         }
     }
 
-    bool general_render_ui_section(GUI* gui, UIElement& element, SDL_Renderer* renderer, const bool ms_hover, bool& focus)
+    bool general_render_ui_section(GUI* gui, UIElement& element, SDL_Renderer* renderer, const bool ms_hover, const bool ms_click, bool& ui_focus)
     {
         // TODO: OPTIMIZE HERE (HIGH PRIORITY)
         static float dropDownLinear = 0;
         Vec2Int ms = Input::get_mouse_point();
-        const bool ms_click = ms_hover && Input::is_mouse_up();
         bool result = false;
         //        {
         //            // TODO: general drawing
@@ -160,13 +159,13 @@ namespace RoninEngine::UI
             }
 
             // focusing intersection
-            if (focus) {
+            if (ui_focus) {
                 std::string linput;
                 RoninEngine::Runtime::text_get(linput);
                 element.text += linput;
             } else {
                 // clik and focused
-                if (focus = result = ms_click) {
+                if (ui_focus = result = ms_click) {
                     text_start_input();
                 } else {
                     text_stop_input();
@@ -188,7 +187,7 @@ namespace RoninEngine::UI
             rect = *reinterpret_cast<SDL_Rect*>(&element.rect);
 
             if (ms_click) {
-                focus = ms_click;
+                ui_focus = ms_click;
             }
 
             if (ms_hover && Input::wheel_radix()) {
@@ -198,7 +197,7 @@ namespace RoninEngine::UI
             }
 
             // focused state
-            if (focus) {
+            if (ui_focus) {
                 if (Input::is_mouse_down()) {
                     // get *x* component from mouse point for set cursor point
                     *value = Math::map((float)ms.x, (float)rect.x, (float)rect.x + rect.w, *min, *max);
@@ -296,7 +295,7 @@ namespace RoninEngine::UI
             auto link = static_cast<std::pair<int, std::list<std::string>>*>(element.resources);
 
             // show dropdown list
-            if (focus) {
+            if (ui_focus) {
                 static int sz = 15;
                 Rect elrect;
                 r = element.rect;
@@ -322,7 +321,7 @@ namespace RoninEngine::UI
                                 link->first = index;
                                 element.text = *iter;
                                 result = true;
-                                focus = false;
+                                ui_focus = false;
                                 break;
                             }
                         }
@@ -344,14 +343,14 @@ namespace RoninEngine::UI
                 }
 
                 if (ms_click) {
-                    focus = false;
+                    ui_focus = false;
                     dropDownLinear = 0;
                 }
 
             } else {
                 // clik and shown
                 if (ms_click)
-                    focus = ms_click;
+                    ui_focus = ms_click;
             }
             break;
         }
@@ -379,6 +378,7 @@ namespace RoninEngine::UI
     {
         SDL_Rect r;
 
+        TTF_SetFontSize(pfont, fontSize);
         SDL_Surface* surf = TTF_RenderUTF8_Blended(pfont, text.c_str(), color);
         if (surf) {
             SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surf);

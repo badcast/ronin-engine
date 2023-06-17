@@ -2,6 +2,7 @@
 
 using namespace RoninEngine;
 using namespace RoninEngine::Runtime;
+using namespace RoninEngine::Exception;
 
 namespace RoninEngine::Runtime
 {
@@ -90,9 +91,9 @@ namespace RoninEngine::Runtime
     Component* GameObject::add_component(Component* component)
     {
         if (!component)
-            throw std::exception();
+            throw ronin_null_error();
         if (component->_owner)
-            throw std::runtime_error("Component has Owner GameObject");
+            throw ronin_conflict_component_error();
 
         if (end(m_components) == std::find_if(begin(m_components), end(m_components), std::bind2nd(std::equal_to<Component*>(), component))) {
             this->m_components.emplace_back(component);
@@ -115,10 +116,10 @@ namespace RoninEngine::Runtime
     bool GameObject::remove_component(Component* component)
     {
         if (component == nullptr)
-            throw std::runtime_error("arg value is null");
+            throw ronin_null_error();
 
         if (component->_owner != this) {
-            throw std::runtime_error("Component is not binded this GameObject");
+            throw ronin_conflict_component_error();
         }
 
         if (dynamic_cast<Transform*>(component) != nullptr)

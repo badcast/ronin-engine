@@ -15,7 +15,7 @@ namespace RoninEngine::Runtime
         static float get_time_scale();
         static void set_time_scale(float scale);
         static std::uint32_t frame();
-        static std::uint32_t tick_millis();
+        static std::uint64_t tick_millis();
         static void begin_watch();
         static std::uint32_t end_watch();
     };

@@ -5,11 +5,12 @@ enum { ElementEnableMask = 1, ElementVisibleMask = 2, ElementGroupMask = 4 };
 
 namespace RoninEngine::UI
 {
+    using namespace RoninEngine::Exception;
     using namespace RoninEngine::Runtime;
 
     extern ui_resource* factory_resource(GUIControlPresents type);
     extern void factory_free(UIElement* element);
-    extern bool general_render_ui_section(GUI* gui, UIElement& element, SDL_Renderer* render, const bool hovering, bool& focus);
+    extern bool general_render_ui_section(GUI* gui, UIElement& element, SDL_Renderer* renderer, const bool ms_hover, const bool ms_click, bool& ui_focus);
     extern void event_action(UIElement* element);
 
     extern void ui_controls_init();
@@ -19,7 +20,7 @@ namespace RoninEngine::UI
     uid call_register_ui(GUI* gui, uid parent = NOPARENT)
     {
         if (!gui->has_ui(parent))
-            throw std::runtime_error("Isn't parent");
+            throw ronin_ui_group_parent_error();
 
         UIElement& data = gui->resources->ui_layer.elements.emplace_back();
         data.parentId = parent;
@@ -54,19 +55,17 @@ namespace RoninEngine::UI
 
     // private--------------------------------------
 
-    std::list<uid> GUI::get_groups()
+    std::list<uid> get_groups(GUI* gui)
     {
-        std::list<uid> __;
+        std::list<uid> groups;
 
-        for (auto& iter : resources->ui_layer.elements) {
-            if (is_group(iter.id))
-                __.push_back(iter.id);
+        for (auto& iter : gui->resources->ui_layer.elements) {
+            if (gui->is_group(iter.id))
+                groups.push_back(iter.id);
         };
 
-        return __;
+        return groups;
     }
-
-    UIElement& GUI::ui_get_element(uid id) { return call_get_element(this, id); }
 
     // public---------------------------------------
 
@@ -75,7 +74,7 @@ namespace RoninEngine::UI
     uid GUI::push_group(const Runtime::Rect& rect)
     {
         uid id = call_register_ui(this);
-        auto& data = ui_get_element(id);
+        UIElement& data = call_get_element(this, id);
         data.rect = rect;
         data.options |= ElementGroupMask;
 
@@ -89,7 +88,7 @@ namespace RoninEngine::UI
     {
         // todo: fontWidth
         uid id = call_register_ui(this, parent);
-        auto& data = ui_get_element(id);
+        UIElement& data = call_get_element(this, id);
         data.text = text;
         data.rect = rect;
         data.prototype = RGUI_TEXT;
@@ -103,7 +102,7 @@ namespace RoninEngine::UI
     uid GUI::push_button(const std::string& text, const Rect& rect, ui_callback event_callback, uid parent)
     {
         uid id = call_register_ui(this, parent);
-        auto& data = ui_get_element(id);
+        UIElement& data = call_get_element(this, id);
         data.rect = rect;
         data.text = text;
         data.prototype = RGUI_BUTTON;
@@ -116,7 +115,7 @@ namespace RoninEngine::UI
     uid GUI::push_edit(const std::string& text, const Runtime::Rect& rect, uid parent)
     {
         uid id = call_register_ui(this, parent);
-        UIElement& element = ui_get_element(id);
+        UIElement& element = call_get_element(this, id);
 
         element.text = text;
         element.rect = rect;
@@ -128,7 +127,7 @@ namespace RoninEngine::UI
     {
         uid id = call_register_ui(this, parent);
 
-        auto& data = ui_get_element(id);
+        UIElement& data = call_get_element(this, id);
         data.prototype = RGUI_IMAGE;
         data.rect = rect;
         data.resources = sprite;
@@ -142,7 +141,7 @@ namespace RoninEngine::UI
         using T = typename std::iterator_traits<decltype(container.cbegin())>::value_type;
 
         uid id = call_register_ui(guiInstance, parent);
-        auto& element = call_get_element(guiInstance, id);
+        UIElement& element = call_get_element(guiInstance, id);
         element.prototype = RGUI_DROPDOWN;
         element.rect = rect;
         element.resources = factory_resource(element.prototype);
@@ -176,7 +175,7 @@ namespace RoninEngine::UI
     uid GUI::push_slider(float value, float min, float max, const Rect& rect, ui_callback_float changed, uid parent)
     {
         uid id = call_register_ui(this, parent);
-        auto& element = call_get_element(this, id);
+        UIElement& element = call_get_element(this, id);
         element.prototype = RGUI_HSLIDER;
         element.rect = rect;
         element.resources = factory_resource(element.prototype);
@@ -191,25 +190,25 @@ namespace RoninEngine::UI
 
     // property --------------------------------------------------------------------------------------------------------
 
-    void* GUI::get_resources(uid id) { return ui_get_element(id).resources; }
+    void* GUI::get_resources(uid id) { return call_get_element(this, id).resources; }
 
-    void GUI::set_resources(uid id, void* data) { ui_get_element(id).resources = data; }
+    void GUI::set_resources(uid id, void* data) { call_get_element(this, id).resources = data; }
 
-    Rect GUI::get_rect(uid id) { return ui_get_element(id).rect; }
-    void GUI::set_rect(uid id, const Rect& rect) { ui_get_element(id).rect = rect; }
+    Rect GUI::get_rect(uid id) { return call_get_element(this, id).rect; }
+    void GUI::set_rect(uid id, const Rect& rect) { call_get_element(this, id).rect = rect; }
 
-    std::string GUI::get_text(uid id) { return ui_get_element(id).text; }
-    void GUI::set_text(uid id, const std::string& text) { ui_get_element(id).text = text; }
+    std::string GUI::get_text(uid id) { return call_get_element(this, id).text; }
+    void GUI::set_text(uid id, const std::string& text) { call_get_element(this, id).text = text; }
 
-    void GUI::set_visible(uid id, bool state) { ui_get_element(id).options = (ui_get_element(id).options & ~ElementVisibleMask) | (ElementVisibleMask * (state == true)); }
-    bool GUI::get_visible(uid id) { return (ui_get_element(id).options & ElementVisibleMask) != 0; }
+    void GUI::set_visible(uid id, bool state) { call_get_element(this, id).options = (call_get_element(this, id).options & ~ElementVisibleMask) | (ElementVisibleMask * (state == true)); }
+    bool GUI::get_visible(uid id) { return (call_get_element(this, id).options & ElementVisibleMask) != 0; }
 
-    void GUI::set_enable(uid id, bool state) { ui_get_element(id).options = ((ui_get_element(id).options & ~ElementEnableMask)) | (ElementEnableMask * (state == true)); }
-    bool GUI::get_enable(uid id) { return (ui_get_element(id).options & ElementEnableMask) != 0; }
+    void GUI::set_enable(uid id, bool state) { call_get_element(this, id).options = ((call_get_element(this, id).options & ~ElementEnableMask)) | (ElementEnableMask * (state == true)); }
+    bool GUI::get_enable(uid id) { return (call_get_element(this, id).options & ElementEnableMask) != 0; }
 
     float GUI::get_slider_value(uid id)
     {
-        auto& elem = ui_get_element(id);
+        UIElement& elem = call_get_element(this, id);
 
         if (elem.prototype != RGUI_HSLIDER && elem.prototype != RGUI_VSLIDER) {
             throw std::runtime_error("id component is not slider");
@@ -220,7 +219,7 @@ namespace RoninEngine::UI
 
     void GUI::set_slider_value(uid id, float value)
     {
-        auto& elem = ui_get_element(id);
+        UIElement& elem = call_get_element(this, id);
 
         if (elem.prototype != RGUI_HSLIDER && elem.prototype != RGUI_VSLIDER) {
             throw std::runtime_error("id component is not slider");
@@ -231,12 +230,12 @@ namespace RoninEngine::UI
 
     // grouping-----------------------------------------------------------------------------------------------------------
 
-    bool GUI::is_group(uid id) { return ui_get_element(id).options & ElementGroupMask != 0; }
+    bool GUI::is_group(uid id) { return (call_get_element(this, id).options & ElementGroupMask) == ElementGroupMask; }
 
     void GUI::show_group_unique(uid id) throw()
     {
         if (!is_group(id))
-            throw std::runtime_error("Isn't group");
+            throw ronin_ui_cast_group_error();
 
         resources->ui_layer.layers.remove_if([this](auto v) { return is_group(v); });
 
@@ -245,7 +244,7 @@ namespace RoninEngine::UI
     void GUI::show_group(uid id) throw()
     {
         if (!is_group(id))
-            throw std::runtime_error("Isn't group");
+            throw ronin_ui_cast_group_error();
 
         auto iter = std::find_if(begin(resources->ui_layer.layers), end(resources->ui_layer.layers), std::bind2nd(std::equal_to<uid>(), id));
 
@@ -258,7 +257,7 @@ namespace RoninEngine::UI
     bool GUI::close_group(uid id) throw()
     {
         if (!is_group(id))
-            throw std::runtime_error("Isn't group");
+            throw ronin_ui_cast_group_error();
         resources->ui_layer.layers.remove(id);
         set_visible(id, false);
     }
@@ -285,8 +284,10 @@ namespace RoninEngine::UI
         resources->ui_layer.layers.clear();
         resources->ui_layer.elements.clear();
     }
-    void GUI::native_draw_render(SDL_Renderer* renderer)
+    void native_draw_render(GUI* gui, SDL_Renderer* renderer)
     {
+        GUIResources* resources = gui->resources;
+
         if (resources->visible == false)
             return;
 
@@ -294,9 +295,10 @@ namespace RoninEngine::UI
         UIElement* uielement;
         Vec2Int ms;
         std::deque<uid> ui_drains;
-        bool uiFocus;
-        bool uiHover;
-        bool uiContex;
+        bool ui_hover;
+        bool ui_contex;
+        bool ms_hover;
+        bool ms_click;
 
         ms = Input::get_mouse_point();
 
@@ -306,28 +308,30 @@ namespace RoninEngine::UI
         for (auto iter = begin(resources->ui_layer.layers); iter != end(resources->ui_layer.layers); ++iter)
             ui_drains.emplace_back(*iter);
 
+        ms_click = Input::is_mouse_up();
+
         while (ui_drains.empty() == false) {
             id = ui_drains.front();
-            uielement = &ui_get_element(id);
+            uielement = &call_get_element(gui, id);
 
-            uiHover = SDL_PointInRect((SDL_Point*)&ms, (SDL_Rect*)&uielement->rect);
-            uiContex = !uielement->contextRect.empty();
+            ms_hover = SDL_PointInRect((SDL_Point*)&ms, (SDL_Rect*)&uielement->rect);
+            ui_contex = !uielement->contextRect.empty();
 
             ui_drains.pop_front();
             if (!(uielement->options & ElementGroupMask) && uielement->options & ElementVisibleMask) {
-                uiFocus = id == resources->ui_layer.focusedID;
+                ui_hover = id == resources->ui_layer.focusedID;
 
                 // unfocus on click an not hovered
-                if (uiFocus && (!uiHover || !uiContex) && Input::is_mouse_up()) {
-                    uiFocus = false;
+                if (ui_hover && (!ms_hover || !ui_contex) && ms_click) {
+                    ui_hover = false;
                     resources->ui_layer.focusedID = 0;
                 }
 
-                if ((general_render_ui_section(this, *uielement, renderer, uiHover, uiFocus) || uiFocus) && resources->hitCast) {
+                if ((general_render_ui_section(gui, *uielement, renderer, ms_hover, ms_click && ms_hover, ui_hover)) && resources->hitCast) {
                     // Избавляемся от перекликов в UI
                     resources->_focusedUI = true;
 
-                    if (uiFocus) {
+                    if (ui_hover) {
                         resources->ui_layer.focusedID = id;
                     }
 
@@ -341,18 +345,18 @@ namespace RoninEngine::UI
                     }
                 } else { // disabled state
                     // TODO: disabled state for UI element's
-                    if (id == resources->ui_layer.focusedID && !uiFocus)
+                    if (id == resources->ui_layer.focusedID && !ui_hover)
                         resources->ui_layer.focusedID = 0;
                 }
                 if (!resources->_focusedUI)
-                    resources->_focusedUI = uiFocus;
+                    resources->_focusedUI = ui_hover;
             }
 
             if (resources->__level_owner->internal_resources->request_unloading)
                 break;
 
             for (auto iter = begin(uielement->childs); iter != end(uielement->childs); ++iter)
-                ui_drains.emplace_back(*iter );
+                ui_drains.emplace_back(*iter);
         }
     }
     void GUI::set_color_rgb(std::uint32_t rgb) { set_color_rgba(rgb << 8 | SDL_ALPHA_OPAQUE); }

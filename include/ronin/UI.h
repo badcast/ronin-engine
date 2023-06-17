@@ -30,10 +30,6 @@ namespace RoninEngine
         private:
             struct GUIResources* resources;
 
-            /// Register ui element and get unique ID
-            CI std::list<uid> get_groups();
-            CI UIElement& ui_get_element(uid id);
-
         public:
             CI GUI(Runtime::World*);
             CI virtual ~GUI();
@@ -138,8 +134,6 @@ namespace RoninEngine
 
             CI bool pop_element(uid id);
             CI void remove_all();
-
-            CI void native_draw_render(SDL_Renderer* renderer);
 
             CI void set_color_rgb(std::uint32_t rgb);
             CI void set_color_rgba(std::uint32_t argb);

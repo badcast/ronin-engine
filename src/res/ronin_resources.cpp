@@ -3,6 +3,7 @@
 #include "ronin.h"
 
 using namespace RoninEngine;
+using namespace RoninEngine::Exception;
 using namespace RoninEngine::Runtime;
 using namespace RoninEngine::Runtime::RoninMemory;
 using namespace RoninEngine::UI;
@@ -51,7 +52,7 @@ namespace RoninEngine::Runtime
         GidResources** resources;
 
         if (World::self() == nullptr) {
-            throw std::runtime_error("World not loaded. Local resource could not be load");
+            throw ronin_load_world_error();
         }
 
         resources = local ? &World::self()->internal_resources->external_local_resources : &external_global_resources;

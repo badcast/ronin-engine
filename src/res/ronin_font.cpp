@@ -20,7 +20,7 @@ namespace RoninEngine::UI
     void init_fonts(bool optimizeDeffects)
     {
         if (pfontTexture) {
-            throw std::runtime_error("Re initialization fail");
+            return;
         }
 
         if (RoninMemory::alloc_self(pLegacyFont) == nullptr)

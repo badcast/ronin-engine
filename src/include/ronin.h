@@ -81,6 +81,7 @@
 #undef private
 #undef protected
 
+#include "ronin_exception.h"
 #include "basic_ronin.h"
 
 #include "static.h"

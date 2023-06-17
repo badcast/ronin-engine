@@ -1,6 +1,7 @@
 #include "ronin.h"
 
 using namespace RoninEngine;
+using namespace RoninEngine::Exception;
 using namespace RoninEngine::Runtime;
 
 constexpr auto periodic_fahren = 5.0 / 9;
@@ -388,6 +389,6 @@ float Math::square_mesh(std::list<Vec2>& vecs)
     float S = -1;
 
     // TODO: написать алгоритм измерение площади произвольным фигурам
-    throw std::runtime_error("algorithm is not implemented");
+    throw ronin_implementation_error();
     return S;
 }

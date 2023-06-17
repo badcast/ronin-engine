@@ -1,5 +1,5 @@
 #include "ronin.h"
-
+using namespace RoninEngine::Exception;
 namespace RoninEngine::Runtime
 {
     template <>
@@ -30,6 +30,6 @@ namespace RoninEngine::Runtime
 void check_object(RoninEngine::Runtime::Object* obj)
 {
     if (obj->_type_ == nullptr) {
-        throw std::runtime_error("Object not defined!");
+        throw ronin_null_error();
     }
 }

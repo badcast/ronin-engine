@@ -18,7 +18,6 @@ namespace RoninEngine::Runtime
         virtual void runtime_destructs();
 
         virtual void level_render_world(SDL_Renderer* renderer, RoninEngine::ScoreWatcher* watcher);
-        virtual void level_render_ui(SDL_Renderer* renderer);
         virtual void level_render_world_late(SDL_Renderer* renderer);
         void matrix_nature(Transform* target, Vec2Int lastPoint);
         void matrix_nature(Transform* target, const Vec2Int& newPoint, const Vec2Int& lastPoint);

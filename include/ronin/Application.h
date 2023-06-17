@@ -48,7 +48,7 @@ namespace RoninEngine
         // Load world for simmulate
         static void load_world(Runtime::World* world, bool unloadPrevious = true);
         // Simulate world
-        static bool simulate();
+        static void simulate();
         // Request sent Quiting (Destroy current world)
         static void request_quit();
         // Get SDL Renderer

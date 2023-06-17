@@ -24,7 +24,7 @@ namespace RoninEngine::Runtime
 
     std::uint32_t TimeEngine::frame() { return internal_frames; }
 
-    std::uint32_t TimeEngine::tick_millis() { return SDL_GetTicks(); }
+    std::uint64_t TimeEngine::tick_millis() { return SDL_GetTicks64(); }
 
     void TimeEngine::begin_watch() { _watcher_time.push_back(tick_millis()); }
 
