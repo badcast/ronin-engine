@@ -33,7 +33,9 @@ cd ronin-engine
 mkdir build
 #into directory
 cd build
-#Building from type Release (see Debug, MinSizeRel, Release, RelWithDebInfo) from up directory (..)
+#set build type to Release (see Debug, MinSizeRel, Release, RelWithDebInfo) from up directory (..)
 cmake -DCMAKE_BUILD_TYPE=Release ..
+#building, optionally multithread for all threads (-j $(nproc))
+cmake --build . -j $(nproc)
 ```
 
