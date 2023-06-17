@@ -1,13 +1,5 @@
 # ronin-engine framework
 
-## Russian Language
-> Цель проекта: Обеспечение минимальной потребности для рендеринга объектов на большинства платформах (GNU/Linux, Windows, MacOS, Android, etc).
-------------
-#### Зависимости
-- **SDL2** - соопровождение движка визуализациями, так-же обеспечением движка ресурсами.
-- **just-parser** - библиотека по управлению конфигурациями ([just-parser](https://github.com/badcast/just-parser "just-parser"))
-- ****
-
 ```mermaid
 graph TB
 
@@ -22,6 +14,14 @@ _justparser --> _conf(Ronin Engine Configs)
 _ronin_engine --> _conf
 _ronin_engine --> _rgi(Init Game) --> _rgs(Game Input/Ouput) --> _rgw(World Load) --> _rgsi(Simulation) --> _rgc(Closing and unitializing) --> Ending[End]
 ```
+
+## [Ru]ssian Language
+> Цель проекта: Обеспечение минимальной потребности для рендеринга объектов на большинства платформах (GNU/Linux, Windows, MacOS).
+------------
+## Зависимости
+- **SDL2** - соопровождение движка визуализациями, так-же обеспечением движка ресурсами.
+- **just-parser** - библиотека по управлению конфигурациями ([just-parser](https://github.com/badcast/just-parser "just-parser"))
+
 ------------
 #### Как собрать движок?
 ```bash
