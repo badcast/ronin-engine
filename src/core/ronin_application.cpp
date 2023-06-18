@@ -56,10 +56,10 @@ namespace RoninEngine
         extern void ui_reset_controls();
     }
 
+    SDL_Renderer* renderer = nullptr;
     static bool internal_level_loaded = false;
     static bool m_levelAccept = false;
     static Runtime::World* destroyableLevel = nullptr;
-    static SDL_Renderer* renderer = nullptr;
     static SDL_Window* main_window = nullptr;
     static ScoreWatcher _wwatcher = {};
 
@@ -463,8 +463,6 @@ namespace RoninEngine
         SDL_DestroyRenderer(renderer);
         renderer = nullptr;
     }
-
-    SDL_Renderer* Application::get_renderer() { return renderer; }
 
     void Application::back_fail(void) { exit(EXIT_FAILURE); }
 

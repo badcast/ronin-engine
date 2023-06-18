@@ -184,7 +184,6 @@ namespace RoninEngine::Runtime
             for (std::size_t pointer = 0; pointer < size; ++pointer) {
                 Renderer* renderSource = robject[pointer];
                 memset(&wrapper, 0, sizeof(wrapper));
-                wrapper.renderer = renderer;
 #if USE_OMP
                 SDL_LockMutex(m);
 #endif
@@ -244,7 +243,6 @@ namespace RoninEngine::Runtime
             // drawing
             // clear
             memset(&wrapper, 0, sizeof wrapper);
-            wrapper.renderer = renderer;
 
             lightSource->get_light_source(&wrapper); // draw
 

@@ -28,7 +28,7 @@ namespace RoninEngine::Runtime
         if (main_camera())
             offset = main_camera()->transform()->position();
         Vec2 scale;
-        SDL_RenderGetScale(Application::get_renderer(), &scale.x, &scale.y);
+        SDL_RenderGetScale(renderer, &scale.x, &scale.y);
         scale *= pixelsPerPoint;
         screenPoint.x = ((res.width / 2.f - screenPoint.x) * -1) / scale.x;
         screenPoint.y = (res.height / 2.f - screenPoint.y) / scale.y;
@@ -42,7 +42,7 @@ namespace RoninEngine::Runtime
         Vec2 offset;
         if (main_camera())
             offset = main_camera()->transform()->position();
-        SDL_RenderGetScale(Application::get_renderer(), &scale.x, &scale.y);
+        SDL_RenderGetScale(RoninEngine::renderer, &scale.x, &scale.y);
         scale *= pixelsPerPoint;
         // Horizontal position
         worldPoint.x = (res.width / 2.f - (offset.x - worldPoint.x) * scale.x);
@@ -57,7 +57,7 @@ namespace RoninEngine::Runtime
         Vec2 scale, offset;
         if (main_camera())
             offset = main_camera()->transform()->position();
-        SDL_RenderGetScale(Application::get_renderer(), &scale.x, &scale.y);
+        SDL_RenderGetScale(RoninEngine::renderer, &scale.x, &scale.y);
         scale *= pixelsPerPoint;
         // Horizontal position
         viewportPoint.x = (res.width / 2.f - res.width * viewportPoint.x) * -1 / scale.x;
@@ -74,7 +74,7 @@ namespace RoninEngine::Runtime
         Vec2 offset;
         if (main_camera())
             offset = main_camera()->transform()->position();
-        SDL_RenderGetScale(Application::get_renderer(), &scale.x, &scale.y);
+        SDL_RenderGetScale(RoninEngine::renderer, &scale.x, &scale.y);
         scale *= pixelsPerPoint;
         // Horizontal position
         worldPoint.x = (res.width / 2.0f - (offset.x - worldPoint.x) * scale.x) / res.width;

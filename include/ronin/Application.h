@@ -48,8 +48,6 @@ namespace RoninEngine
         static void simulate();
         // Request sent Quiting (Destroy current world)
         static void request_quit();
-        // Get SDL Renderer
-        static SDL_Renderer* get_renderer();
         // Get resolution of screen
         static Resolution get_current_resolution();
         // Get resolution of active display

@@ -28,7 +28,7 @@ namespace RoninEngine::Runtime
         // scalars
 
         Vec2 scale;
-        SDL_RenderGetScale(Application::get_renderer(), &scale.x, &scale.y);
+        SDL_RenderGetScale(RoninEngine::renderer, &scale.x, &scale.y);
         scale *= pixelsPerPoint;
         dst.x = resolution.width / 2.f;
         dst.y = resolution.height / 2.f;
@@ -37,17 +37,17 @@ namespace RoninEngine::Runtime
         b.x = dst.x - (p.x - b.x) * scale.x;
         b.y = dst.y + (p.y - b.y) * scale.y;
 
-        SDL_RenderDrawLineF(Application::get_renderer(), a.x, a.y, b.x, b.y);
+        SDL_RenderDrawLineF(RoninEngine::renderer, a.x, a.y, b.x, b.y);
     }
 
     Color Gizmos::get_color()
     {
         Color clb;
-        SDL_GetRenderDrawColor(Application::get_renderer(), &clb.r, &clb.g, &clb.b, &clb.a);
+        SDL_GetRenderDrawColor(RoninEngine::renderer, &clb.r, &clb.g, &clb.b, &clb.a);
         return clb;
     }
 
-    void Gizmos::set_color(const Color& newColor) { SDL_SetRenderDrawColor(Application::get_renderer(), newColor.r, newColor.g, newColor.b, newColor.a); }
+    void Gizmos::set_color(const Color& newColor) { SDL_SetRenderDrawColor(RoninEngine::renderer, newColor.r, newColor.g, newColor.b, newColor.a); }
 
     void Gizmos::draw_line(Vec2 a, Vec2 b) { internal_drawLine(a, b); }
 
@@ -119,7 +119,7 @@ namespace RoninEngine::Runtime
         x = origin.x - width / 2;
         y = origin.y - height / 2;
 
-        rectangleColor(Application::get_renderer(), x, y, x + width, y + height, get_color());
+        rectangleColor(RoninEngine::renderer, x, y, x + width, y + height, get_color());
     }
 
     void Gizmos::draw_square_rounded(Vec2 origin, float width, std::uint16_t radius) { draw_rectangle_rounded(origin, width, width, radius); }
@@ -133,7 +133,7 @@ namespace RoninEngine::Runtime
         x = origin.x - width / 2;
         y = origin.y - height / 2;
 
-        roundedRectangleColor(Application::get_renderer(), x, y, x + width, y + height, radius, get_color());
+        roundedRectangleColor(RoninEngine::renderer, x, y, x + width, y + height, radius, get_color());
     }
 
     void Gizmos::draw_2D_world_space(const Vec2& origin, int depth)
@@ -239,7 +239,7 @@ namespace RoninEngine::Runtime
     void Gizmos::draw_text(Vec2 origin, const std::string& text)
     {
         origin = Camera::world_to_screen(origin);
-        RoninEngine::UI::draw_font_at(Application::get_renderer(), text, 11, Vec2::round_to_int(origin), get_color(), true);
+        RoninEngine::UI::draw_font_at(RoninEngine::renderer, text, 11, Vec2::round_to_int(origin), get_color(), true);
     }
     void Gizmos::draw_text_legacy(Vec2 origin, const std::string& text)
     {
@@ -250,7 +250,7 @@ namespace RoninEngine::Runtime
         r.x = static_cast<int>(origin.x);
         r.y = static_cast<int>(origin.y);
 
-        UI::render_string_legacy(Application::get_renderer(), r, text.c_str(), text.length(), 2);
+        UI::render_string_legacy(RoninEngine::renderer, r, text.c_str(), text.length(), 2);
     }
 
     void Gizmos::draw_circle(Vec2 origin, float distance)
@@ -262,7 +262,7 @@ namespace RoninEngine::Runtime
         r = static_cast<std::uint16_t>(distance * pixelsPerPoint);
         Color m_color = get_color();
 
-        circleRGBA(Application::get_renderer(), x, y, r, m_color.r, m_color.g, m_color.b, m_color.a);
+        circleRGBA(RoninEngine::renderer, x, y, r, m_color.r, m_color.g, m_color.b, m_color.a);
     }
 
     void Gizmos::draw_arrow(Vec2 origin, Vec2 dir, float tailLength)
@@ -285,7 +285,7 @@ namespace RoninEngine::Runtime
         height *= pixelsPerPoint;
         Rectf rect { center.x - width / 2, center.y - height / 2, width, height };
 
-        SDL_RenderFillRectF(Application::get_renderer(), reinterpret_cast<SDL_FRect*>(&rect));
+        SDL_RenderFillRectF(RoninEngine::renderer, reinterpret_cast<SDL_FRect*>(&rect));
     }
 
     void Gizmos::draw_fill_rect_rounded(Vec2 origin, float width, float height, uint16_t radius)
@@ -297,7 +297,7 @@ namespace RoninEngine::Runtime
         x = origin.x - width / 2;
         y = origin.y - height / 2;
 
-        roundedBoxColor(Application::get_renderer(), x, y, x + width, y + height, radius, get_color());
+        roundedBoxColor(RoninEngine::renderer, x, y, x + width, y + height, radius, get_color());
     }
 
     void Gizmos::draw_fill_square(Vec2 origin, float width)
@@ -306,7 +306,7 @@ namespace RoninEngine::Runtime
         width *= pixelsPerPoint;
         Rectf rect { origin.x - width / 2, origin.y - width / 2, width, width };
 
-        SDL_RenderFillRectF(Application::get_renderer(), reinterpret_cast<SDL_FRect*>(&rect));
+        SDL_RenderFillRectF(RoninEngine::renderer, reinterpret_cast<SDL_FRect*>(&rect));
     }
 
     void Gizmos::draw_fill_square_rounded(Vec2 origin, float width, std::uint16_t radius) { draw_fill_rect_rounded(origin, width, width, radius); }

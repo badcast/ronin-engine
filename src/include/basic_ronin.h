@@ -67,6 +67,7 @@ namespace std
 
 namespace RoninEngine
 {
+    extern SDL_Renderer* renderer;
     namespace UI
     {
         enum GUIControlPresents : std::uint8_t { RGUI_TEXT, RGUI_BUTTON, RGUI_EDIT, RGUI_HSLIDER, RGUI_VSLIDER, RGUI_IMAGE, RGUI_DROPDOWN };
@@ -109,7 +110,6 @@ namespace RoninEngine
             Rect src;
             Rectf dst;
             SDL_Texture* texture;
-            SDL_Renderer* renderer;
         };
 
         struct CameraResource {

@@ -35,19 +35,18 @@ namespace RoninEngine::Runtime
             fieldFogTexture->color(c);
         }
 
-        lastTarget = SDL_GetRenderTarget(render->renderer);
+        lastTarget = SDL_GetRenderTarget(renderer);
 
-        target = SDL_CreateTexture(render->renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TextureAccess::SDL_TEXTUREACCESS_TARGET, res.width, res.height);
+        target = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TextureAccess::SDL_TEXTUREACCESS_TARGET, res.width, res.height);
 
-        SDL_SetRenderTarget(render->renderer, target);
-        SDL_SetRenderDrawColor(render->renderer, 0, 0, 0, 55);
-        // SDL_RenderClear(render->renderer);
+        SDL_SetRenderTarget(renderer, target);
+        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 55);
 
         // Get light
-        this->get_light(render->renderer);
+        this->get_light(renderer);
 
-        SDL_SetRenderTarget(render->renderer, lastTarget);
-        SDL_RenderCopy(render->renderer, target, nullptr, nullptr); // copy
+        SDL_SetRenderTarget(renderer, lastTarget);
+        SDL_RenderCopy(renderer, target, nullptr, nullptr); // copy
         SDL_DestroyTexture(target);
     }
 } // namespace RoninEngine::Runtime

@@ -360,7 +360,7 @@ namespace RoninEngine::UI
         }
     }
     void GUI::set_color_rgb(std::uint32_t rgb) { set_color_rgba(rgb << 8 | SDL_ALPHA_OPAQUE); }
-    void GUI::set_color_rgba(std::uint32_t argb) { SDL_SetRenderDrawColor(Application::get_renderer(), (uid)(argb >> 24) & 0xFF, (uid)(argb >> 16) & 0xFF, (uid)(argb >> 8) & 0xFF, (uid)argb & 0xFF); }
+    void GUI::set_color_rgba(std::uint32_t argb) { SDL_SetRenderDrawColor(RoninEngine::renderer, (uid)(argb >> 24) & 0xFF, (uid)(argb >> 16) & 0xFF, (uid)(argb >> 8) & 0xFF, (uid)argb & 0xFF); }
     bool GUI::has_focused_ui() { return resources->_focusedUI; }
 
 } // namespace RoninEngine::UI
