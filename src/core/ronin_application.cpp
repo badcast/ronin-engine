@@ -167,17 +167,24 @@ namespace RoninEngine
         if (main_window)
             return;
 
-        std::uint32_t __flags = SDL_WINDOW_SHOWN;
+        std::uint32_t __flags = SDL_WINDOW_HIDDEN;
 
         if (fullscreen)
             __flags |= SDL_WINDOW_FULLSCREEN;
 
-        main_window = SDL_CreateWindow("Ronin Engine", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, resolution.width, resolution.height, __flags);
+        main_window = SDL_CreateWindow("Ronin Engine", 0, 0, resolution.width, resolution.height, __flags);
+
+        SDL_DisplayMode mode;
+        SDL_GetWindowDisplayMode(main_window, &mode);
+        SDL_SetWindowSize(main_window, mode.w, mode.h);
+        SDL_SetWindowPosition(main_window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
+
+        SDL_ShowWindow(main_window);
         if (!main_window)
             fail(SDL_GetError());
 
         // Brightness - Яркость
-        SDL_SetWindowBrightness(main_window, 1);
+        SDL_SetWindowBrightness(main_window, 1.f);
     }
 
     void Application::request_quit()

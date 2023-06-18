@@ -197,7 +197,7 @@ namespace RoninEngine::Runtime
                     Transform* render_parent = renderSource->transform();
                     if (render_parent->m_parent && renderSource->transform()->m_parent != get_root(World::self())) {
                         // get local position
-                        Vec2 direction = Vec2::one; // render_parent->p
+                        Vec2 direction = render_parent->p;
                         sourcePoint = Vec2::rotate_around(render_parent->m_parent->position(), direction, render_parent->angle() * Math::deg2rad);
                         //rTrans->localPosition(
                         //    Vec2::Max(direction, Vec2::RotateAround(Vec2::zero, direction, rTrans->angle() *
