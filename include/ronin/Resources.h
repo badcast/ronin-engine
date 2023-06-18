@@ -6,9 +6,6 @@ namespace RoninEngine
 {
     namespace Runtime
     {
-
-        enum { GCInvalidID = 0xffffffff };
-
         typedef std::uint32_t resource_id;
 
         class RONIN_API Resources

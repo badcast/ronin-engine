@@ -29,5 +29,9 @@ namespace RoninEngine
 
         Terrain2D* Component::get_terrain2D() { return _owner->get_terrain2D(); }
 
+        Component* Component::add_component(Component* component) { return game_object()->add_component(component); }
+
+        bool Component::remove_component(Component* component) { return game_object()->remove_component(component); }
+
     } // namespace Runtime
 } // namespace RoninEngine

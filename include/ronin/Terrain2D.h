@@ -35,7 +35,7 @@ namespace RoninEngine::Runtime
         Terrain2D(const Terrain2D& source);
         ~Terrain2D();
 
-        RoninEngine::AIPathFinder::NavMesh* surfaceMesh();
+        RoninEngine::AIPathFinder::NavMesh* get_navmesh2D();
 
         void load_from(const TerrainData& terrainData);
 

@@ -57,10 +57,10 @@ namespace RoninEngine::Runtime
         const bool object_destruction_state(GameObject* obj);
         const int object_destruction_count();
 
-        static std::list<Transform*> matrix_check_damaged();
-        static int matrix_restore();
-        static int matrix_restore(const std::list<Transform*>& damaged_content);
-
+        std::list<Transform*> matrix_check_damaged();
+        int matrix_restore();
+        int matrix_restore(const std::list<Transform*>& damaged_content);
+        int matrix_clear_cache();
 
         static World* self();
     };

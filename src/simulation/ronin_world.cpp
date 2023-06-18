@@ -206,7 +206,7 @@ namespace RoninEngine
     void World::matrix_nature(Transform* target, Vec2Int lastPoint) { matrix_nature(target, Vec2::round_to_int(target->position()), lastPoint); }
 
     // THIS is matrix get from world space
-    void World::matrix_nature(Runtime::Transform* target, const RoninEngine::Runtime::Vec2Int& newPoint, const RoninEngine::Runtime::Vec2Int& lastPoint)
+    void World::matrix_nature(Transform* target, const Vec2Int& newPoint, const Vec2Int& lastPoint)
     {
         if (newPoint == lastPoint)
             return;
@@ -216,14 +216,31 @@ namespace RoninEngine
 
         if (std::end(internal_resources->matrixWorld) != iter) {
             iter->second.erase(target);
-
-            // 2. erase empty matrix element
-            if (iter->second.empty())
-                internal_resources->matrixWorld.erase(iter);
+            /*
+                        // 2. erase empty matrix element
+                        if (iter->second.empty())
+                            internal_resources->matrixWorld.erase(iter);*/
         }
 
-        // 3. add new point source
+        // 3. add point to new source
         internal_resources->matrixWorld[newPoint].insert(target);
+    }
+
+    int World::matrix_clear_cache()
+    {
+        std::list<decltype(this->internal_resources->matrixWorld)::iterator> cached;
+        auto matrix = &this->internal_resources->matrixWorld;
+        for (auto iter = std::begin(internal_resources->matrixWorld), _end = std::end(internal_resources->matrixWorld); iter != _end; ++iter) {
+            if (iter->second.empty()) {
+                cached.emplace_back(iter);
+            }
+        }
+
+        for (auto& iter_ref : cached) {
+            internal_resources->matrixWorld.erase(iter_ref);
+        }
+
+        return cached.size();
     }
 
     void World::matrix_nature_pickup(Runtime::Transform* target)

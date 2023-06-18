@@ -92,4 +92,13 @@ namespace RoninEngine::Exception
         {
         }
     };
+
+    class ronin_transform_change_error : public ronin_base_error
+    {
+    public:
+        ronin_transform_change_error()
+            : ronin_base_error("This transform is not they are parent, or is main parent?")
+        {
+        }
+    };
 }

@@ -126,6 +126,17 @@ namespace RoninEngine::Runtime
         return id;
     }
 
+
+    SDL_Surface* Resources::get_surface(resource_id resource)
+    {
+        GidResources* gid;
+        gid = get_resource(resource);
+        resource &= ~RES_LOCAL_FLAG;
+        if (resource >= gid->gid_surfaces.size())
+            return nullptr;
+        return gid->gid_surfaces[resource];
+    }
+
     AudioClip* Resources::get_audio_clip(resource_id resource)
     {
         GidResources* gid;

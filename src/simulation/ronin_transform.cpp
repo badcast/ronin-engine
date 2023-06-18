@@ -207,8 +207,6 @@ namespace RoninEngine::Runtime
 
     const bool Transform::look_of_angle(Vec2 target, float maxAngle) const
     {
-        // float viewed_angle = Vec2::angle(turrets.front()->position() - __target, turrets.front()->position() - turrets.front()->forward());
-
         float angle = Vec2::angle(this->position() - target, this->position() - this->forward());
         return angle <= maxAngle * Math::deg2rad;
     }
@@ -288,7 +286,7 @@ namespace RoninEngine::Runtime
     void Transform::set_parent(Transform* parent, bool worldPositionStays)
     {
         if (this->m_parent == nullptr) {
-            throw std::runtime_error("This transform is not they are parent, or is main parent?");
+            throw RoninEngine::Exception::ronin_transform_change_error();
         }
         Vec2 lastParentPoint = this->m_parent->position();
         // change children of the parent

@@ -24,7 +24,7 @@ namespace RoninEngine::Runtime
     Sprite* Primitive::create_empty_sprite2D()
     {
         Sprite* sprite;
-        RoninMemory::alloc_self(sprite, surface, Rect { 0, 0, size.x, size.y });
+        RoninMemory::alloc_self(sprite);
         World::self()->internal_resources->offload_sprites.push_back(sprite);
         return sprite;
     }

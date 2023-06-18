@@ -24,7 +24,7 @@ namespace RoninEngine::Runtime
     Terrain2D::Terrain2D(const Terrain2D& source) { RoninMemory::alloc_self(navigation, source.navigation->width(), source.navigation->height()); }
     Terrain2D::~Terrain2D() { RoninMemory::free(navigation); }
 
-    AIPathFinder::NavMesh* Terrain2D::surfaceMesh() { return this->navigation; }
+    AIPathFinder::NavMesh* Terrain2D::get_navmesh2D() { return this->navigation; }
 
     void Terrain2D::load_from(const TerrainData& terrainData) { }
 

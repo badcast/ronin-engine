@@ -22,9 +22,12 @@ struct SDL_Rect {
     int x, y, w, h;
 };
 
+struct SDL_FRect {
+    float x, y, w, h;
+};
+
 typedef int SDL_BlendMode, SDL_TextureAccess, SDL_ScaleMode, SDL_Scancode, SDL_PixelFormatEnum;
 #endif
-
 
 #include "Defines.h"
 
