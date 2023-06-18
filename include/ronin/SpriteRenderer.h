@@ -52,9 +52,6 @@ namespace RoninEngine::Runtime
         void set_sprite(Sprite* sprite);
         Sprite* get_sprite();
 
-        void offset_from_local_position(Vec2 localPosition);
-        void offset_from_world_position(Vec2 worldPosition);
-
         void render(Rendering* rendering);
     };
 
