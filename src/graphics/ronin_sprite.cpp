@@ -2,22 +2,37 @@
 
 namespace RoninEngine::Runtime
 {
-Sprite::Sprite(SDL_Surface *src, const Rect &rect)
-:m_rect(rect), surface(src)
-{
+    Sprite::Sprite()
+        : m_center(Vec2::half)
+    {
+    }
 
-}
+    Sprite::Sprite(SDL_Surface* src, const Rect& rect)
+        : m_rect(rect)
+        , m_center(Vec2::half)
+        , surface(src)
+    {
+    }
 
-const Rect Sprite::rect() const { return this->m_rect; }
+    void Sprite::set_surface(SDL_Surface* surface)
+    {
+        this->surface = surface;
+
+        if (surface) {
+            m_rect = surface->clip_rect;
+        }
+    }
+
+    const Rect Sprite::rect() const { return this->m_rect; }
     void Sprite::rect(const Rect& rect) { this->m_rect = rect; }
 
     void Sprite::center(Vec2 center) { this->m_center = center; }
     const Vec2 Sprite::center() const { return m_center; }
 
-    const bool Sprite::valid() const{ return m_rect.w - m_rect.x >= 0 || m_rect.h - m_rect.y >= 0 || surface; }
+    const bool Sprite::valid() const { return m_rect.w - m_rect.x >= 0 || m_rect.h - m_rect.y >= 0 || surface; }
 
-    int Sprite::width() const{ return Math::abs(m_rect.w - m_rect.x); }
-    int Sprite::height() const{ return Math::abs(m_rect.h - m_rect.y); }
+    int Sprite::width() const { return Math::abs(m_rect.w - m_rect.x); }
+    int Sprite::height() const { return Math::abs(m_rect.h - m_rect.y); }
 
     Rect Sprite::realityRect(float&& opaque)
     {

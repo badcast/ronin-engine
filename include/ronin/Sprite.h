@@ -16,9 +16,11 @@ namespace RoninEngine::Runtime
     public:
         SDL_Surface* surface;
 
-        Sprite() = default;
+        Sprite();
         Sprite(SDL_Surface* src, const Rect& rect);
         Sprite(const Sprite&) = default;
+
+        void set_surface(SDL_Surface* surface);
 
         const Rect rect() const;
         void rect(const Rect& rect);

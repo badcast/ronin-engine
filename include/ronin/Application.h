@@ -19,10 +19,7 @@ namespace RoninEngine
         }
     };
 
-    enum class FullscreenMode {
-        Desktop,
-        Display
-    };
+    enum class FullscreenMode { Desktop, Display };
 
     struct ScoreWatcher {
         std::uint32_t ms_wait_exec_level;
@@ -44,7 +41,7 @@ namespace RoninEngine
         // Close and Utilize
         static void utilize();
         // Show main frame for simulation
-        static void show(Resolution resolution, bool fullscreen = false);
+        static void show(const Resolution& resolution, bool fullscreen = false);
         // Load world for simmulate
         static void load_world(Runtime::World* world, bool unloadPrevious = true);
         // Simulate world

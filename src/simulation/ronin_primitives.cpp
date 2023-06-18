@@ -21,6 +21,14 @@ namespace RoninEngine::Runtime
 
     Camera2D* Primitive::create_camera2D(Vec2 position) { return create_empty_game_object(position)->add_component<Camera2D>(); }
 
+    Sprite* Primitive::create_empty_sprite2D()
+    {
+        Sprite* sprite;
+        RoninMemory::alloc_self(sprite, surface, Rect { 0, 0, size.x, size.y });
+        World::self()->internal_resources->offload_sprites.push_back(sprite);
+        return sprite;
+    }
+
     Sprite* Primitive::create_sprite2D_box(Vec2 size, Color fillColor)
     {
         Sprite* sprite;
@@ -34,7 +42,7 @@ namespace RoninEngine::Runtime
         SDL_memset4(surface->pixels, fillColor, (int)size.x * (int)size.y);
         SDL_UnlockSurface(surface);
         World::self()->internal_resources->offload_surfaces.push_back(surface);
-        RoninMemory::alloc_self(sprite, surface, Rect{ 0, 0, size.x, size.y });
+        RoninMemory::alloc_self(sprite, surface, Rect { 0, 0, size.x, size.y });
         World::self()->internal_resources->offload_sprites.push_back(sprite);
         return sprite;
     }
@@ -55,7 +63,7 @@ namespace RoninEngine::Runtime
 
         SDL_DestroyRenderer(renderer);
         World::self()->internal_resources->offload_surfaces.push_back(surface);
-        RoninMemory::alloc_self(sprite, surface, Rect{ 0, 0, size.x, size.y });
+        RoninMemory::alloc_self(sprite, surface, Rect { 0, 0, size.x, size.y });
         World::self()->internal_resources->offload_sprites.push_back(sprite);
         return sprite;
     }
@@ -88,7 +96,7 @@ namespace RoninEngine::Runtime
         //        }
         //        SDL_UnlockSurface(surface);
         World::self()->internal_resources->offload_surfaces.push_back(surface);
-        RoninMemory::alloc_self(sprite, surface, Rect{ 0, 0, size.x, size.y });
+        RoninMemory::alloc_self(sprite, surface, Rect { 0, 0, size.x, size.y });
         World::self()->internal_resources->offload_sprites.push_back(sprite);
         return sprite;
     }

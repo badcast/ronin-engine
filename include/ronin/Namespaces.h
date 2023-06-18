@@ -1,5 +1,7 @@
 #pragma once
 
+#include "begin.h"
+
 // Pre declarations
 namespace RoninEngine
 {

@@ -162,7 +162,7 @@ namespace RoninEngine
         }
     }
 
-    void Application::show(RoninEngine::Resolution resolution, bool fullscreen)
+    void Application::show(const RoninEngine::Resolution& resolution, bool fullscreen)
     {
         if (main_window)
             return;
