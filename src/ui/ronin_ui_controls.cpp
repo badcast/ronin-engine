@@ -1,7 +1,13 @@
-#include <SDL2/SDL2_gfxPrimitives.h>
 #include "ronin.h"
 
+struct SliderResource {
+    float value;
+    float min;
+    float max;
+};
+
 #define DROPDOWN_RESOURCE std::pair<int, std::list<std::string>>
+#define SLIDER_RESOURCE SliderResource
 
 namespace RoninEngine::Runtime
 {
@@ -18,16 +24,17 @@ namespace RoninEngine::UI
         Color normalState;
         Color hoverState;
         Color pressState;
-        Color disabledState = Color::darkgray;
+        Color disabledState;
     };
 
     struct {
-        ElementInteraction defaultInteraction = { Color::ghostwhite, Color::white, Color::gainsboro };
+        ElementInteraction defaultInteraction = { Color::ghostwhite, Color::white, Color::gainsboro, Color::darkgray };
 
         Color dropdownText = Color::black;
         Color dropdownSelectedText = Color::lightslategrey;
         Color editText = Color::black;
         Color buttonText = Color::black;
+        Color buttonDownSide = Color::darkgray;
     } colorSpace;
 
     uid _controlId;
@@ -62,7 +69,7 @@ namespace RoninEngine::UI
             break;
         case RGUI_HSLIDER:
             // value, min, max members
-            resources = reinterpret_cast<ui_resource*>(RoninMemory::ronin_memory_alloc(sizeof(float) * 3));
+            resources = reinterpret_cast<ui_resource*>(RoninMemory::alloc<SLIDER_RESOURCE>());
             break;
         default:
             resources = nullptr;
@@ -78,7 +85,8 @@ namespace RoninEngine::UI
             RoninMemory::free(static_cast<DROPDOWN_RESOURCE*>(element->resources));
             break;
         case RGUI_HSLIDER:
-            RoninMemory::ronin_memory_free(element->resources);
+        case RGUI_VSLIDER:
+            RoninMemory::free(static_cast<SLIDER_RESOURCE*>(element->resources));
             break;
         }
     }
@@ -87,8 +95,13 @@ namespace RoninEngine::UI
     {
         // TODO: OPTIMIZE HERE (HIGH PRIORITY)
         static float dropDownLinear = 0;
-        Vec2Int ms = Input::get_mouse_point();
+        static Color colors[3];
         bool result = false;
+        Vec2Int ms = Input::get_mouse_point();
+        SDL_Texture* texture;
+        SDL_Surface* surface;
+        Rect rect;
+
         //        {
         //            // TODO: general drawing
 
@@ -110,19 +123,23 @@ namespace RoninEngine::UI
         case RGUI_BUTTON: {
             static uint8_t pSize = 2; // pen size
             static Rect inside = Rect(pSize, pSize, -pSize * 2, -pSize * 2);
+            bool show_down_side = Input::is_mouse_down() == false || !ms_hover;
             Rect rect;
 
             // fill
-            Color col(ms_hover ? Input::is_mouse_down() ? colorSpace.defaultInteraction.hoverState : colorSpace.defaultInteraction.pressState : colorSpace.defaultInteraction.normalState);
+            Color col(ms_hover ? colorSpace.defaultInteraction.pressState : colorSpace.defaultInteraction.normalState);
             rect = element.rect;
             rect += inside / 2;
             gui->set_color_rgb(col);
-            roundedBoxColor(renderer, rect.x, rect.y, rect.w + rect.x, rect.h + rect.y, 4, col);
+            if (show_down_side) {
+                roundedBoxColor(renderer, rect.x, rect.y, rect.w + rect.x, rect.h + rect.y, 4, colorSpace.buttonDownSide);
+            }
+            roundedBoxColor(renderer, rect.x, rect.y, rect.w + rect.x, rect.h + rect.y - (show_down_side ? 4 : 0), 4, col);
             // SDL_RenderFillRect(renderer, (SDL_Rect*)&rect);
 
             // render text
             // Render_String(render, element.rect, element.text.c_str(), element.text.size(), 13, TextAlign::MiddleCenter, true, uiHover);
-            draw_font_at(renderer, element.text, 12, rect.getXY() + rect.getWH() / 2, Color::gray, true);
+            draw_font_at(renderer, element.text, 12, rect.getXY() + (rect.getWH() - (show_down_side ? (Vec2Int::up * 4) : Vec2Int::zero)) / 2, Color::gray, true);
             result = ms_hover && ms_click;
             break;
         }
@@ -131,31 +148,31 @@ namespace RoninEngine::UI
             // uielement background
             static const int thickness = 2;
             static const Rect thick = { thickness, thickness, -thickness, -thickness };
-            Rect r = element.rect;
-            r += thick;
+            static const Rect thickPer { 1, 1, -1, -1 };
+            rect = element.rect;
+            rect += thick;
 
             // uielement background
             Gizmos::set_color((ms_hover) ? colorSpace.defaultInteraction.normalState : colorSpace.defaultInteraction.hoverState);
-            SDL_RenderFillRect(renderer, (SDL_Rect*)&r);
+            SDL_RenderFillRect(renderer, (SDL_Rect*)&rect);
             Gizmos::set_color(Color::gray);
             for (int x = 0; x < thickness; ++x) {
-                r -= Rect(1, 1, -1, -1);
-                SDL_RenderDrawRect(renderer, (SDL_Rect*)&r);
+                rect -= thickPer;
+                SDL_RenderDrawRect(renderer, (SDL_Rect*)&rect);
             }
 
             // draw main text
-            SDL_Texture* texture;
-            SDL_Surface* surf = TTF_RenderUTF8_Solid(pfont, element.text.c_str(), *reinterpret_cast<SDL_Color*>(&colorSpace.editText));
-            if ((texture = SDL_CreateTextureFromSurface(renderer, surf)) != nullptr) {
-                r = element.rect;
-                SDL_QueryTexture(texture, nullptr, nullptr, &r.w, &r.h);
-                r.x += 5;
-                r.y += element.rect.h / 2 - r.h / 2;
+            surface = TTF_RenderUTF8_Solid(pfont, element.text.c_str(), *reinterpret_cast<SDL_Color*>(&colorSpace.editText));
+            if ((texture = SDL_CreateTextureFromSurface(renderer, surface)) != nullptr) {
+                rect = element.rect;
+                SDL_QueryTexture(texture, nullptr, nullptr, &rect.w, &rect.h);
+                rect.x += 5;
+                rect.y += element.rect.h / 2 - rect.h / 2;
 
-                SDL_RenderCopy(renderer, texture, nullptr, (SDL_Rect*)&(r));
+                SDL_RenderCopy(renderer, texture, nullptr, (SDL_Rect*)&(rect));
 
                 SDL_DestroyTexture(texture);
-                SDL_FreeSurface(surf);
+                SDL_FreeSurface(surface);
             }
 
             // focusing intersection
@@ -176,7 +193,6 @@ namespace RoninEngine::UI
 
         case RGUI_HSLIDER: {
             float ratio;
-            SDL_Rect rect;
             float* value = (float*)element.resources;
             float* min = value + 1;
             float* max = min + 1;
@@ -361,16 +377,19 @@ namespace RoninEngine::UI
 
     void event_action(UIElement* element)
     {
-        if (!element->event)
+        if (element->event == nullptr)
             return;
 
         switch (element->prototype) {
         case RGUI_DROPDOWN:
-            ((ui_callback_integer)(element->event))(element->id, ((DROPDOWN_RESOURCE*)element->resources)->first);
+            ((ui_callback_integer)(element->event))(element->id, (static_cast<DROPDOWN_RESOURCE*>(element->resources)->first));
             break;
         case RGUI_BUTTON:
             ((ui_callback)(element->event))(element->id, element->resources);
             break;
+        case RGUI_HSLIDER:
+        case RGUI_VSLIDER:
+            ((ui_callback_float)(element->event))(element->id, static_cast<SLIDER_RESOURCE*>(element->resources)->value);
         }
     }
 
