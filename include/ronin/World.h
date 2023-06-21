@@ -60,6 +60,7 @@ namespace RoninEngine::Runtime
         std::list<Transform*> matrix_check_damaged();
         int matrix_restore();
         int matrix_restore(const std::list<Transform*>& damaged_content);
+        int matrix_count_cache();
         int matrix_clear_cache();
 
         static World* self();

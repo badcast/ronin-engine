@@ -219,11 +219,23 @@ namespace RoninEngine
             /*
                         // 2. erase empty matrix element
                         if (iter->second.empty())
-                            internal_resources->matrixWorld.erase(iter);*/
+                            internal_resources->matrixWorld.erase(iter);
+            */
         }
 
         // 3. add point to new source
         internal_resources->matrixWorld[newPoint].insert(target);
+    }
+
+    int World::matrix_count_cache()
+    {
+        int cached = 0;
+        auto& matrix = this->internal_resources->matrixWorld;
+        cached = static_cast<int>(std::count_if(matrix.begin(), matrix.end(), [](auto iobject) {
+            // predicate return
+            return (bool)(iobject.second.empty());
+        }));
+        return cached;
     }
 
     int World::matrix_clear_cache()
