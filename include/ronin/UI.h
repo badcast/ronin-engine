@@ -50,14 +50,14 @@ namespace RoninEngine
             CI void end_layment();
 
             CI uid push_layment_label(const std::string& text);
-            CI uid push_layment_button(const std::string& text, ui_callback_chars event_callback = nullptr);
+            CI uid push_layment_button(const std::string& text, ui_callback_void event_callback = nullptr);
             CI uid push_layment_edit(const std::string& text, ui_callback_chars event_callback = nullptr);
             CI uid push_layment_slider(float value, float min = 0.f, float max = 1.f, ui_callback_float value_changed = nullptr);
 
             CI uid push_label(const std::string& text, const Runtime::Rect& rect, const int& fontWidth = 13, uid parent = NOPARENT);
             CI uid push_label(const std::string& text, const Runtime::Vec2Int& point, const int& fontWidth = 13, uid parent = NOPARENT);
-            CI uid push_button(const std::string& text, const Runtime::Vec2Int& point, ui_callback event_callback = nullptr, uid parent = NOPARENT);
-            CI uid push_button(const std::string& text, const Runtime::Rect& point, ui_callback event_callback = nullptr, uid parent = NOPARENT);
+            CI uid push_button(const std::string& text, const Runtime::Vec2Int& point, ui_callback_void event_callback = nullptr, uid parent = NOPARENT);
+            CI uid push_button(const std::string& text, const Runtime::Rect& point, ui_callback_void event_callback = nullptr, uid parent = NOPARENT);
             CI uid push_edit(const std::string& text, const Runtime::Vec2Int& point, uid parent = NOPARENT);
             CI uid push_edit(const std::string& text, const Runtime::Rect& rect, uid parent = NOPARENT);
             CI uid push_picture(Runtime::Sprite* sprite, const Runtime::Rect& rect, uid parent = NOPARENT);

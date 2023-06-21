@@ -97,9 +97,9 @@ namespace RoninEngine::UI
     }
     uid GUI::push_label(const std::string& text, const Vec2Int& point, const int& fontWidth, uid parent) { return push_label(text, { point.x, point.y, 0, 0 }, fontWidth, parent); }
 
-    uid GUI::push_button(const std::string& text, const Vec2Int& point, ui_callback event_callback, uid parent) { return push_button(text, { point.x, point.y, defaultMakets.buttonSize.x, defaultMakets.buttonSize.y }, event_callback, parent); }
+    uid GUI::push_button(const std::string& text, const Vec2Int& point, ui_callback_void event_callback, uid parent) { return push_button(text, { point.x, point.y, defaultMakets.buttonSize.x, defaultMakets.buttonSize.y }, event_callback, parent); }
 
-    uid GUI::push_button(const std::string& text, const Rect& rect, ui_callback event_callback, uid parent)
+    uid GUI::push_button(const std::string& text, const Rect& rect, RoninEngine::UI::ui_callback_void event_callback, uid parent)
     {
         uid id = call_register_ui(this, parent);
         UIElement& data = call_get_element(this, id);

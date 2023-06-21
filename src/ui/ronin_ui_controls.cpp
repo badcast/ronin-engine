@@ -6,8 +6,7 @@ struct SliderResource {
     float max;
 };
 
-#define DROPDOWN_RESOURCE std::pair<int, std::list<std::string>>
-#define SLIDER_RESOURCE SliderResource
+typedef std::pair<int, std::list<std::string>> DropDownResource;
 
 namespace RoninEngine::Runtime
 {
@@ -65,11 +64,11 @@ namespace RoninEngine::UI
 
         switch (type) {
         case RGUI_DROPDOWN:
-            resources = reinterpret_cast<ui_resource*>(RoninMemory::alloc<DROPDOWN_RESOURCE>());
+            resources = reinterpret_cast<ui_resource*>(RoninMemory::alloc<DropDownResource>());
             break;
         case RGUI_HSLIDER:
             // value, min, max members
-            resources = reinterpret_cast<ui_resource*>(RoninMemory::alloc<SLIDER_RESOURCE>());
+            resources = reinterpret_cast<ui_resource*>(RoninMemory::alloc<SliderResource>());
             break;
         default:
             resources = nullptr;
@@ -82,11 +81,11 @@ namespace RoninEngine::UI
     {
         switch (element->prototype) {
         case RGUI_DROPDOWN:
-            RoninMemory::free(static_cast<DROPDOWN_RESOURCE*>(element->resources));
+            RoninMemory::free(static_cast<DropDownResource*>(element->resources));
             break;
         case RGUI_HSLIDER:
         case RGUI_VSLIDER:
-            RoninMemory::free(static_cast<SLIDER_RESOURCE*>(element->resources));
+            RoninMemory::free(static_cast<SliderResource*>(element->resources));
             break;
         }
     }
@@ -381,15 +380,15 @@ namespace RoninEngine::UI
             return;
 
         switch (element->prototype) {
-        case RGUI_DROPDOWN:
-            ((ui_callback_integer)(element->event))(element->id, (static_cast<DROPDOWN_RESOURCE*>(element->resources)->first));
-            break;
         case RGUI_BUTTON:
-            ((ui_callback)(element->event))(element->id, element->resources);
+            ((ui_callback_void)(element->event))(element->id);
+            break;
+        case RGUI_DROPDOWN:
+            ((ui_callback_integer)(element->event))(element->id, (static_cast<DropDownResource*>(element->resources)->first));
             break;
         case RGUI_HSLIDER:
         case RGUI_VSLIDER:
-            ((ui_callback_float)(element->event))(element->id, static_cast<SLIDER_RESOURCE*>(element->resources)->value);
+            ((ui_callback_float)(element->event))(element->id, static_cast<SliderResource*>(element->resources)->value);
         }
     }
 
