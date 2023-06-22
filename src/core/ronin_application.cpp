@@ -28,7 +28,7 @@ namespace RoninEngine
         std::uint32_t internal_start_engine_time;
         std::uint32_t internal_frames; // framecounter
         std::vector<std::uint32_t> _watcher_time;
-        int _matrix_overflow_ = 10;
+        int _matrix_overflow_ = 1;
         Vec2Int internal_mouse_point;
         std::uint8_t mouseState;
         std::uint8_t lastMouseState;
