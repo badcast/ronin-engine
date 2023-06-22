@@ -2,29 +2,16 @@
 
 #include "begin.h"
 
-namespace RoninEngine::Runtime
+namespace RoninEngine
 {
-    // serialize
-    enum FolderKind {
-        // graphics
-        SPRITES,
-        // SOUND
-        SOUND,
-        // MUSIC
-        MUSIC,
-        // LOADER
-        LOADER,
-        // LEVELS
-        LEVELS
+    class RONIN_API Path
+    {
+    public:
+        // Set Orgazniation and Application member use.
+        static void reg_application(const std::string &organization, const std::string &application);
+        // Get Execute Application directory
+        static const std::string app_dir();
+        // Get preference directory
+        static const std::string pref_dir();
     };
-
-    RONIN_API const char* applicationPath();
-
-    RONIN_API const char* prefDataPath();
-
-    RONIN_API const std::string dataPath();
-
-    RONIN_API const std::string getDataFrom(FolderKind type);
-
-    RONIN_API void release_sdlpaths();
-} // namespace RoninEngine::Runtime
+}

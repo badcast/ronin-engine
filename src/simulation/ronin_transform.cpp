@@ -5,6 +5,34 @@ namespace RoninEngine::Runtime
 {
     static const Vec2 around_frwd { 1, 1 };
 
+    // TODO: Using that function
+    std::string get_hierarchy_ofstring(Runtime::Transform* target)
+    {
+        static char delim = 0x32;
+        std::string delims;
+        std::string result;
+
+        std::list<Runtime::Transform*> stack;
+
+        while (target) {
+            for (auto& c : target->hierarchy) {
+                stack.emplace_back(c);
+            }
+
+            result += delims;
+            result += target->name();
+            result += "\n";
+
+            if (!stack.empty()) {
+                target = stack.front();
+                stack.pop_front();
+            } else
+                target = nullptr;
+        }
+
+        return result;
+    }
+
     void hierarchy_parent_change(Transform* from, Transform* newParent)
     {
         Transform* lastParent = from->m_parent;
