@@ -1,4 +1,5 @@
 #include "ronin.h"
+#include "ronin_matrix.h"
 
 namespace RoninEngine
 {
@@ -6,7 +7,6 @@ namespace RoninEngine
     {
         constexpr char _cloneStr[] = " (clone)";
 
-        extern Transform* get_root(World*);
         template <typename T>
         T* internal_factory_base(bool initInHierarchy, T* clone, const char* name)
         {
@@ -41,12 +41,12 @@ namespace RoninEngine
             if constexpr (std::is_same<T, GameObject>::value) {
                 if (initInHierarchy) {
                     if (World::self() == nullptr)
-                        throw std::runtime_error("pCurrentScene is null");
+                        throw std::runtime_error("self is null");
 
                     if (!World::self()->is_hierarchy())
-                        throw std::runtime_error("pCurrentScene->mainObject is null");
+                        throw std::runtime_error(">mainObject is null");
 
-                    auto mainObj = get_root(World::self())->game_object();
+                    auto mainObj = World::self()->internal_resources->main_object;
                     auto root = mainObj->transform();
                     Transform* tr = ((GameObject*)clone)->transform();
                     root->child_append(tr);
@@ -86,7 +86,7 @@ namespace RoninEngine
                 }
                 hierarchy_remove_all(obj);
                 // picking from matrix
-                World::self()->matrix_nature_pickup(obj);
+                Matrix::matrix_nature_pickup(obj);
             } else if constexpr (std::is_same<T, Behaviour>::value) {
                 WorldResources* wrs = World::self()->internal_resources;
                 if (wrs->_firstRunScripts)

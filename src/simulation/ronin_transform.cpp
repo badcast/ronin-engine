@@ -1,4 +1,5 @@
 #include "ronin.h"
+#include "ronin_matrix.h"
 
 namespace RoninEngine::Runtime
 {
@@ -16,7 +17,7 @@ namespace RoninEngine::Runtime
         }
 
         if (!newParent)
-            hierarchy_append(get_root(World::self()), from); // nullptr as Root
+            hierarchy_append(World::self()->internal_resources->main_object->transform(), from); // nullptr as Root
         else {
             from->m_parent = newParent;
             hierarchy_append(newParent, from);
@@ -68,7 +69,7 @@ namespace RoninEngine::Runtime
         _angle_ = 0;
         layer = 1;
         // set as default
-        World::self()->matrix_nature(this, Vec2::round_to_int(p + Vec2::one));
+        Matrix::matrix_nature(this, Matrix::matrix_get_key(_localPosition + Vec2::one));
     }
 
     int Transform::child_count() const { return hierarchy.size(); }
@@ -101,18 +102,18 @@ namespace RoninEngine::Runtime
 
         // normalize horz
         if (axis.x == 1) {
-            if (p.y < target.y)
+            if (_localPosition.y < target.y)
                 _angle_ = -_angle_;
         } else if (axis.x == -1) {
-            if (p.y > target.y)
+            if (_localPosition.y > target.y)
                 _angle_ = -_angle_;
         }
         // normalize vert
         if (axis.y == 1) {
-            if (p.x > target.x)
+            if (_localPosition.x > target.x)
                 _angle_ = -_angle_;
         } else if (axis.y == -1) {
-            if (p.x < target.x)
+            if (_localPosition.x < target.x)
                 _angle_ = -_angle_;
         }
     }
@@ -123,18 +124,18 @@ namespace RoninEngine::Runtime
         float a = Vec2::angle(axis, target - position()) * Math::rad2deg;
         // normalize
         if (axis.x == 1) {
-            if (p.y < target.y)
+            if (_localPosition.y < target.y)
                 a = -a;
         } else if (axis.x == -1) {
-            if (p.y > target.y)
+            if (_localPosition.y > target.y)
                 a = -a;
         }
 
         if (axis.y == 1) {
-            if (p.x > target.x)
+            if (_localPosition.x > target.x)
                 a = -a;
         } else if (axis.y == -1) {
-            if (p.x < target.x)
+            if (_localPosition.x < target.x)
                 a = -a;
         }
 
@@ -211,28 +212,28 @@ namespace RoninEngine::Runtime
         return angle <= maxAngle * Math::deg2rad;
     }
 
-    Vec2 Transform::local_position() const { return p; }
+    Vec2 Transform::local_position() const { return _localPosition; }
 
     const Vec2& Transform::local_position(const Vec2& value)
     {
-        if (value != p) {
-            Vec2Int lastPoint = Vec2::round_to_int(position());
-            p = value;
+        if (value != _localPosition) {
+            Vec2Int lastPoint = Matrix::matrix_get_key(position());
+            _localPosition = value;
             if (game_object()->is_active())
-                World::self()->matrix_nature(this, lastPoint);
+                Matrix::matrix_nature(this, lastPoint);
         }
         return value;
     }
 
-    Vec2 Transform::position() const { return (this->m_parent) ? this->m_parent->position() + p : p; }
+    Vec2 Transform::position() const { return (this->m_parent) ? this->m_parent->position() + _localPosition : _localPosition; }
 
     const Vec2& Transform::position(const Vec2& value)
     {
         if (value != position()) {
             Vec2 lastPoint = position();
-            p = (this->m_parent) ? this->m_parent->position() + value : value; // set the position
+            _localPosition = (this->m_parent) ? this->m_parent->position() + value : value; // set the position
             if (game_object()->is_active())
-                World::self()->matrix_nature(this, Vec2::round_to_int(lastPoint));
+                Matrix::matrix_nature(this, Matrix::matrix_get_key(lastPoint));
             for (Transform* chlid : hierarchy)
                 chlid->parent_notify(lastPoint);
         }
@@ -241,28 +242,28 @@ namespace RoninEngine::Runtime
 
     void Transform::parent_notify(Vec2 lastParentPoint)
     {
-        Vec2 lastPoint = lastParentPoint + p; // world cordinates
+        Vec2 lastPoint = lastParentPoint + _localPosition; // world cordinates
         if (game_object()->is_active())
-            World::self()->matrix_nature(this, Vec2::round_to_int(lastPoint));
+            Matrix::matrix_nature(this, Matrix::matrix_get_key(lastPoint));
         for (Transform* chlid : hierarchy)
             chlid->parent_notify(lastPoint);
     }
 
     void Transform::parent_notify_active_state(GameObject* from)
     {
-        Vec2Int pos = Vec2::round_to_int(this->position());
+        Vec2Int pos = Matrix::matrix_get_key(this->position());
         if (!from->is_active()) {
-            decltype(World::self()->internal_resources->matrixWorld)::iterator iter = World::self()->internal_resources->matrixWorld.find(pos);
+            decltype(World::self()->internal_resources->matrix)::iterator iter = World::self()->internal_resources->matrix.find(pos);
             // Delete from matrix
-            if (iter != std::end(World::self()->internal_resources->matrixWorld)) {
+            if (iter != std::end(World::self()->internal_resources->matrix)) {
                 iter->second.erase(transform());
                 if (iter->second.empty()) {
-                    World::self()->internal_resources->matrixWorld.erase(iter);
+                    World::self()->internal_resources->matrix.erase(iter);
                 }
             }
         } else {
             // Add to matrix
-            World::self()->internal_resources->matrixWorld[pos].insert(this);
+            World::self()->internal_resources->matrix[pos].insert(this);
         }
         // send in hierarchy
         for (Transform* chlid : hierarchy)

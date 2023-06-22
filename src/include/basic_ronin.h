@@ -188,7 +188,7 @@ namespace RoninEngine
 
             // destruction task (queue object)
             std::map<float, std::set<GameObject*>>* _destructTasks;
-            std::unordered_map<Vec2Int, std::set<Transform*>> matrixWorld;
+            std::unordered_map<Vec2Int, std::set<Transform*>> matrix;
 
             std::list<Light*> _assoc_lightings;
 
@@ -223,7 +223,6 @@ namespace RoninEngine
         void load_world(World*);
         bool unload_world(World*);
         std::tuple<std::map<int, std::set<Renderer*>>*, std::set<Light*>*> matrix_select(Camera* cam);
-        inline Transform* get_root(World* world) { return world->internal_resources->main_object->transform(); }
 
         void hierarchy_parent_change(Transform* from, Transform* newParent);
         void hierarchy_remove(Transform* from, Transform* off);

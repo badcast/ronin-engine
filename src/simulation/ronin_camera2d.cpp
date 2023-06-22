@@ -1,5 +1,10 @@
+#define USE_OMP 0
+
 #include "ronin.h"
+
+#if USE_OMP
 #include "omp.h"
+#endif
 
 // TODO: how to create shadow ? for all sprite renderer component
 using namespace RoninEngine;
@@ -58,7 +63,7 @@ namespace RoninEngine::Runtime
         }
     */
     template <typename list_type_render = std::vector<Renderer*>, typename list_type_light = std::set<Light*>>
-    std::tuple<std::map<int, list_type_render>*, list_type_light*> matrix_select(Camera2D* camera2d)
+    inline std::tuple<std::map<int, list_type_render>*, list_type_light*> matrix_select(Camera2D* camera2d)
     {
         // TODO: Fixing renderer object and selec matrix element own Set T List
         /*       This is projection: Algorithm storm member used.
@@ -91,31 +96,41 @@ namespace RoninEngine::Runtime
             Vec2Int wpLeftTop = Vec2::round_to_int(Camera::screen_to_world(Vec2::zero));
             Vec2Int wpRightBottom = Vec2::round_to_int(Camera::screen_to_world(Vec2(res.width, res.height)));
             Vec2 camera_position = camera2d->transform()->position();
-            // RUN STORM CAST
-            std::vector<Transform*> storm_result = Physics2D::storm_cast<std::vector<Transform*>>(camera_position, Math::number(Math::max(wpRightBottom.x - camera_position.x, wpRightBottom.y - camera_position.y)) + 1 + camera2d->distanceEvcall);
+// RUN STORM CAST
+#define OUT_CAST Physics2D::sphere_cast
+            std::vector<Transform*> storm_result = OUT_CAST<std::vector<Transform*>>(camera_position, Math::number(Math::max(wpRightBottom.x - camera_position.x, wpRightBottom.y - camera_position.y)) + 1 + camera2d->distanceEvcall);
             std::list<Renderer*> _removes;
             // собираем оставшиеся которые прикреплены к видимости
-            for (auto x = std::begin(camera2d->camera_resources->prev); x != std::end(camera2d->camera_resources->prev); ++x) {
+            for (auto x = std::begin(camera2d->camera_resources->prev); false && x != std::end(camera2d->camera_resources->prev); ++x) {
                 if (area_cast(*x, wpLeftTop, wpRightBottom)) {
                     camera2d->camera_resources->renders[(*x)->transform()->layer].emplace_back((*x));
                 } else {
-                    _removes.emplace_back((*x));
+                    //  _removes.emplace_back((*x));
                 }
             }
-
-            for (Renderer* y : _removes)
-                camera2d->camera_resources->prev.erase(y);
+            /**
+                        for (Renderer* y : _removes)
+                            camera2d->camera_resources->prev.erase(y);
+            **/
 
             // order by layer component
-
-            for (auto iter = std::begin(storm_result); iter != std::end(storm_result); ++iter) {
-                GameObject* touch = (*iter)->game_object();
-                std::list<Renderer*> rends = touch->get_components<Renderer>();
-                for (Renderer* x : rends) {
-                    camera2d->camera_resources->renders[x->transform()->layer].emplace_back(x);
-                    // camera2d->camera_resources->prev.insert(x);
+            if constexpr (std::is_same<list_type_render, std::vector<Renderer*>>::value) {
+                Renderer* r;
+                const int size = storm_result.size();
+                for (int x = 0; x < size; ++x) {
+                    for (auto iter = ++std::begin(storm_result[x]->_owner->m_components), yiter = std::end(storm_result[x]->_owner->m_components); iter != yiter; ++iter) {
+                        if (r = dynamic_cast<Renderer*>(*iter))
+                            camera2d->camera_resources->renders[r->transform()->layer].push_back(r);
+                    }
                 }
-            }
+            } else
+                for (auto iter = std::begin(storm_result); iter != std::end(storm_result); ++iter) {
+                    std::list<Renderer*> rends = (*iter)->game_object()->get_components<Renderer>();
+                    for (Renderer* x : rends) {
+                        camera2d->camera_resources->renders[x->transform()->layer].emplace_back(x);
+                        // camera2d->camera_resources->prev.insert(x);
+                    }
+                }
         }
 
         if (camera2d->camera_resources->_lightsOutResults.empty()) {
@@ -123,6 +138,7 @@ namespace RoninEngine::Runtime
         }
 
         return std::make_tuple(&(camera2d->camera_resources->renders), &(camera2d->camera_resources->_lightsOutResults));
+#undef OUT_CAST
     }
 
     Camera2D::Camera2D()
@@ -153,14 +169,14 @@ namespace RoninEngine::Runtime
     void Camera2D::render(SDL_Renderer* renderer, Rect rect, GameObject* root)
     {
 
-#define USE_OMP 0
-
-        Rendering wrapper;
-        Vec2 sourcePoint, point;
-        Color prevColor = Gizmos::get_color();
 #if USE_OMP
         SDL_mutex* m = SDL_CreateMutex();
 #endif
+        Rendering wrapper;
+        Vec2 sourcePoint, camera_position = transform()->position();
+        Color prevColor = Gizmos::get_color();
+        Transform* root_transform = root->transform();
+
         Gizmos::set_color(0xffc4c4c4);
         if (visibleGrids) {
             Gizmos::draw_2D_world_space(Vec2::zero);
@@ -175,58 +191,58 @@ namespace RoninEngine::Runtime
         SDL_RenderSetScale(renderer, scale.x, scale.y);
 
         // Render Objects
-        for (auto& layer : *(std::get<0>(filter))) {
-            std::vector<Renderer*>& robject = layer.second;
+
+        std::map<int, std::vector<Renderer*>>* layer = std::get<0>(filter);
+        for (auto iter = layer->begin(); iter != layer->end(); ++iter) {
+            std::vector<Renderer*>& robject = iter->second;
             int size = robject.size();
 #if USE_OMP
 #pragma omp parallel for private(sourcePoint) private(wrapper) private(point)
 #endif
             for (std::size_t pointer = 0; pointer < size; ++pointer) {
-                Renderer* renderSource = robject[pointer];
+                Renderer* render_iobject = robject[pointer];
+                Transform* render_transform = render_iobject->transform();
                 memset(&wrapper, 0, sizeof(wrapper));
 #if USE_OMP
                 SDL_LockMutex(m);
 #endif
-                renderSource->render(&wrapper); // draw
+                render_iobject->render(&wrapper); // draw
 #if USE_OMP
                 SDL_UnlockMutex(m);
 #endif
                 if (wrapper.texture) {
-                    point = transform()->position();
 
-                    Transform* render_parent = renderSource->transform();
-                    if (render_parent->m_parent && renderSource->transform()->m_parent != get_root(World::self())) {
-                        // get local position
-                        Vec2 direction = render_parent->p;
-                        sourcePoint = Vec2::rotate_around(render_parent->m_parent->position(), direction, render_parent->angle() * Math::deg2rad);
-                        //rTrans->localPosition(
-                        //    Vec2::Max(direction, Vec2::RotateAround(Vec2::zero, direction, rTrans->angle() *
-                        //    Mathf::Deg2Rad)));
-
+                    Transform* render_parent = render_transform->m_parent;
+                    if (render_parent == root_transform) {
+                        sourcePoint = render_transform->position();
                     } else {
-                        sourcePoint = render_parent->position();
+                        // local position is direction
+                        sourcePoint = Vec2::rotate_around(render_parent->position(), render_transform->_localPosition, render_parent->angle() * Math::deg2rad);
+                        // rTrans->localPosition(
+                        //     Vec2::Max(direction, Vec2::RotateAround(Vec2::zero, direction, rTrans->angle() *
+                        //     Mathf::Deg2Rad)));
                     }
 
                     wrapper.dst.w *= pixelsPerPoint; //_scale.x;
                     wrapper.dst.h *= pixelsPerPoint; //_scale.y;
 
-                    Vec2 arranged(wrapper.dst.x, wrapper.dst.y);
+                    Vec2 arranged = wrapper.dst.getXY();
                     if (arranged != Vec2::zero)
-                        arranged = Vec2::rotate_around(sourcePoint, arranged, renderSource->transform()->angle() * Math::deg2rad);
+                        arranged = Vec2::rotate_around(sourcePoint, arranged, render_transform->angle() * Math::deg2rad);
 
-                    sourcePoint += renderSource->get_offset();
+                    sourcePoint += render_iobject->get_offset();
 
                     // convert world to screen
 
                     // Положение по горизонтале
-                    wrapper.dst.x = arranged.x + ((rect.w - wrapper.dst.w) / 2.0f - (point.x - sourcePoint.x) * pixelsPerPoint);
+                    wrapper.dst.x = arranged.x + ((rect.w - wrapper.dst.w) / 2.0f - (camera_position.x - sourcePoint.x) * pixelsPerPoint);
                     // Положение по вертикале
-                    wrapper.dst.y = arranged.y + ((rect.h - wrapper.dst.h) / 2.0f + (point.y - sourcePoint.y) * pixelsPerPoint);
+                    wrapper.dst.y = arranged.y + ((rect.h - wrapper.dst.h) / 2.0f + (camera_position.y - sourcePoint.y) * pixelsPerPoint);
 #if USE_OMP
                     SDL_LockMutex(m);
 #endif
-                    // native renderer component
-                    SDL_RenderCopyExF(renderer, wrapper.texture, (SDL_Rect*)&wrapper.src, reinterpret_cast<SDL_FRect*>(&wrapper.dst), renderSource->transform()->angle(), nullptr, SDL_RendererFlip::SDL_FLIP_NONE);
+                    // draw to backbuffer
+                    SDL_RenderCopyExF(renderer, wrapper.texture, (SDL_Rect*)&wrapper.src, reinterpret_cast<SDL_FRect*>(&wrapper.dst), render_transform->angle(), nullptr, SDL_RendererFlip::SDL_FLIP_NONE);
                     SDL_DestroyTexture(wrapper.texture);
 #if USE_OMP
                     SDL_UnlockMutex(m);
@@ -234,35 +250,39 @@ namespace RoninEngine::Runtime
                 }
             }
         }
+
 #if USE_OMP
         SDL_DestroyMutex(m);
 #endif
 #undef USE_OMP
-        // Render Lights
-        for (auto lightSource : *std::get<1>(filter)) {
-            // drawing
-            // clear
-            memset(&wrapper, 0, sizeof wrapper);
+        // TODO: Render light
+        /*
+                // Render Lights
+                for (auto lightSource : *std::get<1>(filter)) {
+                    // drawing
+                    // clear
+                    memset(&wrapper, 0, sizeof wrapper);
 
-            lightSource->get_light_source(&wrapper); // draw
+                    lightSource->get_light_source(&wrapper); // draw
 
-            if (wrapper.texture) {
-                Vec2 point = transform()->position();
-                sourcePoint = lightSource->transform()->position();
+                    if (wrapper.texture) {
+                        Vec2 point = transform()->position();
+                        sourcePoint = lightSource->transform()->position();
 
-                wrapper.dst.w *= pixelsPerPoint;
+                        wrapper.dst.w *= pixelsPerPoint;
 
-                wrapper.dst.h *= pixelsPerPoint;
+                        wrapper.dst.h *= pixelsPerPoint;
 
-                // h
-                wrapper.dst.x += ((rect.w - wrapper.dst.w) / 2.0f - (point.x - sourcePoint.x) * pixelsPerPoint);
-                // v
-                wrapper.dst.y += ((rect.h - wrapper.dst.h) / 2.0f + (point.y - sourcePoint.y) * pixelsPerPoint);
+                        // h
+                        wrapper.dst.x += ((rect.w - wrapper.dst.w) / 2.0f - (point.x - sourcePoint.x) * pixelsPerPoint);
+                        // v
+                        wrapper.dst.y += ((rect.h - wrapper.dst.h) / 2.0f + (point.y - sourcePoint.y) * pixelsPerPoint);
 
-                SDL_RenderCopyExF(renderer, wrapper.texture, reinterpret_cast<SDL_Rect*>(&wrapper.src), reinterpret_cast<SDL_FRect*>(&wrapper.dst), lightSource->transform()->_angle_ - transform()->_angle_, nullptr, SDL_RendererFlip::SDL_FLIP_NONE);
-            }
-        }
-
+                        SDL_RenderCopyExF(renderer, wrapper.texture, reinterpret_cast<SDL_Rect*>(&wrapper.src), reinterpret_cast<SDL_FRect*>(&wrapper.dst), lightSource->transform()->_angle_ - transform()->_angle_, nullptr,
+           SDL_RendererFlip::SDL_FLIP_NONE);
+                    }
+                }
+        */
         if (visibleBorders) {
             float offset = 25 * std::max(1 - TimeEngine::deltaTime(), 0.5f);
             float height = 200 * TimeEngine::deltaTime();

@@ -1,5 +1,5 @@
 #include "ronin.h"
-
+#include "ronin_matrix.h"
 using namespace RoninEngine;
 using namespace RoninEngine::Exception;
 using namespace RoninEngine::Runtime;
@@ -152,9 +152,9 @@ namespace RoninEngine
     {
         std::list<Transform*> damaged;
 
-        for (auto x = std::begin(switched_world->internal_resources->matrixWorld); x != end(switched_world->internal_resources->matrixWorld); ++x) {
+        for (auto x = std::begin(switched_world->internal_resources->matrix); x != end(switched_world->internal_resources->matrix); ++x) {
             for (auto y = begin(x->second); y != end(x->second); ++y) {
-                if (Vec2::round_to_int((*y)->position()) != x->first) {
+                if (Matrix::matrix_get_key((*y)->position()) != x->first) {
                     damaged.emplace_back(*y);
                 }
             }
@@ -173,11 +173,11 @@ namespace RoninEngine
     {
         int restored = 0;
 
-        for (Runtime::Transform* dam : damaged_content) {
-            Vec2Int find = Vec2::round_to_int(dam->p);
-            auto vertList = switched_world->internal_resources->matrixWorld.find(find);
+        for (Transform* dam : damaged_content) {
+            Vec2Int find = Matrix::matrix_get_key(dam->position());
+            auto vertList = switched_world->internal_resources->matrix.find(find);
 
-            if (vertList == std::end(switched_world->internal_resources->matrixWorld))
+            if (vertList == std::end(switched_world->internal_resources->matrix))
                 continue;
 
             // FIXME: Hash function is collision
@@ -203,34 +203,11 @@ namespace RoninEngine
         return internal_resources->main_camera->camera_resources->renders.size();
     }
 
-    void World::matrix_nature(Transform* target, Vec2Int lastPoint) { matrix_nature(target, Vec2::round_to_int(target->position()), lastPoint); }
-
-    // THIS is matrix get from world space
-    void World::matrix_nature(Transform* target, const Vec2Int& newPoint, const Vec2Int& lastPoint)
-    {
-        if (newPoint == lastPoint)
-            return;
-
-        // 1. delete last point source
-        auto iter = internal_resources->matrixWorld.find(lastPoint);
-
-        if (std::end(internal_resources->matrixWorld) != iter) {
-            iter->second.erase(target);
-            /*
-                        // 2. erase empty matrix element
-                        if (iter->second.empty())
-                            internal_resources->matrixWorld.erase(iter);
-            */
-        }
-
-        // 3. add point to new source
-        internal_resources->matrixWorld[newPoint].insert(target);
-    }
 
     int World::matrix_count_cache()
     {
         int cached = 0;
-        auto& matrix = this->internal_resources->matrixWorld;
+        auto& matrix = this->internal_resources->matrix;
         cached = static_cast<int>(std::count_if(matrix.begin(), matrix.end(), [](auto iobject) {
             // predicate return
             return (bool)(iobject.second.empty());
@@ -240,31 +217,19 @@ namespace RoninEngine
 
     int World::matrix_clear_cache()
     {
-        std::list<decltype(this->internal_resources->matrixWorld)::iterator> cached;
-        auto matrix = &this->internal_resources->matrixWorld;
-        for (auto iter = std::begin(internal_resources->matrixWorld), _end = std::end(internal_resources->matrixWorld); iter != _end; ++iter) {
+        std::list<typename decltype(this->internal_resources->matrix)::iterator> cached {};
+        auto matrix = &this->internal_resources->matrix;
+        for (auto iter = std::begin(internal_resources->matrix), _end = std::end(internal_resources->matrix); iter != _end; ++iter) {
             if (iter->second.empty()) {
                 cached.emplace_back(iter);
             }
         }
 
         for (auto& iter_ref : cached) {
-            internal_resources->matrixWorld.erase(iter_ref);
+            internal_resources->matrix.erase(iter_ref);
         }
 
         return cached.size();
-    }
-
-    void World::matrix_nature_pickup(Runtime::Transform* target)
-    {
-        auto iter = internal_resources->matrixWorld.find(Vec2::round_to_int(target->position()));
-
-        if (std::end(internal_resources->matrixWorld) != iter) {
-            iter->second.erase(target);
-            // erase empty matrix element
-            if (iter->second.empty())
-                internal_resources->matrixWorld.erase(iter);
-        }
     }
 
     void World::push_light_object(Light* light) { internal_resources->_assoc_lightings.emplace_front(light); }

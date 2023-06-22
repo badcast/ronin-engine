@@ -240,10 +240,7 @@ namespace RoninEngine::Runtime
 
     Vec2Int Vec2::round_to_int(const Vec2& lhs)
     {
-        Vec2Int p;
-        p.x = static_cast<int>(lhs.x);
-        p.y = static_cast<int>(lhs.y);
-        return p;
+        return {static_cast<int>(lhs.x),static_cast<int>(lhs.y)};
     }
 
     bool Vec2::has_intersection(const Vec2& p, const Rectf& r) { return ((p.x >= r.x) && (p.x < (r.x + r.w)) && (p.y >= r.y) && (p.y < (r.y + r.h))); }

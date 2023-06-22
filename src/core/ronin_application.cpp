@@ -1,4 +1,5 @@
 #include "ronin.h"
+#include "ronin_matrix.h"
 
 using namespace RoninEngine::Runtime;
 using namespace RoninEngine::Exception;
@@ -27,7 +28,7 @@ namespace RoninEngine
         std::uint32_t internal_start_engine_time;
         std::uint32_t internal_frames; // framecounter
         std::vector<std::uint32_t> _watcher_time;
-
+        int _matrix_overflow_ = 10;
         Vec2Int internal_mouse_point;
         std::uint8_t mouseState;
         std::uint8_t lastMouseState;
@@ -167,13 +168,14 @@ namespace RoninEngine
         if (main_window)
             return;
 
-        std::uint32_t __flags = SDL_WINDOW_HIDDEN;
+        std::uint32_t __flags = SDL_WINDOW_HIDDEN | SDL_WINDOW_OPENGL;
 
         if (fullscreen)
             __flags |= SDL_WINDOW_FULLSCREEN;
 
         main_window = SDL_CreateWindow("Ronin Engine", 0, 0, resolution.width, resolution.height, __flags);
 
+        // Get valid resolution size
         SDL_DisplayMode mode;
         SDL_GetWindowDisplayMode(main_window, &mode);
         SDL_SetWindowSize(main_window, mode.w, mode.h);
@@ -225,7 +227,7 @@ namespace RoninEngine
             world->internal_resources->main_object->name("Main Object");
             world->internal_resources->main_object->transform()->name("Root");
             // pickup from renders
-            world->matrix_nature_pickup(world->internal_resources->main_object->transform());
+            Matrix::matrix_nature_pickup(world->internal_resources->main_object->transform());
         }
         m_levelAccept = false;
         internal_level_loaded = false;

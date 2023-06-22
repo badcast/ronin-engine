@@ -19,9 +19,6 @@ namespace RoninEngine::Runtime
 
         virtual void level_render_world(SDL_Renderer* renderer, RoninEngine::ScoreWatcher* watcher);
         virtual void level_render_world_late(SDL_Renderer* renderer);
-        void matrix_nature(Transform* target, Vec2Int lastPoint);
-        void matrix_nature(Transform* target, const Vec2Int& newPoint, const Vec2Int& lastPoint);
-        void matrix_nature_pickup(Transform* target);
 
         virtual void on_awake();
         virtual void on_start();

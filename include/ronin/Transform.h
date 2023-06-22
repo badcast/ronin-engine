@@ -10,7 +10,7 @@ namespace RoninEngine::Runtime
     {
     private:
         Transform* m_parent;
-        Vec2 p;
+        Vec2 _localPosition;
         float _angle_;
 
     protected:

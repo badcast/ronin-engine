@@ -1,5 +1,5 @@
-
 #include "ronin.h"
+#include "ronin_matrix.h"
 
 namespace RoninEngine::Runtime
 {
@@ -52,8 +52,8 @@ namespace RoninEngine::Runtime
                 ' * * * * * * * * *'
 
         */
-        std::unordered_map<Vec2Int, std::set<Transform*>>& mx = World::self()->internal_resources->matrixWorld;
-        Vec2Int ray = Vec2::round_to_int(origin);
+        std::unordered_map<Vec2Int, std::set<Transform*>>& mx = World::self()->internal_resources->matrix;
+        Vec2Int ray = Matrix::matrix_get_key(origin);
         std::uint64_t stormMember = 0;
         std::uint64_t stormFlags = 1;
         container_result result;
@@ -64,7 +64,7 @@ namespace RoninEngine::Runtime
                 std::uint32_t maxSteps = (stormMember >> 32);
 
                 // Шаг заканчивается (step = turnSteps) происходит поворот
-                if (steps % std::max(1u, (maxSteps / 4)) == 0) {
+                if (steps % Math::max(1u, (maxSteps / 4)) == 0) {
                     // переход на новое измерение
                     // при steps == maxsteps
                     if (steps == maxSteps) {
@@ -133,22 +133,23 @@ namespace RoninEngine::Runtime
     }
 
     template <typename container_result>
-    container_result Physics2D::rect_cast(Vec2 origin, float distance, int layer)
+    container_result Physics2D::rect_cast(Vec2 center, Vec2 size, int layer)
     {
-        auto& mx = World::self()->internal_resources->matrixWorld;
         container_result result;
+        auto& mx = World::self()->internal_resources->matrix;
 
-        Vec2Int env;
-        Vec2Int originRounded = Vec2::round_to_int(origin);
-        float distanceRounded = Math::ceil(distance);
-        distance *= distance;
-        for (env.x = originRounded.x - distanceRounded; env.x <= originRounded.x + distanceRounded; ++env.x) {
-            for (env.y = originRounded.y - distanceRounded; env.y <= originRounded.y + distanceRounded; ++env.y) {
-                auto findedIter = mx.find(env);
+        size = Vec2::abs(size) / 2.f;
+        Vec2Int leftUpPoint { Matrix::matrix_get_key(center - size) };
+        Vec2Int rightDownPoint { Matrix::matrix_get_key(center + size) };
+        Vec2Int pointer = leftUpPoint;
+
+        for (; pointer.x <= rightDownPoint.x; ++pointer.x) {
+            for (pointer.y = leftUpPoint.y; pointer.y <= rightDownPoint.y; ++pointer.y) {
+                auto findedIter = mx.find(pointer);
                 if (findedIter != std::end(mx)) {
-                    // filtering by distance
+                    // filtering
                     for (auto lhs : findedIter->second) {
-                        if ((lhs->position() - origin).sqr_magnitude() > distance)
+                        if ((lhs->layer & layer) == 0x0000)
                             continue;
                         if constexpr (std::is_same<container_result, std::set<Transform*>>::value)
                             result.insert(lhs);
@@ -171,23 +172,23 @@ namespace RoninEngine::Runtime
     container_result Physics2D::sphere_cast(Vec2 origin, float distance, int layer)
     {
         distance *= distance; // Sqr
-        container_result _cont = storm_cast_eq<container_result>(origin, Math::number(Math::ceil(distance)), layer, [distance](Vec2 lhs, Vec2 rhs) {
+        container_result result = storm_cast_eq<container_result>(origin, Math::number(Math::ceil(distance)), layer, [distance](Vec2 lhs, Vec2 rhs) {
             // condition
             return (lhs - rhs).sqr_magnitude() <= distance;
         });
-        return _cont;
+        return result;
     }
 
     template RONIN_API std::list<Transform*> Physics2D::storm_cast(Vec2, int, int);
-    template RONIN_API std::list<Transform*> Physics2D::rect_cast(Vec2, float, int);
+    template RONIN_API std::list<Transform*> Physics2D::rect_cast(Vec2, Vec2, int);
     template RONIN_API std::list<Transform*> Physics2D::sphere_cast(Vec2, float, int);
 
     template RONIN_API std::vector<Transform*> Physics2D::storm_cast(Vec2, int, int);
-    template RONIN_API std::vector<Transform*> Physics2D::rect_cast(Vec2, float, int);
+    template RONIN_API std::vector<Transform*> Physics2D::rect_cast(Vec2, Vec2, int);
     template RONIN_API std::vector<Transform*> Physics2D::sphere_cast(Vec2, float, int);
 
     template RONIN_API std::set<Transform*> Physics2D::storm_cast(Vec2, int, int);
-    template RONIN_API std::set<Transform*> Physics2D::rect_cast(Vec2, float, int);
+    template RONIN_API std::set<Transform*> Physics2D::rect_cast(Vec2, Vec2, int);
     template RONIN_API std::set<Transform*> Physics2D::sphere_cast(Vec2, float, int);
 
 } // namespace RoninEngine::Runtime
