@@ -49,5 +49,10 @@ namespace RoninEngine::Runtime
         return rect;
     }
 
+    void Terrain2D::free_render_cache()
+    {
+        //TODO: Free render cache for Terrain2D
+    }
+
     void Terrain2D::render(Rendering* render_info) { }
 } // namespace RoninEngine::Runtime

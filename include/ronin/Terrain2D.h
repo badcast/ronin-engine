@@ -41,9 +41,10 @@ namespace RoninEngine::Runtime
 
         const bool is_collider(const Vec2 destination);
 
-        Vec2 get_size() override;
-        Vec2 get_offset() override;
-        Rect get_relative_size() override;
-        void render(Rendering* render_info) override;
+        Vec2 get_size();
+        Vec2 get_offset();
+        Rect get_relative_size();
+        void free_render_cache();
+        void render(Rendering* render_info);
     };
 } // namespace RoninEngine::Runtime

@@ -96,9 +96,9 @@ namespace RoninEngine::Runtime
             Vec2Int wpLeftTop = Vec2::round_to_int(Camera::screen_to_world(Vec2::zero));
             Vec2Int wpRightBottom = Vec2::round_to_int(Camera::screen_to_world(Vec2(res.width, res.height)));
             Vec2 camera_position = camera2d->transform()->position();
-// RUN STORM CAST
-#define OUT_CAST Physics2D::sphere_cast
-            std::vector<Transform*> storm_result = OUT_CAST<std::vector<Transform*>>(camera_position, Math::number(Math::max(wpRightBottom.x - camera_position.x, wpRightBottom.y - camera_position.y)) + 1 + camera2d->distanceEvcall);
+            // RUN STORM CAST
+
+            std::vector<Transform*> storm_result = Physics2D::sphere_cast<std::vector<Transform*>>(camera_position, Math::number(Math::max(wpRightBottom.x - camera_position.x, wpRightBottom.y - camera_position.y)) + 1 + camera2d->distanceEvcall);
             std::list<Renderer*> _removes;
             // собираем оставшиеся которые прикреплены к видимости
             for (auto x = std::begin(camera2d->camera_resources->prev); false && x != std::end(camera2d->camera_resources->prev); ++x) {
@@ -138,7 +138,6 @@ namespace RoninEngine::Runtime
         }
 
         return std::make_tuple(&(camera2d->camera_resources->renders), &(camera2d->camera_resources->_lightsOutResults));
-#undef OUT_CAST
     }
 
     Camera2D::Camera2D()
@@ -195,21 +194,17 @@ namespace RoninEngine::Runtime
         std::map<int, std::vector<Renderer*>>* layer = std::get<0>(filter);
         for (auto iter = layer->begin(); iter != layer->end(); ++iter) {
             std::vector<Renderer*>& robject = iter->second;
-            int size = robject.size();
+            std::size_t size = robject.size();
 #if USE_OMP
-#pragma omp parallel for private(sourcePoint) private(wrapper) private(point)
+#pragma omp parallel for private(sourcePoint) private(wrapper)
 #endif
             for (std::size_t pointer = 0; pointer < size; ++pointer) {
                 Renderer* render_iobject = robject[pointer];
                 Transform* render_transform = render_iobject->transform();
                 memset(&wrapper, 0, sizeof(wrapper));
-#if USE_OMP
-                SDL_LockMutex(m);
-#endif
+
                 render_iobject->render(&wrapper); // draw
-#if USE_OMP
-                SDL_UnlockMutex(m);
-#endif
+
                 if (wrapper.texture) {
 
                     Transform* render_parent = render_transform->m_parent;
@@ -242,8 +237,11 @@ namespace RoninEngine::Runtime
                     SDL_LockMutex(m);
 #endif
                     // draw to backbuffer
-                    SDL_RenderCopyExF(renderer, wrapper.texture, (SDL_Rect*)&wrapper.src, reinterpret_cast<SDL_FRect*>(&wrapper.dst), render_transform->angle(), nullptr, SDL_RendererFlip::SDL_FLIP_NONE);
-                    SDL_DestroyTexture(wrapper.texture);
+                    SDL_RenderCopyExF(renderer, (*wrapper.texture), (SDL_Rect*)&wrapper.src, reinterpret_cast<SDL_FRect*>(&wrapper.dst), render_transform->angle(), nullptr, SDL_RendererFlip::SDL_FLIP_NONE);
+//                  if(pointer % 2 == 0){
+//                      SDL_DestroyTexture(*wrapper.texture);
+//                      (*wrapper.texture) = nullptr;
+//                  }
 #if USE_OMP
                     SDL_UnlockMutex(m);
 #endif

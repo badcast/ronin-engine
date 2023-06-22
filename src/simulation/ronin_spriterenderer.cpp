@@ -13,6 +13,7 @@ namespace RoninEngine::Runtime
     SpriteRenderer::SpriteRenderer(const std::string& name)
         : Renderer(DESCRIBE_AS_ONLY_NAME(SpriteRenderer))
         , sprite(nullptr)
+        , save_texture(nullptr)
         , flip(Vec2::one)
         , renderType(SpriteRenderType::Simple)
         , renderOut(SpriteRenderOut::Centering)
@@ -25,6 +26,7 @@ namespace RoninEngine::Runtime
     SpriteRenderer::SpriteRenderer(const SpriteRenderer& proto)
         : Renderer(proto.m_name)
         , sprite(proto.sprite)
+        , save_texture(nullptr)
         , size(proto.size)
         , renderType(proto.renderType)
         , renderOut(proto.renderOut)
@@ -35,7 +37,7 @@ namespace RoninEngine::Runtime
     {
     }
 
-    SpriteRenderer::~SpriteRenderer() { }
+    SpriteRenderer::~SpriteRenderer() { free_render_cache(); }
 
     Vec2 SpriteRenderer::get_size() { return Vec2::abs(this->size); }
 
@@ -70,6 +72,14 @@ namespace RoninEngine::Runtime
 
     Sprite* SpriteRenderer::get_sprite() { return this->sprite; }
 
+    void SpriteRenderer::free_render_cache()
+    {
+        if (save_texture) {
+            SDL_DestroyTexture(save_texture);
+            save_texture = nullptr;
+        }
+    }
+
     void SpriteRenderer::render(Rendering* rendering)
     {
         if (sprite == nullptr)
@@ -77,104 +87,107 @@ namespace RoninEngine::Runtime
 
         std::uint16_t x, y;
         SDL_Rect dest;
-        SDL_Texture* textureCache = nullptr;
-        auto& _srcRect = (rendering->src);
-        auto& _dstRect = (rendering->dst);
 
-        switch (this->renderType) {
-        case SpriteRenderType::Simple:
-            textureCache = SDL_CreateTextureFromSurface(renderer, sprite->surface);
-            _srcRect.w = sprite->width();
-            _srcRect.h = sprite->height();
-            _dstRect.w = sprite->width() * abs(this->size.x) / pixelsPerPoint;
-            _dstRect.h = sprite->height() * abs(this->size.y) / pixelsPerPoint;
-            switch (renderPresentMode) {
-                // render as fixed (Resize mode)
-            case SpriteRenderPresentMode::Fixed:
-                //                        _dstRect.w = sprite->width() * abs(this->size.x) / pixelsPerPoint;
-                //                        _dstRect.h = sprite->height() * abs(this->size.y) / pixelsPerPoint;
+        if (save_texture == nullptr) {
+            switch (this->renderType) {
+            case SpriteRenderType::Simple:
+                save_texture = SDL_CreateTextureFromSurface(renderer, sprite->surface);
+                rendering->src.w = sprite->width();
+                rendering->src.h = sprite->height();
+                rendering->dst.w = sprite->width() * abs(this->size.x) / pixelsPerPoint;
+                rendering->dst.h = sprite->height() * abs(this->size.y) / pixelsPerPoint;
+                switch (renderPresentMode) {
+                    // render as fixed (Resize mode)
+                case SpriteRenderPresentMode::Fixed:
+                    //                        rendering->dst.w = sprite->width() * abs(this->size.x) / pixelsPerPoint;
+                    //                        rendering->dst.h = sprite->height() * abs(this->size.y) / pixelsPerPoint;
+                    break;
+                    // render as cut
+                case SpriteRenderPresentMode::Place:
+                    rendering->src.w *= Math::abs(this->size.x);
+                    rendering->src.h *= Math::abs(this->size.y);
+                    break;
+                }
                 break;
-                // render as cut
-            case SpriteRenderPresentMode::Place:
-                _srcRect.w *= Math::abs(this->size.x);
-                _srcRect.h *= Math::abs(this->size.y);
-                break;
-            }
-            break;
-        case SpriteRenderType::Tile: {
-            _srcRect.w = abs(this->size.x) * sprite->width();
-            _srcRect.h = abs(this->size.y) * sprite->width();
-            _dstRect.w = sprite->width() * abs(this->size.x) / pixelsPerPoint;
-            _dstRect.h = sprite->height() * abs(this->size.y) / pixelsPerPoint;
+            case SpriteRenderType::Tile: {
+                rendering->src.w = abs(this->size.x) * sprite->width();
+                rendering->src.h = abs(this->size.y) * sprite->width();
+                rendering->dst.w = sprite->width() * abs(this->size.x) / pixelsPerPoint;
+                rendering->dst.h = sprite->height() * abs(this->size.y) / pixelsPerPoint;
 
-            // if (this->tileRenderPresent == SpriteRenderTile::Fixed) {
-            //     _srcRect.w = (_srcRect.w / sprite->width()) * sprite->width();
-            //     _srcRect.h = (_srcRect.h / sprite->height()) * sprite->height();
-            // }
+                // if (this->tileRenderPresent == SpriteRenderTile::Fixed) {
+                //     rendering->src.w = (rendering->src.w / sprite->width()) * sprite->width();
+                //     rendering->src.h = (rendering->src.h / sprite->height()) * sprite->height();
+                // }
 
-            // generate tiles
+                // generate tiles
+                save_texture = SDL_CreateTexture(renderer, sdl_default_pixelformat, SDL_TextureAccess::SDL_TEXTUREACCESS_TARGET, rendering->src.w, rendering->src.h);
+                if (save_texture == nullptr)
+                    Application::fail("Texture create fail");
 
-            textureCache = SDL_CreateTexture(renderer, sdl_default_pixelformat, SDL_TextureAccess::SDL_TEXTUREACCESS_TARGET, _srcRect.w, _srcRect.h);
-            if (textureCache == nullptr)
-                Application::fail("Texture create fail");
+                SDL_SetRenderTarget(renderer, save_texture);
 
-            SDL_SetRenderTarget(renderer, textureCache);
+                dest.w = sprite->width();
+                dest.h = sprite->height();
 
-            dest.w = sprite->width();
-            dest.h = sprite->height();
+                rendering->src.x = rendering->src.w / dest.w;
+                rendering->src.y = rendering->src.h / dest.h;
 
-            _srcRect.x = _srcRect.w / dest.w;
-            _srcRect.y = _srcRect.h / dest.h;
+                SDL_Texture* temp_texture = SDL_CreateTextureFromSurface(renderer, sprite->surface);
 
-            SDL_Texture* _texture = SDL_CreateTextureFromSurface(renderer, sprite->surface);
-
-            // render tile
-            switch (this->renderPresentMode) {
-            case SpriteRenderPresentMode::Fixed: {
-                for (x = 0; x < _srcRect.x; ++x) {
-                    for (y = 0; y < _srcRect.y; ++y) {
-                        dest.x = x * dest.w;
-                        dest.y = y * dest.h;
-                        SDL_RenderCopy(renderer, _texture, (SDL_Rect*)&sprite->m_rect, (SDL_Rect*)&dest);
+                // render tile
+                switch (this->renderPresentMode) {
+                case SpriteRenderPresentMode::Fixed: {
+                    for (x = 0; x < rendering->src.x; ++x) {
+                        for (y = 0; y < rendering->src.y; ++y) {
+                            dest.x = x * dest.w;
+                            dest.y = y * dest.h;
+                            SDL_RenderCopy(renderer, temp_texture, (SDL_Rect*)&sprite->m_rect, (SDL_Rect*)&dest);
+                        }
                     }
+                    break;
                 }
-                break;
-            }
-            case SpriteRenderPresentMode::Place: {
-                for (x = 0; x < _srcRect.x; ++x) {
-                    for (y = 0; y < _srcRect.y; ++y) {
-                        dest.x = x * dest.w;
-                        dest.y = y * dest.h;
+                case SpriteRenderPresentMode::Place: {
+                    for (x = 0; x < rendering->src.x; ++x) {
+                        for (y = 0; y < rendering->src.y; ++y) {
+                            dest.x = x * dest.w;
+                            dest.y = y * dest.h;
 
-                        SDL_RenderCopy(renderer, _texture, (SDL_Rect*)&sprite->m_rect, (SDL_Rect*)&dest);
+                            SDL_RenderCopy(renderer, temp_texture, (SDL_Rect*)&sprite->m_rect, (SDL_Rect*)&dest);
+                        }
                     }
-                }
-                // place remained
-                for (x = 0, dest.y = _srcRect.h / dest.h * dest.h, dest.h = size.y - dest.y; x < _srcRect.x; ++x) {
-                    dest.x = x * dest.w;
-                    SDL_RenderCopy(renderer, _texture, (SDL_Rect*)&sprite->m_rect, (SDL_Rect*)&dest);
-                }
-                ++_srcRect.y;
-                for (y = 0, dest.x = _srcRect.w / dest.w * dest.w, dest.h = sprite->height(), dest.w = size.x - dest.x; y < _srcRect.y; ++y) {
-                    dest.y = y * dest.h;
-                    SDL_RenderCopy(renderer, _texture, (SDL_Rect*)&sprite->m_rect, (SDL_Rect*)&dest);
-                }
+                    // place remained
+                    for (x = 0, dest.y = rendering->src.h / dest.h * dest.h, dest.h = size.y - dest.y; x < rendering->src.x; ++x) {
+                        dest.x = x * dest.w;
+                        SDL_RenderCopy(renderer, temp_texture, (SDL_Rect*)&sprite->m_rect, (SDL_Rect*)&dest);
+                    }
+                    ++rendering->src.y;
+                    for (y = 0, dest.x = rendering->src.w / dest.w * dest.w, dest.h = sprite->height(), dest.w = size.x - dest.x; y < rendering->src.y; ++y) {
+                        dest.y = y * dest.h;
+                        SDL_RenderCopy(renderer, temp_texture, (SDL_Rect*)&sprite->m_rect, (SDL_Rect*)&dest);
+                    }
 
+                    break;
+                }
+                }
+                SDL_DestroyTexture(temp_texture);
+                SDL_SetRenderTarget(renderer, nullptr);
                 break;
             }
-                SDL_DestroyTexture(_texture);
             }
-            SDL_SetRenderTarget(renderer, nullptr);
 
-        } break;
+            save_src = rendering->src;
+            save_dst = rendering->dst;
+        } else {
+            rendering->src = save_src;
+            rendering->dst = save_dst;
         }
+        rendering->dst.w *= flip.x;
+        rendering->dst.h *= flip.y;
 
-        _dstRect.w *= flip.x;
-        _dstRect.h *= flip.y;
+        rendering->dst.x -= offset.x;
+        rendering->dst.y -= offset.y;
 
-        _dstRect.x -= offset.x;
-        _dstRect.y -= offset.y;
-
-        rendering->texture = textureCache;
+        rendering->texture = &save_texture;
     }
 } // namespace RoninEngine::Runtime

@@ -18,6 +18,8 @@ namespace RoninEngine::Runtime
 
         virtual Rect get_relative_size() = 0;
 
+        virtual void free_render_cache() = 0;
+
         virtual void render(Rendering* rendering) = 0;
     };
 } // namespace RoninEngine::Runtime

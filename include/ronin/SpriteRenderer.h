@@ -29,6 +29,9 @@ namespace RoninEngine::Runtime
     {
     private:
         Sprite* sprite;
+        SDL_Texture* save_texture;
+        Rect save_src;
+        Rectf save_dst;
 
     public:
         SpriteRenderType renderType;
@@ -52,6 +55,7 @@ namespace RoninEngine::Runtime
         void set_sprite(Sprite* sprite);
         Sprite* get_sprite();
 
+        void free_render_cache();
         void render(Rendering* rendering);
     };
 
