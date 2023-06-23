@@ -188,6 +188,6 @@ namespace RoninEngine::Runtime
         rendering->dst.x -= offset.x;
         rendering->dst.y -= offset.y;
 
-        rendering->texture = &save_texture;
+        rendering->texture = save_texture;
     }
 } // namespace RoninEngine::Runtime

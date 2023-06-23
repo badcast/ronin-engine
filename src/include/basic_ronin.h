@@ -109,7 +109,7 @@ namespace RoninEngine
         struct Rendering {
             Rect src;
             Rectf dst;
-            SDL_Texture** texture;
+            SDL_Texture* texture;
         };
 
         struct CameraResource {

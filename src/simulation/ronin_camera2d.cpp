@@ -237,11 +237,7 @@ namespace RoninEngine::Runtime
                     SDL_LockMutex(m);
 #endif
                     // draw to backbuffer
-                    SDL_RenderCopyExF(renderer, (*wrapper.texture), (SDL_Rect*)&wrapper.src, reinterpret_cast<SDL_FRect*>(&wrapper.dst), render_transform->angle(), nullptr, SDL_RendererFlip::SDL_FLIP_NONE);
-//                  if(pointer % 2 == 0){
-//                      SDL_DestroyTexture(*wrapper.texture);
-//                      (*wrapper.texture) = nullptr;
-//                  }
+                    SDL_RenderCopyExF(renderer, wrapper.texture, (SDL_Rect*)&wrapper.src, reinterpret_cast<SDL_FRect*>(&wrapper.dst), render_transform->angle(), nullptr, SDL_RendererFlip::SDL_FLIP_NONE);
 #if USE_OMP
                     SDL_UnlockMutex(m);
 #endif
