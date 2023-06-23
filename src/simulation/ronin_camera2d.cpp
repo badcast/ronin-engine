@@ -278,7 +278,7 @@ namespace RoninEngine::Runtime
                 }
         */
         if (visibleBorders) {
-            float offset = 25 * std::max(1 - TimeEngine::deltaTime(), 0.5f);
+            float offset = 25 * std::max(1 - TimeEngine::deltaTime(), 0.1f);
             float height = 200 * TimeEngine::deltaTime();
 
             wrapper.dst.x = ((rect.w) / 2.0f);
