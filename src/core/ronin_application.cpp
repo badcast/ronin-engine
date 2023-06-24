@@ -97,29 +97,14 @@ namespace RoninEngine
         if (Mix_OpenAudio(MIX_DEFAULT_FREQUENCY, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS, 1024))
             fail("Fail open audio.");
 
-        /*if (initResources) {
-            std::string path = getDataFrom(FolderKind::LOADER);
-            std::string temp = path + "graphics.conf";
-            GC::LoadImages(temp.c_str());
-
-            // load textures
-            path = getDataFrom(FolderKind::LOADER);
-            temp = path + "sprites.conf";
-            GC::LoadImages(temp.c_str());
-
-            // Загрузка шрифта и оптимизация дэффектов
-            UI::Initialize_Fonts(true);
-            Levels::Level_Init();
-        }*/
+        // Загрузка шрифта и оптимизация дэффектов
+        //            UI::Initialize_Fonts(true);
 
         // Init level
         switched_world = nullptr;
 
         // Инициализация инструментов
         UI::ui_controls_init();
-
-        // Set cursor
-        // SDL_SetCursor(GC::GetCursor("cursor", {1, 1}));
     }
 
     void Application::utilize()
