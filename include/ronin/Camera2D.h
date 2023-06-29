@@ -5,9 +5,6 @@ namespace RoninEngine::Runtime
 {
     class RONIN_API Camera2D final : public Camera
     {
-    protected:
-        void render(SDL_Renderer* renderer, Rect rect, GameObject* root);
-
     public:
         std::uint16_t distanceEvcall;
 

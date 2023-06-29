@@ -8,7 +8,6 @@ namespace RoninEngine::Runtime
     {
     protected:
         struct CameraResource* camera_resources;
-        virtual void render(SDL_Renderer* renderer, Rect rect, GameObject* root) = 0;
 
     public:
         Camera(const std::string& name);

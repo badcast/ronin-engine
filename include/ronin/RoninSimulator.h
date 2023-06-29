@@ -3,6 +3,19 @@
 
 namespace RoninEngine
 {
+    struct Version {
+        std::uint8_t major;
+        std::uint8_t minor;
+        std::uint8_t patch;
+    };
+    struct VersionInfo {
+        Version Engine_Version;
+        Version SDL_Version;
+        Version SDL_TTF_Version;
+        Version SDL_IMG_Version;
+        Version SDL_Mix_Version;
+    };
+
     struct Resolution {
         // Display width
         int width;
@@ -11,10 +24,10 @@ namespace RoninEngine
         // Display refresh rate
         int hz;
 
-        Resolution(int w, int h, int _hz = 0)
-            : width(w)
-            , height(h)
-            , hz(_hz)
+        Resolution(int Width, int Height, int HZ = 0)
+            : width(Width)
+            , height(Height)
+            , hz(HZ)
         {
         }
     };
@@ -33,7 +46,7 @@ namespace RoninEngine
         std::uint32_t ms_wait_frame;
     };
 
-    class RONIN_API Application
+    class RONIN_API RoninSimulator
     {
     public:
         // First initing RoninEngine Library
@@ -53,11 +66,13 @@ namespace RoninEngine
         // Get resolution of active display
         static std::list<Resolution> get_display_resolutions();
         // Set resolution of active display
-        static bool set_display_resolution(Resolution new_resolution);
+        static bool set_display_resolution(const Resolution &new_resolution);
         // Set active window to fullscreen mode
         static bool set_display_fullscreen(FullscreenMode mode);
         // Get timming watches
         static ScoreWatcher get_watches();
+        // Get linked version
+        static VersionInfo get_version();
 
         // Message handler
 

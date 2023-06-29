@@ -2,6 +2,7 @@
 #define RONINENGINE_H_
 
 // C++ STL
+#include <iostream>
 #include <cstdio>
 #include <cstdint>
 #include <cstdlib>
@@ -43,7 +44,7 @@
 
 // applications
 #include "../../include/ronin/Time.h"
-#include "../../include/ronin/Application.h"
+#include "../../include/ronin/RoninSimulator.h"
 #include "../../include/ronin/Resources.h"
 #include "../../include/ronin/SystemInformation.h"
 
@@ -87,5 +88,5 @@
 #include "basic_ronin.h"
 
 #include "static.h"
-#include "Font.h"
+#include "font.h"
 #endif

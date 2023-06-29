@@ -19,7 +19,7 @@ namespace RoninEngine::Runtime
         Vec2 p = Camera::main_camera()->transform()->position();
         Vec2 dst;
 
-        Resolution resolution = Application::get_current_resolution();
+        Resolution resolution = RoninSimulator::get_current_resolution();
 
         // dst.x = ((rect.w - dst.w) / 2.0f - (point->x + sourcePoint->x) *
         // squarePerPixels); dst.y = ((rect.h - dst.h) / 2.0f + (point->y -
@@ -167,7 +167,7 @@ namespace RoninEngine::Runtime
         Color prev;
         Color next;
         int yDefault;
-        Resolution res = Application::get_current_resolution();
+        Resolution res = RoninSimulator::get_current_resolution();
 
         prev = get_color();
         set_color(next = 0xfff6f723);
@@ -250,7 +250,7 @@ namespace RoninEngine::Runtime
         r.x = static_cast<int>(origin.x);
         r.y = static_cast<int>(origin.y);
 
-        UI::render_string_legacy(RoninEngine::renderer, r, text.c_str(), text.length(), 2);
+        UI::render_string_legacy(r, text.c_str(), text.length(), 2);
     }
 
     void Gizmos::draw_circle(Vec2 origin, float distance)

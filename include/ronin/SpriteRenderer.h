@@ -46,7 +46,7 @@ namespace RoninEngine::Runtime
         SpriteRenderer();
         SpriteRenderer(const std::string& name);
         SpriteRenderer(const SpriteRenderer&);
-        virtual ~SpriteRenderer();
+        ~SpriteRenderer();
 
         Vec2 get_size();
         Vec2 get_offset();

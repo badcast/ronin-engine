@@ -39,22 +39,7 @@ namespace RoninEngine::UI
     uid _controlId;
     uid _focusedId;
 
-    TTF_Font* pfont;
-
-    void ui_controls_init()
-    {
-        TTF_Init();
-
-        // std::string path = getDataFrom(FolderKind::GFX) + "interface/arial.ttf";
-        auto raw = SDL_RWFromConstMem(raw_arial_font, raw_arial_length);
-        pfont = TTF_OpenFontRW(raw, SDL_TRUE, 14);
-    }
-
-    void ui_free_controls()
-    {
-        TTF_CloseFont(pfont);
-        TTF_Quit();
-    }
+    extern TTF_Font* ttf_arial_font;
 
     void ui_reset_controls() { _controlId = 0; }
 
@@ -90,7 +75,7 @@ namespace RoninEngine::UI
         }
     }
 
-    bool general_render_ui_section(GUI* gui, UIElement& element, SDL_Renderer* renderer, const bool ms_hover, const bool ms_click, bool& ui_focus)
+    bool general_render_ui_section(GUI* gui, UIElement& element, const bool ms_hover, const bool ms_click, bool& ui_focus)
     {
         // TODO: OPTIMIZE HERE (HIGH PRIORITY)
         static float dropDownLinear = 0;
@@ -161,7 +146,7 @@ namespace RoninEngine::UI
             }
 
             // draw main text
-            surface = TTF_RenderUTF8_Solid(pfont, element.text.c_str(), *reinterpret_cast<SDL_Color*>(&colorSpace.editText));
+            surface = TTF_RenderUTF8_Solid(ttf_arial_font, element.text.c_str(), *reinterpret_cast<SDL_Color*>(&colorSpace.editText));
             if ((texture = SDL_CreateTextureFromSurface(renderer, surface)) != nullptr) {
                 rect = element.rect;
                 SDL_QueryTexture(texture, nullptr, nullptr, &rect.w, &rect.h);
@@ -245,7 +230,7 @@ namespace RoninEngine::UI
             // Draw text
             char __[32];
 
-            TTF_SizeText(pfont, __, &rect.w, &rect.h);
+            TTF_SizeText(ttf_arial_font, __, &rect.w, &rect.h);
             sprintf(__, "%.1f", *value);
             Vec2Int tpos = { element.rect.x + element.rect.w - 22, element.rect.y + element.rect.h - 8 };
             draw_font_at(renderer, __, 1, tpos, color);
@@ -293,7 +278,7 @@ namespace RoninEngine::UI
 
             // draw main text
             SDL_Texture* texture;
-            SDL_Surface* surf = TTF_RenderUTF8_Blended(pfont, element.text.c_str(), *reinterpret_cast<SDL_Color*>(&colorSpace.dropdownText));
+            SDL_Surface* surf = TTF_RenderUTF8_Blended(ttf_arial_font, element.text.c_str(), *reinterpret_cast<SDL_Color*>(&colorSpace.dropdownText));
             if ((texture = SDL_CreateTextureFromSurface(renderer, surf)) != nullptr) {
                 r = element.rect;
                 r.x += 5;
@@ -343,7 +328,7 @@ namespace RoninEngine::UI
 
                         Gizmos::set_color(colorSpace.defaultInteraction.hoverState);
                         // Draw element text
-                        surf = TTF_RenderUTF8_Blended(pfont, iter->c_str(), *reinterpret_cast<SDL_Color*>(&(link->first != index ? colorSpace.dropdownText : colorSpace.dropdownSelectedText)));
+                        surf = TTF_RenderUTF8_Blended(ttf_arial_font, iter->c_str(), *reinterpret_cast<SDL_Color*>(&(link->first != index ? colorSpace.dropdownText : colorSpace.dropdownSelectedText)));
                         texture = SDL_CreateTextureFromSurface(renderer, surf);
                         SDL_QueryTexture(texture, nullptr, nullptr, &r.w, &r.h);
 
@@ -396,8 +381,8 @@ namespace RoninEngine::UI
     {
         SDL_Rect r;
 
-        TTF_SetFontSize(pfont, fontSize);
-        SDL_Surface* surf = TTF_RenderUTF8_Blended(pfont, text.c_str(), color);
+        TTF_SetFontSize(ttf_arial_font, fontSize);
+        SDL_Surface* surf = TTF_RenderUTF8_Blended(ttf_arial_font, text.c_str(), color);
         if (surf) {
             SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surf);
             r.w = surf->w;

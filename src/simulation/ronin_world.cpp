@@ -10,7 +10,6 @@ namespace RoninEngine
 {
     namespace Runtime
     {
-        extern World* switched_world;
         void WorldResources::event_camera_changed(Camera* target, CameraEvent state)
         {
             switch (state) {
@@ -203,7 +202,6 @@ namespace RoninEngine
         return internal_resources->main_camera->camera_resources->renders.size();
     }
 
-
     int World::matrix_count_cache()
     {
         int cached = 0;
@@ -230,6 +228,33 @@ namespace RoninEngine
         }
 
         return cached.size();
+    }
+
+    std::string World::get_hierarchy_as_tree() const
+    {
+        static char delim = 0x32;
+        std::string delims;
+        std::string result;
+        std::list<Runtime::Transform*> stack;
+        Transform* target = this->internal_resources->main_object->transform();
+
+        while (target) {
+            for (auto c : target->hierarchy) {
+                stack.emplace_back(c);
+            }
+
+            result += delims;
+            result += target->name();
+            result += "\n";
+
+            if (!stack.empty()) {
+                target = stack.front();
+                stack.pop_front();
+            } else
+                target = nullptr;
+        }
+
+        return result;
     }
 
     void World::push_light_object(Light* light) { internal_resources->_assoc_lightings.emplace_front(light); }
@@ -287,7 +312,7 @@ namespace RoninEngine
         }
     }
 
-    void World::level_render_world(SDL_Renderer* renderer, ScoreWatcher* watcher)
+    void World::level_render_world(ScoreWatcher* watcher)
     {
         // set default color
         Gizmos::set_color(Color::white);
@@ -324,20 +349,18 @@ namespace RoninEngine
         // Render on main camera
         Camera* cam = Camera::main_camera(); // Draw level from active camera (main)
         if (!switched_world->internal_resources->request_unloading && cam) {
-            Resolution res = Application::get_current_resolution();
-
             // FlushCache last result
             if (cam->camera_resources->targetClear)
                 cam->camera_resources->renders.clear();
 
             // draw world in world size
-            cam->render(renderer, { 0, 0, res.width, res.height }, internal_resources->main_object);
+            RoninEngine::Runtime::native_render_2D(reinterpret_cast<Camera2D*>(cam));
         }
         watcher->ms_wait_render_collect = TimeEngine::end_watch();
 
         // begin watcher
         TimeEngine::begin_watch();
-        if (!switched_world->internal_resources->request_unloading && Camera::main_camera()) {
+        if (!switched_world->internal_resources->request_unloading && cam) {
             if (internal_resources->_realtimeScripts) {
                 for (auto exec : *(internal_resources->_realtimeScripts)) {
                     if (exec->game_object()->m_active)
@@ -355,7 +378,7 @@ namespace RoninEngine
         watcher->ms_wait_destructions = TimeEngine::end_watch();
     }
 
-    void World::level_render_world_late(SDL_Renderer* renderer)
+    void World::level_render_world_late()
     {
         if (internal_resources->_realtimeScripts) {
             for (auto exec : *(internal_resources->_realtimeScripts)) {
@@ -407,7 +430,7 @@ namespace RoninEngine
     const bool World::object_desctruction_cancel(GameObject* obj)
     {
         if (!obj || !obj->exists()) {
-            Application::fail_oom_kill();
+            RoninSimulator::fail_oom_kill();
             return false;
         }
 
@@ -427,7 +450,7 @@ namespace RoninEngine
     {
         int x;
         if (!obj || !obj->exists()) {
-            Application::fail_oom_kill();
+            RoninSimulator::fail_oom_kill();
             return false;
         }
         if (World::self()->internal_resources->_destructTasks) {

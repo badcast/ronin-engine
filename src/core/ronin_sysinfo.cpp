@@ -42,18 +42,23 @@ int parseLine(char* line)
 
 int get_memory_used()
 {
-    char line[128];
-    int result = -1;
-    FILE* file = fopen("/proc/self/status", "r");
-
-    while (fgets(line, sizeof(line), file) != NULL) {
-        if (strncmp(line, "VmRSS:", 6) == 0) {
-            result = parseLine(line);
-            break;
+    char line[64];
+    int result;
+    std::ifstream file("/proc/self/status");
+    if (file.is_open()) {
+        while (!file.eof()) {
+            file.getline(line, sizeof(line));
+            if (strncmp(line, "VmRSS:", 6) == 0) {
+                result = parseLine(line);
+                break;
+            }
         }
-    }
-    fclose(file);
-    return result * 1024;
+        file.close();
+        // Unit To bytes
+        result *= 1024;
+    } else
+        result = -1;
+    return result;
 }
 
 #endif

@@ -106,8 +106,6 @@ namespace RoninEngine::Runtime
 
     const bool Input::is_mouse_down(int button) { return SDL_GetMouseState(nullptr, nullptr) & SDL_BUTTON_LMASK != 0; }
 
-    const bool Input::is_caps_lock() { return get_key(SDL_SCANCODE_CAPSLOCK); }
-
     const char Input::wheel_radix() { return mouseWheels; }
 
     const Vec2Int Input::get_mouse_point() { return internal_mouse_point; }
@@ -116,8 +114,8 @@ namespace RoninEngine::Runtime
 
     const Vec2 Input::get_axis() { return m_axis; }
 
-    const bool Input::get_key(SDL_Scancode code) { return static_cast<bool>(SDL_GetKeyboardState(nullptr)[code]); }
+    const bool Input::key_down(KeyboardCode code) { return static_cast<bool>(SDL_GetKeyboardState(nullptr)[code]); }
 
-    const bool Input::get_key_down(SDL_Scancode code) { return static_cast<bool>(SDL_GetKeyboardState(nullptr)[code]); }
+    const bool Input::key_up(KeyboardCode code) { return !static_cast<bool>(SDL_GetKeyboardState(nullptr)[code]); }
 
 } // namespace RoninEngine

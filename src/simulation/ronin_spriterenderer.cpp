@@ -2,7 +2,6 @@
 
 namespace RoninEngine::Runtime
 {
-
     // FIXME: OPTIMIZING SPRITE RENDERER COMPONENT
 
     SpriteRenderer::SpriteRenderer()
@@ -68,6 +67,9 @@ namespace RoninEngine::Runtime
             this->size = Vec2::one;
         }
         this->sprite = sprite;
+
+        // cache free from last sprite
+        free_render_cache();
     }
 
     Sprite* SpriteRenderer::get_sprite() { return this->sprite; }
@@ -123,7 +125,7 @@ namespace RoninEngine::Runtime
                 // generate tiles
                 save_texture = SDL_CreateTexture(renderer, sdl_default_pixelformat, SDL_TextureAccess::SDL_TEXTUREACCESS_TARGET, rendering->src.w, rendering->src.h);
                 if (save_texture == nullptr)
-                    Application::fail("Texture create fail");
+                    RoninSimulator::fail("Texture create fail");
 
                 SDL_SetRenderTarget(renderer, save_texture);
 
@@ -175,7 +177,6 @@ namespace RoninEngine::Runtime
                 break;
             }
             }
-
             save_src = rendering->src;
             save_dst = rendering->dst;
         } else {

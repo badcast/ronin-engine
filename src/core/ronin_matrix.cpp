@@ -13,35 +13,29 @@ namespace RoninEngine::Runtime
     // THIS is matrix get from world space
     void Matrix::matrix_nature(Transform* target, const Vec2Int& newPoint, const Vec2Int& lastPoint)
     {
+        // Ignore are not changed
         if (newPoint == lastPoint)
             return;
 
-        // 1. delete last point source
+        // Delete last point source
         auto iter = switched_world->internal_resources->matrix.find(lastPoint);
-
         if (std::end(switched_world->internal_resources->matrix) != iter) {
             iter->second.erase(target);
-            /*
-                        // 2. erase empty matrix element
-                        if (iter->second.empty())
-                            internal_resources->matrixWorld.erase(iter);
-            */
         }
 
-        // 3. add point to new source
+        // Add point to new source
         switched_world->internal_resources->matrix[newPoint].insert(target);
     }
 
-    void Matrix::matrix_nature_pickup(Runtime::Transform* target)
+    bool Matrix::matrix_nature_pickup(Transform* target)
     {
+        bool result;
         auto iter = switched_world->internal_resources->matrix.find(Matrix::matrix_get_key(target->position()));
 
-        if (std::end(switched_world->internal_resources->matrix) != iter) {
+        if (result = (std::end(switched_world->internal_resources->matrix) != iter)) {
             iter->second.erase(target);
-            // erase empty matrix element
-            if (iter->second.empty())
-                switched_world->internal_resources->matrix.erase(iter);
         }
+        return result;
     }
 
 }

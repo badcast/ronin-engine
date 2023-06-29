@@ -34,6 +34,8 @@ namespace RoninEngine::Runtime
     int Sprite::width() const { return Math::abs(m_rect.w - m_rect.x); }
     int Sprite::height() const { return Math::abs(m_rect.h - m_rect.y); }
 
+    const Vec2 Sprite::size() const { return { width() / pixelsPerPoint, height() / pixelsPerPoint }; }
+
     Rect Sprite::realityRect(float&& opaque)
     {
         // NOTE: Формула пикселей для SDL :: Y Offset * (Pitch/BytesPerPixel) + X Offset
@@ -82,7 +84,7 @@ namespace RoninEngine::Runtime
         return rect;
     }
 
-    Sprite* Sprite::spriteEmpty() { return Primitive::create_sprite2D_box(Vec2::one, Color::black); }
+    Sprite* Sprite::spriteEmpty() { return Primitive::create_empty_sprite2D(); }
     Sprite* Sprite::spriteBlack() { return Primitive::create_sprite2D_box(Vec2::one, Color::black); }
     Sprite* Sprite::spriteWhite() { return Primitive::create_sprite2D_box(Vec2::one, Color::white); }
 

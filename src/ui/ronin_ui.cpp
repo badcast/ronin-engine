@@ -10,11 +10,9 @@ namespace RoninEngine::UI
 
     extern ui_resource* factory_resource(GUIControlPresents type);
     extern void factory_free(UIElement* element);
-    extern bool general_render_ui_section(GUI* gui, UIElement& element, SDL_Renderer* renderer, const bool ms_hover, const bool ms_click, bool& ui_focus);
+    extern bool general_render_ui_section(GUI* gui, UIElement& element, const bool ms_hover, const bool ms_click, bool& ui_focus);
     extern void event_action(UIElement* element);
 
-    extern void ui_controls_init();
-    extern void ui_free_controls();
     extern void ui_reset_controls();
 
     uid call_register_ui(GUI* gui, uid parent = NOPARENT)
@@ -148,7 +146,7 @@ namespace RoninEngine::UI
         element.event = (void*)changed;
 
         if (!element.resources)
-            Application::fail_oom_kill();
+            RoninSimulator::fail_oom_kill();
 
         auto link = static_cast<std::pair<int, std::list<std::string>>*>(element.resources);
         link->first = index;
@@ -284,7 +282,7 @@ namespace RoninEngine::UI
         resources->ui_layer.layers.clear();
         resources->ui_layer.elements.clear();
     }
-    void native_draw_render(GUI* gui, SDL_Renderer* renderer)
+    void native_draw_render(GUI* gui)
     {
         GUIResources* resources = gui->resources;
 
@@ -327,7 +325,7 @@ namespace RoninEngine::UI
                     resources->ui_layer.focusedID = 0;
                 }
 
-                if ((general_render_ui_section(gui, *uielement, renderer, ms_hover, ms_click && ms_hover, ui_hover)) && resources->hitCast) {
+                if ((general_render_ui_section(gui, *uielement, ms_hover, ms_click && ms_hover, ui_hover)) && resources->hitCast) {
                     // Избавляемся от перекликов в UI
                     resources->_focusedUI = true;
 

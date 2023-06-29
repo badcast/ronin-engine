@@ -23,7 +23,7 @@ namespace RoninEngine::Runtime
 
     const Vec2 Camera::screen_to_world(Vec2 screenPoint)
     {
-        Resolution res = Application::get_current_resolution();
+        Resolution res = RoninSimulator::get_current_resolution();
         Vec2 offset;
         if (main_camera())
             offset = main_camera()->transform()->position();
@@ -37,7 +37,7 @@ namespace RoninEngine::Runtime
     }
     const Vec2 Camera::world_to_screen(Vec2 worldPoint)
     {
-        Resolution res = Application::get_current_resolution();
+        Resolution res = RoninSimulator::get_current_resolution();
         Vec2 scale;
         Vec2 offset;
         if (main_camera())
@@ -53,7 +53,7 @@ namespace RoninEngine::Runtime
 
     const Vec2 Camera::viewport_to_world(Vec2 viewportPoint)
     {
-        Resolution res = Application::get_current_resolution();
+        Resolution res = RoninSimulator::get_current_resolution();
         Vec2 scale, offset;
         if (main_camera())
             offset = main_camera()->transform()->position();
@@ -69,7 +69,7 @@ namespace RoninEngine::Runtime
 
     const Vec2 Camera::world_to_viewport(Vec2 worldPoint)
     {
-        Resolution res = Application::get_current_resolution();
+        Resolution res = RoninSimulator::get_current_resolution();
         Vec2 scale;
         Vec2 offset;
         if (main_camera())

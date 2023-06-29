@@ -1,8 +1,16 @@
 #include "ronin.h"
 
+// get internal resources
+#include "../res/fonts/ronin_font_arial.hpp"
+#include "../res/fonts/ronin_font-arealike.png.hpp"
+#include "../res/fonts/ronin_font-arealike-hi.png.hpp"
+
 namespace RoninEngine::UI
 {
     using namespace RoninEngine::Runtime;
+
+    constexpr int font_arealike_width = 13;
+    constexpr int font_arealike_height = 18;
 
     struct Font_t {
         SDL_Surface* surfNormal;
@@ -14,25 +22,27 @@ namespace RoninEngine::UI
     Font_t* pLegacyFont = nullptr;
     uint8_t VH[] { 0, 32, 16, 2, 34, 18, 1, 33, 17 };
 
-    SDL_Texture* pfontTexture = nullptr;
-    SDL_Texture* pfontTextureHilight = nullptr;
+    TTF_Font* ttf_arial_font = nullptr;
 
     void init_fonts(bool optimizeDeffects)
     {
-        if (pfontTexture) {
+        if (ttf_arial_font) {
             return;
         }
 
+        auto raw = SDL_RWFromConstMem(raw_arial_font, raw_arial_length);
+        ttf_arial_font = TTF_OpenFontRW(raw, SDL_TRUE, 14);
+
         if (RoninMemory::alloc_self(pLegacyFont) == nullptr)
-            Application::fail_oom_kill();
-        /* TODO: Load internal font
-        if ((pLegacyFont->surfNormal = Resources::GetSurface("font-arealike")) == nullptr)
+            RoninSimulator::fail_oom_kill();
+
+        if ((pLegacyFont->surfNormal = private_load_surface(font_arealike_png, font_arealike_png_len)) == nullptr)
             throw std::bad_alloc();
 
-        if ((pLegacyFont->surfHilight = Resources::GetSurface("font-arealike-hi")) == nullptr)
-            throw std::bad_alloc();*/
+        if ((pLegacyFont->surfHilight = private_load_surface(font_arealike_hi_png, font_arealike_hi_png_len)) == nullptr)
+            throw std::bad_alloc();
 
-        pLegacyFont->fontSize = { fontWidth, fontHeight };
+        pLegacyFont->fontSize = { font_arealike_width, font_arealike_height };
 
         // Структурирование шрифта
         {
@@ -80,13 +90,9 @@ namespace RoninEngine::UI
                     deltay += pLegacyFont->fontSize.y;
             }
         }
-
         // convert surface to texture
         /*  TODO:: Resources::gc_alloc_sdl_texture(&pfontTexture, pLegacyFont->surfNormal);
            Resources::gc_alloc_sdl_texture(&pfontTextureHilight, pLegacyFont->surfHilight);*/
-
-        if (pfontTexture == nullptr || pfontTextureHilight == nullptr)
-            Application::fail("error initialization fonts");
 
         if (optimizeDeffects) {
             SDL_Surface* model = pLegacyFont->surfNormal;
@@ -139,6 +145,12 @@ namespace RoninEngine::UI
         }
     }
 
+    void free_fonts()
+    {
+        RoninMemory::free(pLegacyFont);
+        TTF_CloseFont(ttf_arial_font);
+    }
+
     int Single_TextWidth_WithCyrilic(const std::string& text, int fontSize)
     {
         int width = 0;
@@ -148,25 +160,29 @@ namespace RoninEngine::UI
         return width;
     }
 
-    void render_string_legacy(SDL_Renderer* renderer, Rect rect, const char* text, int len, int pfontWidth, RoninEngine::UI::TextAlign textAlign, bool textWrap, bool hilight)
+    void render_string_legacy(Rect rect, const char* text, int len, int fontWidth, RoninEngine::UI::TextAlign textAlign, bool textWrap, bool hilight)
     {
-        if (len <= 0 || !pfontTexture || hilight && !pfontTextureHilight)
+        if (text == nullptr || len <= 0)
             return;
 
         std::uint8_t temp;
         Rect* src;
         std::uint16_t pos;
         SDL_Rect dst = *(SDL_Rect*)&rect;
-        Vec2Int fontSize = pLegacyFont->fontSize + Vec2Int::one * (pfontWidth - fontWidth);
-        SDL_Texture* targetpfont = nullptr;
-        int textWidth = Single_TextWidth_WithCyrilic(text, pfontWidth);
+        Vec2Int fontSize = pLegacyFont->fontSize + Vec2Int::one * (fontWidth - font_arealike_width);
+        SDL_Texture* __fontTexture;
+        int textWidth = Single_TextWidth_WithCyrilic(text, fontWidth);
 
         if (!rect.w)
             rect.w = textWidth;
         if (!rect.h)
             rect.h = pLegacyFont->fontSize.y; // todo: для мультий строк требуется вычислить h высоту
 
-        targetpfont = hilight ? pfontTextureHilight : pfontTexture;
+        if (hilight) {
+            __fontTexture = SDL_CreateTextureFromSurface(renderer, pLegacyFont->surfNormal);
+        } else {
+            __fontTexture = SDL_CreateTextureFromSurface(renderer, pLegacyFont->surfHilight);
+        }
 
         // x
         temp = (VH[textAlign] >> 4 & 15);
@@ -209,12 +225,14 @@ namespace RoninEngine::UI
                 // отрисовываем остаток входящую в область
                 dst.w = Math::max(0, Math::min(deltax - dst.x, dst.w));
                 // if (dst.x <= src.x + src.w && dst.y <= src.y + src.h)
-                SDL_RenderCopy(renderer, targetpfont, (SDL_Rect*)src, &dst);
+                SDL_RenderCopy(renderer, __fontTexture, (SDL_Rect*)src, &dst);
                 dst.x += src->w;
             } else {
                 dst.x = begin.x;
                 dst.y += src->h;
             }
         }
+
+        SDL_DestroyTexture(__fontTexture);
     }
 } // namespace RoninEngine::UI

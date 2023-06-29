@@ -47,15 +47,20 @@ namespace RoninEngine::Runtime
 
     inline GidResources* get_resource(resource_id id) { return (id & RES_LOCAL_FLAG) ? World::self()->internal_resources->external_local_resources : external_global_resources; }
 
-    inline GidResources* make_resource(const std::string& path, resource_id* id, bool local)
+    inline GidResources* make_resource(resource_id* resultId, bool local)
     {
         GidResources** resources;
 
-        if (World::self() == nullptr) {
-            throw ronin_load_world_error();
+        if (local) {
+            if (World::self() == nullptr) {
+                throw ronin_load_world_error();
+            }
+            resources = &World::self()->internal_resources->external_local_resources;
+            (*resultId) = RES_LOCAL_FLAG;
+        } else {
+            resources = &external_global_resources;
+            (*resultId) = 0;
         }
-
-        resources = local ? &World::self()->internal_resources->external_local_resources : &external_global_resources;
 
         if ((*resources) == nullptr) {
             RoninMemory::alloc_self((*resources));
@@ -64,12 +69,18 @@ namespace RoninEngine::Runtime
             (*resources)->gid_music_clips.reserve(16);
         }
 
-        if (local)
-            (*id) = RES_LOCAL_FLAG;
-        else
-            (*id) = 0;
-
         return *resources;
+    }
+
+    SDL_Surface* private_load_surface(const void* memres, int length)
+    {
+        resource_id __result;
+        SDL_Surface* surf = IMG_Load_RW(SDL_RWFromConstMem(memres, length), SDL_TRUE);
+        if (surf != nullptr) {
+            make_resource(&__result, false)->gid_surfaces.emplace_back(surf);
+        }
+
+        return surf;
     }
 
     resource_id Resources::load_surface(const std::string& path, bool local)
@@ -80,10 +91,10 @@ namespace RoninEngine::Runtime
         SDL_Surface* surf = IMG_Load(path.c_str());
 
         if (surf == nullptr) {
-            Application::fail("img: \"" + path + "\" can not load");
+            RoninSimulator::fail("img: \"" + path + "\" can not load");
         }
 
-        gid = make_resource(path, &id, local);
+        gid = make_resource(&id, local);
         id |= gid->gid_surfaces.size();
 
         gid->gid_surfaces.emplace_back(surf);
@@ -98,10 +109,10 @@ namespace RoninEngine::Runtime
         Mix_Chunk* chunk = Mix_LoadWAV(path.c_str());
 
         if (chunk == nullptr) {
-            Application::fail("sound: \"" + path + "\" can not load");
+            RoninSimulator::fail("sound: \"" + path + "\" can not load");
         }
 
-        gid = make_resource(path, &id, local);
+        gid = make_resource(&id, local);
         id |= gid->gid_audio_clips.size();
 
         gid->gid_audio_clips.emplace_back(RoninMemory::alloc<AudioClip>(chunk));
@@ -116,16 +127,15 @@ namespace RoninEngine::Runtime
         Mix_Music* music = Mix_LoadMUS(path.c_str());
 
         if (music == nullptr) {
-            Application::fail("music: \"" + path + "\" can not load");
+            RoninSimulator::fail("music: \"" + path + "\" can not load");
         }
 
-        gid = make_resource(path, &id, local);
+        gid = make_resource(&id, local);
         id |= gid->gid_music_clips.size();
 
         gid->gid_music_clips.emplace_back(RoninMemory::alloc<MusicClip>(music));
         return id;
     }
-
 
     SDL_Surface* Resources::get_surface(resource_id resource)
     {

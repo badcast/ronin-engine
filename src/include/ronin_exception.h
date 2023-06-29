@@ -12,6 +12,7 @@ namespace RoninEngine::Exception
         {
         }
     };
+
     class ronin_init_error : public ronin_base_error
     {
     public:

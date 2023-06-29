@@ -25,7 +25,7 @@ const std::string Path::app_dir()
     char* base_dir = SDL_GetBasePath();
 
     if (base_dir == nullptr) {
-        Application::fail(SDL_GetError());
+        RoninSimulator::fail(SDL_GetError());
     }
 
     std::string str { base_dir };
@@ -39,7 +39,7 @@ const std::string Path::pref_dir()
     char* prefPath = SDL_GetPrefPath(__organization__.c_str(), __application__.c_str());
 
     if (prefPath == nullptr) {
-        Application::fail(SDL_GetError());
+        RoninSimulator::fail(SDL_GetError());
     }
 
     std::string str { prefPath };

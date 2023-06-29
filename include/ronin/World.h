@@ -17,8 +17,8 @@ namespace RoninEngine::Runtime
         std::string m_name;
         virtual void runtime_destructs();
 
-        virtual void level_render_world(SDL_Renderer* renderer, RoninEngine::ScoreWatcher* watcher);
-        virtual void level_render_world_late(SDL_Renderer* renderer);
+        virtual void level_render_world(RoninEngine::ScoreWatcher* watcher);
+        virtual void level_render_world_late();
 
         virtual void on_awake();
         virtual void on_start();
@@ -59,6 +59,8 @@ namespace RoninEngine::Runtime
         int matrix_restore(const std::list<Transform*>& damaged_content);
         int matrix_count_cache();
         int matrix_clear_cache();
+
+        std::string get_hierarchy_as_tree() const;
 
         static World* self();
     };

@@ -11,6 +11,7 @@ using namespace RoninEngine;
 
 namespace RoninEngine::Runtime
 {
+    void native_render_2D(Camera2D* camera);
 
     inline bool area_cast(Renderer* target, const Vec2Int& wpLeftTop, const Vec2Int& wpRightBottom)
     {
@@ -92,7 +93,7 @@ namespace RoninEngine::Runtime
         */
 
         if (camera2d->camera_resources->renders.empty()) {
-            Resolution res = Application::get_current_resolution();
+            Resolution res = active_resolution;
             Vec2Int wpLeftTop = Vec2::round_to_int(Camera::screen_to_world(Vec2::zero));
             Vec2Int wpRightBottom = Vec2::round_to_int(Camera::screen_to_world(Vec2(res.width, res.height)));
             Vec2 camera_position = camera2d->transform()->position();
@@ -165,29 +166,29 @@ namespace RoninEngine::Runtime
     {
     }
 
-    void Camera2D::render(SDL_Renderer* renderer, Rect rect, GameObject* root)
+    void native_render_2D(Camera2D* camera)
     {
 
 #if USE_OMP
         SDL_mutex* m = SDL_CreateMutex();
 #endif
         Rendering wrapper;
-        Vec2 sourcePoint, camera_position = transform()->position();
+        Transform* root_transform = World::self()->internal_resources->main_object->transform();
+        Vec2 sourcePoint, camera_position = camera->transform()->_position;
         Color prevColor = Gizmos::get_color();
-        Transform* root_transform = root->transform();
 
         Gizmos::set_color(0xffc4c4c4);
-        if (visibleGrids) {
+        if (camera->visibleGrids) {
             Gizmos::draw_2D_world_space(Vec2::zero);
-            Gizmos::draw_position(transform()->position(), maxWorldScalar);
+            Gizmos::draw_position(camera_position, maxWorldScalar);
         }
         // get from matrix selection
-        std::tuple<std::map<int, std::vector<Renderer*>>*, std::set<Light*>*> filter = matrix_select(this);
+        std::tuple<std::map<int, std::vector<Renderer*>>*, std::set<Light*>*> filter = matrix_select(camera);
 
         // scale.x = Mathf::Min(Mathf::Max(scale.x, 0.f), 1000.f);
         // scale.y = Mathf::Min(Mathf::Max(scale.y, 0.f), 1000.f);
         //_scale = scale*squarePerPixels;
-        SDL_RenderSetScale(renderer, scale.x, scale.y);
+        SDL_RenderSetScale(RoninEngine::renderer, camera->scale.x, camera->scale.y);
 
         // Render Objects
 
@@ -212,10 +213,7 @@ namespace RoninEngine::Runtime
                         sourcePoint = render_transform->position();
                     } else {
                         // local position is direction
-                        sourcePoint = Vec2::rotate_around(render_parent->position(), render_transform->_localPosition, render_parent->angle() * Math::deg2rad);
-                        // rTrans->localPosition(
-                        //     Vec2::Max(direction, Vec2::RotateAround(Vec2::zero, direction, rTrans->angle() *
-                        //     Mathf::Deg2Rad)));
+                        sourcePoint = Vec2::rotate_around(render_parent->_position, render_transform->local_position(), render_parent->angle() * Math::deg2rad);
                     }
 
                     wrapper.dst.w *= pixelsPerPoint; //_scale.x;
@@ -230,14 +228,14 @@ namespace RoninEngine::Runtime
                     // convert world to screen
 
                     // Положение по горизонтале
-                    wrapper.dst.x = arranged.x + ((rect.w - wrapper.dst.w) / 2.0f - (camera_position.x - sourcePoint.x) * pixelsPerPoint);
+                    wrapper.dst.x = arranged.x + ((active_resolution.width - wrapper.dst.w) / 2.0f - (camera_position.x - sourcePoint.x) * pixelsPerPoint);
                     // Положение по вертикале
-                    wrapper.dst.y = arranged.y + ((rect.h - wrapper.dst.h) / 2.0f + (camera_position.y - sourcePoint.y) * pixelsPerPoint);
+                    wrapper.dst.y = arranged.y + ((active_resolution.height - wrapper.dst.h) / 2.0f + (camera_position.y - sourcePoint.y) * pixelsPerPoint);
 #if USE_OMP
                     SDL_LockMutex(m);
 #endif
                     // draw to backbuffer
-                    SDL_RenderCopyExF(renderer, wrapper.texture, (SDL_Rect*)&wrapper.src, reinterpret_cast<SDL_FRect*>(&wrapper.dst), render_transform->angle(), nullptr, SDL_RendererFlip::SDL_FLIP_NONE);
+                    SDL_RenderCopyExF(RoninEngine::renderer, wrapper.texture, (SDL_Rect*)&wrapper.src, reinterpret_cast<SDL_FRect*>(&wrapper.dst), render_transform->angle(), nullptr, SDL_RendererFlip::SDL_FLIP_NONE);
 #if USE_OMP
                     SDL_UnlockMutex(m);
 #endif
@@ -277,12 +275,12 @@ namespace RoninEngine::Runtime
                     }
                 }
         */
-        if (visibleBorders) {
+        if (camera->visibleBorders) {
             float offset = 25 * std::max(1 - TimeEngine::deltaTime(), 0.1f);
             float height = 200 * TimeEngine::deltaTime();
 
-            wrapper.dst.x = ((rect.w) / 2.0f);
-            wrapper.dst.y = ((rect.h) / 2.0f);
+            wrapper.dst.x = ((active_resolution.width) / 2.0f);
+            wrapper.dst.y = ((active_resolution.height) / 2.0f);
 
             SDL_SetRenderDrawColor(renderer, 0, 255, 0, 25);
 
@@ -294,23 +292,23 @@ namespace RoninEngine::Runtime
             SDL_RenderDrawPointF(renderer, wrapper.dst.x, wrapper.dst.y + offset);
 
             // borders
-            Gizmos::draw_line(Vec2(rect.x + offset, rect.y + offset), Vec2(rect.x + offset + height, rect.y + offset));
-            Gizmos::draw_line(Vec2(rect.w - offset, rect.y + offset), Vec2(rect.w - offset - height, rect.y + offset));
-            Gizmos::draw_line(Vec2(rect.x + offset, rect.h - offset), Vec2(rect.x + offset + height, rect.h - offset));
-            Gizmos::draw_line(Vec2(rect.w - offset, rect.h - offset), Vec2(rect.w - offset - height, rect.h - offset));
+            Gizmos::draw_line(Vec2(offset, offset), Vec2(offset + height, offset));
+            Gizmos::draw_line(Vec2(active_resolution.width - offset, offset), Vec2(active_resolution.width - offset - height, offset));
+            Gizmos::draw_line(Vec2(offset, active_resolution.height - offset), Vec2(offset + height, active_resolution.height - offset));
+            Gizmos::draw_line(Vec2(active_resolution.width - offset, active_resolution.height - offset), Vec2(active_resolution.width - offset - height, active_resolution.height - offset));
 
-            Gizmos::draw_line(Vec2(rect.x + offset, rect.y + 1 + offset), Vec2(rect.x + offset, rect.y + offset + height));
-            Gizmos::draw_line(Vec2(rect.w - offset, rect.y + 1 + offset), Vec2(rect.w - offset, rect.y + offset + height));
-            Gizmos::draw_line(Vec2(rect.x + offset, rect.h - 1 - offset), Vec2(rect.x + offset, rect.h - offset - height));
-            Gizmos::draw_line(Vec2(rect.w - offset, rect.h - 1 - offset), Vec2(rect.w - offset, rect.h - offset - height));
+            Gizmos::draw_line(Vec2(offset, 1 + offset), Vec2(offset, offset + height));
+            Gizmos::draw_line(Vec2(active_resolution.width - offset, 1 + offset), Vec2(active_resolution.width - offset, offset + height));
+            Gizmos::draw_line(Vec2(offset, active_resolution.height - 1 - offset), Vec2(offset, active_resolution.height - offset - height));
+            Gizmos::draw_line(Vec2(active_resolution.width - offset, active_resolution.height - 1 - offset), Vec2(active_resolution.width - offset, active_resolution.height - offset - height));
         }
 
-        if (visibleObjects || visibleNames) {
+        if (camera->visibleObjects || camera->visibleNames) {
             for (const auto& layer : (*std::get<0>(filter)))
                 for (Renderer* face : layer.second) {
 
                     Vec2 p = face->transform()->position() + face->get_offset();
-                    if (visibleObjects) {
+                    if (camera->visibleObjects) {
                         Rect factSz = face->get_relative_size();
                         Vec2 sz = Vec2::scale(face->get_size(), Vec2(factSz.getWH()) / pixelsPerPoint);
                         Gizmos::set_color(Color::blue);
@@ -318,7 +316,7 @@ namespace RoninEngine::Runtime
                         Gizmos::set_color(Color::black);
                         Gizmos::draw_position(p, 0.2f);
                     }
-                    if (visibleNames) {
+                    if (camera->visibleNames) {
                         Gizmos::set_color(Color::white);
                         Gizmos::draw_text(p, face->game_object()->m_name);
                     }

@@ -33,6 +33,8 @@ namespace RoninEngine::Runtime
         int width() const;
         int height() const;
 
+        const Vec2 size() const;
+
         Rect realityRect(float&& opaque = 1.f);
 
         static Sprite* spriteEmpty();

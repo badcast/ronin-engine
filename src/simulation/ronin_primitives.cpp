@@ -36,7 +36,7 @@ namespace RoninEngine::Runtime
         size *= pixelsPerPoint;
         SDL_Surface* surface = SDL_CreateRGBSurfaceWithFormat(0, size.x, size.y, 32, sdl_default_pixelformat);
         if (surface == nullptr) {
-            Application::fail_oom_kill();
+            RoninSimulator::fail_oom_kill();
         }
         SDL_LockSurface(surface);
         SDL_memset4(surface->pixels, fillColor, (int)size.x * (int)size.y);
@@ -54,7 +54,7 @@ namespace RoninEngine::Runtime
         size *= pixelsPerPoint;
         SDL_Surface* surface = SDL_CreateRGBSurfaceWithFormat(0, size.x, size.y, 32, sdl_default_pixelformat);
         if (surface == nullptr) {
-            Application::fail_oom_kill();
+            RoninSimulator::fail_oom_kill();
         }
         SDL_Renderer* renderer = SDL_CreateSoftwareRenderer(surface);
 
@@ -76,7 +76,7 @@ namespace RoninEngine::Runtime
         height *= pixelsPerPoint;
         SDL_Surface* surface = SDL_CreateRGBSurfaceWithFormat(0, size.x, size.y, 32, sdl_default_pixelformat);
         if (surface == nullptr) {
-            Application::fail_oom_kill();
+            RoninSimulator::fail_oom_kill();
         }
 
         // drawing triangle

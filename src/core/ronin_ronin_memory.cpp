@@ -14,7 +14,7 @@ namespace RoninEngine::Runtime
         {
             void* mem = std::malloc(size);
             if (mem == nullptr) {
-                Application::fail_oom_kill();
+                RoninSimulator::fail_oom_kill();
             }
             // Set up controls memory pointer. Set zero.
             memset(mem, 0, size);
@@ -29,7 +29,7 @@ namespace RoninEngine::Runtime
         {
             std::free(memory);
             if (__ronin_allocated-- == 0)
-                Application::fail("invalid ronin_memory_free()");
+                RoninSimulator::fail("invalid ronin_memory_free()");
 #if TEST_MALLOC
             allocated_leaker.remove(memory);
 #endif

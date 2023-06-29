@@ -36,7 +36,7 @@ namespace RoninEngine
             }
 
             if (clone == nullptr)
-                Application::fail_oom_kill();
+                RoninSimulator::fail_oom_kill();
 
             if constexpr (std::is_same<T, GameObject>::value) {
                 if (initInHierarchy) {

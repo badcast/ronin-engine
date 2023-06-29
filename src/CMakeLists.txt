@@ -83,31 +83,31 @@ target_sources(ronin PUBLIC ${RONIN_INCLUDE_MAINH})
 
 # simulation sources
 if(RGSIMULATION)
-  libdef(ronin_simulation "simulation")
+  libdef(ronin_sim "simulation")
 endif()
 # res sources
 if(RGRESOURCES)
-  libdef(ronin_resources "res")
+  libdef(ronin_res "res")
 endif()
 # io sources
 if(RGIO)
-  libdef(ronin_input_output "io")
+  libdef(ronin_ios "io")
 endif()
 # graphics sources
 if(RGGRAPHICS)
-  libdef(ronin_graphics "graphics")
+  libdef(ronin_gfx "gfx")
 endif()
 # gui sources
 if(RGGUI)
-  libdef(ronin_user_interface "ui")
+  libdef(ronin_uif "ui")
 endif()
 # ai sources
 if(RGAI)
-  libdef(ronin_art_intel "ai")
+  libdef(ronin_aif "ai")
 endif()
 # audio sources
 if(RGAUDIO)
-  libdef(ronin_audio_mixer "audio")
+  libdef(ronin_aud "audio")
 endif()
 
 set(ronin_targets

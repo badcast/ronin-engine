@@ -68,6 +68,7 @@ namespace std
 namespace RoninEngine
 {
     extern SDL_Renderer* renderer;
+    extern Resolution active_resolution;
     namespace UI
     {
         enum GUIControlPresents : std::uint8_t { RGUI_TEXT, RGUI_BUTTON, RGUI_EDIT, RGUI_HSLIDER, RGUI_VSLIDER, RGUI_IMAGE, RGUI_DROPDOWN };
@@ -188,13 +189,15 @@ namespace RoninEngine
 
             // destruction task (queue object)
             std::map<float, std::set<GameObject*>>* _destructTasks;
+
+            // Matrix
             std::unordered_map<Vec2Int, std::set<Transform*>> matrix;
 
             std::list<Light*> _assoc_lightings;
 
             std::list<CameraResource*> camera_resources;
 
-            // Externakl resources
+            // External resources
             GidResources* external_local_resources;
 
             // World object (use)
@@ -212,22 +215,27 @@ namespace RoninEngine
             void event_camera_changed(Camera* target, CameraEvent state);
         };
 
+        extern World* switched_world;
+
+        void native_render_2D(Camera2D* camera);
+
         void internal_destroy_object_dyn(Object* obj);
 
         // TODO: Complete that function for types
         template <typename T, typename std::enable_if<std::is_base_of<Object, T>::value, std::nullptr_t>::type = nullptr>
         void internal_destroy_object(T* obj);
 
-        void gid_resources_free(GidResources* gid);
 
         void load_world(World*);
         bool unload_world(World*);
-        std::tuple<std::map<int, std::set<Renderer*>>*, std::set<Light*>*> matrix_select(Camera* cam);
 
         void hierarchy_parent_change(Transform* from, Transform* newParent);
         void hierarchy_remove(Transform* from, Transform* off);
         void hierarchy_remove_all(Transform* from);
         void hierarchy_append(Transform* from, Transform* off);
         bool hierarchy_sibiling(Transform* from, int index);
+
+        void gid_resources_free(GidResources* gid);
+        SDL_Surface* private_load_surface(const void* memres, int length);
     }
 }

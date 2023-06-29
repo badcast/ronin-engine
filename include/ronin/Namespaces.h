@@ -5,7 +5,7 @@
 // Pre declarations
 namespace RoninEngine
 {
-    class Application;
+    class RoninSimulator;
 
     namespace UI
     {

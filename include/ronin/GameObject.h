@@ -29,7 +29,7 @@ namespace RoninEngine
 
             void set_active_recursivelly(bool state);
 
-            Transform* transform() ;
+            Transform* transform();
 
             SpriteRenderer* get_sprite_renderer();
 

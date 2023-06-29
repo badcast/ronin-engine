@@ -30,7 +30,11 @@ namespace RoninEngine::Runtime
 
     void MusicPlayer::rewind() { Mix_RewindMusic(); }
 
-    void MusicPlayer::play(bool loop) { Mix_PlayMusic(data.m_clip->mix_music, loop == true ? 1 : 0); }
+    void MusicPlayer::play(bool loop)
+    {
+        stop();
+        Mix_PlayMusic(data.m_clip->mix_music, loop == true ? std::numeric_limits<int>::max() : 0);
+    }
 
     void MusicPlayer::pause() { Mix_PauseMusic(); }
 

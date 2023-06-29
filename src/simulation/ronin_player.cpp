@@ -27,7 +27,7 @@ namespace RoninEngine::Runtime
     void MoveController2D::OnUpdate()
     {
 
-        float curSpeed = Input::get_key(SDL_SCANCODE_LSHIFT) ? (speed * 2) : speed;
+        float curSpeed = Input::key_down(KB_LSHIFT) ? (speed * 2) : speed;
 
         if (playerCamera) {
             auto cameraPoint = playerCamera->transform()->position();
