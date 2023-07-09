@@ -37,7 +37,7 @@ void AudioSource::clip(AudioClip* clip)
     data->m_clip = clip;
 }
 
-float AudioSource::volume() const { return data->m_volume; }
+float AudioSource::volume() const { return Math::map<std::uint8_t, float>(data->m_volume, 0, MIX_MAX_VOLUME, 0.0, 1.f); }
 
 void AudioSource::volume(float value)
 {
