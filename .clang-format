@@ -1,0 +1,11 @@
+BasedOnStyle: WebKit
+ColumnLimit: '0'
+IndentWidth: '4'
+NamespaceIndentation: All
+SortIncludes: 'false'
+BreakBeforeBraces: Linux
+AlignAfterOpenBracket: AlwaysBreak
+ColumnLimit: '250'
+AlwaysBreakTemplateDeclarations: 'true'
+AlwaysBreakAfterReturnType: 'None'
+AlignEscapedNewlinesLeft: true
