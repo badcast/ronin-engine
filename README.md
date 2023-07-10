@@ -20,8 +20,8 @@ _ronin_engine --> _rgi(Init Game) --> _rgs(Game Input/Ouput) --> _rgw(World Load
 ------------
 ## Зависимости
 - **SDL2** - соопровождение движка визуализациями, так-же обеспечением движка ресурсами.
-- **just-parser** - библиотека по управлению конфигурациями ([just-parser](https://github.com/badcast/just-parser "just-parser"))
-
+- **([just-parser](https://github.com/badcast/just-parser "just-parser"))** - библиотека по управлению конфигурациями 
+- **([lib-across](https://github.com/badcast/lib-across "lib-across"))** - ИИ по поиску путей, с использованием кэша [API](https://github.com/badcast/ronin-engine/blob/main/include/ronin/NavMesh.h "Исходник")
 ------------
 #### Как собрать движок?
 ```bash
