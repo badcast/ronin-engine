@@ -45,12 +45,12 @@ Color::Color(const std::string& colorHex)
 {
 }
 
-Color::Color(const SDL_Color& color)
+Color::Color(const native_color_t& color)
 {
     (*this) = color;
 }
 
-Color::Color(SDL_Color&& color)
+Color::Color(native_color_t&& color)
 {
     (*this) = color;
 }
@@ -105,9 +105,9 @@ Color::operator std::uint32_t() const
     return *reinterpret_cast<const std::uint32_t*>(this);
 }
 
-Color::operator SDL_Color() const
+Color::operator native_color_t() const
 {
-    SDL_Color col;
+    native_color_t col;
     memcpy(&col, this, sizeof(col));
     return col;
 }

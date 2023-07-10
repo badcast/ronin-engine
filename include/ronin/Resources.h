@@ -17,7 +17,7 @@ namespace RoninEngine
 
             static resource_id load_music_clip(const std::string& path, bool local);
 
-            static SDL_Surface* get_surface(resource_id resource);
+            static native_surface_t* get_surface(resource_id resource);
 
             static AudioClip* get_audio_clip(resource_id resource);
 

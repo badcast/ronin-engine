@@ -2,6 +2,24 @@
 
 #include "begin.h"
 
+#ifndef RONIN_COMPILLING
+typedef struct SDL_Surface native_surface_t;
+typedef struct SDL_Texture native_texture_t;
+struct native_color_t
+{
+    std::uint8_t r, g, b, a;
+};
+struct native_rect_t
+{
+    int x, y, w, h;
+};
+
+struct native_frect_t
+{
+    float x, y, w, h;
+};
+#endif
+
 // Pre declarations
 namespace RoninEngine
 {
@@ -17,7 +35,7 @@ namespace RoninEngine
 
     } // namespace UI
 
-    namespace AIPathFinder
+    namespace AI
     {
         class Neuron;
         class NavMesh;
@@ -26,6 +44,7 @@ namespace RoninEngine
 
     namespace Runtime
     {
+
         class World;
 
         struct Vec2;

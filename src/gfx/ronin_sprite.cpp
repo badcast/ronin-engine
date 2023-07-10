@@ -7,14 +7,14 @@ namespace RoninEngine::Runtime
     {
     }
 
-    Sprite::Sprite(SDL_Surface* src, const Rect& rect)
+    Sprite::Sprite(native_surface_t* src, const Rect& rect)
         : m_rect(rect)
         , m_center(Vec2::half)
         , surface(src)
     {
     }
 
-    void Sprite::set_surface(SDL_Surface* surface)
+    void Sprite::set_surface(native_surface_t* surface)
     {
         this->surface = surface;
 
@@ -22,6 +22,11 @@ namespace RoninEngine::Runtime
         {
             m_rect = surface->clip_rect;
         }
+    }
+
+    const native_surface_t* Sprite::get_surface() const
+    {
+        return surface;
     }
 
     const Rect Sprite::rect() const
@@ -61,7 +66,7 @@ namespace RoninEngine::Runtime
         return { width() / pixelsPerPoint, height() / pixelsPerPoint };
     }
 
-    Rect Sprite::realityRect(float&& opaque)
+    Rect Sprite::realityRect(float opaque)
     {
         // NOTE: Формула пикселей для SDL :: Y Offset * (Pitch/BytesPerPixel) + X Offset
         // pixel = (SDL_Color*)pLegacyFont->surfNormal->pixels + (cy * (model->pitch / model->format->BytesPerPixel) + cx);
@@ -92,10 +97,8 @@ namespace RoninEngine::Runtime
                     else
                     {
                         rect.x = 0;
-                        if (rect.y < rect.h)
+                        if (not(_place[0] = not(rect.y < rect.h)))
                             ++rect.y;
-                        else
-                            _place[0] = true;
                     }
                 }
 
@@ -106,10 +109,8 @@ namespace RoninEngine::Runtime
                     else
                     {
                         rect.w = m_rect.w;
-                        if (rect.h > rect.y)
+                        if (not(_place[1] = not(rect.h > rect.y)))
                             --rect.h;
-                        else
-                            _place[1] = true;
                     }
                 }
             }

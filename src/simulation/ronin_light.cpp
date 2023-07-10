@@ -46,7 +46,7 @@ namespace RoninEngine::Runtime
         SDL_SetRenderDrawColor(renderer, 0, 0, 0, 55);
 
         // Get light
-        this->get_light(renderer);
+        this->get_light();
 
         SDL_SetRenderTarget(renderer, lastTarget);
         SDL_RenderCopy(renderer, target, nullptr, nullptr); // copy

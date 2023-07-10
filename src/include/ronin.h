@@ -26,17 +26,13 @@
 #include <unordered_map>
 #include <tuple>
 
-// SDL
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_image.h>
-#include <SDL2/SDL_mixer.h>
-#include <SDL2/SDL_ttf.h>
-#include <SDL2/SDL2_gfxPrimitives.h>
+#include "ronin_native.h"
 
 // base headers
 #include "../../include/ronin/begin.h"
 
 #include "just-parser.h"
+
 
 // PROTECTIVE PRIVATE MEMBERs UNLOCK
 #define private public

@@ -25,9 +25,9 @@ namespace RoninEngine::Runtime
 
         Color(const char* colorHex);
 
-        Color(const SDL_Color& color);
+        Color(const native_color_t& color);
 
-        Color(SDL_Color&& color);
+        Color(native_color_t&& color);
 
         Color(const std::uint8_t r, const std::uint8_t g, const std::uint8_t b);
 
@@ -36,13 +36,13 @@ namespace RoninEngine::Runtime
         Color operator=(const Color& rhs);
         Color operator=(const int& rhs);
         Color operator=(const std::uint32_t& rhs);
-        Color operator=(const SDL_Color& rhs);
+        Color operator=(const native_color_t& rhs);
 
         // bool operator==(const Color& rhs);
         // bool operator!=(const Color& rhs);
         operator int() const;
         operator std::uint32_t() const;
-        operator SDL_Color() const;
+        operator native_color_t() const;
 
         // Basic Collors
         API_EXPORT static const Color transparent;

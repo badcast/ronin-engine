@@ -86,8 +86,8 @@ namespace RoninEngine
 
         static void back_fail(void);
         static void show_message(const std::string& message);
-        static void fail(const std::string& message) throw();
-        static void fail_oom_kill() throw();
+        static void fail(const std::string& message);
+        static void fail_oom_kill();
     };
 
 } // namespace RoninEngine

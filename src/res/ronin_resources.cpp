@@ -7,7 +7,7 @@ using namespace RoninEngine::Exception;
 using namespace RoninEngine::Runtime;
 using namespace RoninEngine::Runtime::RoninMemory;
 using namespace RoninEngine::UI;
-using namespace RoninEngine::AIPathFinder;
+using namespace RoninEngine::AI;
 using namespace jno;
 
 enum : resource_id
@@ -157,7 +157,7 @@ namespace RoninEngine::Runtime
         return id;
     }
 
-    SDL_Surface* Resources::get_surface(resource_id resource)
+    native_surface_t *Resources::get_surface(resource_id resource)
     {
         GidResources* gid;
         gid = get_resource(resource);

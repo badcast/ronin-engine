@@ -32,7 +32,7 @@ namespace RoninEngine::Runtime
     {
     private:
         Sprite* sprite;
-        SDL_Texture* save_texture;
+        native_texture_t* save_texture;
         Rect save_src;
         Rectf save_dst;
 

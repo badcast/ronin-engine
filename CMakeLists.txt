@@ -43,5 +43,5 @@ target_include_directories(RoninEngineLibrary
 find_packages()
 
 target_link_libraries(
-  RoninEngineLibrary PUBLIC SDL2::SDL2 SDL2_mixer::SDL2_mixer
+  RoninEngineLibrary PRIVATE SDL2::SDL2 SDL2_mixer::SDL2_mixer
                             SDL2_ttf::SDL2_ttf SDL2_gfx SDL2_image::SDL2_image)

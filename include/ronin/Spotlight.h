@@ -16,6 +16,6 @@ namespace RoninEngine::Runtime
         ~Spotlight();
 
     protected:
-        virtual void get_light(SDL_Renderer* renderer);
+        virtual void get_light();
     };
 } // namespace RoninEngine::Runtime

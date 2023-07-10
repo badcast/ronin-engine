@@ -546,7 +546,7 @@ namespace RoninEngine
         SDL_ShowSimpleMessageBox(SDL_MessageBoxFlags::SDL_MESSAGEBOX_INFORMATION, nullptr, message.c_str(), main_window);
     }
 
-    void RoninSimulator::fail(const std::string& message) throw()
+    void RoninSimulator::fail(const std::string& message)
     {
         std::string _template = message;
         char _temp[32] { 0 };
@@ -566,7 +566,7 @@ namespace RoninEngine
         back_fail();
     }
 
-    void RoninSimulator::fail_oom_kill() throw()
+    void RoninSimulator::fail_oom_kill()
     {
         fail("Out of memory!");
     }

@@ -29,7 +29,7 @@ namespace RoninEngine::Runtime
 
     class RONIN_API Terrain2D : public Renderer
     {
-        RoninEngine::AIPathFinder::NavMesh* navigation;
+        RoninEngine::AI::NavMesh* navigation;
 
     public:
         Terrain2D();
@@ -38,7 +38,7 @@ namespace RoninEngine::Runtime
         Terrain2D(const Terrain2D& source);
         ~Terrain2D();
 
-        RoninEngine::AIPathFinder::NavMesh* get_navmesh2D();
+        RoninEngine::AI::NavMesh* get_navmesh2D();
 
         void load_from(const TerrainData& terrainData);
 

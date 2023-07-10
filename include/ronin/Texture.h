@@ -7,34 +7,33 @@ namespace RoninEngine::Runtime
     class RONIN_API Texture
     {
     private:
-        ::SDL_Texture* m_native;
+        native_texture_t* m_native;
         std::string _name;
 
     public:
         Texture() = default;
-        Texture(SDL_Texture* native);
+        Texture(native_texture_t* native);
         ~Texture();
 
         const bool valid();
 
         const int width();
         const int height();
-        const SDL_PixelFormatEnum format();
+        const std::uint32_t format();
 
-        const SDL_BlendMode blendMode();
-        const void blendMode(const SDL_BlendMode blendMode);
-        const SDL_ScaleMode scaleMode();
-        const void scaleMode(const SDL_ScaleMode scaleMode);
+        const std::uint32_t blendMode();
+        const void blendMode(const int blendMode);
+        const int scaleMode();
+        const void scaleMode(const int scaleMode);
 
-        const SDL_TextureAccess access();
-        SDL_Texture* native();
-        const SDL_Texture* cnative();
+        const int access();
+        native_texture_t* native();
+        const native_texture_t* cnative();
         // Create identity texture
-        const Texture* clone(SDL_Renderer* renderer);
         const Color color();
         const void color(const Color value);
 
-        int lockTexture(const SDL_Rect* rect, void** pixels, int* pitch);
+        int lockTexture(const native_rect_t* rect, void** pixels, int* pitch);
         void unlockTexture();
 
         const Rect getRect();

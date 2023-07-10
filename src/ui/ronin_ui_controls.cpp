@@ -146,8 +146,7 @@ namespace RoninEngine::UI
                 static const int thickness = 2;
                 static const Rect thick = { thickness, thickness, -thickness, -thickness };
                 static const Rect thickPer { 1, 1, -1, -1 };
-                rect = element.rect;
-                rect += thick;
+                rect = element.rect + thick;
 
                 // uielement background
                 Gizmos::set_color((ms_hover) ? colorSpace.defaultInteraction.normalState : colorSpace.defaultInteraction.hoverState);
@@ -199,9 +198,7 @@ namespace RoninEngine::UI
             case RGUI_HSLIDER:
             {
                 float ratio;
-                float* value = (float*)element.resources;
-                float* min = value + 1;
-                float* max = min + 1;
+                SliderResource * resource = reinterpret_cast<SliderResource*>(element.resources);
                 // clamp mouse point an inside
                 ms.x = Math::clamp(ms.x, element.rect.x, element.rect.x + element.rect.w);
                 ms.y = Math::clamp(ms.y, element.rect.y, element.rect.y + element.rect.h);
@@ -215,26 +212,24 @@ namespace RoninEngine::UI
 
                 if (ms_hover && Input::wheel_radix())
                 {
-                    *value += Input::wheel_radix() / 10.f; // step wheel mouse = ±0.1
-                    *value = Math::clamp(*value, *min, *max);
-                    result = true;
+                    resource->value += Input::wheel_radix() / 10.f; // step wheel mouse = ±0.1
+                    resource->value = Math::clamp(resource->value, resource->min, resource->max);
+                   // result = true;
                 }
 
                 // focused state
-                if (ui_focus)
+                if (result = (ui_focus && ms_hover))
                 {
                     if (Input::is_mouse_down())
                     {
                         // get *x* component from mouse point for set cursor point
-                        *value = Math::map((float)ms.x, (float)rect.x, (float)rect.x + rect.w, *min, *max);
+                        resource->value = Math::map((float)ms.x, (float)rect.x, (float)rect.x + rect.w, resource->min, resource->max);
                     }
-
-                    result = true;
                 }
                 else
-                    *value = Math::clamp(*value, *min, *max);
+                    resource->value = Math::clamp(resource->value, resource->min, resource->max);
 
-                ratio = Math::map(*value, *min, *max, 0.f, 1.f);
+                ratio = Math::map(resource->value, resource->min,resource->max, 0.f, 1.f);
 
                 rect.h = 4;
                 rect.y += (element.rect.h - rect.h) / 2;
@@ -258,7 +253,7 @@ namespace RoninEngine::UI
                 char __[32];
 
                 TTF_SizeText(ttf_arial_font, __, &rect.w, &rect.h);
-                sprintf(__, "%.1f", *value);
+                sprintf(__, "%.1f", &resource->value);
                 Vec2Int tpos = { element.rect.x + element.rect.w - 22, element.rect.y + element.rect.h - 8 };
                 draw_font_at(renderer, __, 1, tpos, color);
 

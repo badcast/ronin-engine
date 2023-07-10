@@ -5,7 +5,7 @@
 // TODO: Добавить Storm алгоритм в NavMesh для поиска свободного места
 // TODO: Добавить BiDirectional двунаправленный поиск
 
-namespace RoninEngine::AIPathFinder
+namespace RoninEngine::AI
 {
 
     class Neuron;

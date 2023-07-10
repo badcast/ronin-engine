@@ -62,8 +62,8 @@ namespace RoninEngine::Runtime
         {
             for (;;)
             {
-                std::uint32_t steps = (stormMember & const_storm_steps_flag);
-                std::uint32_t maxSteps = (stormMember >> 32);
+                std::uint32_t steps = static_cast<std::uint32_t>(stormMember & const_storm_steps_flag);
+                std::uint32_t maxSteps = static_cast<std::uint32_t>(stormMember >> 32);
 
                 // Шаг заканчивается (step = turnSteps) происходит поворот
                 if (steps % Math::max(1u, (maxSteps / 4)) == 0)
@@ -100,8 +100,9 @@ namespace RoninEngine::Runtime
                     }
                 }
 
-                char xDeter = (stormFlags >> 24 & 0xf);
-                char yDeter = stormFlags >> 28;
+                char xDeter = static_cast<char>(stormFlags >> 24 & 0xf);
+                char yDeter = static_cast<char>(stormFlags >> 28);
+
                 auto iter = mx.find(ray);
                 if (iter != std::end(mx))
                 {

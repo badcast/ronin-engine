@@ -2,7 +2,6 @@
 
 #include "Namespaces.h"
 #include "Vec2.h"
-#include "begin.h"
 
 namespace RoninEngine
 {

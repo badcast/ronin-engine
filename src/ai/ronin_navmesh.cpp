@@ -2,7 +2,7 @@
 
 #include "across.hpp"
 
-namespace RoninEngine::AIPathFinder
+namespace RoninEngine::AI
 {
     using namespace RoninEngine::Runtime;
 
@@ -136,7 +136,7 @@ namespace RoninEngine::AIPathFinder
         return n->flags;
     }
 
-    std::uint32_t& RoninEngine::AIPathFinder::NavMesh::get_ncost(const Runtime::Vec2Int& range)
+    std::uint32_t& RoninEngine::AI::NavMesh::get_ncost(const Runtime::Vec2Int& range)
     {
         Neuron* n = get_neuron(range);
         if (!n)
@@ -144,7 +144,7 @@ namespace RoninEngine::AIPathFinder
         return n->cost;
     }
 
-    std::uint32_t& RoninEngine::AIPathFinder::NavMesh::get_nheuristic(const Runtime::Vec2Int& range)
+    std::uint32_t& RoninEngine::AI::NavMesh::get_nheuristic(const Runtime::Vec2Int& range)
     {
         Neuron* n = get_neuron(range);
         if (!n)
@@ -152,14 +152,14 @@ namespace RoninEngine::AIPathFinder
         return n->h;
     }
 
-    const int RoninEngine::AIPathFinder::NavMesh::get_nweight(const Runtime::Vec2Int& range)
+    const int RoninEngine::AI::NavMesh::get_nweight(const Runtime::Vec2Int& range)
     {
         if (!get_ncontains(range))
             throw std::out_of_range("range");
         return range.x * range.y + range.y * range.y;
     }
 
-    const std::uint32_t RoninEngine::AIPathFinder::NavMesh::get_ntotal(const Runtime::Vec2Int& range)
+    const std::uint32_t RoninEngine::AI::NavMesh::get_ntotal(const Runtime::Vec2Int& range)
     {
         Neuron* n = get_neuron(range);
         if (!n)

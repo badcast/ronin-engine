@@ -30,7 +30,7 @@ namespace RoninEngine::Runtime
         RoninMemory::free(navigation);
     }
 
-    AIPathFinder::NavMesh* Terrain2D::get_navmesh2D()
+    AI::NavMesh* Terrain2D::get_navmesh2D()
     {
         return this->navigation;
     }

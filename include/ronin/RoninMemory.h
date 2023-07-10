@@ -4,7 +4,6 @@
 
 namespace RoninEngine::Runtime::RoninMemory
 {
-
     // main memory controller
     extern RONIN_API void* ronin_memory_alloc(std::size_t size);
     extern RONIN_API void ronin_memory_free(void* memory);

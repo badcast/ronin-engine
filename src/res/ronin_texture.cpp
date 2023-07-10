@@ -2,7 +2,7 @@
 
 namespace RoninEngine::Runtime
 {
-    Texture::Texture(SDL_Texture* native)
+    Texture::Texture(native_texture_t* native)
     {
         m_native = native;
     }
@@ -36,29 +36,29 @@ namespace RoninEngine::Runtime
         return h;
     }
 
-    const SDL_PixelFormatEnum Texture::format()
+    const std::uint32_t Texture::format()
     {
-        uint32_t f;
+        std::uint32_t f;
         if (SDL_QueryTexture(m_native, &f, nullptr, nullptr, nullptr))
             RoninSimulator::back_fail();
-        return static_cast<SDL_PixelFormatEnum>(f);
+        return f;
     }
 
-    const SDL_BlendMode Texture::blendMode()
+    const std::uint32_t Texture::blendMode()
     {
         SDL_BlendMode bmode;
 
         if (SDL_GetTextureBlendMode(m_native, &bmode))
             RoninSimulator::back_fail();
 
-        return bmode;
+        return static_cast<std::uint32_t>(bmode);
     }
-    const void Texture::blendMode(const SDL_BlendMode blendMode)
+    const void Texture::blendMode(const int blendMode)
     {
-        if (SDL_SetTextureBlendMode(m_native, blendMode))
+        if (SDL_SetTextureBlendMode(m_native, static_cast<SDL_BlendMode>(blendMode)))
             RoninSimulator::fail("Error unsupported operation");
     }
-    const SDL_ScaleMode Texture::scaleMode()
+    const int Texture::scaleMode()
     {
         SDL_ScaleMode smode;
 
@@ -67,13 +67,13 @@ namespace RoninEngine::Runtime
 
         return smode;
     }
-    const void Texture::scaleMode(const SDL_ScaleMode scaleMode)
+    const void Texture::scaleMode(const int scaleMode)
     {
-        if (SDL_SetTextureScaleMode(m_native, scaleMode))
+        if (SDL_SetTextureScaleMode(m_native, static_cast<SDL_ScaleMode>(scaleMode)))
             RoninSimulator::back_fail();
     }
 
-    const SDL_TextureAccess Texture::access()
+    const int Texture::access()
     {
         int ac;
         if (SDL_QueryTexture(m_native, nullptr, &ac, nullptr, nullptr))
@@ -95,7 +95,7 @@ namespace RoninEngine::Runtime
             RoninSimulator::back_fail();
     }
 
-    int Texture::lockTexture(const SDL_Rect* rect, void** pixels, int* pitch)
+    int Texture::lockTexture(const native_rect_t *rect, void** pixels, int* pitch)
     {
         return SDL_LockTexture(m_native, rect, pixels, pitch);
     }
@@ -105,12 +105,12 @@ namespace RoninEngine::Runtime
         SDL_UnlockTexture(m_native);
     }
 
-    SDL_Texture* Texture::native()
+    native_texture_t *Texture::native()
     {
         return m_native;
     }
 
-    const SDL_Texture* Texture::cnative()
+    const native_texture_t *Texture::cnative()
     {
         return m_native;
     }
