@@ -2,12 +2,14 @@
 
 #ifdef __linux__
 #include <cstdio>
-#include <sys/sysinfo.h>
-#include <sys/types.h>
+
+#define USE_PROCFS 0
+
 #endif
 
 #if WIN32
-typedef struct _PROCESS_MEMORY_COUNTERS_EX {
+typedef struct _PROCESS_MEMORY_COUNTERS_EX
+{
     unsigned long cb;
     unsigned long PageFaultCount;
     size_t PeakWorkingSetSize;
@@ -22,11 +24,16 @@ typedef struct _PROCESS_MEMORY_COUNTERS_EX {
 } PROCESS_MEMORY_COUNTERS_EX;
 typedef PROCESS_MEMORY_COUNTERS_EX* PPROCESS_MEMORY_COUNTERS_EX;
 
-extern "C" {
-__declspec(dllimport) void* __stdcall GetCurrentProcess(void);
-__declspec(dllimport) int __stdcall K32GetProcessMemoryInfo(void* Process, PROCESS_MEMORY_COUNTERS_EX* ppsmemCounters, unsigned long cb);
+extern "C"
+{
+    __declspec(dllimport) void* __stdcall GetCurrentProcess(void);
+    __declspec(dllimport) int __stdcall K32GetProcessMemoryInfo(void* Process, PROCESS_MEMORY_COUNTERS_EX* ppsmemCounters, unsigned long cb);
 }
 #elif __unix__
+
+#if USE_PROCFS
+#include <sys/sysinfo.h>
+#include <sys/types.h>
 
 int parseLine(char* line)
 {
@@ -40,26 +47,46 @@ int parseLine(char* line)
     return i;
 }
 
-int get_memory_used()
+size_t get_memory_used()
 {
     char line[64];
-    int result;
+    size_t result;
     std::ifstream file("/proc/self/status");
-    if (file.is_open()) {
-        while (!file.eof()) {
+    if (file.is_open())
+    {
+        while (!file.eof())
+        {
             file.getline(line, sizeof(line));
-            if (strncmp(line, "VmRSS:", 6) == 0) {
+            if (strncmp(line, "VmRSS:", 6) == 0)
+            {
                 result = parseLine(line);
                 break;
             }
         }
         file.close();
-        // Unit To bytes
+        // Unit (KB) To bytes
         result *= 1024;
-    } else
+    }
+    else
         result = -1;
     return result;
 }
+#else // USE_PROCFS == 0
+#include <sys/resource.h>
+
+size_t get_memory_used()
+{
+    rusage rusg;
+
+    // usage from kernel source
+    if (getrusage(RUSAGE_SELF, &rusg))
+    {
+        return -1; // error
+    }
+
+    return rusg.ru_maxrss * 1024;
+}
+#endif
 
 #endif
 
@@ -78,6 +105,7 @@ TODO: % CPU в настоящее время используется этим �
 
 */
 
+// get an bytes
 const size_t get_process_sizeMemory()
 {
 #ifdef WIN32
