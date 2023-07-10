@@ -12,13 +12,15 @@ namespace RoninEngine::Runtime
         if (newParent && lastParent == newParent)
             return;
 
-        if (lastParent) {
+        if (lastParent)
+        {
             hierarchy_remove(lastParent, from);
         }
 
         if (!newParent)
             hierarchy_append(World::self()->internal_resources->main_object->transform(), from); // nullptr as Root
-        else {
+        else
+        {
             from->m_parent = newParent;
             hierarchy_append(newParent, from);
         }
@@ -36,7 +38,8 @@ namespace RoninEngine::Runtime
     }
     void hierarchy_remove_all(Transform* from)
     {
-        for (auto t : from->hierarchy) {
+        for (auto t : from->hierarchy)
+        {
             t->m_parent = nullptr;
         }
 
@@ -45,7 +48,8 @@ namespace RoninEngine::Runtime
     void hierarchy_append(Transform* from, Transform* off)
     {
         auto iter = find_if(begin(from->hierarchy), end(from->hierarchy), std::bind2nd(std::equal_to<Transform*>(), off));
-        if (iter == end(from->hierarchy)) {
+        if (iter == end(from->hierarchy))
+        {
             off->m_parent = from;
             from->hierarchy.emplace_back(off);
         }
@@ -72,7 +76,10 @@ namespace RoninEngine::Runtime
         Matrix::matrix_nature(this, Matrix::matrix_get_key(local_position() + Vec2::one));
     }
 
-    int Transform::child_count() const { return hierarchy.size(); }
+    int Transform::child_count() const
+    {
+        return hierarchy.size();
+    }
 
     Transform* Transform::child_of(int index)
     {
@@ -80,8 +87,10 @@ namespace RoninEngine::Runtime
             throw std::out_of_range("index");
 
         auto iter = begin(hierarchy);
-        for (int x = 0; iter != end(hierarchy); ++x) {
-            if (x == index) {
+        for (int x = 0; iter != end(hierarchy); ++x)
+        {
+            if (x == index)
+            {
                 return *iter;
                 break;
             }
@@ -90,28 +99,43 @@ namespace RoninEngine::Runtime
         return nullptr;
     }
 
-    void Transform::look_at(Transform* target) { look_at(target->_position, Vec2::up); }
+    void Transform::look_at(Transform* target)
+    {
+        look_at(target->_position, Vec2::up);
+    }
 
-    void Transform::look_at(Transform* target, Vec2 axis) { look_at(target->_position, axis); }
+    void Transform::look_at(Transform* target, Vec2 axis)
+    {
+        look_at(target->_position, axis);
+    }
 
-    void Transform::look_at(Vec2 target) { look_at(target, Vec2::up); }
+    void Transform::look_at(Vec2 target)
+    {
+        look_at(target, Vec2::up);
+    }
 
     void Transform::look_at(Vec2 target, Vec2 axis)
     {
         _angle_ = Vec2::angle(axis, target - _position) * Math::rad2deg;
         // normalize horz
-        if (axis.x == 1) {
+        if (axis.x == 1)
+        {
             if (_position.y < target.y)
                 _angle_ = -_angle_;
-        } else if (axis.x == -1) {
+        }
+        else if (axis.x == -1)
+        {
             if (_position.y > target.y)
                 _angle_ = -_angle_;
         }
         // normalize vert
-        if (axis.y == 1) {
+        if (axis.y == 1)
+        {
             if (_position.x > target.x)
                 _angle_ = -_angle_;
-        } else if (axis.y == -1) {
+        }
+        else if (axis.y == -1)
+        {
             if (_position.x < target.x)
                 _angle_ = -_angle_;
         }
@@ -122,18 +146,24 @@ namespace RoninEngine::Runtime
         Vec2 axis = Vec2::up;
         float a = Vec2::angle(axis, target - _position) * Math::rad2deg;
         // normalize
-        if (axis.x == 1) {
+        if (axis.x == 1)
+        {
             if (_position.y < target.y)
                 a = -a;
-        } else if (axis.x == -1) {
+        }
+        else if (axis.x == -1)
+        {
             if (_position.y > target.y)
                 a = -a;
         }
 
-        if (axis.y == 1) {
+        if (axis.y == 1)
+        {
             if (_position.x > target.x)
                 a = -a;
-        } else if (axis.y == -1) {
+        }
+        else if (axis.y == -1)
+        {
             if (_position.x < target.x)
                 a = -a;
         }
@@ -141,7 +171,10 @@ namespace RoninEngine::Runtime
         local_angle(Math::lerp_angle(_angle_, a, t));
     }
 
-    void Transform::look_at_lerp(Transform* target, float t) { look_at_lerp(target->_position, t); }
+    void Transform::look_at_lerp(Transform* target, float t)
+    {
+        look_at_lerp(target->_position, t);
+    }
 
     void Transform::as_first_child()
     {
@@ -150,33 +183,75 @@ namespace RoninEngine::Runtime
         hierarchy_sibiling(m_parent, 0); // 0 is first
     }
 
-    bool Transform::child_has(Transform* child) { return std::find(std::begin(hierarchy), std::end(hierarchy), child) != std::end(hierarchy); }
+    bool Transform::child_has(Transform* child)
+    {
+        return std::find(std::begin(hierarchy), std::end(hierarchy), child) != std::end(hierarchy);
+    }
 
-    void Transform::child_append(Transform* child) { hierarchy_append(this, child); }
+    void Transform::child_append(Transform* child)
+    {
+        hierarchy_append(this, child);
+    }
 
-    void Transform::child_remove(Transform* child) { hierarchy_remove(this, child); }
+    void Transform::child_remove(Transform* child)
+    {
+        hierarchy_remove(this, child);
+    }
 
-    const Vec2 Transform::forward() const { return Vec2::rotate_around(_position, around_frwd, _angle_ * Math::deg2rad); }
+    const Vec2 Transform::forward() const
+    {
+        return Vec2::rotate_around(_position, around_frwd, _angle_ * Math::deg2rad);
+    }
 
-    const Vec2 Transform::forward(float force) const { return Vec2::rotate_around(_position, around_frwd * force, _angle_ * Math::deg2rad); }
+    const Vec2 Transform::forward(float force) const
+    {
+        return Vec2::rotate_around(_position, around_frwd * force, _angle_ * Math::deg2rad);
+    }
 
-    const Vec2 Transform::back() const { return Vec2::rotate_around(_position, around_frwd, (_angle_ - 180) * Math::deg2rad); }
+    const Vec2 Transform::back() const
+    {
+        return Vec2::rotate_around(_position, around_frwd, (_angle_ - 180) * Math::deg2rad);
+    }
 
-    const Vec2 Transform::back(float force) const { return Vec2::rotate_around(_position, around_frwd * force, (_angle_ - 180) * Math::deg2rad); }
+    const Vec2 Transform::back(float force) const
+    {
+        return Vec2::rotate_around(_position, around_frwd * force, (_angle_ - 180) * Math::deg2rad);
+    }
 
-    const Vec2 Transform::right() { return transform_direction(Vec2::right); }
+    const Vec2 Transform::right()
+    {
+        return transform_direction(Vec2::right);
+    }
 
-    const Vec2 Transform::left() { return transform_direction(Vec2::left); }
+    const Vec2 Transform::left()
+    {
+        return transform_direction(Vec2::left);
+    }
 
-    const Vec2 Transform::up() { return transform_direction(Vec2::up); }
+    const Vec2 Transform::up()
+    {
+        return transform_direction(Vec2::up);
+    }
 
-    const Vec2 Transform::down() { return transform_direction(Vec2::down); }
+    const Vec2 Transform::down()
+    {
+        return transform_direction(Vec2::down);
+    }
 
-    const Vec2 Transform::transform_direction(Vec2 direction) { return Vec2::rotate(_position + direction, _angle_); }
+    const Vec2 Transform::transform_direction(Vec2 direction)
+    {
+        return Vec2::rotate(_position + direction, _angle_);
+    }
 
-    const Vec2 Transform::transform_direction(float x, float y) { return transform_direction({ x, y }); }
+    const Vec2 Transform::transform_direction(float x, float y)
+    {
+        return transform_direction({ x, y });
+    }
 
-    const bool Transform::look_of_angle(Transform* target, float maxAngle) const { return look_of_angle(target->_position, maxAngle); }
+    const bool Transform::look_of_angle(Transform* target, float maxAngle) const
+    {
+        return look_of_angle(target->_position, maxAngle);
+    }
 
     const bool Transform::look_of_angle(Vec2 target, float maxAngle) const
     {
@@ -184,7 +259,10 @@ namespace RoninEngine::Runtime
         return angle <= maxAngle * Math::deg2rad;
     }
 
-    Vec2 Transform::local_position() const { return (this->m_parent ? _position - this->m_parent->_position : _position); }
+    Vec2 Transform::local_position() const
+    {
+        return (this->m_parent ? _position - this->m_parent->_position : _position);
+    }
 
     const Vec2& Transform::local_position(const Vec2& value)
     {
@@ -195,13 +273,17 @@ namespace RoninEngine::Runtime
         return value;
     }
 
-    Vec2 Transform::position() const { return _position; }
+    Vec2 Transform::position() const
+    {
+        return _position;
+    }
 
     const Vec2& Transform::position(const Vec2& value)
     {
         Vec2 lastPosition = _position;
         _position = value; // set the position
-        if (_owner->m_active) {
+        if (_owner->m_active)
+        {
             Matrix::matrix_nature(this, Matrix::matrix_get_key(lastPosition));
 
             for (Transform* chlid : hierarchy)
@@ -223,10 +305,13 @@ namespace RoninEngine::Runtime
     void Transform::parent_notify_active_state(GameObject* from)
     {
         Vec2Int pos = Matrix::matrix_get_key(this->_position);
-        if (not from->m_active) {
+        if (not from->m_active)
+        {
             // Delete from matrix, for is not active object
             Matrix::matrix_nature_pickup(this);
-        } else {
+        }
+        else
+        {
             // Add to matrix, for active object
             Matrix::matrix_nature(this, Matrix::matrix_get_key(Vec2::infinity));
         }
@@ -235,11 +320,20 @@ namespace RoninEngine::Runtime
             chlid->parent_notify_active_state(from);
     }
 
-    float Transform::angle() const { return (this->m_parent) ? this->m_parent->_angle_ + this->_angle_ : this->_angle_; }
+    float Transform::angle() const
+    {
+        return (this->m_parent) ? this->m_parent->_angle_ + this->_angle_ : this->_angle_;
+    }
 
-    void Transform::angle(float value) { this->_angle_ = (this->m_parent) ? this->m_parent->angle() - value : value; }
+    void Transform::angle(float value)
+    {
+        this->_angle_ = (this->m_parent) ? this->m_parent->angle() - value : value;
+    }
 
-    float Transform::local_angle() const { return this->_angle_; }
+    float Transform::local_angle() const
+    {
+        return this->_angle_;
+    }
 
     void Transform::local_angle(float value)
     {
@@ -248,12 +342,16 @@ namespace RoninEngine::Runtime
         this->_angle_ = value;
     }
 
-    Transform* Transform::parent() const { return m_parent; }
+    Transform* Transform::parent() const
+    {
+        return m_parent;
+    }
 
     void Transform::set_parent(Transform* parent, bool worldPositionStays)
     {
         // TODO: make worldPositionStays
-        if (this->m_parent == nullptr) {
+        if (this->m_parent == nullptr)
+        {
             throw RoninEngine::Exception::ronin_transform_change_error();
         }
         Vec2 lastParentPoint = this->m_parent->position();

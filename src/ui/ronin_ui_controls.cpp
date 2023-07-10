@@ -1,6 +1,7 @@
 #include "ronin.h"
 
-struct SliderResource {
+struct SliderResource
+{
     float value;
     float min;
     float max;
@@ -19,14 +20,16 @@ namespace RoninEngine::UI
 {
     using namespace RoninEngine::Runtime;
 
-    struct ElementInteraction {
+    struct ElementInteraction
+    {
         Color normalState;
         Color hoverState;
         Color pressState;
         Color disabledState;
     };
 
-    struct {
+    struct
+    {
         ElementInteraction defaultInteraction = { Color::ghostwhite, Color::white, Color::gainsboro, Color::darkgray };
 
         Color dropdownText = Color::black;
@@ -41,37 +44,42 @@ namespace RoninEngine::UI
 
     extern TTF_Font* ttf_arial_font;
 
-    void ui_reset_controls() { _controlId = 0; }
+    void ui_reset_controls()
+    {
+        _controlId = 0;
+    }
 
     ui_resource* factory_resource(GUIControlPresents type)
     {
         ui_resource* resources;
 
-        switch (type) {
-        case RGUI_DROPDOWN:
-            resources = reinterpret_cast<ui_resource*>(RoninMemory::alloc<DropDownResource>());
-            break;
-        case RGUI_HSLIDER:
-            // value, min, max members
-            resources = reinterpret_cast<ui_resource*>(RoninMemory::alloc<SliderResource>());
-            break;
-        default:
-            resources = nullptr;
-            break;
+        switch (type)
+        {
+            case RGUI_DROPDOWN:
+                resources = reinterpret_cast<ui_resource*>(RoninMemory::alloc<DropDownResource>());
+                break;
+            case RGUI_HSLIDER:
+                // value, min, max members
+                resources = reinterpret_cast<ui_resource*>(RoninMemory::alloc<SliderResource>());
+                break;
+            default:
+                resources = nullptr;
+                break;
         }
         return resources;
     }
 
     void factory_free(UIElement* element)
     {
-        switch (element->prototype) {
-        case RGUI_DROPDOWN:
-            RoninMemory::free(static_cast<DropDownResource*>(element->resources));
-            break;
-        case RGUI_HSLIDER:
-        case RGUI_VSLIDER:
-            RoninMemory::free(static_cast<SliderResource*>(element->resources));
-            break;
+        switch (element->prototype)
+        {
+            case RGUI_DROPDOWN:
+                RoninMemory::free(static_cast<DropDownResource*>(element->resources));
+                break;
+            case RGUI_HSLIDER:
+            case RGUI_VSLIDER:
+                RoninMemory::free(static_cast<SliderResource*>(element->resources));
+                break;
         }
     }
 
@@ -97,263 +105,295 @@ namespace RoninEngine::UI
         //            }
         //        }
 
-        switch (element.prototype) {
-        case RGUI_TEXT: {
-            draw_font_at(renderer, element.text, 15, element.rect.getXY(), Color::white);
-            // Render_String(render, element.rect, element.text.c_str(), element.text.size());
-            break;
-        }
-
-        case RGUI_BUTTON: {
-            static uint8_t pSize = 2; // pen size
-            static Rect inside = Rect(pSize, pSize, -pSize * 2, -pSize * 2);
-            bool show_down_side = Input::is_mouse_down() == false || !ms_hover;
-            Rect rect;
-
-            // fill
-            Color col(ms_hover ? colorSpace.defaultInteraction.pressState : colorSpace.defaultInteraction.normalState);
-            rect = element.rect;
-            rect += inside / 2;
-            gui->set_color_rgb(col);
-            if (show_down_side) {
-                roundedBoxColor(renderer, rect.x, rect.y, rect.w + rect.x, rect.h + rect.y, 4, colorSpace.buttonDownSide);
-            }
-            roundedBoxColor(renderer, rect.x, rect.y, rect.w + rect.x, rect.h + rect.y - (show_down_side ? 4 : 0), 4, col);
-            // SDL_RenderFillRect(renderer, (SDL_Rect*)&rect);
-
-            // render text
-            // Render_String(render, element.rect, element.text.c_str(), element.text.size(), 13, TextAlign::MiddleCenter, true, uiHover);
-            draw_font_at(renderer, element.text, 12, rect.getXY() + (rect.getWH() - (show_down_side ? (Vec2Int::up * 4) : Vec2Int::zero)) / 2, Color::gray, true);
-            result = ms_hover && ms_click;
-            break;
-        }
-
-        case RGUI_EDIT: {
-            // uielement background
-            static const int thickness = 2;
-            static const Rect thick = { thickness, thickness, -thickness, -thickness };
-            static const Rect thickPer { 1, 1, -1, -1 };
-            rect = element.rect;
-            rect += thick;
-
-            // uielement background
-            Gizmos::set_color((ms_hover) ? colorSpace.defaultInteraction.normalState : colorSpace.defaultInteraction.hoverState);
-            SDL_RenderFillRect(renderer, (SDL_Rect*)&rect);
-            Gizmos::set_color(Color::gray);
-            for (int x = 0; x < thickness; ++x) {
-                rect -= thickPer;
-                SDL_RenderDrawRect(renderer, (SDL_Rect*)&rect);
+        switch (element.prototype)
+        {
+            case RGUI_TEXT:
+            {
+                draw_font_at(renderer, element.text, 15, element.rect.getXY(), Color::white);
+                // Render_String(render, element.rect, element.text.c_str(), element.text.size());
+                break;
             }
 
-            // draw main text
-            surface = TTF_RenderUTF8_Solid(ttf_arial_font, element.text.c_str(), *reinterpret_cast<SDL_Color*>(&colorSpace.editText));
-            if ((texture = SDL_CreateTextureFromSurface(renderer, surface)) != nullptr) {
+            case RGUI_BUTTON:
+            {
+                static uint8_t pSize = 2; // pen size
+                static Rect inside = Rect(pSize, pSize, -pSize * 2, -pSize * 2);
+                bool show_down_side = Input::is_mouse_down() == false || !ms_hover;
+                Rect rect;
+
+                // fill
+                Color col(ms_hover ? colorSpace.defaultInteraction.pressState : colorSpace.defaultInteraction.normalState);
                 rect = element.rect;
-                SDL_QueryTexture(texture, nullptr, nullptr, &rect.w, &rect.h);
-                rect.x += 5;
-                rect.y += element.rect.h / 2 - rect.h / 2;
-
-                SDL_RenderCopy(renderer, texture, nullptr, (SDL_Rect*)&(rect));
-
-                SDL_DestroyTexture(texture);
-                SDL_FreeSurface(surface);
-            }
-
-            // focusing intersection
-            if (ui_focus) {
-                std::string linput;
-                RoninEngine::Runtime::text_get(linput);
-                element.text += linput;
-            } else {
-                // clik and focused
-                if (ui_focus = result = ms_click) {
-                    text_start_input();
-                } else {
-                    text_stop_input();
+                rect += inside / 2;
+                gui->set_color_rgb(col);
+                if (show_down_side)
+                {
+                    roundedBoxColor(renderer, rect.x, rect.y, rect.w + rect.x, rect.h + rect.y, 4, colorSpace.buttonDownSide);
                 }
-            }
-            break;
-        }
+                roundedBoxColor(renderer, rect.x, rect.y, rect.w + rect.x, rect.h + rect.y - (show_down_side ? 4 : 0), 4, col);
+                // SDL_RenderFillRect(renderer, (SDL_Rect*)&rect);
 
-        case RGUI_HSLIDER: {
-            float ratio;
-            float* value = (float*)element.resources;
-            float* min = value + 1;
-            float* max = min + 1;
-            // clamp mouse point an inside
-            ms.x = Math::clamp(ms.x, element.rect.x, element.rect.x + element.rect.w);
-            ms.y = Math::clamp(ms.y, element.rect.y, element.rect.y + element.rect.h);
-            // get rect
-            rect = *reinterpret_cast<SDL_Rect*>(&element.rect);
-
-            if (ms_click) {
-                ui_focus = ms_click;
+                // render text
+                // Render_String(render, element.rect, element.text.c_str(), element.text.size(), 13, TextAlign::MiddleCenter, true, uiHover);
+                draw_font_at(renderer, element.text, 12, rect.getXY() + (rect.getWH() - (show_down_side ? (Vec2Int::up * 4) : Vec2Int::zero)) / 2, Color::gray, true);
+                result = ms_hover && ms_click;
+                break;
             }
 
-            if (ms_hover && Input::wheel_radix()) {
-                *value += Input::wheel_radix() / 10.f; // step wheel mouse = ±0.1
-                *value = Math::clamp(*value, *min, *max);
-                result = true;
-            }
+            case RGUI_EDIT:
+            {
+                // uielement background
+                static const int thickness = 2;
+                static const Rect thick = { thickness, thickness, -thickness, -thickness };
+                static const Rect thickPer { 1, 1, -1, -1 };
+                rect = element.rect;
+                rect += thick;
 
-            // focused state
-            if (ui_focus) {
-                if (Input::is_mouse_down()) {
-                    // get *x* component from mouse point for set cursor point
-                    *value = Math::map((float)ms.x, (float)rect.x, (float)rect.x + rect.w, *min, *max);
+                // uielement background
+                Gizmos::set_color((ms_hover) ? colorSpace.defaultInteraction.normalState : colorSpace.defaultInteraction.hoverState);
+                SDL_RenderFillRect(renderer, (SDL_Rect*)&rect);
+                Gizmos::set_color(Color::gray);
+                for (int x = 0; x < thickness; ++x)
+                {
+                    rect -= thickPer;
+                    SDL_RenderDrawRect(renderer, (SDL_Rect*)&rect);
                 }
 
-                result = true;
-            } else
-                *value = Math::clamp(*value, *min, *max);
+                // draw main text
+                surface = TTF_RenderUTF8_Solid(ttf_arial_font, element.text.c_str(), *reinterpret_cast<SDL_Color*>(&colorSpace.editText));
+                if ((texture = SDL_CreateTextureFromSurface(renderer, surface)) != nullptr)
+                {
+                    rect = element.rect;
+                    SDL_QueryTexture(texture, nullptr, nullptr, &rect.w, &rect.h);
+                    rect.x += 5;
+                    rect.y += element.rect.h / 2 - rect.h / 2;
 
-            ratio = Math::map(*value, *min, *max, 0.f, 1.f);
+                    SDL_RenderCopy(renderer, texture, nullptr, (SDL_Rect*)&(rect));
 
-            rect.h = 4;
-            rect.y += (element.rect.h - rect.h) / 2;
+                    SDL_DestroyTexture(texture);
+                    SDL_FreeSurface(surface);
+                }
 
-            Gizmos::set_color(ms_hover ? Color::lightgray : Color::gray);
-            Color color = Gizmos::get_color();
-            roundedBoxColor(renderer, rect.x, rect.y, rect.x + rect.w, rect.y + rect.h, 3, Color::slategray);
-            roundedRectangleColor(renderer, rect.x, rect.y, rect.x + rect.w, rect.y + rect.h, 3, color);
-
-            // draw cursor
-            rect.w = 9;
-            rect.h = 11;
-            rect.x += (int)element.rect.w * ratio - rect.w / 2;
-            rect.y = element.rect.y + element.rect.h / 2 - rect.h / 2;
-            color = Color::darkgray;
-            roundedBoxColor(renderer, rect.x, rect.y, rect.x + rect.w, rect.y + rect.h, 3, color);
-            color = Color::gray;
-            roundedRectangleColor(renderer, rect.x, rect.y, rect.x + rect.w, rect.y + rect.h, 3, color);
-
-            // Draw text
-            char __[32];
-
-            TTF_SizeText(ttf_arial_font, __, &rect.w, &rect.h);
-            sprintf(__, "%.1f", *value);
-            Vec2Int tpos = { element.rect.x + element.rect.w - 22, element.rect.y + element.rect.h - 8 };
-            draw_font_at(renderer, __, 1, tpos, color);
-
-            break;
-        }
-
-        case RGUI_VSLIDER: {
-            float* value = (float*)element.resources;
-            float* min = value + 1;
-            float* max = min + 1;
-            *value = Math::clamp(*value, *min, *max);
-
-            break;
-        }
-
-        case RGUI_IMAGE: {
-            SDL_Rect sdlr;
-            Sprite* sprite = reinterpret_cast<Sprite*>(element.resources);
-            if (sprite && sprite->surface) {
-                sdlr.x = element.rect.x;
-                sdlr.y = element.rect.y;
-                sdlr.w = element.rect.w == 0 ? sprite->width() : element.rect.w;
-                sdlr.h = element.rect.h == 0 ? sprite->height() : element.rect.h;
-                SDL_Texture* tex = SDL_CreateTextureFromSurface(renderer, sprite->surface);
-                SDL_RenderCopy(renderer, tex, nullptr, &sdlr);
-                SDL_DestroyTexture(tex);
-            }
-            break;
-        }
-        case RGUI_DROPDOWN: {
-            static const int thickness = 2;
-            static const Rect thick = { thickness, thickness, -thickness, -thickness };
-            Rect r = element.rect;
-            r += thick;
-
-            // uielement background
-            Gizmos::set_color((ms_hover) ? colorSpace.defaultInteraction.normalState : colorSpace.defaultInteraction.hoverState);
-            SDL_RenderFillRect(renderer, (SDL_Rect*)&r);
-            Gizmos::set_color(Color::gray);
-            for (int x = 0; x < thickness; ++x) {
-                r -= Rect(1, 1, -1, -1);
-                SDL_RenderDrawRect(renderer, (SDL_Rect*)&r);
-            }
-
-            // draw main text
-            SDL_Texture* texture;
-            SDL_Surface* surf = TTF_RenderUTF8_Blended(ttf_arial_font, element.text.c_str(), *reinterpret_cast<SDL_Color*>(&colorSpace.dropdownText));
-            if ((texture = SDL_CreateTextureFromSurface(renderer, surf)) != nullptr) {
-                r = element.rect;
-                r.x += 5;
-                SDL_QueryTexture(texture, nullptr, nullptr, &r.w, &r.h);
-                r.y += element.rect.h / 2 - r.h / 2;
-
-                SDL_RenderCopy(renderer, texture, nullptr, (SDL_Rect*)&(r));
-
-                SDL_DestroyTexture(texture);
-                texture = nullptr;
-                SDL_FreeSurface(surf);
-            }
-            // get resources
-            auto link = static_cast<std::pair<int, std::list<std::string>>*>(element.resources);
-
-            // show dropdown list
-            if (ui_focus) {
-                static int sz = 15;
-                Rect elrect;
-                r = element.rect;
-                r.y += r.h;
-
-                r.h = dropDownLinear = Math::ceil(Math::lerp(dropDownLinear, link->second.size() * sz, TimeEngine::deltaTime()));
-
-                Gizmos::set_color(colorSpace.defaultInteraction.hoverState);
-                // draw background
-                SDL_RenderFillRect(renderer, (SDL_Rect*)&r);
-                if (link->second.size() * sz == r.h) {
-                    r.h = sz; // set for height
-                    elrect = r;
-                    r.x += 5;
-
-                    int index = 0;
-                    for (auto iter = std::begin(link->second); iter != std::end(link->second); ++iter, ++index) {
-                        // draw element highligh
-                        if (!result && SDL_PointInRect((SDL_Point*)&(ms), (SDL_Rect*)&elrect)) {
-                            Gizmos::set_color(colorSpace.defaultInteraction.pressState);
-                            SDL_RenderFillRect(renderer, (SDL_Rect*)&elrect);
-                            if (Input::is_mouse_down()) {
-                                link->first = index;
-                                element.text = *iter;
-                                result = true;
-                                ui_focus = false;
-                                break;
-                            }
-                        }
-
-                        Gizmos::set_color(colorSpace.defaultInteraction.hoverState);
-                        // Draw element text
-                        surf = TTF_RenderUTF8_Blended(ttf_arial_font, iter->c_str(), *reinterpret_cast<SDL_Color*>(&(link->first != index ? colorSpace.dropdownText : colorSpace.dropdownSelectedText)));
-                        texture = SDL_CreateTextureFromSurface(renderer, surf);
-                        SDL_QueryTexture(texture, nullptr, nullptr, &r.w, &r.h);
-
-                        r.y = elrect.y + elrect.h / 2 - r.h / 2;
-                        SDL_RenderCopy(renderer, texture, nullptr, (SDL_Rect*)&(r));
-
-                        SDL_DestroyTexture(texture);
-                        texture = nullptr;
-                        SDL_FreeSurface(surf);
-                        elrect.y += sz;
+                // focusing intersection
+                if (ui_focus)
+                {
+                    std::string linput;
+                    RoninEngine::Runtime::text_get(linput);
+                    element.text += linput;
+                }
+                else
+                {
+                    // clik and focused
+                    if (ui_focus = result = ms_click)
+                    {
+                        text_start_input();
+                    }
+                    else
+                    {
+                        text_stop_input();
                     }
                 }
+                break;
+            }
 
-                if (ms_click) {
-                    ui_focus = false;
-                    dropDownLinear = 0;
+            case RGUI_HSLIDER:
+            {
+                float ratio;
+                float* value = (float*)element.resources;
+                float* min = value + 1;
+                float* max = min + 1;
+                // clamp mouse point an inside
+                ms.x = Math::clamp(ms.x, element.rect.x, element.rect.x + element.rect.w);
+                ms.y = Math::clamp(ms.y, element.rect.y, element.rect.y + element.rect.h);
+                // get rect
+                rect = *reinterpret_cast<SDL_Rect*>(&element.rect);
+
+                if (ms_click)
+                {
+                    ui_focus = ms_click;
                 }
 
-            } else {
-                // clik and shown
-                if (ms_click)
-                    ui_focus = ms_click;
+                if (ms_hover && Input::wheel_radix())
+                {
+                    *value += Input::wheel_radix() / 10.f; // step wheel mouse = ±0.1
+                    *value = Math::clamp(*value, *min, *max);
+                    result = true;
+                }
+
+                // focused state
+                if (ui_focus)
+                {
+                    if (Input::is_mouse_down())
+                    {
+                        // get *x* component from mouse point for set cursor point
+                        *value = Math::map((float)ms.x, (float)rect.x, (float)rect.x + rect.w, *min, *max);
+                    }
+
+                    result = true;
+                }
+                else
+                    *value = Math::clamp(*value, *min, *max);
+
+                ratio = Math::map(*value, *min, *max, 0.f, 1.f);
+
+                rect.h = 4;
+                rect.y += (element.rect.h - rect.h) / 2;
+
+                Gizmos::set_color(ms_hover ? Color::lightgray : Color::gray);
+                Color color = Gizmos::get_color();
+                roundedBoxColor(renderer, rect.x, rect.y, rect.x + rect.w, rect.y + rect.h, 3, Color::slategray);
+                roundedRectangleColor(renderer, rect.x, rect.y, rect.x + rect.w, rect.y + rect.h, 3, color);
+
+                // draw cursor
+                rect.w = 9;
+                rect.h = 11;
+                rect.x += (int)element.rect.w * ratio - rect.w / 2;
+                rect.y = element.rect.y + element.rect.h / 2 - rect.h / 2;
+                color = Color::darkgray;
+                roundedBoxColor(renderer, rect.x, rect.y, rect.x + rect.w, rect.y + rect.h, 3, color);
+                color = Color::gray;
+                roundedRectangleColor(renderer, rect.x, rect.y, rect.x + rect.w, rect.y + rect.h, 3, color);
+
+                // Draw text
+                char __[32];
+
+                TTF_SizeText(ttf_arial_font, __, &rect.w, &rect.h);
+                sprintf(__, "%.1f", *value);
+                Vec2Int tpos = { element.rect.x + element.rect.w - 22, element.rect.y + element.rect.h - 8 };
+                draw_font_at(renderer, __, 1, tpos, color);
+
+                break;
             }
-            break;
-        }
+
+            case RGUI_VSLIDER:
+            {
+                float* value = (float*)element.resources;
+                float* min = value + 1;
+                float* max = min + 1;
+                *value = Math::clamp(*value, *min, *max);
+
+                break;
+            }
+
+            case RGUI_IMAGE:
+            {
+                SDL_Rect sdlr;
+                Sprite* sprite = reinterpret_cast<Sprite*>(element.resources);
+                if (sprite && sprite->surface)
+                {
+                    sdlr.x = element.rect.x;
+                    sdlr.y = element.rect.y;
+                    sdlr.w = element.rect.w == 0 ? sprite->width() : element.rect.w;
+                    sdlr.h = element.rect.h == 0 ? sprite->height() : element.rect.h;
+                    SDL_Texture* tex = SDL_CreateTextureFromSurface(renderer, sprite->surface);
+                    SDL_RenderCopy(renderer, tex, nullptr, &sdlr);
+                    SDL_DestroyTexture(tex);
+                }
+                break;
+            }
+            case RGUI_DROPDOWN:
+            {
+                static const int thickness = 2;
+                static const Rect thick = { thickness, thickness, -thickness, -thickness };
+                Rect r = element.rect;
+                r += thick;
+
+                // uielement background
+                Gizmos::set_color((ms_hover) ? colorSpace.defaultInteraction.normalState : colorSpace.defaultInteraction.hoverState);
+                SDL_RenderFillRect(renderer, (SDL_Rect*)&r);
+                Gizmos::set_color(Color::gray);
+                for (int x = 0; x < thickness; ++x)
+                {
+                    r -= Rect(1, 1, -1, -1);
+                    SDL_RenderDrawRect(renderer, (SDL_Rect*)&r);
+                }
+
+                // draw main text
+                SDL_Texture* texture;
+                SDL_Surface* surf = TTF_RenderUTF8_Blended(ttf_arial_font, element.text.c_str(), *reinterpret_cast<SDL_Color*>(&colorSpace.dropdownText));
+                if ((texture = SDL_CreateTextureFromSurface(renderer, surf)) != nullptr)
+                {
+                    r = element.rect;
+                    r.x += 5;
+                    SDL_QueryTexture(texture, nullptr, nullptr, &r.w, &r.h);
+                    r.y += element.rect.h / 2 - r.h / 2;
+
+                    SDL_RenderCopy(renderer, texture, nullptr, (SDL_Rect*)&(r));
+
+                    SDL_DestroyTexture(texture);
+                    texture = nullptr;
+                    SDL_FreeSurface(surf);
+                }
+                // get resources
+                auto link = static_cast<std::pair<int, std::list<std::string>>*>(element.resources);
+
+                // show dropdown list
+                if (ui_focus)
+                {
+                    static int sz = 15;
+                    Rect elrect;
+                    r = element.rect;
+                    r.y += r.h;
+
+                    r.h = dropDownLinear = Math::ceil(Math::lerp(dropDownLinear, link->second.size() * sz, TimeEngine::deltaTime()));
+
+                    Gizmos::set_color(colorSpace.defaultInteraction.hoverState);
+                    // draw background
+                    SDL_RenderFillRect(renderer, (SDL_Rect*)&r);
+                    if (link->second.size() * sz == r.h)
+                    {
+                        r.h = sz; // set for height
+                        elrect = r;
+                        r.x += 5;
+
+                        int index = 0;
+                        for (auto iter = std::begin(link->second); iter != std::end(link->second); ++iter, ++index)
+                        {
+                            // draw element highligh
+                            if (!result && SDL_PointInRect((SDL_Point*)&(ms), (SDL_Rect*)&elrect))
+                            {
+                                Gizmos::set_color(colorSpace.defaultInteraction.pressState);
+                                SDL_RenderFillRect(renderer, (SDL_Rect*)&elrect);
+                                if (Input::is_mouse_down())
+                                {
+                                    link->first = index;
+                                    element.text = *iter;
+                                    result = true;
+                                    ui_focus = false;
+                                    break;
+                                }
+                            }
+
+                            Gizmos::set_color(colorSpace.defaultInteraction.hoverState);
+                            // Draw element text
+                            surf = TTF_RenderUTF8_Blended(ttf_arial_font, iter->c_str(), *reinterpret_cast<SDL_Color*>(&(link->first != index ? colorSpace.dropdownText : colorSpace.dropdownSelectedText)));
+                            texture = SDL_CreateTextureFromSurface(renderer, surf);
+                            SDL_QueryTexture(texture, nullptr, nullptr, &r.w, &r.h);
+
+                            r.y = elrect.y + elrect.h / 2 - r.h / 2;
+                            SDL_RenderCopy(renderer, texture, nullptr, (SDL_Rect*)&(r));
+
+                            SDL_DestroyTexture(texture);
+                            texture = nullptr;
+                            SDL_FreeSurface(surf);
+                            elrect.y += sz;
+                        }
+                    }
+
+                    if (ms_click)
+                    {
+                        ui_focus = false;
+                        dropDownLinear = 0;
+                    }
+                }
+                else
+                {
+                    // clik and shown
+                    if (ms_click)
+                        ui_focus = ms_click;
+                }
+                break;
+            }
         }
 
         return result;
@@ -364,16 +404,17 @@ namespace RoninEngine::UI
         if (element->event == nullptr)
             return;
 
-        switch (element->prototype) {
-        case RGUI_BUTTON:
-            ((ui_callback_void)(element->event))(element->id);
-            break;
-        case RGUI_DROPDOWN:
-            ((ui_callback_integer)(element->event))(element->id, (static_cast<DropDownResource*>(element->resources)->first));
-            break;
-        case RGUI_HSLIDER:
-        case RGUI_VSLIDER:
-            ((ui_callback_float)(element->event))(element->id, static_cast<SliderResource*>(element->resources)->value);
+        switch (element->prototype)
+        {
+            case RGUI_BUTTON:
+                ((ui_callback_void)(element->event))(element->id);
+                break;
+            case RGUI_DROPDOWN:
+                ((ui_callback_integer)(element->event))(element->id, (static_cast<DropDownResource*>(element->resources)->first));
+                break;
+            case RGUI_HSLIDER:
+            case RGUI_VSLIDER:
+                ((ui_callback_float)(element->event))(element->id, static_cast<SliderResource*>(element->resources)->value);
         }
     }
 
@@ -383,14 +424,16 @@ namespace RoninEngine::UI
 
         TTF_SetFontSize(ttf_arial_font, fontSize);
         SDL_Surface* surf = TTF_RenderUTF8_Blended(ttf_arial_font, text.c_str(), color);
-        if (surf) {
+        if (surf)
+        {
             SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surf);
             r.w = surf->w;
             r.h = surf->h;
 
             r.x = screenPoint.x;
             r.y = screenPoint.y;
-            if (alignCenter) {
+            if (alignCenter)
+            {
                 r.x -= r.w / 2;
                 r.y -= r.h / 2;
             }

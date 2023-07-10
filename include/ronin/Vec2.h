@@ -7,7 +7,8 @@ namespace RoninEngine
     namespace Runtime
     {
 
-        struct RONIN_API Vec2Int {
+        struct RONIN_API Vec2Int
+        {
         public:
             int x;
             int y;
@@ -43,7 +44,8 @@ namespace RoninEngine
             RONIN_API static const Vec2Int up;
         };
 
-        struct RONIN_API Vec2 {
+        struct RONIN_API Vec2
+        {
             float x;
             float y;
 

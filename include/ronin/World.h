@@ -73,8 +73,10 @@ namespace RoninEngine::Runtime
 
         std::list<Component*> __compr = get_all_components();
 
-        for (auto iter = __compr.begin(); iter != __compr.end(); ++iter) {
-            if ((_target = dynamic_cast<T*>(*iter))) {
+        for (auto iter = __compr.begin(); iter != __compr.end(); ++iter)
+        {
+            if ((_target = dynamic_cast<T*>(*iter)))
+            {
                 __classes.emplace_back(_target);
             }
         }

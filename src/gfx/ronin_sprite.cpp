@@ -18,23 +18,48 @@ namespace RoninEngine::Runtime
     {
         this->surface = surface;
 
-        if (surface) {
+        if (surface)
+        {
             m_rect = surface->clip_rect;
         }
     }
 
-    const Rect Sprite::rect() const { return this->m_rect; }
-    void Sprite::rect(const Rect& rect) { this->m_rect = rect; }
+    const Rect Sprite::rect() const
+    {
+        return this->m_rect;
+    }
+    void Sprite::rect(const Rect& rect)
+    {
+        this->m_rect = rect;
+    }
 
-    void Sprite::center(Vec2 center) { this->m_center = center; }
-    const Vec2 Sprite::center() const { return m_center; }
+    void Sprite::center(Vec2 center)
+    {
+        this->m_center = center;
+    }
+    const Vec2 Sprite::center() const
+    {
+        return m_center;
+    }
 
-    const bool Sprite::valid() const { return m_rect.w - m_rect.x >= 0 || m_rect.h - m_rect.y >= 0 || surface; }
+    const bool Sprite::valid() const
+    {
+        return m_rect.w - m_rect.x >= 0 || m_rect.h - m_rect.y >= 0 || surface;
+    }
 
-    int Sprite::width() const { return Math::abs(m_rect.w - m_rect.x); }
-    int Sprite::height() const { return Math::abs(m_rect.h - m_rect.y); }
+    int Sprite::width() const
+    {
+        return Math::abs(m_rect.w - m_rect.x);
+    }
+    int Sprite::height() const
+    {
+        return Math::abs(m_rect.h - m_rect.y);
+    }
 
-    const Vec2 Sprite::size() const { return { width() / pixelsPerPoint, height() / pixelsPerPoint }; }
+    const Vec2 Sprite::size() const
+    {
+        return { width() / pixelsPerPoint, height() / pixelsPerPoint };
+    }
 
     Rect Sprite::realityRect(float&& opaque)
     {
@@ -42,24 +67,30 @@ namespace RoninEngine::Runtime
         // pixel = (SDL_Color*)pLegacyFont->surfNormal->pixels + (cy * (model->pitch / model->format->BytesPerPixel) + cx);
         Rect rect = m_rect;
         bool _place[2] {};
-        if (surface) {
+        if (surface)
+        {
             Color* pixels = static_cast<Color*>(surface->pixels);
             Color* argb;
             // pitch /= SDL_BYTESPERPIXEL(texture->format());
-            for (; !_place[0] || !_place[1];) {
-                if (!_place[0]) {
+            for (; !_place[0] || !_place[1];)
+            {
+                if (!_place[0])
+                {
                     argb = pixels + (rect.y * surface->pitch + rect.x);
                     _place[0] = (Math::map<float>(argb->a, 0, 255, 0, opaque) > opaque);
                 }
-                if (!_place[1]) {
+                if (!_place[1])
+                {
                     argb = pixels + (rect.w * surface->pitch + rect.h);
                     _place[1] = (Math::map<float>(argb->a, 0, 255, 0, opaque) > opaque);
                 }
 
-                if (!_place[0]) {
+                if (!_place[0])
+                {
                     if (rect.x < rect.w)
                         ++rect.x;
-                    else {
+                    else
+                    {
                         rect.x = 0;
                         if (rect.y < rect.h)
                             ++rect.y;
@@ -68,10 +99,12 @@ namespace RoninEngine::Runtime
                     }
                 }
 
-                if (!_place[1]) {
+                if (!_place[1])
+                {
                     if (rect.w > rect.x)
                         --rect.w;
-                    else {
+                    else
+                    {
                         rect.w = m_rect.w;
                         if (rect.h > rect.y)
                             --rect.h;
@@ -84,8 +117,17 @@ namespace RoninEngine::Runtime
         return rect;
     }
 
-    Sprite* Sprite::spriteEmpty() { return Primitive::create_empty_sprite2D(); }
-    Sprite* Sprite::spriteBlack() { return Primitive::create_sprite2D_box(Vec2::one, Color::black); }
-    Sprite* Sprite::spriteWhite() { return Primitive::create_sprite2D_box(Vec2::one, Color::white); }
+    Sprite* Sprite::spriteEmpty()
+    {
+        return Primitive::create_empty_sprite2D();
+    }
+    Sprite* Sprite::spriteBlack()
+    {
+        return Primitive::create_sprite2D_box(Vec2::one, Color::black);
+    }
+    Sprite* Sprite::spriteWhite()
+    {
+        return Primitive::create_sprite2D_box(Vec2::one, Color::white);
+    }
 
 } // namespace RoninEngine::Runtime

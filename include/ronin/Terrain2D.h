@@ -5,18 +5,21 @@
 namespace RoninEngine::Runtime
 {
 
-    struct TerrainRegion {
+    struct TerrainRegion
+    {
         Rect region;
         std::uint32_t textureIndex;
     };
 
-    struct TerrainTextured {
+    struct TerrainTextured
+    {
         int atlasIndex;
         std::uint32_t regionCount;
         TerrainRegion* texturedRegion;
     };
 
-    struct TerrainData {
+    struct TerrainData
+    {
         int atlasCount;
         Atlas* atlases;
 

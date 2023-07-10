@@ -29,7 +29,8 @@ namespace RoninEngine::Runtime
 
 void check_object(RoninEngine::Runtime::Object* obj)
 {
-    if (obj->_type_ == nullptr) {
+    if (obj->_type_ == nullptr)
+    {
         throw ronin_null_error();
     }
 }

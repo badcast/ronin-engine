@@ -4,21 +4,24 @@
 
 namespace RoninEngine::Runtime
 {
-    enum class SpriteRenderPresentMode : char {
+    enum class SpriteRenderPresentMode : char
+    {
         // Fixed type
         Fixed,
         // Placement type
         Place
     };
 
-    enum class SpriteRenderOut : char {
+    enum class SpriteRenderOut : char
+    {
         // Draw on
         Origin,
         // Draw an padding
         Centering
     };
 
-    enum class SpriteRenderType : char {
+    enum class SpriteRenderType : char
+    {
         // Simple drawing tiles with self properties
         Simple,
         // Tile (Tilling) drawing tiles, with self properties tilling

@@ -12,7 +12,8 @@ namespace RoninEngine::UI
     constexpr int font_arealike_width = 13;
     constexpr int font_arealike_height = 18;
 
-    struct Font_t {
+    struct Font_t
+    {
         SDL_Surface* surfNormal;
         SDL_Surface* surfHilight;
         Vec2Int fontSize;
@@ -26,7 +27,8 @@ namespace RoninEngine::UI
 
     void init_fonts(bool optimizeDeffects)
     {
-        if (ttf_arial_font) {
+        if (ttf_arial_font)
+        {
             return;
         }
 
@@ -53,7 +55,8 @@ namespace RoninEngine::UI
             int maxWidth = pLegacyFont->surfNormal->w;
 
             // set unknown symbols
-            for (i = 0; i < 32; ++i) {
+            for (i = 0; i < 32; ++i)
+            {
                 p = pLegacyFont->data + i;
                 // to unknown '?'
                 p->x = 195;
@@ -66,7 +69,8 @@ namespace RoninEngine::UI
             maxWidth /= pLegacyFont->fontSize.x;
             target = i;
             deltay = 0;
-            for (i = 0; target != 127;) {
+            for (i = 0; target != 127;)
+            {
                 p = pLegacyFont->data + target++;
                 p->x = pLegacyFont->fontSize.x * i;
                 p->y = deltay;
@@ -79,7 +83,8 @@ namespace RoninEngine::UI
 
             // load Rus
             target = 192;
-            for (i = 0; target != 255;) {
+            for (i = 0; target != 255;)
+            {
                 p = pLegacyFont->data + target++;
                 p->x = pLegacyFont->fontSize.x * i;
                 p->y = deltay;
@@ -94,21 +99,26 @@ namespace RoninEngine::UI
         /*  TODO:: Resources::gc_alloc_sdl_texture(&pfontTexture, pLegacyFont->surfNormal);
            Resources::gc_alloc_sdl_texture(&pfontTextureHilight, pLegacyFont->surfHilight);*/
 
-        if (optimizeDeffects) {
+        if (optimizeDeffects)
+        {
             SDL_Surface* model = pLegacyFont->surfNormal;
             int i, x, y, cx, cy;
             Rect rect_point;
             SDL_Color* pixel;
-            for (i = 33; i != 255; ++i) {
+            for (i = 33; i != 255; ++i)
+            {
                 // TODO: оптимизация прямоугольника
                 rect_point = pLegacyFont->data[i];
                 uint8_t flagBreaker = 0;
                 // pitch это строка (ширина с объеденением в байтах) то есть x по оси
                 // если умножить pitch * на h-высоту то можно получить последний пиксель
-                for (x = 0; x < pLegacyFont->data[i].w / 2; ++x) {
+                for (x = 0; x < pLegacyFont->data[i].w / 2; ++x)
+                {
                     // оптимизация с левой по правой
-                    if (!(flagBreaker & 1)) {
-                        for (y = rect_point.h - 1; y >= 0; --y) {
+                    if (!(flagBreaker & 1))
+                    {
+                        for (y = rect_point.h - 1; y >= 0; --y)
+                        {
                             cx = rect_point.x + x;
                             cy = rect_point.y + y;
                             // NOTE: Формула пикселей для SDL :: Y Offset * (Pitch/BytesPerPixel) + X Offset
@@ -122,8 +132,10 @@ namespace RoninEngine::UI
                             flagBreaker |= 1;
                     }
                     // оптимизация с права на лева
-                    if (!(flagBreaker & 2)) {
-                        for (y = rect_point.h - 1; y >= 0; --y) {
+                    if (!(flagBreaker & 2))
+                    {
+                        for (y = rect_point.h - 1; y >= 0; --y)
+                        {
                             // Формула Y Offset * (Pitch/BytesPerPixel) + X Offset
                             cx = rect_point.x + pLegacyFont->data[i].w - 1 - x;
                             cy = rect_point.y + y;
@@ -178,15 +190,19 @@ namespace RoninEngine::UI
         if (!rect.h)
             rect.h = pLegacyFont->fontSize.y; // todo: для мультий строк требуется вычислить h высоту
 
-        if (hilight) {
+        if (hilight)
+        {
             __fontTexture = SDL_CreateTextureFromSurface(renderer, pLegacyFont->surfNormal);
-        } else {
+        }
+        else
+        {
             __fontTexture = SDL_CreateTextureFromSurface(renderer, pLegacyFont->surfHilight);
         }
 
         // x
         temp = (VH[textAlign] >> 4 & 15);
-        if (temp) {
+        if (temp)
+        {
             dst.x += rect.w / temp;
             if (temp == 2)
                 dst.x += -textWidth / 2;
@@ -195,7 +211,8 @@ namespace RoninEngine::UI
         }
         // y
         temp = (VH[textAlign] & 15);
-        if (temp) {
+        if (temp)
+        {
             dst.y += rect.h / temp - fontSize.y / 2;
             if (temp == 1)
                 dst.y += -textWidth / 2;
@@ -203,16 +220,20 @@ namespace RoninEngine::UI
 
         Vec2Int begin = *(Vec2Int*)&dst;
         int deltax;
-        for (pos = 0; pos < len; ++pos) {
+        for (pos = 0; pos < len; ++pos)
+        {
             memcpy(&temp, text + pos, 1);
             src = (pLegacyFont->data + temp);
-            if (temp != '\n') {
+            if (temp != '\n')
+            {
                 dst.w = src->w;
                 dst.h = src->h;
                 deltax = rect.x + rect.w;
 
-                if (dst.x >= deltax) {
-                    for (++pos; pos < len;) {
+                if (dst.x >= deltax)
+                {
+                    for (++pos; pos < len;)
+                    {
                         temp = *(text + pos);
                         if (temp != '\n')
                             ++pos;
@@ -227,7 +248,9 @@ namespace RoninEngine::UI
                 // if (dst.x <= src.x + src.w && dst.y <= src.y + src.h)
                 SDL_RenderCopy(renderer, __fontTexture, (SDL_Rect*)src, &dst);
                 dst.x += src->w;
-            } else {
+            }
+            else
+            {
                 dst.x = begin.x;
                 dst.y += src->h;
             }

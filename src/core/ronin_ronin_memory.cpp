@@ -7,13 +7,14 @@ namespace RoninEngine::Runtime
         using namespace RoninEngine;
 
 #if TEST_MALLOC
-    std::list<void*> allocated_leaker;
+        std::list<void*> allocated_leaker;
 #endif
         std::uint64_t __ronin_allocated = 0;
         void* ronin_memory_alloc(std::size_t size)
         {
             void* mem = std::malloc(size);
-            if (mem == nullptr) {
+            if (mem == nullptr)
+            {
                 RoninSimulator::fail_oom_kill();
             }
             // Set up controls memory pointer. Set zero.
@@ -35,7 +36,10 @@ namespace RoninEngine::Runtime
 #endif
         }
 
-        std::uint64_t total_allocated() { return __ronin_allocated; }
+        std::uint64_t total_allocated()
+        {
+            return __ronin_allocated;
+        }
 
     }
 }

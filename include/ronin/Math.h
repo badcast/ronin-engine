@@ -64,7 +64,8 @@ namespace RoninEngine::Runtime
         {
             if (minRange > maxRange)
                 std::swap(minRange, maxRange);
-            if (x >= minRange && x <= maxRange) {
+            if (x >= minRange && x <= maxRange)
+            {
                 x = (minRange + maxRange) / 2 <= x ? maxRange : minRange;
             }
 
@@ -74,7 +75,8 @@ namespace RoninEngine::Runtime
         template <typename T>
         static T clamp(const T& val, const T& min, const T& max)
         {
-            return T(val > max ? max : val < min ? min : val);
+            return T(val > max ? max : val < min ? min
+                                                 : val);
         }
         template <typename T>
         static const T& max(const T& x, const T& y)

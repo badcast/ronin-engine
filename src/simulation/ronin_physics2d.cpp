@@ -58,29 +58,38 @@ namespace RoninEngine::Runtime
         std::uint64_t stormFlags = 1;
         container_result result;
 
-        if (edges > 0) {
-            for (;;) {
+        if (edges > 0)
+        {
+            for (;;)
+            {
                 std::uint32_t steps = (stormMember & const_storm_steps_flag);
                 std::uint32_t maxSteps = (stormMember >> 32);
 
                 // Шаг заканчивается (step = turnSteps) происходит поворот
-                if (steps % Math::max(1u, (maxSteps / 4)) == 0) {
+                if (steps % Math::max(1u, (maxSteps / 4)) == 0)
+                {
                     // переход на новое измерение
                     // при steps == maxsteps
-                    if (steps == maxSteps) {
+                    if (steps == maxSteps)
+                    {
                         if (--edges <= -1)
                             break;
 
                         stormMember = (8ul * (stormFlags = stormFlags & const_storm_dimensions)) << 32;
                         stormFlags = ((stormFlags & const_storm_dimensions) + 1) | const_storm_yDeterminant_start;
-                    } else {
-                        if (stormFlags >> 28) {
+                    }
+                    else
+                    {
+                        if (stormFlags >> 28)
+                        {
                             // stormFlags ^= stormFlags & const_storm_xDeterminant;
                             stormFlags &= ~const_storm_xDeterminant; // clear x
                             stormFlags |= ((stormFlags & const_storm_yDeterminant) >> 4) & const_storm_xDeterminant; // x = y
                             stormFlags &= ~const_storm_yDeterminant; // clear y
                             // stormFlags ^= stormFlags & const_storm_yDeterminant;
-                        } else {
+                        }
+                        else
+                        {
                             // stormFlags ^= stormFlags & const_storm_yDeterminant;
                             stormFlags &= ~const_storm_yDeterminant; // clear y
                             stormFlags |= ((stormFlags & const_storm_xDeterminant) << 4) & const_storm_yDeterminant; // y = x
@@ -94,10 +103,13 @@ namespace RoninEngine::Runtime
                 char xDeter = (stormFlags >> 24 & 0xf);
                 char yDeter = stormFlags >> 28;
                 auto iter = mx.find(ray);
-                if (iter != std::end(mx)) {
+                if (iter != std::end(mx))
+                {
                     for (Transform* x : iter->second)
-                        if (x->layer & layer) {
-                            if constexpr (not std::is_same<Pred, std::nullptr_t>::value) {
+                        if (x->layer & layer)
+                        {
+                            if constexpr (not std::is_same<Pred, std::nullptr_t>::value)
+                            {
                                 if (predicate(origin, x->position()) == false)
                                     continue;
                             }
@@ -110,14 +122,18 @@ namespace RoninEngine::Runtime
                 ray.x += xDeter == 2 ? -1 : xDeter;
                 ray.y += yDeter == 2 ? -1 : yDeter;
 
-                if (!(stormMember & const_storm_steps_flag)) {
-                    if (yDeter) {
+                if (!(stormMember & const_storm_steps_flag))
+                {
+                    if (yDeter)
+                    {
                         // stormFlags ^= stormFlags & const_storm_xDeterminant;
                         stormFlags &= ~const_storm_xDeterminant; // clear x
                         stormFlags |= ((stormFlags & const_storm_yDeterminant) >> 4) & const_storm_xDeterminant; // x = y
                         stormFlags &= ~const_storm_yDeterminant; // clear y
                         // stormFlags ^= stormFlags & const_storm_yDeterminant;
-                    } else if (xDeter) {
+                    }
+                    else if (xDeter)
+                    {
                         // stormFlags ^= stormFlags & const_storm_yDeterminant;
                         stormFlags &= ~const_storm_yDeterminant; // clear y
                         stormFlags |= ((stormFlags & const_storm_xDeterminant) << 4) & const_storm_yDeterminant; // y = x
@@ -143,12 +159,16 @@ namespace RoninEngine::Runtime
         Vec2Int rightDownPoint { Matrix::matrix_get_key(center + size) };
         Vec2Int pointer = leftUpPoint;
 
-        for (; pointer.x <= rightDownPoint.x; ++pointer.x) {
-            for (pointer.y = leftUpPoint.y; pointer.y <= rightDownPoint.y; ++pointer.y) {
+        for (; pointer.x <= rightDownPoint.x; ++pointer.x)
+        {
+            for (pointer.y = leftUpPoint.y; pointer.y <= rightDownPoint.y; ++pointer.y)
+            {
                 auto findedIter = mx.find(pointer);
-                if (findedIter != std::end(mx)) {
+                if (findedIter != std::end(mx))
+                {
                     // filtering
-                    for (auto lhs : findedIter->second) {
+                    for (auto lhs : findedIter->second)
+                    {
                         if ((lhs->layer & layer) == 0x0000)
                             continue;
                         if constexpr (std::is_same<container_result, std::set<Transform*>>::value)
@@ -172,10 +192,10 @@ namespace RoninEngine::Runtime
     container_result Physics2D::sphere_cast(Vec2 origin, float distance, int layer)
     {
         distance *= distance; // Sqr
-        container_result result = storm_cast_eq<container_result>(origin, Math::number(Math::ceil(distance)), layer, [distance](Vec2 lhs, Vec2 rhs) {
+        container_result result = storm_cast_eq<container_result>(origin, Math::number(Math::ceil(distance)), layer, [distance](Vec2 lhs, Vec2 rhs)
+                                                                  {
             // condition
-            return (lhs - rhs).sqr_magnitude() <= distance;
-        });
+            return (lhs - rhs).sqr_magnitude() <= distance; });
         return result;
     }
 

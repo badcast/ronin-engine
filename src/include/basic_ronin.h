@@ -13,7 +13,8 @@ template <typename T>
 static std::enable_if_t<std::is_base_of<RoninEngine::Runtime::Object, T>::value, const char*> runtime_define_type(const char* typestr, T* self, char** _type_, const char* name)
 {
     // param @self not use
-    if (_type_ != nullptr && *_type_ == nullptr) {
+    if (_type_ != nullptr && *_type_ == nullptr)
+    {
         std::type_index index { typeid(T) };
         if (main_ronin_types.find(index) == std::end(main_ronin_types))
             main_ronin_types[index] = typestr;
@@ -46,7 +47,8 @@ namespace std
     // this for Hashtable function
 
     template <>
-    struct hash<RoninEngine::Runtime::Vec2> {
+    struct hash<RoninEngine::Runtime::Vec2>
+    {
         std::size_t operator()(const RoninEngine::Runtime::Vec2& val) const noexcept
         {
             std::int64_t fake = (*reinterpret_cast<std::int64_t*>(&const_cast<RoninEngine::Runtime::Vec2&>(val)));
@@ -55,7 +57,8 @@ namespace std
     };
 
     template <>
-    struct hash<RoninEngine::Runtime::Vec2Int> {
+    struct hash<RoninEngine::Runtime::Vec2Int>
+    {
         std::size_t operator()(const RoninEngine::Runtime::Vec2Int& val) const noexcept
         {
             std::int64_t fake = (*reinterpret_cast<std::int64_t*>(&const_cast<RoninEngine::Runtime::Vec2Int&>(val)));
@@ -71,9 +74,19 @@ namespace RoninEngine
     extern Resolution active_resolution;
     namespace UI
     {
-        enum GUIControlPresents : std::uint8_t { RGUI_TEXT, RGUI_BUTTON, RGUI_EDIT, RGUI_HSLIDER, RGUI_VSLIDER, RGUI_IMAGE, RGUI_DROPDOWN };
+        enum GUIControlPresents : std::uint8_t
+        {
+            RGUI_TEXT,
+            RGUI_BUTTON,
+            RGUI_EDIT,
+            RGUI_HSLIDER,
+            RGUI_VSLIDER,
+            RGUI_IMAGE,
+            RGUI_DROPDOWN
+        };
         struct ui_resource;
-        struct UIElement {
+        struct UIElement
+        {
             Runtime::Rect rect;
             Runtime::Rect contextRect;
             std::uint8_t options;
@@ -85,8 +98,10 @@ namespace RoninEngine
             void* resources;
             void* event;
         };
-        struct GUIResources {
-            struct {
+        struct GUIResources
+        {
+            struct
+            {
                 // controls
                 std::vector<UIElement> elements;
                 std::list<uid> layers;
@@ -105,22 +120,29 @@ namespace RoninEngine
     }
     namespace Runtime
     {
-        enum class CameraEvent { CAM_DELETED, CAM_TARGET };
+        enum class CameraEvent
+        {
+            CAM_DELETED,
+            CAM_TARGET
+        };
 
-        struct Rendering {
+        struct Rendering
+        {
             Rect src;
             Rectf dst;
             SDL_Texture* texture;
         };
 
-        struct CameraResource {
+        struct CameraResource
+        {
             bool targetClear;
             std::map<int, std::vector<Renderer*>> renders;
             std::set<Renderer*> prev;
             std::set<Light*> _lightsOutResults;
         };
 
-        struct AudioClip {
+        struct AudioClip
+        {
             Mix_Chunk* mix_chunk;
 #ifndef NDEBUG
             int used;
@@ -134,7 +156,8 @@ namespace RoninEngine
             }
         };
 
-        struct MusicClip {
+        struct MusicClip
+        {
             Mix_Music* mix_music;
 #ifndef NDEBUG
             int used;
@@ -148,23 +171,27 @@ namespace RoninEngine
             }
         };
 
-        struct AudioSourceData {
+        struct AudioSourceData
+        {
             AudioClip* m_clip;
             int target_channel;
             std::uint8_t m_volume;
         };
 
-        struct MusicPlayerData {
+        struct MusicPlayerData
+        {
             MusicClip* m_clip = nullptr;
         };
 
-        struct GidResources {
+        struct GidResources
+        {
             std::vector<AudioClip*> gid_audio_clips;
             std::vector<MusicClip*> gid_music_clips;
             std::vector<SDL_Surface*> gid_surfaces;
         };
 
-        struct WorldResources {
+        struct WorldResources
+        {
             // unique ids for Object types in current world
             std::uint32_t _level_ids_;
 
@@ -224,7 +251,6 @@ namespace RoninEngine
         // TODO: Complete that function for types
         template <typename T, typename std::enable_if<std::is_base_of<Object, T>::value, std::nullptr_t>::type = nullptr>
         void internal_destroy_object(T* obj);
-
 
         void load_world(World*);
         bool unload_world(World*);

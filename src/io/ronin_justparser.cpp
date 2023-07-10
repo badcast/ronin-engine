@@ -3,9 +3,15 @@
 namespace jno
 {
     using namespace RoninEngine::Runtime;
-    enum { Node_ValueFlag = 1, Node_ArrayFlag = 2, Node_StructFlag = 3 };
+    enum
+    {
+        Node_ValueFlag = 1,
+        Node_ArrayFlag = 2,
+        Node_StructFlag = 3
+    };
 
-    struct jno_evaluted {
+    struct jno_evaluted
+    {
         jnumber jstrings;
         jnumber jnumbers;
         jnumber jreals;
@@ -36,18 +42,28 @@ namespace jno
         RoninMemory::free(t);
     }
 
-    void jfree(void* t) { RoninMemory::ronin_memory_free(t); }
+    void jfree(void* t)
+    {
+        RoninMemory::ronin_memory_free(t);
+    }
 
-    void jno_evaluate(jno_evaluted* file) { }
+    void jno_evaluate(jno_evaluted* file)
+    {
+    }
 
-    jbool jno_is_jnumber(const char c) { return c >= '0' && c <= '9' || c == '-'; }
+    jbool jno_is_jnumber(const char c)
+    {
+        return c >= '0' && c <= '9' || c == '-';
+    }
 
     jbool jno_is_jreal(const char* c, int* getLength)
     {
         *getLength = 0;
         bool real = false;
-        while (true) {
-            if (!jno_is_jnumber(c[*getLength])) {
+        while (true)
+        {
+            if (!jno_is_jnumber(c[*getLength]))
+            {
                 if (real)
                     break;
 
@@ -81,17 +97,21 @@ namespace jno
             *mem = nullptr;
 
         // string type
-        if (*content == jno_syntax.jno_format_string) {
+        if (*content == jno_syntax.jno_format_string)
+        {
             ++offset;
             for (; content[offset] != jno_syntax.jno_format_string; ++offset)
                 if (content[offset] == jno_syntax.jno_left_seperator && content[offset + 1] == jno_syntax.jno_format_string)
                     ++offset;
             --offset;
-            if (offset) {
-                if (mem) {
+            if (offset)
+            {
+                if (mem)
+                {
                     jstring str = jstring();
                     str.reserve(offset);
-                    for (size_t i = 0; i < offset; ++i) {
+                    for (size_t i = 0; i < offset; ++i)
+                    {
                         if (content[i + 1] == jno_syntax.jno_left_seperator)
                             ++i;
                         str.push_back(content[i + 1]);
@@ -102,19 +122,26 @@ namespace jno
             }
 
             offset += 2;
-        } else if (jno_is_jreal(content, &offset)) {
+        }
+        else if (jno_is_jreal(content, &offset))
+        {
             if (mem)
                 *mem = jalloc<jreal>(static_cast<double>(atof(content)));
             out = JNOType::JNOReal;
-        } else if (jno_is_jnumber(*content)) {
+        }
+        else if (jno_is_jnumber(*content))
+        {
             if (mem)
                 *mem = jalloc<jnumber>(atoll(content));
             out = JNOType::JNONumber;
-        } else if (jno_is_jbool(content, &offset)) {
+        }
+        else if (jno_is_jbool(content, &offset))
+        {
             if (mem)
                 *mem = jalloc<jbool>(offset == sizeof(jno_syntax.jno_true_string) - 1);
             out = JNOType::JNOBoolean;
-        } else // another type
+        }
+        else // another type
             offset = 0;
 
         return offset;
@@ -131,7 +158,8 @@ namespace jno
     {
         int i = 0, j;
         if (content != nullptr)
-            for (; i < contentLength && content[i];) {
+            for (; i < contentLength && content[i];)
+            {
                 for (j = 0; j < static_cast<int>(sizeof(jno_syntax.jno_trim_segments));)
                     if (content[i] == jno_syntax.jno_trim_segments[j])
                         break;
@@ -152,7 +180,8 @@ namespace jno
         skipping[0] = '\0';
         strncpy(skipping, jno_syntax.jno_trim_segments, sizeof(jno_syntax.jno_trim_segments));
         strncpy(skipping + sizeof jno_syntax.jno_trim_segments, jno_syntax.jno_array_segments, sizeof(jno_syntax.jno_array_segments));
-        for (i = 0; c[i] && i <= len;) {
+        for (i = 0; c[i] && i <= len;)
+        {
             for (j = 0; j < sizeof(skipping);)
                 if (c[i] == skipping[j])
                     break;
@@ -174,7 +203,10 @@ namespace jno
         return len != 0;
     }
 
-    jbool jno_is_comment_line(const char* c, int len) { return len > 0 && !strncmp(c, jno_syntax.jno_commentLine, std::min(2, len)); }
+    jbool jno_is_comment_line(const char* c, int len)
+    {
+        return len > 0 && !strncmp(c, jno_syntax.jno_commentLine, std::min(2, len));
+    }
 
     int jno_move_eof(const char* c, int len = std::numeric_limits<int>::max())
     {
@@ -187,7 +219,8 @@ namespace jno
     int jno_skip_comment(const char* c, int len)
     {
         int i = jno_trim(c, len);
-        while (jno_is_comment_line(c + i, len - i)) {
+        while (jno_is_comment_line(c + i, len - i))
+        {
             i += jno_move_eof(c + i, len - i);
             i += jno_trim(c + i, len - i);
         }
@@ -207,18 +240,22 @@ namespace jno
         int i = 0;
         jbool result = false;
 
-        if (*content == jno_syntax.jno_array_segments[0]) {
+        if (*content == jno_syntax.jno_array_segments[0])
+        {
             ++i;
             i += jno_trim(content + i);
 
             i += jno_skip_comment(content + i, contentLength - i);
             i += jno_trim(content + i);
 
-            if (jno_has_datatype(content + i) || content[i] == jno_syntax.jno_array_segments[1]) {
-                for (; content[i] && i < contentLength; ++i) {
+            if (jno_has_datatype(content + i) || content[i] == jno_syntax.jno_array_segments[1])
+            {
+                for (; content[i] && i < contentLength; ++i)
+                {
                     if (content[i] == jno_syntax.jno_array_segments[0])
                         break;
-                    else if (content[i] == jno_syntax.jno_array_segments[1]) {
+                    else if (content[i] == jno_syntax.jno_array_segments[1])
+                    {
                         endpoint = i;
                         result = true;
                         break;
@@ -262,28 +299,37 @@ namespace jno
     }
     jno_object_node::~jno_object_node()
     {
-        if (!decrementMemory() && _bits) {
-            if (isStruct()) {
+        if (!decrementMemory() && _bits)
+        {
+            if (isStruct())
+            {
                 jfree((jno_object_parser::jstruct*)_bits);
-            } else if (isArray()) {
-                switch (valueFlag >> 2) {
-                case JNOType::JNOBoolean:
-                    jfree(toBooleans());
-                    break;
-                case JNOType::JNOString:
-                    jfree(toStrings());
-                    break;
-                case JNOType::JNONumber:
-                    jfree(toNumbers());
-                    break;
-                case JNOType::JNOReal:
-                    jfree(toReals());
-                    break;
+            }
+            else if (isArray())
+            {
+                switch (valueFlag >> 2)
+                {
+                    case JNOType::JNOBoolean:
+                        jfree(toBooleans());
+                        break;
+                    case JNOType::JNOString:
+                        jfree(toStrings());
+                        break;
+                    case JNOType::JNONumber:
+                        jfree(toNumbers());
+                        break;
+                    case JNOType::JNOReal:
+                        jfree(toReals());
+                        break;
                 }
-            } else if (isValue()) {
-                if (isString()) {
+            }
+            else if (isValue())
+            {
+                if (isString())
+                {
                     jfree((jstring*)_bits);
-                } else
+                }
+                else
                     jfree(_bits);
             }
         }
@@ -293,7 +339,8 @@ namespace jno
     {
         int res = 0;
         if (uses)
-            if (!(res = --(*uses))) {
+            if (!(res = --(*uses)))
+            {
                 res = *uses;
                 jfree(uses);
             }
@@ -308,16 +355,43 @@ namespace jno
         return ++*uses;
     }
 
-    const jbool jno_object_node::isValue() { return (this->valueFlag & 3) == Node_ValueFlag; }
-    const jbool jno_object_node::isArray() { return (this->valueFlag & 3) == Node_ArrayFlag; }
-    const jbool jno_object_node::isStruct() { return (this->valueFlag & 3) == Node_StructFlag; }
-    const jbool jno_object_node::isNumber() { return ((this->valueFlag & 0x1C) >> 2) == JNOType::JNONumber; }
-    const jbool jno_object_node::isReal() { return ((this->valueFlag & 0x1C) >> 2) == JNOType::JNOReal; }
-    const jbool jno_object_node::isString() { return ((this->valueFlag & 0x1C) >> 2) == JNOType::JNOString; }
-    const jbool jno_object_node::isBoolean() { return ((this->valueFlag & 0x1C) >> 2) == JNOType::JNOBoolean; }
+    const jbool jno_object_node::isValue()
+    {
+        return (this->valueFlag & 3) == Node_ValueFlag;
+    }
+    const jbool jno_object_node::isArray()
+    {
+        return (this->valueFlag & 3) == Node_ArrayFlag;
+    }
+    const jbool jno_object_node::isStruct()
+    {
+        return (this->valueFlag & 3) == Node_StructFlag;
+    }
+    const jbool jno_object_node::isNumber()
+    {
+        return ((this->valueFlag & 0x1C) >> 2) == JNOType::JNONumber;
+    }
+    const jbool jno_object_node::isReal()
+    {
+        return ((this->valueFlag & 0x1C) >> 2) == JNOType::JNOReal;
+    }
+    const jbool jno_object_node::isString()
+    {
+        return ((this->valueFlag & 0x1C) >> 2) == JNOType::JNOString;
+    }
+    const jbool jno_object_node::isBoolean()
+    {
+        return ((this->valueFlag & 0x1C) >> 2) == JNOType::JNOBoolean;
+    }
 
-    jstring& jno_object_node::getPropertyName() { return this->propertyName; }
-    void jno_object_node::set_native_memory(void* memory) { this->_bits = memory; }
+    jstring& jno_object_node::getPropertyName()
+    {
+        return this->propertyName;
+    }
+    void jno_object_node::set_native_memory(void* memory)
+    {
+        this->_bits = memory;
+    }
     jnumber& jno_object_node::toNumber()
     {
         if (!isNumber())
@@ -368,8 +442,12 @@ namespace jno
         return (std::vector<jbool>*)_bits;
     }
 
-    jno_object_parser::jno_object_parser() { }
-    jno_object_parser::~jno_object_parser() { }
+    jno_object_parser::jno_object_parser()
+    {
+    }
+    jno_object_parser::~jno_object_parser()
+    {
+    }
 
     // big algorithm, please free me.
     int jno_object_parser::avail(jno_object_parser::jstruct& entry, const char* source, int len, int levels)
@@ -385,7 +463,8 @@ namespace jno
         if (!len)
             return 0;
 
-        for (i = 0; i < len && source[i];) {
+        for (i = 0; i < len && source[i];)
+        {
             // has comment line
             j = i += jno_skip_comment(source + i, len - i);
             if (levels > 0 && source[i] == jno_syntax.jno_array_segments[1])
@@ -401,73 +480,88 @@ namespace jno
             i += jno_skip_comment(source + i, len - i);
             i += jno_trim(source + i, len - i); // trim string
             // is block or array
-            if (source[i] == jno_syntax.jno_array_segments[0]) {
+            if (source[i] == jno_syntax.jno_array_segments[0])
+            {
                 ++levels;
-                if (jno_is_array(source + i, j, len - i)) {
+                if (jno_is_array(source + i, j, len - i))
+                {
                     j += i++;
                     current_block_type = JNOType::Unknown;
                     current_jno_node.valueFlag = Node_ArrayFlag;
-                    for (; i < j;) {
+                    for (; i < j;)
+                    {
                         i += jno_skip_comment(source + i, j - i);
                         // next index
                         if (source[i] == jno_syntax.jno_obstacle)
                             ++i;
-                        else {
+                        else
+                        {
                             i += jno_format(source + i, &memory, valueType);
-                            if (valueType != JNOType::Unknown) {
-                                if (current_block_type == JNOType::Unknown) {
+                            if (valueType != JNOType::Unknown)
+                            {
+                                if (current_block_type == JNOType::Unknown)
+                                {
                                     current_block_type = valueType;
 
-                                    switch (current_block_type) {
-                                    case JNOType::JNOString:
-                                        current_jno_node.set_native_memory((void*)jalloc<std::vector<jstring>>());
-                                        break;
-                                    case JNOType::JNOBoolean:
-                                        current_jno_node.set_native_memory((void*)jalloc<std::vector<jbool>>());
-                                        break;
-                                    case JNOType::JNOReal:
-                                        current_jno_node.set_native_memory((void*)jalloc<std::vector<jreal>>());
-                                        break;
-                                    case JNOType::JNONumber:
-                                        current_jno_node.set_native_memory((void*)jalloc<std::vector<jnumber>>());
-                                        break;
+                                    switch (current_block_type)
+                                    {
+                                        case JNOType::JNOString:
+                                            current_jno_node.set_native_memory((void*)jalloc<std::vector<jstring>>());
+                                            break;
+                                        case JNOType::JNOBoolean:
+                                            current_jno_node.set_native_memory((void*)jalloc<std::vector<jbool>>());
+                                            break;
+                                        case JNOType::JNOReal:
+                                            current_jno_node.set_native_memory((void*)jalloc<std::vector<jreal>>());
+                                            break;
+                                        case JNOType::JNONumber:
+                                            current_jno_node.set_native_memory((void*)jalloc<std::vector<jnumber>>());
+                                            break;
                                     }
-
-                                } else if (current_block_type != valueType && current_block_type == JNOType::JNOReal && valueType != JNOType::JNONumber) {
+                                }
+                                else if (current_block_type != valueType && current_block_type == JNOType::JNOReal && valueType != JNOType::JNONumber)
+                                {
                                     throw std::runtime_error("Multi type is found.");
                                 }
 
-                                switch (current_block_type) {
-                                case JNOType::JNOString: {
-                                    auto ref = (jstring*)memory;
-                                    ((std::vector<std::string>*)current_jno_node._bits)->emplace_back(*ref);
-                                    jfree(ref);
-                                    break;
-                                }
-                                case JNOType::JNOBoolean: {
-                                    auto ref = (jbool*)memory;
-                                    ((std::vector<jbool>*)current_jno_node._bits)->emplace_back(*ref);
-                                    jfree(ref);
-                                    break;
-                                }
-                                case JNOType::JNOReal: {
-                                    jreal* ref;
-                                    if (valueType == JNOType::JNONumber) {
-                                        ref = new jreal(static_cast<jreal>(*(jnumber*)memory));
-                                        jfree((jnumber*)memory);
-                                    } else
-                                        ref = (jreal*)memory;
+                                switch (current_block_type)
+                                {
+                                    case JNOType::JNOString:
+                                    {
+                                        auto ref = (jstring*)memory;
+                                        ((std::vector<std::string>*)current_jno_node._bits)->emplace_back(*ref);
+                                        jfree(ref);
+                                        break;
+                                    }
+                                    case JNOType::JNOBoolean:
+                                    {
+                                        auto ref = (jbool*)memory;
+                                        ((std::vector<jbool>*)current_jno_node._bits)->emplace_back(*ref);
+                                        jfree(ref);
+                                        break;
+                                    }
+                                    case JNOType::JNOReal:
+                                    {
+                                        jreal* ref;
+                                        if (valueType == JNOType::JNONumber)
+                                        {
+                                            ref = new jreal(static_cast<jreal>(*(jnumber*)memory));
+                                            jfree((jnumber*)memory);
+                                        }
+                                        else
+                                            ref = (jreal*)memory;
 
-                                    ((std::vector<jreal>*)current_jno_node._bits)->emplace_back(*ref);
-                                    jfree(ref);
-                                    break;
-                                }
-                                case JNOType::JNONumber: {
-                                    auto ref = (jnumber*)memory;
-                                    ((std::vector<int64_t>*)current_jno_node._bits)->emplace_back(*ref);
-                                    jfree(ref);
-                                    break;
-                                }
+                                        ((std::vector<jreal>*)current_jno_node._bits)->emplace_back(*ref);
+                                        jfree(ref);
+                                        break;
+                                    }
+                                    case JNOType::JNONumber:
+                                    {
+                                        auto ref = (jnumber*)memory;
+                                        ((std::vector<int64_t>*)current_jno_node._bits)->emplace_back(*ref);
+                                        jfree(ref);
+                                        break;
+                                    }
                                 }
                             }
                         }
@@ -475,27 +569,34 @@ namespace jno
                     }
 
                     // shrink to fit
-                    switch (current_block_type) {
-                    case JNOType::JNOString: {
-                        ((std::vector<std::string>*)current_jno_node._bits)->shrink_to_fit();
-                        break;
-                    }
-                    case JNOType::JNOBoolean: {
-                        ((std::vector<jbool>*)current_jno_node._bits)->shrink_to_fit();
-                        break;
-                    }
-                    case JNOType::JNOReal: {
-                        ((std::vector<jreal>*)current_jno_node._bits)->shrink_to_fit();
-                        break;
-                    }
-                    case JNOType::JNONumber: {
-                        ((std::vector<int64_t>*)current_jno_node._bits)->shrink_to_fit();
-                        break;
-                    }
+                    switch (current_block_type)
+                    {
+                        case JNOType::JNOString:
+                        {
+                            ((std::vector<std::string>*)current_jno_node._bits)->shrink_to_fit();
+                            break;
+                        }
+                        case JNOType::JNOBoolean:
+                        {
+                            ((std::vector<jbool>*)current_jno_node._bits)->shrink_to_fit();
+                            break;
+                        }
+                        case JNOType::JNOReal:
+                        {
+                            ((std::vector<jreal>*)current_jno_node._bits)->shrink_to_fit();
+                            break;
+                        }
+                        case JNOType::JNONumber:
+                        {
+                            ((std::vector<int64_t>*)current_jno_node._bits)->shrink_to_fit();
+                            break;
+                        }
                     }
 
                     current_jno_node.valueFlag |= (current_block_type) << 2;
-                } else { // get the next node
+                }
+                else
+                { // get the next node
                     ++i;
                     jstruct* _nodes = jalloc<jstruct>();
                     i += avail(*_nodes, source + i, len - i, levels);
@@ -504,11 +605,14 @@ namespace jno
                     i += jno_skip_comment(source + i, len - i);
                 }
                 --levels;
-                if (source[i] != jno_syntax.jno_array_segments[1]) {
+                if (source[i] != jno_syntax.jno_array_segments[1])
+                {
                     throw std::bad_exception();
                 }
                 ++i;
-            } else { // get also value
+            }
+            else
+            { // get also value
                 i += jno_format(source + i, &memory, valueType);
                 current_jno_node.set_native_memory(memory);
                 memory = nullptr;
@@ -550,7 +654,10 @@ namespace jno
         deserialize((char*)buffer, length);
         free(buffer);
     }
-    void jno_object_parser::deserialize(const jstring& source) { deserialize(source.data(), source.size()); }
+    void jno_object_parser::deserialize(const jstring& source)
+    {
+        deserialize(source.data(), source.size());
+    }
     void jno_object_parser::deserialize(const char* source, int len)
     {
         // FIXME: CLEAR FUNCTION TO UPGRADE
@@ -577,7 +684,10 @@ namespace jno
         return node;
     }
 
-    jno_object_parser::jstruct& jno_object_parser::get_struct() { return entry; }
+    jno_object_parser::jstruct& jno_object_parser::get_struct()
+    {
+        return entry;
+    }
 
     jno_object_node* jno_object_parser::find_node(const jstring& nodePath)
     {
@@ -587,15 +697,18 @@ namespace jno
         int l = 0, r;
         int hash;
         // get splits
-        do {
+        do
+        {
             if ((r = nodePath.find(jno_syntax.jno_nodePathBreaker, l)) == ~0)
                 r = static_cast<int>(nodePath.length());
             hash = jno_string_to_hash(nodePath.c_str() + l, r - l);
             iter = entry->find(hash);
-            if (iter != end(*entry)) {
+            if (iter != end(*entry))
+            {
                 if (iter->second.isStruct())
                     entry = decltype(entry)(iter->second._bits);
-                else {
+                else
+                {
                     if (r == nodePath.length())
                         node = &iter->second; // get the next section
                     break;
@@ -607,6 +720,9 @@ namespace jno
         } while (l < r);
         return node;
     }
-    jbool jno_object_parser::contains(const jstring& nodePath) { return find_node(nodePath) != nullptr; }
+    jbool jno_object_parser::contains(const jstring& nodePath)
+    {
+        return find_node(nodePath) != nullptr;
+    }
 
 } // namespace jno

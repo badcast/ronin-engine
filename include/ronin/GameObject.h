@@ -90,8 +90,10 @@ namespace RoninEngine
         {
             std::list<T*> types;
             T* cast;
-            for (auto iter = std::begin(m_components); iter != std::end(m_components); ++iter) {
-                if ((cast = dynamic_cast<T*>(*iter)) != nullptr) {
+            for (auto iter = std::begin(m_components); iter != std::end(m_components); ++iter)
+            {
+                if ((cast = dynamic_cast<T*>(*iter)) != nullptr)
+                {
                     types.emplace_back(cast);
                 }
             }
@@ -102,10 +104,14 @@ namespace RoninEngine
         template <typename T>
         std::enable_if_t<std::is_base_of<Component, T>::value, T*> GameObject::get_component()
         {
-            if constexpr (std::is_same<T, Transform>::value) {
+            if constexpr (std::is_same<T, Transform>::value)
+            {
                 return reinterpret_cast<Transform*>(m_components.front());
-            } else {
-                auto iter = std::find_if(begin(m_components), end(m_components), [](Component* c) { return dynamic_cast<T*>(c) != nullptr; });
+            }
+            else
+            {
+                auto iter = std::find_if(begin(m_components), end(m_components), [](Component* c)
+                                         { return dynamic_cast<T*>(c) != nullptr; });
 
                 if (iter != end(m_components))
                     return static_cast<T*>(*iter);

@@ -42,9 +42,14 @@ namespace RoninEngine::Runtime
         m_active = true;
     }
 
-    GameObject::~GameObject() { }
+    GameObject::~GameObject()
+    {
+    }
 
-    bool GameObject::is_active() { return m_active; }
+    bool GameObject::is_active()
+    {
+        return m_active;
+    }
 
     void GameObject::set_active(bool state)
     {
@@ -55,16 +60,24 @@ namespace RoninEngine::Runtime
         transform()->parent_notify_active_state(this);
     }
 
-    const bool GameObject::destroy_cancel() { return World::self()->object_desctruction_cancel(this); }
+    const bool GameObject::destroy_cancel()
+    {
+        return World::self()->object_desctruction_cancel(this);
+    }
 
-    const bool GameObject::is_destruction() { return World::self()->object_destruction_state(this); }
+    const bool GameObject::is_destruction()
+    {
+        return World::self()->object_destruction_state(this);
+    }
 
     void GameObject::set_active_recursivelly(bool state)
     {
         std::list<GameObject*> __stack;
         __stack.emplace_back(this);
-        while (__stack.size()) {
-            for (Transform* h : __stack.front()->transform()->hierarchy) {
+        while (__stack.size())
+        {
+            for (Transform* h : __stack.front()->transform()->hierarchy)
+            {
                 __stack.emplace_back(h->game_object());
             }
             __stack.front()->set_active(state);
@@ -78,15 +91,30 @@ namespace RoninEngine::Runtime
         return static_cast<Transform*>(m_components.front());
     }
 
-    SpriteRenderer* GameObject::get_sprite_renderer() { return get_component<SpriteRenderer>(); }
+    SpriteRenderer* GameObject::get_sprite_renderer()
+    {
+        return get_component<SpriteRenderer>();
+    }
 
-    Camera2D* GameObject::get_camera2D() { return get_component<Camera2D>(); }
+    Camera2D* GameObject::get_camera2D()
+    {
+        return get_component<Camera2D>();
+    }
 
-    Terrain2D* GameObject::get_terrain2D() { return get_component<Terrain2D>(); }
+    Terrain2D* GameObject::get_terrain2D()
+    {
+        return get_component<Terrain2D>();
+    }
 
-    void GameObject::destroy() { this->destroy(0); }
+    void GameObject::destroy()
+    {
+        this->destroy(0);
+    }
 
-    void GameObject::destroy(float t) { Runtime::destroy(this, t); }
+    void GameObject::destroy(float t)
+    {
+        Runtime::destroy(this, t);
+    }
 
     Component* GameObject::add_component(Component* component)
     {
@@ -95,17 +123,23 @@ namespace RoninEngine::Runtime
         if (component->_owner)
             throw ronin_conflict_component_error();
 
-        if (end(m_components) == std::find_if(begin(m_components), end(m_components), std::bind2nd(std::equal_to<Component*>(), component))) {
+        if (end(m_components) == std::find_if(begin(m_components), end(m_components), std::bind2nd(std::equal_to<Component*>(), component)))
+        {
             this->m_components.emplace_back(component);
 
             component->_owner = this;
 
-            if (Behaviour* script = dynamic_cast<Behaviour*>(component)) {
+            if (Behaviour* script = dynamic_cast<Behaviour*>(component))
+            {
                 World::self()->internal_bind_script(script);
                 script->OnAwake();
-            } else if (Renderer* rend = dynamic_cast<Renderer*>(component)) {
+            }
+            else if (Renderer* rend = dynamic_cast<Renderer*>(component))
+            {
                 // awake on renderer
-            } else if (Light* light = dynamic_cast<Light*>(component)) {
+            }
+            else if (Light* light = dynamic_cast<Light*>(component))
+            {
                 World::self()->push_light_object(light);
             }
         }
@@ -118,7 +152,8 @@ namespace RoninEngine::Runtime
         if (component == nullptr)
             throw ronin_null_error();
 
-        if (component->_owner != this) {
+        if (component->_owner != this)
+        {
             throw ronin_conflict_component_error();
         }
 

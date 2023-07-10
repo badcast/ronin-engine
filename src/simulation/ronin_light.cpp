@@ -13,7 +13,9 @@ namespace RoninEngine::Runtime
         fieldFogTexture = nullptr;
     }
 
-    Light::~Light() { }
+    Light::~Light()
+    {
+    }
 
     void Light::get_light_source(Rendering* render)
     {
@@ -22,8 +24,9 @@ namespace RoninEngine::Runtime
         SDL_Texture *target, *lastTarget;
         // TODO: not a work light sources
         return;
-        if (!fieldFogTexture) {
-           // Resources::gc_alloc_texture(&fieldFogTexture, res.width, res.height, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING);
+        if (!fieldFogTexture)
+        {
+            // Resources::gc_alloc_texture(&fieldFogTexture, res.width, res.height, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING);
             fieldFogTexture->blendMode(SDL_BlendMode::SDL_BLENDMODE_BLEND);
 
             c = fieldFogTexture->color();

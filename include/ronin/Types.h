@@ -7,7 +7,12 @@ namespace RoninEngine
 
     namespace Runtime
     {
-        enum Align { Left, Right, Center };
+        enum Align
+        {
+            Left,
+            Right,
+            Center
+        };
 
         template <typename T>
         class RRect
@@ -22,7 +27,10 @@ namespace RoninEngine
                 , h(wh.y)
             {
             }
-            RRect() { x = y = w = h = 0; }
+            RRect()
+            {
+                x = y = w = h = 0;
+            }
             RRect(const T& x, const T& y, const T& w, const T& h)
                 : x(x)
                 , y(y)
@@ -42,15 +50,30 @@ namespace RoninEngine
                 this->h = other.h;
             }
 
-            bool empty() const { return x == 0 && y == 0 && w == 0 && h == 0; }
+            bool empty() const
+            {
+                return x == 0 && y == 0 && w == 0 && h == 0;
+            }
 
-            RRect<T> operator+(const RRect<T>& rhs) { return { this->x + rhs.x, this->y + rhs.y, this->w + rhs.w, this->h + rhs.h }; }
+            RRect<T> operator+(const RRect<T>& rhs)
+            {
+                return { this->x + rhs.x, this->y + rhs.y, this->w + rhs.w, this->h + rhs.h };
+            }
 
-            RRect<T> operator-(const RRect<T>& rhs) { return { this->x - rhs.x, this->y + rhs.y, this->w - rhs.w, this->h - rhs.h }; }
+            RRect<T> operator-(const RRect<T>& rhs)
+            {
+                return { this->x - rhs.x, this->y + rhs.y, this->w - rhs.w, this->h - rhs.h };
+            }
 
-            RRect<T> operator*(const T& rhs) { return { this->x * rhs, this->y * rhs, this->w * rhs, this->h * rhs }; }
+            RRect<T> operator*(const T& rhs)
+            {
+                return { this->x * rhs, this->y * rhs, this->w * rhs, this->h * rhs };
+            }
 
-            RRect<T> operator/(const T& rhs) { return { this->x / rhs, this->y / rhs, this->w / rhs, this->h / rhs }; }
+            RRect<T> operator/(const T& rhs)
+            {
+                return { this->x / rhs, this->y / rhs, this->w / rhs, this->h / rhs };
+            }
 
             RRect<T>& operator+=(const RRect<T>& rhs)
             {
@@ -72,17 +95,23 @@ namespace RoninEngine
 
             constexpr auto getXY() const
             {
-                if constexpr (std::is_same<T, int>::value) {
+                if constexpr (std::is_same<T, int>::value)
+                {
                     return Vec2Int(x, y);
-                } else if constexpr (std::is_same<T, float>::value) {
+                }
+                else if constexpr (std::is_same<T, float>::value)
+                {
                     return Vec2(x, y);
                 }
             }
             constexpr auto getWH() const
             {
-                if constexpr (std::is_same<T, int>::value) {
+                if constexpr (std::is_same<T, int>::value)
+                {
                     return Vec2Int(w, h);
-                } else if constexpr (std::is_same<T, float>::value) {
+                }
+                else if constexpr (std::is_same<T, float>::value)
+                {
                     return Vec2(w, h);
                 }
             }
@@ -105,7 +134,8 @@ namespace RoninEngine
             static const RRect<T> one;
         };
 
-        struct IComponents {
+        struct IComponents
+        {
             virtual Transform* transform() = 0;
             virtual SpriteRenderer* get_sprite_renderer() = 0;
             virtual Camera2D* get_camera2D() = 0;

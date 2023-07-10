@@ -19,7 +19,10 @@ namespace RoninEngine::Runtime
         return obj;
     }
 
-    Camera2D* Primitive::create_camera2D(Vec2 position) { return create_empty_game_object(position)->add_component<Camera2D>(); }
+    Camera2D* Primitive::create_camera2D(Vec2 position)
+    {
+        return create_empty_game_object(position)->add_component<Camera2D>();
+    }
 
     Sprite* Primitive::create_empty_sprite2D()
     {
@@ -35,7 +38,8 @@ namespace RoninEngine::Runtime
 
         size *= pixelsPerPoint;
         SDL_Surface* surface = SDL_CreateRGBSurfaceWithFormat(0, size.x, size.y, 32, sdl_default_pixelformat);
-        if (surface == nullptr) {
+        if (surface == nullptr)
+        {
             RoninSimulator::fail_oom_kill();
         }
         SDL_LockSurface(surface);
@@ -53,7 +57,8 @@ namespace RoninEngine::Runtime
 
         size *= pixelsPerPoint;
         SDL_Surface* surface = SDL_CreateRGBSurfaceWithFormat(0, size.x, size.y, 32, sdl_default_pixelformat);
-        if (surface == nullptr) {
+        if (surface == nullptr)
+        {
             RoninSimulator::fail_oom_kill();
         }
         SDL_Renderer* renderer = SDL_CreateSoftwareRenderer(surface);
@@ -75,7 +80,8 @@ namespace RoninEngine::Runtime
         size *= pixelsPerPoint;
         height *= pixelsPerPoint;
         SDL_Surface* surface = SDL_CreateRGBSurfaceWithFormat(0, size.x, size.y, 32, sdl_default_pixelformat);
-        if (surface == nullptr) {
+        if (surface == nullptr)
+        {
             RoninSimulator::fail_oom_kill();
         }
 

@@ -21,9 +21,15 @@ AudioSource::AudioSource(const std::string& name)
         Mix_AllocateChannels(__world_resources->audio_reserved_channels *= 2);
 }
 
-AudioSource::~AudioSource() { RoninMemory::free(data); }
+AudioSource::~AudioSource()
+{
+    RoninMemory::free(data);
+}
 
-AudioClip* AudioSource::clip() const { return data->m_clip; }
+AudioClip* AudioSource::clip() const
+{
+    return data->m_clip;
+}
 
 void AudioSource::clip(AudioClip* clip)
 {
@@ -37,7 +43,10 @@ void AudioSource::clip(AudioClip* clip)
     data->m_clip = clip;
 }
 
-float AudioSource::volume() const { return Math::map<std::uint8_t, float>(data->m_volume, 0, MIX_MAX_VOLUME, 0.0, 1.f); }
+float AudioSource::volume() const
+{
+    return Math::map<std::uint8_t, float>(data->m_volume, 0, MIX_MAX_VOLUME, 0.0, 1.f);
+}
 
 void AudioSource::volume(float value)
 {
@@ -57,17 +66,30 @@ void AudioSource::play(bool loop)
 {
     if (is_paused())
         Mix_Resume(data->target_channel);
-    else {
+    else
+    {
         stop();
 
         Mix_PlayChannel(data->target_channel, data->m_clip->mix_chunk, loop ? 1 : 0);
     }
 }
 
-void AudioSource::pause() { Mix_Pause(data->target_channel); }
+void AudioSource::pause()
+{
+    Mix_Pause(data->target_channel);
+}
 
-void AudioSource::stop() { Mix_HaltChannel(data->target_channel); }
+void AudioSource::stop()
+{
+    Mix_HaltChannel(data->target_channel);
+}
 
-bool AudioSource::is_playing() const { return Mix_Playing(data->target_channel) == 1; }
+bool AudioSource::is_playing() const
+{
+    return Mix_Playing(data->target_channel) == 1;
+}
 
-bool AudioSource::is_paused() const { return Mix_Paused(data->target_channel) == 1; }
+bool AudioSource::is_paused() const
+{
+    return Mix_Paused(data->target_channel) == 1;
+}

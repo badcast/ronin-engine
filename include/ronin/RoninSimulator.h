@@ -3,12 +3,14 @@
 
 namespace RoninEngine
 {
-    struct Version {
+    struct Version
+    {
         std::uint8_t major;
         std::uint8_t minor;
         std::uint8_t patch;
     };
-    struct VersionInfo {
+    struct VersionInfo
+    {
         Version Engine_Version;
         Version SDL_Version;
         Version SDL_TTF_Version;
@@ -16,7 +18,8 @@ namespace RoninEngine
         Version SDL_Mix_Version;
     };
 
-    struct Resolution {
+    struct Resolution
+    {
         // Display width
         int width;
         // Display height
@@ -32,9 +35,14 @@ namespace RoninEngine
         }
     };
 
-    enum class FullscreenMode { Desktop, Display };
+    enum class FullscreenMode
+    {
+        Desktop,
+        Display
+    };
 
-    struct ScoreWatcher {
+    struct ScoreWatcher
+    {
         std::uint32_t ms_wait_exec_level;
         std::uint32_t ms_wait_exec_scripts;
         std::uint32_t ms_wait_render_collect;
@@ -66,7 +74,7 @@ namespace RoninEngine
         // Get resolution of active display
         static std::list<Resolution> get_display_resolutions();
         // Set resolution of active display
-        static bool set_display_resolution(const Resolution &new_resolution);
+        static bool set_display_resolution(const Resolution& new_resolution);
         // Set active window to fullscreen mode
         static bool set_display_fullscreen(FullscreenMode mode);
         // Get timming watches

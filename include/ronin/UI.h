@@ -7,18 +7,44 @@ namespace RoninEngine
 {
     namespace UI
     {
-        enum TextAlign { Left, Center, Right, MiddleLeft, MiddleCenter, MiddleRight, BottomLeft, BottomCenter, BottomRight };
+        enum TextAlign
+        {
+            Left,
+            Center,
+            Right,
+            MiddleLeft,
+            MiddleCenter,
+            MiddleRight,
+            BottomLeft,
+            BottomCenter,
+            BottomRight
+        };
 
 #define CI
 
-        enum { NOPARENT = 0 };
+        enum
+        {
+            NOPARENT = 0
+        };
 
         /// Тип идентификатора GUI
         typedef std::uint8_t uid;
 
-        enum TextRandomizer_Format { All = -1, OnlyText = 0, OnlyNumber = 1, OnlyReal = 3, MaskText = 2, MaskNumber = 4, MaskReal = 8, MaskUpperChar = 16, MaskLowwerChar = 32 };
+        enum TextRandomizer_Format
+        {
+            All = -1,
+            OnlyText = 0,
+            OnlyNumber = 1,
+            OnlyReal = 3,
+            MaskText = 2,
+            MaskNumber = 4,
+            MaskReal = 8,
+            MaskUpperChar = 16,
+            MaskLowwerChar = 32
+        };
 
-        struct {
+        struct
+        {
             Runtime::Vec2Int dropdownSize = Runtime::Vec2Int(240, 30);
             Runtime::Vec2Int buttonSize = Runtime::Vec2Int(240, 30);
             Runtime::Vec2Int editSize = Runtime::Vec2Int(240, 30);
@@ -78,7 +104,8 @@ namespace RoninEngine
 
                 std::list<std::string> __convert_string;
 
-                for (auto iter = std::begin(container); iter != std::end(container); ++iter) {
+                for (auto iter = std::begin(container); iter != std::end(container); ++iter)
+                {
                     if constexpr (std::is_same<std::string, T>::value)
                         __convert_string.emplace_back(*iter);
                     else if constexpr (std::is_same<const char*, T>::value)
@@ -90,7 +117,10 @@ namespace RoninEngine
                 return push_drop_down(__convert_string, index, rect, changed, parent);
             }
 
-            CI uid push_slider(float value, const Runtime::Vec2Int& point, ui_callback_float changed = nullptr, uid parent = NOPARENT) { return push_slider(value, 0.f, 1.f, point, changed, parent); }
+            CI uid push_slider(float value, const Runtime::Vec2Int& point, ui_callback_float changed = nullptr, uid parent = NOPARENT)
+            {
+                return push_slider(value, 0.f, 1.f, point, changed, parent);
+            }
 
             CI uid push_slider(float value, float min, float max, const Runtime::Vec2Int& point, ui_callback_float changed = nullptr, uid parent = NOPARENT)
             {

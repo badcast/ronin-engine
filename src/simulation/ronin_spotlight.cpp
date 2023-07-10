@@ -14,12 +14,15 @@ namespace RoninEngine::Runtime
         DESCRIBE_AS_MAIN(Spotlight);
         range = 1.f;
         intensity = 1.f;
-        if (!spotlightMask) {
-            //spotlightMask = Resources::resource_bitmap("spotlight");
+        if (!spotlightMask)
+        {
+            // spotlightMask = Resources::resource_bitmap("spotlight");
         }
     }
 
-    Spotlight::~Spotlight() { }
+    Spotlight::~Spotlight()
+    {
+    }
 
     void Spotlight::get_light(SDL_Renderer* renderer)
     {

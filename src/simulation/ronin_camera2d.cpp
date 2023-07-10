@@ -92,7 +92,8 @@ namespace RoninEngine::Runtime
                  ' * * * * * * * * * '
         */
 
-        if (camera2d->camera_resources->renders.empty()) {
+        if (camera2d->camera_resources->renders.empty())
+        {
             Resolution res = active_resolution;
             Vec2Int wpLeftTop = Vec2::round_to_int(Camera::screen_to_world(Vec2::zero));
             Vec2Int wpRightBottom = Vec2::round_to_int(Camera::screen_to_world(Vec2(res.width, res.height)));
@@ -102,10 +103,14 @@ namespace RoninEngine::Runtime
             std::vector<Transform*> storm_result = Physics2D::sphere_cast<std::vector<Transform*>>(camera_position, Math::number(Math::max(wpRightBottom.x - camera_position.x, wpRightBottom.y - camera_position.y)) + 1 + camera2d->distanceEvcall);
             std::list<Renderer*> _removes;
             // собираем оставшиеся которые прикреплены к видимости
-            for (auto x = std::begin(camera2d->camera_resources->prev); false && x != std::end(camera2d->camera_resources->prev); ++x) {
-                if (area_cast(*x, wpLeftTop, wpRightBottom)) {
+            for (auto x = std::begin(camera2d->camera_resources->prev); false && x != std::end(camera2d->camera_resources->prev); ++x)
+            {
+                if (area_cast(*x, wpLeftTop, wpRightBottom))
+                {
                     camera2d->camera_resources->renders[(*x)->transform()->layer].emplace_back((*x));
-                } else {
+                }
+                else
+                {
                     //  _removes.emplace_back((*x));
                 }
             }
@@ -115,26 +120,33 @@ namespace RoninEngine::Runtime
             **/
 
             // order by layer component
-            if constexpr (std::is_same<list_type_render, std::vector<Renderer*>>::value) {
+            if constexpr (std::is_same<list_type_render, std::vector<Renderer*>>::value)
+            {
                 Renderer* r;
                 const int size = storm_result.size();
-                for (int x = 0; x < size; ++x) {
-                    for (auto iter = ++std::begin(storm_result[x]->_owner->m_components), yiter = std::end(storm_result[x]->_owner->m_components); iter != yiter; ++iter) {
+                for (int x = 0; x < size; ++x)
+                {
+                    for (auto iter = ++std::begin(storm_result[x]->_owner->m_components), yiter = std::end(storm_result[x]->_owner->m_components); iter != yiter; ++iter)
+                    {
                         if (r = dynamic_cast<Renderer*>(*iter))
                             camera2d->camera_resources->renders[r->transform()->layer].push_back(r);
                     }
                 }
-            } else
-                for (auto iter = std::begin(storm_result); iter != std::end(storm_result); ++iter) {
+            }
+            else
+                for (auto iter = std::begin(storm_result); iter != std::end(storm_result); ++iter)
+                {
                     std::list<Renderer*> rends = (*iter)->game_object()->get_components<Renderer>();
-                    for (Renderer* x : rends) {
+                    for (Renderer* x : rends)
+                    {
                         camera2d->camera_resources->renders[x->transform()->layer].emplace_back(x);
                         // camera2d->camera_resources->prev.insert(x);
                     }
                 }
         }
 
-        if (camera2d->camera_resources->_lightsOutResults.empty()) {
+        if (camera2d->camera_resources->_lightsOutResults.empty())
+        {
             camera2d->camera_resources->_lightsOutResults.insert(World::self()->internal_resources->_assoc_lightings.begin(), World::self()->internal_resources->_assoc_lightings.end());
         }
 
@@ -178,7 +190,8 @@ namespace RoninEngine::Runtime
         Color prevColor = Gizmos::get_color();
 
         Gizmos::set_color(0xffc4c4c4);
-        if (camera->visibleGrids) {
+        if (camera->visibleGrids)
+        {
             Gizmos::draw_2D_world_space(Vec2::zero);
             Gizmos::draw_position(camera_position, maxWorldScalar);
         }
@@ -193,25 +206,31 @@ namespace RoninEngine::Runtime
         // Render Objects
 
         std::map<int, std::vector<Renderer*>>* layer = std::get<0>(filter);
-        for (auto iter = layer->begin(); iter != layer->end(); ++iter) {
+        for (auto iter = layer->begin(); iter != layer->end(); ++iter)
+        {
             std::vector<Renderer*>& robject = iter->second;
             std::size_t size = robject.size();
 #if USE_OMP
 #pragma omp parallel for private(sourcePoint) private(wrapper)
 #endif
-            for (std::size_t pointer = 0; pointer < size; ++pointer) {
+            for (std::size_t pointer = 0; pointer < size; ++pointer)
+            {
                 Renderer* render_iobject = robject[pointer];
                 Transform* render_transform = render_iobject->transform();
                 memset(&wrapper, 0, sizeof(wrapper));
 
                 render_iobject->render(&wrapper); // draw
 
-                if (wrapper.texture) {
+                if (wrapper.texture)
+                {
 
                     Transform* render_parent = render_transform->m_parent;
-                    if (render_parent == root_transform) {
+                    if (render_parent == root_transform)
+                    {
                         sourcePoint = render_transform->position();
-                    } else {
+                    }
+                    else
+                    {
                         // local position is direction
                         sourcePoint = Vec2::rotate_around(render_parent->_position, render_transform->local_position(), render_parent->angle() * Math::deg2rad);
                     }
@@ -275,7 +294,8 @@ namespace RoninEngine::Runtime
                     }
                 }
         */
-        if (camera->visibleBorders) {
+        if (camera->visibleBorders)
+        {
             float offset = 25 * std::max(1 - TimeEngine::deltaTime(), 0.1f);
             float height = 200 * TimeEngine::deltaTime();
 
@@ -303,12 +323,15 @@ namespace RoninEngine::Runtime
             Gizmos::draw_line(Vec2(active_resolution.width - offset, active_resolution.height - 1 - offset), Vec2(active_resolution.width - offset, active_resolution.height - offset - height));
         }
 
-        if (camera->visibleObjects || camera->visibleNames) {
+        if (camera->visibleObjects || camera->visibleNames)
+        {
             for (const auto& layer : (*std::get<0>(filter)))
-                for (Renderer* face : layer.second) {
+                for (Renderer* face : layer.second)
+                {
 
                     Vec2 p = face->transform()->position() + face->get_offset();
-                    if (camera->visibleObjects) {
+                    if (camera->visibleObjects)
+                    {
                         Rect factSz = face->get_relative_size();
                         Vec2 sz = Vec2::scale(face->get_size(), Vec2(factSz.getWH()) / pixelsPerPoint);
                         Gizmos::set_color(Color::blue);
@@ -316,7 +339,8 @@ namespace RoninEngine::Runtime
                         Gizmos::set_color(Color::black);
                         Gizmos::draw_position(p, 0.2f);
                     }
-                    if (camera->visibleNames) {
+                    if (camera->visibleNames)
+                    {
                         Gizmos::set_color(Color::white);
                         Gizmos::draw_text(p, face->game_object()->m_name);
                     }

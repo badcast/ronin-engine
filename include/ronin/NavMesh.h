@@ -12,11 +12,24 @@ namespace RoninEngine::AIPathFinder
     class NavContainer;
     class NavMesh;
 
-    enum class NavStatus { Undefined, Locked, Closed, Opened };
+    enum class NavStatus
+    {
+        Undefined,
+        Locked,
+        Closed,
+        Opened
+    };
 
-    enum class NavMethodRule { NavigationIntelegency, PlusMethod, SquareMethod, CrossMethod };
+    enum class NavMethodRule
+    {
+        NavigationIntelegency,
+        PlusMethod,
+        SquareMethod,
+        CrossMethod
+    };
 
-    struct NavResult {
+    struct NavResult
+    {
         NavStatus status;
         Runtime::Vec2Int firstNeuron;
         Runtime::Vec2Int lastNeuron;
@@ -24,13 +37,15 @@ namespace RoninEngine::AIPathFinder
         NavMesh* map;
     };
 
-    struct Neuron {
+    struct Neuron
+    {
         std::uint8_t flags;
         std::uint32_t h;
         std::uint32_t cost;
     };
 
-    struct NavMeshData {
+    struct NavMeshData
+    {
         std::uint32_t widthSpace;
         std::uint32_t heightSpace;
         void* neurons;

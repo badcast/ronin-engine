@@ -22,19 +22,23 @@ namespace RoninEngine::Runtime
     }
     Vec2 movementDir = Vec2::up;
 
-    void MoveController2D::OnStart() { }
+    void MoveController2D::OnStart()
+    {
+    }
 
     void MoveController2D::OnUpdate()
     {
 
         float curSpeed = Input::key_down(KB_LSHIFT) ? (speed * 2) : speed;
 
-        if (playerCamera) {
+        if (playerCamera)
+        {
             auto cameraPoint = playerCamera->transform()->position();
             auto point = cameraPoint;
             Vec2 axis = Input::get_axis();
 
-            if (axis != Vec2::zero && axis.x != axis.y) {
+            if (axis != Vec2::zero && axis.x != axis.y)
+            {
                 if (axis.x - movementDir.x != 0 && axis.y - movementDir.y != 0)
                     movementDir = axis;
             }
@@ -47,7 +51,11 @@ namespace RoninEngine::Runtime
         }
     }
 
-    void MoveController2D::OnLateUpdate() { }
-    void MoveController2D::OnDestroy() { }
+    void MoveController2D::OnLateUpdate()
+    {
+    }
+    void MoveController2D::OnDestroy()
+    {
+    }
 
 } // namespace RoninEngine::Runtime

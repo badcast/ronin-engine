@@ -2,17 +2,24 @@
 
 namespace RoninEngine::Runtime
 {
-    Texture::Texture(SDL_Texture *native) { m_native = native; }
+    Texture::Texture(SDL_Texture* native)
+    {
+        m_native = native;
+    }
 
     Texture::~Texture()
     {
-        if (m_native != nullptr) {
+        if (m_native != nullptr)
+        {
             SDL_DestroyTexture(m_native);
             m_native = nullptr;
         }
     }
 
-    const bool Texture::valid() { return !(!m_native || width() <= 0 || height() <= 0); }
+    const bool Texture::valid()
+    {
+        return !(!m_native || width() <= 0 || height() <= 0);
+    }
 
     const int Texture::width()
     {
@@ -88,15 +95,33 @@ namespace RoninEngine::Runtime
             RoninSimulator::back_fail();
     }
 
-    int Texture::lockTexture(const SDL_Rect* rect, void** pixels, int* pitch) { return SDL_LockTexture(m_native, rect, pixels, pitch); }
+    int Texture::lockTexture(const SDL_Rect* rect, void** pixels, int* pitch)
+    {
+        return SDL_LockTexture(m_native, rect, pixels, pitch);
+    }
 
-    void Texture::unlockTexture() { SDL_UnlockTexture(m_native); }
+    void Texture::unlockTexture()
+    {
+        SDL_UnlockTexture(m_native);
+    }
 
-    SDL_Texture* Texture::native() { return m_native; }
+    SDL_Texture* Texture::native()
+    {
+        return m_native;
+    }
 
-    const SDL_Texture* Texture::cnative() { return m_native; }
+    const SDL_Texture* Texture::cnative()
+    {
+        return m_native;
+    }
 
-    const Rect Texture::getRect() { return { 0, 0, width(), height() }; }
+    const Rect Texture::getRect()
+    {
+        return { 0, 0, width(), height() };
+    }
 
-    const std::string Texture::name() { return std::string(_name.empty() ? "Unknown" : _name); }
+    const std::string Texture::name()
+    {
+        return std::string(_name.empty() ? "Unknown" : _name);
+    }
 } // namespace RoninEngine::Runtime

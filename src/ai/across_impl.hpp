@@ -18,16 +18,21 @@ public:
     ///\par lhs Первоначальная точка
     ///\par rhs Конечная точка
     ///\return Сумма
-    static inline int distance_manhtatten(const Tp& lhs, const Tp& rhs) { return abs(rhs.x - lhs.x) + abs(rhs.y - lhs.y); }
+    static inline int distance_manhtatten(const Tp& lhs, const Tp& rhs)
+    {
+        return abs(rhs.x - lhs.x) + abs(rhs.y - lhs.y);
+    }
 
     /// Определяет, минимальную стоимость
     static auto get_minimum(basic_across_map<Tp>& map, std::list<Tp>* paths) -> decltype(std::begin(*paths))
     {
         int min = INTMAX_MAX;
         auto result = begin(*paths);
-        for (auto i = result; i != std::end(*paths); ++i) {
+        for (auto i = result; i != std::end(*paths); ++i)
+        {
             int g = map.neuronGetTotal(*i);
-            if (g <= min) {
+            if (g <= min)
+            {
                 min = g;
                 result = i;
             }
@@ -45,22 +50,23 @@ public:
         static std::int8_t M_CROSS_H_POINT[] { -1, 1, -1, 1 };
         static std::int8_t M_CROSS_V_POINT[] { -1, -1, 1, 1 };
 
-        switch (method) {
-        case NavMethodRule::PlusMethod:
-            *matrixH = PLUS_H_POINT;
-            *matrixV = PLUS_V_POINT;
-            return sizeof(PLUS_H_POINT);
-            break;
-        case NavMethodRule::SquareMethod:
-            *matrixH = M_SQUARE_H_POINT;
-            *matrixV = M_SQUARE_V_POINT;
-            return sizeof(M_SQUARE_H_POINT);
-            break;
-        case NavMethodRule::CrossMethod:
-            *matrixH = M_CROSS_H_POINT;
-            *matrixV = M_CROSS_V_POINT;
-            return sizeof(M_CROSS_H_POINT);
-            break;
+        switch (method)
+        {
+            case NavMethodRule::PlusMethod:
+                *matrixH = PLUS_H_POINT;
+                *matrixV = PLUS_V_POINT;
+                return sizeof(PLUS_H_POINT);
+                break;
+            case NavMethodRule::SquareMethod:
+                *matrixH = M_SQUARE_H_POINT;
+                *matrixV = M_SQUARE_V_POINT;
+                return sizeof(M_SQUARE_H_POINT);
+                break;
+            case NavMethodRule::CrossMethod:
+                *matrixH = M_CROSS_H_POINT;
+                *matrixV = M_CROSS_V_POINT;
+                return sizeof(M_CROSS_H_POINT);
+                break;
         }
         return 0;
     }
@@ -73,46 +79,56 @@ public:
         int i = 0, c;
         std::int8_t* matrixH;
         std::int8_t* matrixV;
-        switch (method) {
-        case NavMethodRule::NavigationIntelegency: {
-            // TODO: Написать интелектуальный пойск путей для достижения лучших
-            // результатов.
-            // TODO: Приводить вектор направление для лучшего достижения.
-            // TODO: Выводить оптимальный результат, чтобы было меньше итерации
-            // TODO: Вывести итог и анализ скорости.
-            c = get_matrix(NavMethodRule::SquareMethod, &matrixH, &matrixV);
-            do {
-                point.x = arrange.x + matrixH[i];
-                point.y = arrange.y + matrixV[i];
-                it = map.get(point);
-                if (it && !map.get_nlocked(point) && (filterFlag == ~0 || it->flags & filterFlag)) {
-                    if (point.x == target.x || point.y == target.y) {
-                        if (point == target) {
-                            i = c;
-                            pathTo->clear();
+        switch (method)
+        {
+            case NavMethodRule::NavigationIntelegency:
+            {
+                // TODO: Написать интелектуальный пойск путей для достижения лучших
+                // результатов.
+                // TODO: Приводить вектор направление для лучшего достижения.
+                // TODO: Выводить оптимальный результат, чтобы было меньше итерации
+                // TODO: Вывести итог и анализ скорости.
+                c = get_matrix(NavMethodRule::SquareMethod, &matrixH, &matrixV);
+                do
+                {
+                    point.x = arrange.x + matrixH[i];
+                    point.y = arrange.y + matrixV[i];
+                    it = map.get(point);
+                    if (it && !map.get_nlocked(point) && (filterFlag == ~0 || it->flags & filterFlag))
+                    {
+                        if (point.x == target.x || point.y == target.y)
+                        {
+                            if (point == target)
+                            {
+                                i = c;
+                                pathTo->clear();
+                            }
+                            pathTo->emplace_front(point);
                         }
-                        pathTo->emplace_front(point);
-                    } else
-                        pathTo->emplace_back(point);
-                }
-                // next step
-            } while (maxCount != pathTo->size() && i++ != c);
-        } break;
-        default:
-
-            c = get_matrix(method, &matrixH, &matrixV);
-            for (; i != c; ++i) {
-                point.x = arrange.x + matrixH[i];
-                point.y = arrange.y + matrixV[i];
-                it = map.get(point);
-                if (it && !map.get_nlocked(point) && (filterFlag == ~0 || it->flags & filterFlag)) {
-                    pathTo->emplace_back(point);
-                    if (maxCount == pathTo->size() || point == target)
-                        break;
-                }
+                        else
+                            pathTo->emplace_back(point);
+                    }
+                    // next step
+                } while (maxCount != pathTo->size() && i++ != c);
             }
-
             break;
+            default:
+
+                c = get_matrix(method, &matrixH, &matrixV);
+                for (; i != c; ++i)
+                {
+                    point.x = arrange.x + matrixH[i];
+                    point.y = arrange.y + matrixV[i];
+                    it = map.get(point);
+                    if (it && !map.get_nlocked(point) && (filterFlag == ~0 || it->flags & filterFlag))
+                    {
+                        pathTo->emplace_back(point);
+                        if (maxCount == pathTo->size() || point == target)
+                            break;
+                    }
+                }
+
+                break;
         }
     }
 };
@@ -142,7 +158,8 @@ void basic_across_map<Tp, TpNeuron>::randomize(int flagFilter)
 {
     std::uint32_t lhs, rhs = segmentOffset;
     clear(true);
-    do {
+    do
+    {
         lhs = static_cast<std::uint32_t>(rand() & flagFilter);
         memcpy(reinterpret_cast<void*>(reinterpret_cast<std::size_t>(neurons) + segmentOffset - rhs), &lhs, std::min(rhs, (std::uint32_t)sizeof(long)));
         rhs -= std::min(rhs, static_cast<std::uint32_t>(sizeof(long)));
@@ -171,10 +188,13 @@ void basic_across_map<Tp, TpNeuron>::clear(bool clearLocks)
 {
     std::uint32_t length = widthSpace * heightSpace * sizeof(TpNeuron);
     std::uint32_t leftOffset;
-    if (clearLocks) {
+    if (clearLocks)
+    {
         leftOffset = 0;
         length += this->segmentOffset;
-    } else {
+    }
+    else
+    {
         leftOffset = this->segmentOffset;
     }
     memset(reinterpret_cast<void*>(reinterpret_cast<std::size_t>(neurons) + leftOffset), 0, length);
@@ -184,9 +204,12 @@ void basic_across_map<Tp, TpNeuron>::fill(bool fillLocks)
 {
     std::uint32_t length = widthSpace * heightSpace * sizeof(TpNeuron);
     std::uint32_t leftoffset;
-    if (!fillLocks) {
+    if (!fillLocks)
+    {
         leftoffset = this->segmentOffset;
-    } else {
+    }
+    else
+    {
         leftoffset = 0;
         length += this->segmentOffset;
     }
@@ -213,7 +236,8 @@ std::uint32_t basic_across_map<Tp, TpNeuron>::get_cached_size()
 
     TpNeuron* n = reinterpret_cast<TpNeuron*>(reinterpret_cast<std::size_t>(neurons) + segmentOffset);
     TpNeuron* nM = n + widthSpace * heightSpace;
-    while (n < nM) {
+    while (n < nM)
+    {
         cal += n->cost + n->h;
         ++n;
     }
@@ -394,16 +418,24 @@ void basic_across_map<TpNeuronPoint, TpNeuron>::find(NavigateionResult& navResul
     navResult.firstNeuron = first;
     navResult.lastNeuron = last;
 
-    if ((firstNeuron = get(first)) == nullptr || (lastNeuron = get(last)) == nullptr) {
+    if ((firstNeuron = get(first)) == nullptr || (lastNeuron = get(last)) == nullptr)
+    {
         navResult.status = NavStatus::Undefined;
         return;
     }
-    if (get_nlocked(first) || get_nlocked(last)) {
+    if (get_nlocked(first) || get_nlocked(last))
+    {
         navResult.status = NavStatus::Locked;
         return;
     }
 
-    enum : std::uint8_t { FLAG_CLEAN = 0, FLAG_OPEN_LIST = 1, FLAG_CLOSED_LIST = 2, FLAG_TILED_LIST = 4 };
+    enum : std::uint8_t
+    {
+        FLAG_CLEAN = 0,
+        FLAG_OPEN_LIST = 1,
+        FLAG_CLOSED_LIST = 2,
+        FLAG_TILED_LIST = 4
+    };
 
     std::list<TpNeuronPoint> finded;
     typename std::list<TpNeuronPoint>::iterator iter, p1, p2;
@@ -413,10 +445,12 @@ void basic_across_map<TpNeuronPoint, TpNeuron>::find(NavigateionResult& navResul
 
     // Перестройка
     navResult.status = NavStatus::Opened;
-    while (!navResult.RelativePaths.empty()) {
+    while (!navResult.RelativePaths.empty())
+    {
         iter = navResult.RelativePaths.begin(); // get the best Neuron
         current = get(iter.operator*());
-        if (current == lastNeuron) {
+        if (current == lastNeuron)
+        {
             break;
         }
 
@@ -426,7 +460,8 @@ void basic_across_map<TpNeuronPoint, TpNeuron>::find(NavigateionResult& navResul
         // Avail
 
         PointerUtils::gets(*this, method, this->get_npoint(current), last, &finded);
-        for (iter = std::begin(finded); iter != std::end(finded); ++iter) {
+        for (iter = std::begin(finded); iter != std::end(finded); ++iter)
+        {
             select = get(*iter);
             if (select->flags == FLAG_CLEAN) // free path
             {
@@ -438,8 +473,10 @@ void basic_across_map<TpNeuronPoint, TpNeuron>::find(NavigateionResult& navResul
                 p1 = std::begin(navResult.RelativePaths);
                 p2 = std::end(navResult.RelativePaths);
 
-                for (; p1 != p2;) {
-                    if (get_ntotal(*p1) > get_ntotal(*iter)) {
+                for (; p1 != p2;)
+                {
+                    if (get_ntotal(*p1) > get_ntotal(*iter))
+                    {
                         navResult.RelativePaths.emplace(p1, (*iter));
                         break;
                     }
@@ -456,16 +493,20 @@ void basic_across_map<TpNeuronPoint, TpNeuron>::find(NavigateionResult& navResul
     current = lastNeuron;
     navResult.RelativePaths.clear();
     navResult.RelativePaths.emplace_back(last);
-    while (current != firstNeuron) {
-        if (current == lastSelect) {
+    while (current != firstNeuron)
+    {
+        if (current == lastSelect)
+        {
             navResult.status = NavStatus::Closed;
             break;
         }
         lastSelect = current;
         PointerUtils::gets(*this, method, get_npoint(current), first, &finded, -1, FLAG_OPEN_LIST | FLAG_CLOSED_LIST);
-        for (iter = std::begin(finded); iter != std::end(finded); ++iter) {
+        for (iter = std::begin(finded); iter != std::end(finded); ++iter)
+        {
             select = get(*iter);
-            if ((select->cost && select->cost < current->cost) || select == firstNeuron) {
+            if ((select->cost && select->cost < current->cost) || select == firstNeuron)
+            {
                 current = select;
                 navResult.RelativePaths.emplace_front(*iter);
                 current->flags = FLAG_TILED_LIST;
@@ -476,6 +517,12 @@ void basic_across_map<TpNeuronPoint, TpNeuron>::find(NavigateionResult& navResul
     }
 }
 
-bool operator!=(const NeuronPoint& a, const NeuronPoint& b) { return (bool)std::memcmp(&a, &b, sizeof(NeuronPoint)); }
+bool operator!=(const NeuronPoint& a, const NeuronPoint& b)
+{
+    return (bool)std::memcmp(&a, &b, sizeof(NeuronPoint));
+}
 
-bool operator==(const NeuronPoint& a, const NeuronPoint& b) { return !std::memcmp(&a, &b, sizeof(NeuronPoint)); }
+bool operator==(const NeuronPoint& a, const NeuronPoint& b)
+{
+    return !std::memcmp(&a, &b, sizeof(NeuronPoint));
+}

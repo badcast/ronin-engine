@@ -3,9 +3,16 @@
 
 namespace RoninEngine::Runtime
 {
-    enum MouseState { MouseLeft, MouseRight, MouseMiddle, MouseWheel };
+    enum MouseState
+    {
+        MouseLeft,
+        MouseRight,
+        MouseMiddle,
+        MouseWheel
+    };
 
-    enum KeyboardState {
+    enum KeyboardState
+    {
         // The CAPS LOCK light is on.
         CapsLock_On,
         // The key is enhanced.
@@ -27,7 +34,8 @@ namespace RoninEngine::Runtime
     };
 
     // This Code applyies from SDL_SCANCODE
-    enum KeyboardCode {
+    enum KeyboardCode
+    {
         KB_A = 4,
         KB_B = 5,
         KB_C = 6,

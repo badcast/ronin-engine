@@ -15,11 +15,19 @@ namespace RoninEngine::Runtime
         // set focusing
         focus();
     }
-    Camera::~Camera() { }
+    Camera::~Camera()
+    {
+    }
 
-    bool Camera::is_focused() { return main_camera() == this; }
+    bool Camera::is_focused()
+    {
+        return main_camera() == this;
+    }
 
-    void Camera::focus() { World::self()->internal_resources->event_camera_changed(this, CameraEvent::CAM_TARGET); }
+    void Camera::focus()
+    {
+        World::self()->internal_resources->event_camera_changed(this, CameraEvent::CAM_TARGET);
+    }
 
     const Vec2 Camera::screen_to_world(Vec2 screenPoint)
     {
@@ -90,6 +98,9 @@ namespace RoninEngine::Runtime
         worldPoint.y = Math::clamp01(worldPoint.y);
         return worldPoint;
     }
-    Camera* Camera::main_camera() { return World::self()->internal_resources->main_camera; }
+    Camera* Camera::main_camera()
+    {
+        return World::self()->internal_resources->main_camera;
+    }
 
 } // namespace RoninEngine::Runtime

@@ -36,16 +36,24 @@ Color::Color(std::uint32_t rgb)
     a = SDL_ALPHA_OPAQUE;
 }
 
-Color::Color(const char* colorHex) { }
+Color::Color(const char* colorHex)
+{
+}
 
 Color::Color(const std::string& colorHex)
     : Color(colorHex.c_str())
 {
 }
 
-Color::Color(const SDL_Color& color) { (*this) = color; }
+Color::Color(const SDL_Color& color)
+{
+    (*this) = color;
+}
 
-Color::Color(SDL_Color&& color) { (*this) = color; }
+Color::Color(SDL_Color&& color)
+{
+    (*this) = color;
+}
 
 Color::Color(const uint8_t r, const uint8_t g, const uint8_t b)
 {
@@ -87,9 +95,15 @@ Color Color::operator=(const std::uint32_t& rhs)
     return *this;
 }
 
-Color::operator int() const { return *reinterpret_cast<const int*>(this); }
+Color::operator int() const
+{
+    return *reinterpret_cast<const int*>(this);
+}
 
-Color::operator std::uint32_t() const { return *reinterpret_cast<const std::uint32_t*>(this); }
+Color::operator std::uint32_t() const
+{
+    return *reinterpret_cast<const std::uint32_t*>(this);
+}
 
 Color::operator SDL_Color() const
 {

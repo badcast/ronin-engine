@@ -131,7 +131,8 @@ namespace RoninEngine
         TTF_Quit();
 
         int memory_leak = Runtime::RoninMemory::total_allocated();
-        if (memory_leak > 0) {
+        if (memory_leak > 0)
+        {
 #if TEST_MALLOC
             auto REF = (RoninEngine::Runtime::RoninMemory::allocated_leaker.back());
             auto o = reinterpret_cast<Object*>(REF);
@@ -149,7 +150,8 @@ namespace RoninEngine
         }
 
         memory_leak = SDL_GetNumAllocations();
-        if (memory_leak > 0) {
+        if (memory_leak > 0)
+        {
             SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "sdl-memory-leak count: %d", memory_leak);
         }
     }
@@ -194,14 +196,16 @@ namespace RoninEngine
         if (main_window == nullptr)
             RoninSimulator::fail("Engine not inited");
 
-        if (world == nullptr) {
+        if (world == nullptr)
+        {
             RoninSimulator::fail("World is not inited");
         }
 
         if (switched_world == world)
             RoninSimulator::fail("Current world is reloading state. Failed.");
 
-        if (unloadPrevious && switched_world) {
+        if (unloadPrevious && switched_world)
+        {
             destroyableLevel = switched_world;
             destroyableLevel->request_unload();
         }
@@ -215,7 +219,8 @@ namespace RoninEngine
         // set state load
         world->internal_resources->request_unloading = false;
 
-        if (!world->is_hierarchy()) {
+        if (!world->is_hierarchy())
+        {
             // init main object
             world->internal_resources->main_object = create_empty_gameobject();
             world->internal_resources->main_object->name("Main Object");
@@ -229,12 +234,14 @@ namespace RoninEngine
 
     Resolution RoninSimulator::get_current_resolution()
     {
-        if (main_window == nullptr) {
+        if (main_window == nullptr)
+        {
             throw ronin_init_error();
         }
 
         SDL_DisplayMode display_mode;
-        if (SDL_GetWindowDisplayMode(main_window, &display_mode) == -1) {
+        if (SDL_GetWindowDisplayMode(main_window, &display_mode) == -1)
+        {
             RoninSimulator::fail(SDL_GetError());
         }
         return { display_mode.w, display_mode.h, display_mode.refresh_rate };
@@ -246,8 +253,10 @@ namespace RoninEngine
         SDL_DisplayMode mode;
 
         int ndisplay_modes = SDL_GetNumDisplayModes(0);
-        for (int x = 0; x < ndisplay_modes; ++x) {
-            if (SDL_GetDisplayMode(0, x, &mode) == -1) {
+        for (int x = 0; x < ndisplay_modes; ++x)
+        {
+            if (SDL_GetDisplayMode(0, x, &mode) == -1)
+            {
                 RoninSimulator::fail(SDL_GetError());
             }
             resolutions.emplace_back(mode.w, mode.h, mode.refresh_rate);
@@ -257,7 +266,8 @@ namespace RoninEngine
 
     bool RoninSimulator::set_display_resolution(const Resolution& new_resolution)
     {
-        if (main_window == nullptr) {
+        if (main_window == nullptr)
+        {
             throw ronin_init_error();
         }
 
@@ -267,7 +277,8 @@ namespace RoninEngine
         mode.h = new_resolution.height;
         mode.refresh_rate = new_resolution.hz;
         bool result = SDL_SetWindowDisplayMode(main_window, &mode) == 0;
-        if (result) {
+        if (result)
+        {
             active_resolution = new_resolution;
         }
         return result;
@@ -275,28 +286,33 @@ namespace RoninEngine
 
     bool RoninSimulator::set_display_fullscreen(FullscreenMode mode)
     {
-        if (main_window == nullptr) {
+        if (main_window == nullptr)
+        {
             throw ronin_init_error();
         }
 
         std::uint32_t flags = SDL_GetWindowFlags(main_window);
         flags &= ~(SDL_WINDOW_FULLSCREEN_DESKTOP | SDL_WINDOW_FULLSCREEN);
 
-        switch (mode) {
-        case FullscreenMode::Desktop:
-            flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
-            break;
-        case FullscreenMode::Display:
-            flags |= SDL_WINDOW_FULLSCREEN;
-            break;
-        default:
-            break;
+        switch (mode)
+        {
+            case FullscreenMode::Desktop:
+                flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
+                break;
+            case FullscreenMode::Display:
+                flags |= SDL_WINDOW_FULLSCREEN;
+                break;
+            default:
+                break;
         }
 
         return SDL_SetWindowFullscreen(main_window, flags) == 0;
     }
 
-    ScoreWatcher RoninSimulator::get_watches() { return _wwatcher; }
+    ScoreWatcher RoninSimulator::get_watches()
+    {
+        return _wwatcher;
+    }
 
     VersionInfo RoninSimulator::get_version()
     {
@@ -325,12 +341,14 @@ namespace RoninEngine
         SDL_DisplayMode displayMode;
         SDL_WindowFlags flags;
 
-        if (switched_world == nullptr) {
+        if (switched_world == nullptr)
+        {
             show_message("World not loaded");
             return;
         }
 
-        if (main_window == nullptr) {
+        if (main_window == nullptr)
+        {
             show_message("Engine not inited");
             return;
         }
@@ -339,7 +357,8 @@ namespace RoninEngine
         flags = static_cast<SDL_WindowFlags>(SDL_GetWindowFlags(main_window));
         secPerFrame = 1000.f / current_resolution.hz; // refresh screen from Monitor Settings
         game_time_score = secPerFrame / 1000;
-        while (!isQuiting) {
+        while (!isQuiting)
+        {
             // TODO: m_level->request_unloading use as WNILE block (list proc)
 
             // update events
@@ -351,33 +370,41 @@ namespace RoninEngine
 
             TimeEngine::begin_watch();
 
-            while (SDL_PollEvent(&event)) {
+            while (SDL_PollEvent(&event))
+            {
                 internal_update_input(&event);
-                switch (event.type) {
-                case SDL_QUIT: {
-                    isQuiting = true;
-                    switched_world->request_unload();
-                    destroyableLevel = switched_world;
-                    switched_world = nullptr;
-                    internal_level_loaded = false;
-                    break;
-                }
+                switch (event.type)
+                {
+                    case SDL_QUIT:
+                    {
+                        isQuiting = true;
+                        switched_world->request_unload();
+                        destroyableLevel = switched_world;
+                        switched_world = nullptr;
+                        internal_level_loaded = false;
+                        break;
+                    }
                 }
             }
 
-            if (internal_level_loaded == false) {
+            if (internal_level_loaded == false)
+            {
                 // Unload old World
-                if (destroyableLevel) {
+                if (destroyableLevel)
+                {
                     unload_world(destroyableLevel);
                     destroyableLevel = nullptr;
                 }
                 SDL_DestroyRenderer(renderer);
 
-                if (switched_world == nullptr) {
+                if (switched_world == nullptr)
+                {
                     renderer = nullptr;
                     _wwatcher.ms_wait_internal_instructions = TimeEngine::end_watch();
                     goto end_simulate;
-                } else {
+                }
+                else
+                {
                     // on first load level
                     renderer = SDL_CreateRenderer(main_window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE);
                     if (!renderer)
@@ -401,29 +428,34 @@ namespace RoninEngine
             // end watcher
 
             // update level
-            if (!switched_world->internal_resources->request_unloading) {
+            if (!switched_world->internal_resources->request_unloading)
+            {
                 // begin watcher
                 TimeEngine::begin_watch();
 
-                if (!world_can_start) {
+                if (!world_can_start)
+                {
 
                     switched_world->on_start();
                     world_can_start = true;
                 }
-                if (!switched_world->internal_resources->request_unloading) {
+                if (!switched_world->internal_resources->request_unloading)
+                {
 
                     switched_world->on_update();
 
                     // end watcher
                     _wwatcher.ms_wait_exec_level = TimeEngine::end_watch();
-
-                } else {
+                }
+                else
+                {
                     // end watcher
                     _wwatcher.ms_wait_exec_level = TimeEngine::end_watch();
 
                     goto end_simulate; // break on unload state
                 }
-            } else
+            }
+            else
                 goto end_simulate; // break on unload state
 
             switched_world->level_render_world(&_wwatcher);
@@ -443,7 +475,8 @@ namespace RoninEngine
             if (switched_world->internal_resources->request_unloading)
                 goto end_simulate; // break on unload state
 
-            if (!destroyableLevel) {
+            if (!destroyableLevel)
+            {
                 // begin watcher
                 TimeEngine::begin_watch();
                 SDL_RenderPresent(renderer);
@@ -467,7 +500,8 @@ namespace RoninEngine
             internal_delta_time = Math::min<float>(1.f, Math::max<float>(delayed / 1000.f, game_time_score));
             internal_game_time += internal_delta_time;
 
-            if (TimeEngine::startUpTime() > fpsRound) {
+            if (TimeEngine::startUpTime() > fpsRound)
+            {
                 // SDL_METHOD:
                 // fps = internal_frames / (TimeEngine::startUpTime());
                 fps = 1 / internal_delta_time;
@@ -490,7 +524,8 @@ namespace RoninEngine
             // delaying
             SDL_Delay(delayed);
         }
-        if (switched_world) {
+        if (switched_world)
+        {
             Runtime::unload_world(switched_world);
             switched_world = nullptr;
         }
@@ -499,7 +534,10 @@ namespace RoninEngine
         renderer = nullptr;
     }
 
-    void RoninSimulator::back_fail(void) { exit(EXIT_FAILURE); }
+    void RoninSimulator::back_fail(void)
+    {
+        exit(EXIT_FAILURE);
+    }
 
     void RoninSimulator::show_message(const std::string& message)
     {
@@ -528,5 +566,8 @@ namespace RoninEngine
         back_fail();
     }
 
-    void RoninSimulator::fail_oom_kill() throw() { fail("Out of memory!"); }
+    void RoninSimulator::fail_oom_kill() throw()
+    {
+        fail("Out of memory!");
+    }
 } // namespace RoninEngine

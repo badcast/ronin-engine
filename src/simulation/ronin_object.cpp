@@ -10,26 +10,40 @@ namespace RoninEngine
         template <typename T>
         T* internal_factory_base(bool initInHierarchy, T* clone, const char* name)
         {
-            if (clone == nullptr) {
+            if (clone == nullptr)
+            {
                 if (name == nullptr)
                     RoninMemory::alloc_self(clone);
                 else
                     RoninMemory::alloc_self(clone, name);
-            } else {
+            }
+            else
+            {
                 T* newTComponent;
                 if constexpr (std::is_same<T, GameObject>::value)
                     newTComponent = instantiate(clone);
-                else if constexpr (std::is_same<T, Transform>::value) {
+                else if constexpr (std::is_same<T, Transform>::value)
+                {
                     RoninMemory::alloc_self(newTComponent);
-                } else if constexpr (std::is_same<T, SpriteRenderer>::value) {
+                }
+                else if constexpr (std::is_same<T, SpriteRenderer>::value)
+                {
                     RoninMemory::alloc_self(newTComponent, *clone);
-                } else if constexpr (std::is_same<T, Camera2D>::value) {
+                }
+                else if constexpr (std::is_same<T, Camera2D>::value)
+                {
                     RoninMemory::alloc_self(newTComponent, *clone);
-                } else if constexpr (std::is_same<T, Terrain2D>::value) {
+                }
+                else if constexpr (std::is_same<T, Terrain2D>::value)
+                {
                     RoninMemory::alloc_self(newTComponent, *clone);
-                } else if constexpr (std::is_same<T, Behaviour>::value) {
+                }
+                else if constexpr (std::is_same<T, Behaviour>::value)
+                {
                     RoninMemory::alloc_self(newTComponent, *clone);
-                } else {
+                }
+                else
+                {
                     newTComponent = nullptr;
                 }
                 clone = newTComponent;
@@ -38,8 +52,10 @@ namespace RoninEngine
             if (clone == nullptr)
                 RoninSimulator::fail_oom_kill();
 
-            if constexpr (std::is_same<T, GameObject>::value) {
-                if (initInHierarchy) {
+            if constexpr (std::is_same<T, GameObject>::value)
+            {
+                if (initInHierarchy)
+                {
                     if (World::self() == nullptr)
                         throw std::runtime_error("self is null");
 
@@ -79,21 +95,27 @@ namespace RoninEngine
         {
             static_assert(std::is_base_of<Object, T>::value && !std::is_same<GameObject, T>::value, "obj var not based of Object");
 
-            if constexpr (std::is_same<T, Transform>::value) {
-                if (obj->parent()) {
+            if constexpr (std::is_same<T, Transform>::value)
+            {
+                if (obj->parent())
+                {
                     // something.*(HackGet<int Something::*>::ptr);
                     hierarchy_remove(obj->parent(), obj);
                 }
                 hierarchy_remove_all(obj);
                 // picking from matrix
                 Matrix::matrix_nature_pickup(obj);
-            } else if constexpr (std::is_same<T, Behaviour>::value) {
+            }
+            else if constexpr (std::is_same<T, Behaviour>::value)
+            {
                 WorldResources* wrs = World::self()->internal_resources;
                 if (wrs->_firstRunScripts)
                     wrs->_firstRunScripts->remove(obj);
                 if (wrs->_realtimeScripts)
                     wrs->_realtimeScripts->remove(obj);
-            } else if constexpr (std::is_same<T, Camera2D>::value) {
+            }
+            else if constexpr (std::is_same<T, Camera2D>::value)
+            {
                 World::self()->internal_resources->event_camera_changed(obj, CameraEvent::CAM_DELETED);
 
                 // release main object
@@ -104,9 +126,15 @@ namespace RoninEngine
             RoninMemory::free(obj);
         }
 
-        Transform* create_empty_transform() { return internal_factory_base<Transform>(false, nullptr, nullptr); }
+        Transform* create_empty_transform()
+        {
+            return internal_factory_base<Transform>(false, nullptr, nullptr);
+        }
 
-        GameObject* create_empty_gameobject() { return internal_factory_base<GameObject>(false, nullptr, nullptr); }
+        GameObject* create_empty_gameobject()
+        {
+            return internal_factory_base<GameObject>(false, nullptr, nullptr);
+        }
 
         /*NOTE: WoW: Здесь профиксина 6 месячная проблема
         template GameObject* CreateObject<GameObject>();
@@ -124,11 +152,20 @@ namespace RoninEngine
         template SpriteRenderer* CreateObject<SpriteRenderer>(const string&);
         -------------------------------------------------------------------*/
 
-        RONIN_API GameObject* create_game_object() { return internal_factory_base<GameObject>(true, nullptr, nullptr); }
+        RONIN_API GameObject* create_game_object()
+        {
+            return internal_factory_base<GameObject>(true, nullptr, nullptr);
+        }
 
-        RONIN_API GameObject* create_game_object(const std::string& name) { return internal_factory_base<GameObject>(true, nullptr, name.data()); }
+        RONIN_API GameObject* create_game_object(const std::string& name)
+        {
+            return internal_factory_base<GameObject>(true, nullptr, name.data());
+        }
 
-        void destroy(GameObject* obj) { destroy(obj, 0); }
+        void destroy(GameObject* obj)
+        {
+            destroy(obj, 0);
+        }
 
         void destroy(GameObject* obj, float t)
         {
@@ -137,17 +174,23 @@ namespace RoninEngine
 
             auto provider = World::self()->internal_resources->_destructTasks;
 
-            if (!provider) {
+            if (!provider)
+            {
                 provider = World::self()->internal_resources->_destructTasks = RoninMemory::alloc<std::remove_pointer<decltype(World::self()->internal_resources->_destructTasks)>::type>();
-            } else {
+            }
+            else
+            {
                 // get error an exists destructed @object
-                for (std::pair<const float, std::set<GameObject*>>& mapIter : *provider) {
+                for (std::pair<const float, std::set<GameObject*>>& mapIter : *provider)
+                {
                     auto& _set = mapIter.second;
                     auto i = _set.find(obj);
-                    if (i != std::end(_set)) {
+                    if (i != std::end(_set))
+                    {
                         _set.erase(i);
 
-                        if (t == 0) {
+                        if (t == 0)
+                        {
                             // destroy now
                             destroy_immediate(obj);
                             return;
@@ -167,7 +210,8 @@ namespace RoninEngine
             // FIXME: destroy other types from gameobject->m_components (delete a list)
             // FIXME: Replace Recursive method to stack linear
             // Recursive method
-            for (Component* component : obj->m_components) {
+            for (Component* component : obj->m_components)
+            {
                 internal_destroy_object_dyn(component);
             }
 
@@ -194,15 +238,18 @@ namespace RoninEngine
             GameObject* clone;
 
             clone = create_game_object((obj->m_name.find(_cloneStr) == std::string::npos ? obj->m_name + _cloneStr : obj->m_name));
-            for (auto iter = begin(obj->m_components); iter != end(obj->m_components); ++iter) {
+            for (auto iter = begin(obj->m_components); iter != end(obj->m_components); ++iter)
+            {
                 Component* replacement = *iter;
-                if (Transform* t = dynamic_cast<Transform*>(replacement)) {
+                if (Transform* t = dynamic_cast<Transform*>(replacement))
+                {
                     Transform* existent = clone->transform();
                     existent->_angle_ = t->_angle_;
                     existent->position(t->position());
                     // BUG: Hierarchy change is bug, fix now;
                     //  Clone childs recursive
-                    for (Transform* y : t->hierarchy) {
+                    for (Transform* y : t->hierarchy)
+                    {
                         GameObject* yClone = instantiate(y->game_object());
                         yClone->transform()->set_parent(existent);
                         yClone->m_name = t->game_object()->m_name; // put " (clone)" name
@@ -210,14 +257,20 @@ namespace RoninEngine
                     }
                     // skip transform existent component
                     continue;
-                } else if (dynamic_cast<SpriteRenderer*>(replacement)) {
+                }
+                else if (dynamic_cast<SpriteRenderer*>(replacement))
+                {
                     replacement = internal_factory_base<SpriteRenderer>(false, reinterpret_cast<SpriteRenderer*>(replacement), nullptr);
-                } else if (dynamic_cast<Camera2D*>(replacement)) {
+                }
+                else if (dynamic_cast<Camera2D*>(replacement))
+                {
                     replacement = internal_factory_base<Camera2D>(false, reinterpret_cast<Camera2D*>(replacement), nullptr);
                     //} else if (dynamic_cast<Behaviour*>(replacement)) {
 
                     /// replacement = internal_factory_base<Behaviour>(false, reinterpret_cast<Behaviour*>(replacement), nullptr);
-                } else {
+                }
+                else
+                {
                     static_assert(true, "Undefined type");
                     continue;
                 }
@@ -263,16 +316,34 @@ namespace RoninEngine
             World::self()->push_object(this);
         }
 
-        const bool Object::exists() { return (this->operator bool()); }
+        const bool Object::exists()
+        {
+            return (this->operator bool());
+        }
 
-        std::string& Object::name(const std::string& newName) { return (m_name = newName); }
+        std::string& Object::name(const std::string& newName)
+        {
+            return (m_name = newName);
+        }
 
-        const std::string& Object::name() { return m_name; }
+        const std::string& Object::name()
+        {
+            return m_name;
+        }
 
-        uint32_t Object::get_id() { return id; }
+        uint32_t Object::get_id()
+        {
+            return id;
+        }
 
-        const char* Object::get_type() const { return _type_; }
+        const char* Object::get_type() const
+        {
+            return _type_;
+        }
 
-        Object::operator bool() { return instanced(this); }
+        Object::operator bool()
+        {
+            return instanced(this);
+        }
     } // namespace Runtime
 } // namespace RoninEngine
