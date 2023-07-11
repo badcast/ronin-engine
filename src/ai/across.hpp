@@ -6,36 +6,23 @@
  * C++11 minimum required
  *
  **************************************************************/
+
+#ifndef _ACROSS_H_
+#define _ACROSS_H_
+
 #include <cstdint>
 #include <list>
 #include <cmath>
 #include <cstring>
 #include <stdexcept>
 
-#ifndef _ACROSS_H_
-#define _ACROSS_H_
-
 namespace across
 {
+    enum class NavStatus { Undefined, Locked, Closed, Opened };
 
-    enum class NavStatus
-    {
-        Undefined,
-        Locked,
-        Closed,
-        Opened
-    };
+    enum class NavMethodRule { NavigationIntelegency, PlusMethod, SquareMethod, CrossMethod };
 
-    enum class NavMethodRule
-    {
-        NavigationIntelegency,
-        PlusMethod,
-        SquareMethod,
-        CrossMethod
-    };
-
-    struct NeuronPoint
-    {
+    struct NeuronPoint {
         int x;
         int y;
     };
@@ -44,23 +31,20 @@ namespace across
 
     bool operator!=(const NeuronPoint& a, const NeuronPoint& b);
 
-    struct NeuronMember
-    {
+    struct NeuronMember {
         std::uint8_t flags;
         std::uint32_t h;
         std::uint32_t cost;
     };
 
-    struct AcrossData
-    {
+    struct AcrossData {
         std::uint32_t widthSpace;
         std::uint32_t heightSpace;
         void* neurons;
     };
 
     template <typename AcrossMapType>
-    struct NavResult
-    {
+    struct NavResult {
         NavStatus status;
         typename AcrossMapType::TypePoint firstNeuron;
         typename AcrossMapType::TypePoint lastNeuron;
