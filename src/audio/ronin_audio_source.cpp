@@ -2,22 +2,20 @@
 
 using namespace RoninEngine::Runtime;
 
-AudioSource::AudioSource()
-    : AudioSource(DESCRIBE_AS_MAIN_OFF(AudioSource))
+AudioSource::AudioSource() : AudioSource(DESCRIBE_AS_MAIN_OFF(AudioSource))
 {
 }
 
-AudioSource::AudioSource(const std::string& name)
-    : Component(DESCRIBE_AS_ONLY_NAME(AudioSource))
+AudioSource::AudioSource(const std::string &name) : Component(DESCRIBE_AS_ONLY_NAME(AudioSource))
 {
     DESCRIBE_AS_MAIN(AudioSource);
-    WorldResources* __world_resources = World::self()->internal_resources;
+    WorldResources *__world_resources = World::self()->internal_resources;
 
     RoninMemory::alloc_self(data);
     data->m_volume = MIX_MAX_VOLUME;
     data->target_channel = __world_resources->audio_channels++;
 
-    if (data->target_channel + 1 > __world_resources->audio_reserved_channels)
+    if(data->target_channel + 1 > __world_resources->audio_reserved_channels)
         Mix_AllocateChannels(__world_resources->audio_reserved_channels *= 2);
 }
 
@@ -26,18 +24,18 @@ AudioSource::~AudioSource()
     RoninMemory::free(data);
 }
 
-AudioClip* AudioSource::clip() const
+AudioClip *AudioSource::clip() const
 {
     return data->m_clip;
 }
 
-void AudioSource::clip(AudioClip* clip)
+void AudioSource::clip(AudioClip *clip)
 {
     stop();
 #ifndef NDEBUG
-    if (data->m_clip)
+    if(data->m_clip)
         data->m_clip->used--;
-    if (clip)
+    if(clip)
         clip->used++;
 #endif
     data->m_clip = clip;
@@ -51,20 +49,21 @@ float AudioSource::volume() const
 void AudioSource::volume(float value)
 {
     // set volume (clamping)
-    Mix_Volume(data->target_channel, data->m_volume = Math::map<float, std::uint8_t>(value, 0.f, 1.f, 0, MIX_MAX_VOLUME));
+    Mix_Volume(
+        data->target_channel, data->m_volume = Math::map<float, std::uint8_t>(value, 0.f, 1.f, 0, MIX_MAX_VOLUME));
 }
 
 void AudioSource::rewind()
 {
     bool last_state = is_playing();
     stop();
-    if (last_state)
+    if(last_state)
         play();
 }
 
 void AudioSource::play(bool loop)
 {
-    if (is_paused())
+    if(is_paused())
         Mix_Resume(data->target_channel);
     else
     {

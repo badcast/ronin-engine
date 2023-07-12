@@ -7,17 +7,17 @@ namespace RoninEngine::Runtime
     class RONIN_API World
     {
     private:
-        struct WorldResources* internal_resources = nullptr;
+        struct WorldResources *internal_resources = nullptr;
 
-        void internal_bind_script(Behaviour*);
-        void push_light_object(Light*);
-        void push_object(Object*);
+        void internal_bind_script(Behaviour *);
+        void push_light_object(Light *);
+        void push_object(Object *);
 
     protected:
         std::string m_name;
         virtual void runtime_destructs();
 
-        virtual void level_render_world(RoninEngine::ScoreWatcher* watcher);
+        virtual void level_render_world(RoninEngine::ScoreWatcher *watcher);
         virtual void level_render_world_late();
 
         virtual void on_awake();
@@ -28,13 +28,13 @@ namespace RoninEngine::Runtime
 
     public:
         World() = delete;
-        World(const std::string& name);
+        World(const std::string &name);
 
         virtual ~World();
 
-        std::string& name();
+        std::string &name();
 
-        UI::GUI* get_gui();
+        UI::GUI *get_gui();
 
         bool is_hierarchy();
 
@@ -43,39 +43,39 @@ namespace RoninEngine::Runtime
         int get_culled();
         int get_destroyed_frames();
 
-        std::list<GameObject*> get_all_gameobjects();
-        std::list<Component*> get_all_components();
+        std::list<GameObject *> get_all_gameobjects();
+        std::list<Component *> get_all_components();
 
         template <typename T>
-        std::list<T*> find_objects_with_type();
+        std::list<T *> find_objects_with_type();
 
-        const bool object_desctruction_cancel(GameObject* obj);
-        const int object_destruction_cost(GameObject* obj);
-        const bool object_destruction_state(GameObject* obj);
+        const bool object_desctruction_cancel(GameObject *obj);
+        const int object_destruction_cost(GameObject *obj);
+        const bool object_destruction_state(GameObject *obj);
         const int object_destruction_count();
 
-        std::list<Transform*> matrix_check_damaged();
+        std::list<Transform *> matrix_check_damaged();
         int matrix_restore();
-        int matrix_restore(const std::list<Transform*>& damaged_content);
+        int matrix_restore(const std::list<Transform *> &damaged_content);
         int matrix_count_cache();
         int matrix_clear_cache();
 
         std::string get_hierarchy_as_tree() const;
 
-        static World* self();
+        static World *self();
     };
 
     template <typename T>
-    std::list<T*> World::find_objects_with_type()
+    std::list<T *> World::find_objects_with_type()
     {
-        T* _target;
-        std::list<T*> __classes;
+        T *_target;
+        std::list<T *> __classes;
 
-        std::list<Component*> __compr = get_all_components();
+        std::list<Component *> __compr = get_all_components();
 
-        for (auto iter = __compr.begin(); iter != __compr.end(); ++iter)
+        for(auto iter = __compr.begin(); iter != __compr.end(); ++iter)
         {
-            if ((_target = dynamic_cast<T*>(*iter)))
+            if((_target = dynamic_cast<T *>(*iter)))
             {
                 __classes.emplace_back(_target);
             }
@@ -84,4 +84,4 @@ namespace RoninEngine::Runtime
         return __classes;
     }
 
-} // namespace RoninEngine
+} // namespace RoninEngine::Runtime

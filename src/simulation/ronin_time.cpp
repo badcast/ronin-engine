@@ -61,11 +61,11 @@ namespace RoninEngine::Runtime
     std::uint32_t TimeEngine::end_watch()
     {
         std::uint32_t time;
-        if (_watcher_time.empty())
+        if(_watcher_time.empty())
             throw std::runtime_error("begin_watch() method is not runned");
         time = tick_millis() - _watcher_time.back();
         _watcher_time.pop_back();
         return time;
     }
 
-} // namespace RoninEngine
+} // namespace RoninEngine::Runtime

@@ -27,10 +27,7 @@ namespace RoninEngine
         // Display refresh rate
         int hz;
 
-        Resolution(int Width, int Height, int HZ = 0)
-            : width(Width)
-            , height(Height)
-            , hz(HZ)
+        Resolution(int Width, int Height, int HZ = 0) : width(Width), height(Height), hz(HZ)
         {
         }
     };
@@ -62,9 +59,9 @@ namespace RoninEngine
         // Close and Utilize
         static void utilize();
         // Show main frame for simulation
-        static void show(const Resolution& resolution, bool fullscreen = false);
+        static void show(const Resolution &resolution, bool fullscreen = false);
         // Load world for simmulate
-        static void load_world(Runtime::World* world, bool unloadPrevious = true);
+        static void load_world(Runtime::World *world, bool unloadPrevious = true);
         // Simulate world
         static void simulate();
         // Request sent Quiting (Destroy current world)
@@ -74,7 +71,7 @@ namespace RoninEngine
         // Get resolution of active display
         static std::list<Resolution> get_display_resolutions();
         // Set resolution of active display
-        static bool set_display_resolution(const Resolution& new_resolution);
+        static bool set_display_resolution(const Resolution &new_resolution);
         // Set active window to fullscreen mode
         static bool set_display_fullscreen(FullscreenMode mode);
         // Get timming watches
@@ -85,8 +82,8 @@ namespace RoninEngine
         // Message handler
 
         static void back_fail(void);
-        static void show_message(const std::string& message);
-        static void fail(const std::string& message);
+        static void show_message(const std::string &message);
+        static void fail(const std::string &message);
         static void fail_oom_kill();
     };
 

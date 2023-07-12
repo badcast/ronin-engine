@@ -22,10 +22,10 @@ namespace RoninEngine::Runtime
         void seek(int);
         int length();
 
-        void load(Atlas* atlas);
+        void load(Atlas *atlas);
         void unload();
 
         void draw();
     };
 
-}
+} // namespace RoninEngine::Runtime

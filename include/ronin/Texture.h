@@ -7,12 +7,12 @@ namespace RoninEngine::Runtime
     class RONIN_API Texture
     {
     private:
-        native_texture_t* m_native;
+        native_texture_t *m_native;
         std::string _name;
 
     public:
         Texture() = default;
-        Texture(native_texture_t* native);
+        Texture(native_texture_t *native);
         ~Texture();
 
         const bool valid();
@@ -27,13 +27,13 @@ namespace RoninEngine::Runtime
         const void scaleMode(const int scaleMode);
 
         const int access();
-        native_texture_t* native();
-        const native_texture_t* cnative();
+        native_texture_t *native();
+        const native_texture_t *cnative();
         // Create identity texture
         const Color color();
         const void color(const Color value);
 
-        int lockTexture(const native_rect_t* rect, void** pixels, int* pitch);
+        int lockTexture(const native_rect_t *rect, void **pixels, int *pitch);
         void unlockTexture();
 
         const Rect getRect();

@@ -10,8 +10,8 @@ namespace RoninEngine::Runtime
     {
     public:
         Renderer();
-        Renderer(const std::string& name);
-        Renderer(const Renderer&) = delete;
+        Renderer(const std::string &name);
+        Renderer(const Renderer &) = delete;
 
         virtual Vec2 get_size() = 0;
 
@@ -21,6 +21,6 @@ namespace RoninEngine::Runtime
 
         virtual void free_render_cache() = 0;
 
-        virtual void render(Rendering* rendering) = 0;
+        virtual void render(Rendering *rendering) = 0;
     };
 } // namespace RoninEngine::Runtime

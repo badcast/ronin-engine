@@ -62,9 +62,9 @@ namespace RoninEngine::Runtime
         template <typename T>
         static T outside(T x, T minRange, T maxRange)
         {
-            if (minRange > maxRange)
+            if(minRange > maxRange)
                 std::swap(minRange, maxRange);
-            if (x >= minRange && x <= maxRange)
+            if(x >= minRange && x <= maxRange)
             {
                 x = (minRange + maxRange) / 2 <= x ? maxRange : minRange;
             }
@@ -73,19 +73,18 @@ namespace RoninEngine::Runtime
         }
 
         template <typename T>
-        static T clamp(const T& val, const T& min, const T& max)
+        static T clamp(const T &val, const T &min, const T &max)
         {
-            return T(val > max ? max : val < min ? min
-                                                 : val);
+            return T(val > max ? max : val < min ? min : val);
         }
         template <typename T>
-        static const T& max(const T& x, const T& y)
+        static const T &max(const T &x, const T &y)
         {
             return x > y ? x : y;
         }
 
         template <typename T>
-        static const T& min(const T& x, const T& y)
+        static const T &min(const T &x, const T &y)
         {
             return x < y ? x : y;
         }
@@ -139,28 +138,31 @@ namespace RoninEngine::Runtime
 
         static float lerp_unclamped(float a, float b, float t);
 
-        static bool line_intersection(Vec2 p1, Vec2 p2, Vec2 p3, Vec2 p4, Vec2& result);
+        static bool line_intersection(Vec2 p1, Vec2 p2, Vec2 p3, Vec2 p4, Vec2 &result);
 
         static float move_towards(float current, float target, float maxDelta);
 
-        static bool line_segment_intersection(Vec2 p1, Vec2 p2, Vec2 p3, Vec2 p4, Vec2& result);
+        static bool line_segment_intersection(Vec2 p1, Vec2 p2, Vec2 p3, Vec2 p4, Vec2 &result);
 
-        static float smooth_damp(float current, float target, float& currentVelocity, float smoothTime, float maxSpeed);
+        static float smooth_damp(float current, float target, float &currentVelocity, float smoothTime, float maxSpeed);
 
-        static float smooth_damp(float current, float target, float& currentVelocity, float smoothTime);
+        static float smooth_damp(float current, float target, float &currentVelocity, float smoothTime);
 
-        static float smooth_damp(float current, float target, float& currentVelocity, float smoothTime, float maxSpeed, float deltaTime);
+        static float smooth_damp(
+            float current, float target, float &currentVelocity, float smoothTime, float maxSpeed, float deltaTime);
 
         // Celsius to Fahrenheit
         static float cel2far(float celsius);
         // Fahrenheit to Celsius
         static float far2cel(float fahrenheit);
 
-        static float smooth_damp_angle(float current, float target, float& currentVelocity, float smoothTime, float maxSpeed);
+        static float smooth_damp_angle(
+            float current, float target, float &currentVelocity, float smoothTime, float maxSpeed);
 
-        static float smooth_damp_angle(float current, float target, float& currentVelocity, float smoothTime);
+        static float smooth_damp_angle(float current, float target, float &currentVelocity, float smoothTime);
 
-        static float smooth_damp_angle(float current, float target, float& currentVelocity, float smoothTime, float maxSpeed, float deltaTime);
+        static float smooth_damp_angle(
+            float current, float target, float &currentVelocity, float smoothTime, float maxSpeed, float deltaTime);
 
         static float smooth_step(float from, float to, float t);
 
@@ -178,6 +180,6 @@ namespace RoninEngine::Runtime
         static float square_circle(float radius);
         static float square_triangle(float base, float height);
         static float square_triangle(Vec2 p1, Vec2 p2, Vec2 p3);
-        static float square_mesh(std::list<Vec2>& vec);
+        static float square_mesh(std::list<Vec2> &vec);
     };
 } // namespace RoninEngine::Runtime

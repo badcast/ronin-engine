@@ -10,10 +10,10 @@ static const char seperator =
 #endif
     ;
 
-static std::string __organization__ { "Ronin Engine" };
-static std::string __application__ { "Framework" };
+static std::string __organization__ {"Ronin Engine"};
+static std::string __application__ {"Framework"};
 
-void Path::reg_application(const std::string& organization, const std::string& application)
+void Path::reg_application(const std::string &organization, const std::string &application)
 {
     // TODO: Check valid string (member uses an Path/To/Application)
     __organization__ = organization;
@@ -22,14 +22,14 @@ void Path::reg_application(const std::string& organization, const std::string& a
 
 const std::string Path::app_dir()
 {
-    char* base_dir = SDL_GetBasePath();
+    char *base_dir = SDL_GetBasePath();
 
-    if (base_dir == nullptr)
+    if(base_dir == nullptr)
     {
         RoninSimulator::fail(SDL_GetError());
     }
 
-    std::string str { base_dir };
+    std::string str {base_dir};
     SDL_free(base_dir);
 
     return str;
@@ -37,14 +37,14 @@ const std::string Path::app_dir()
 
 const std::string Path::pref_dir()
 {
-    char* prefPath = SDL_GetPrefPath(__organization__.c_str(), __application__.c_str());
+    char *prefPath = SDL_GetPrefPath(__organization__.c_str(), __application__.c_str());
 
-    if (prefPath == nullptr)
+    if(prefPath == nullptr)
     {
         RoninSimulator::fail(SDL_GetError());
     }
 
-    std::string str { prefPath };
+    std::string str {prefPath};
     SDL_free(prefPath);
 
     return str;

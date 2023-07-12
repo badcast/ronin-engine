@@ -10,9 +10,9 @@ namespace RoninEngine::Runtime
     public:
         Behaviour();
 
-        Behaviour(const std::string& name);
-        Behaviour(const Behaviour&) = delete;
-        Behaviour(Behaviour&&) = delete;
+        Behaviour(const std::string &name);
+        Behaviour(const Behaviour &) = delete;
+        Behaviour(Behaviour &&) = delete;
         virtual ~Behaviour() = default;
 
         virtual void OnAwake()
@@ -34,4 +34,4 @@ namespace RoninEngine::Runtime
         {
         }
     };
-}
+} // namespace RoninEngine::Runtime

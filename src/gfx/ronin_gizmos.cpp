@@ -13,7 +13,7 @@ namespace RoninEngine::Runtime
     float Gizmos::angle;
     void internal_drawLine(Vec2 a, Vec2 b)
     {
-        if (!Camera::main_camera())
+        if(!Camera::main_camera())
             return;
 
         Vec2 p = Camera::main_camera()->transform()->position();
@@ -47,7 +47,7 @@ namespace RoninEngine::Runtime
         return clb;
     }
 
-    void Gizmos::set_color(const Color& newColor)
+    void Gizmos::set_color(const Color &newColor)
     {
         SDL_SetRenderDrawColor(RoninEngine::renderer, newColor.r, newColor.g, newColor.b, newColor.a);
     }
@@ -97,7 +97,7 @@ namespace RoninEngine::Runtime
         internal_drawLine(a, b);
     }
 
-    void Gizmos::draw_position(const Vec2& origin, float scalar)
+    void Gizmos::draw_position(const Vec2 &origin, float scalar)
     {
         Vec2 a(origin), b(origin);
 
@@ -148,7 +148,7 @@ namespace RoninEngine::Runtime
         roundedRectangleColor(RoninEngine::renderer, x, y, x + width, y + height, radius, get_color());
     }
 
-    void Gizmos::draw_2D_world_space(const Vec2& origin, int depth)
+    void Gizmos::draw_2D_world_space(const Vec2 &origin, int depth)
     {
         int i;
         Vec2 dest1, dest2;
@@ -159,7 +159,7 @@ namespace RoninEngine::Runtime
         // Draw H and V position
         draw_position(std::move(origin), maxWorldScalar);
 
-        for (i = 0; i < depth; ++i)
+        for(i = 0; i < depth; ++i)
         {
             dest1 += Vec2::one;
             draw_position(std::move(dest1), maxWorldScalar);
@@ -171,11 +171,11 @@ namespace RoninEngine::Runtime
         set_color(lastColor);
     }
 
-    void Gizmos::draw_nav_mesh(AI::NavMesh* mesh, bool drawText)
+    void Gizmos::draw_nav_mesh(AI::NavMesh *mesh, bool drawText)
     {
         Vec2 lastPoint;
         Vec2 a, b;
-        AI::Neuron* p;
+        AI::Neuron *p;
         Vec2Int p1, p2;
         Color prev;
         Color next;
@@ -187,13 +187,13 @@ namespace RoninEngine::Runtime
         mesh->get_neuron(Camera::screen_to_world(Vec2::zero), p1);
         mesh->get_neuron(Camera::screen_to_world(Vec2(res.width, res.height)), p2);
         yDefault = p1.y;
-        while (p1.x <= p2.x)
+        while(p1.x <= p2.x)
         {
-            while (p1.y <= p2.y)
+            while(p1.y <= p2.y)
             {
                 p = mesh->get_neuron(p1);
                 lastPoint = mesh->point_to_world_position(p1);
-                if (p == nullptr || mesh->get_nlocked(p))
+                if(p == nullptr || mesh->get_nlocked(p))
                 {
                     next.r = 255;
                     next.g = 0;
@@ -214,11 +214,11 @@ namespace RoninEngine::Runtime
         }
         set_color(prev);
 
-        if (drawText)
+        if(drawText)
         {
             static std::uint32_t maxTotal = 0;
             static float upplow = 0;
-            if (TimeEngine::time() > upplow)
+            if(TimeEngine::time() > upplow)
             {
                 maxTotal = 0;
                 upplow = TimeEngine::time() + 1;
@@ -226,7 +226,9 @@ namespace RoninEngine::Runtime
             std::uint32_t totalC = mesh->get_cache_size();
             maxTotal = std::max(maxTotal, totalC);
 
-            Gizmos::draw_text(Camera::screen_to_world(Vec2::zero), "Cached " + std::to_string(totalC) + " (" + std::to_string(maxTotal) + ")");
+            Gizmos::draw_text(
+                Camera::screen_to_world(Vec2::zero),
+                "Cached " + std::to_string(totalC) + " (" + std::to_string(maxTotal) + ")");
         }
     }
 
@@ -248,7 +250,7 @@ namespace RoninEngine::Runtime
         // draw right side
         draw_line(b, pivot);
 
-        if (fill)
+        if(fill)
         {
             base /= 2;
             height /= 2;
@@ -257,12 +259,12 @@ namespace RoninEngine::Runtime
             draw_fill_rect(pivot, base, height);
         }
     }
-    void Gizmos::draw_text(Vec2 origin, const std::string& text)
+    void Gizmos::draw_text(Vec2 origin, const std::string &text)
     {
         origin = Camera::world_to_screen(origin);
         RoninEngine::UI::draw_font_at(RoninEngine::renderer, text, 11, Vec2::round_to_int(origin), get_color(), true);
     }
-    void Gizmos::draw_text_legacy(Vec2 origin, const std::string& text)
+    void Gizmos::draw_text_legacy(Vec2 origin, const std::string &text)
     {
         Rect r;
         auto cam = Camera::main_camera();
@@ -304,9 +306,9 @@ namespace RoninEngine::Runtime
         center = Camera::world_to_screen(center);
         width *= pixelsPerPoint;
         height *= pixelsPerPoint;
-        Rectf rect { center.x - width / 2, center.y - height / 2, width, height };
+        Rectf rect {center.x - width / 2, center.y - height / 2, width, height};
 
-        SDL_RenderFillRectF(RoninEngine::renderer, reinterpret_cast<SDL_FRect*>(&rect));
+        SDL_RenderFillRectF(RoninEngine::renderer, reinterpret_cast<SDL_FRect *>(&rect));
     }
 
     void Gizmos::draw_fill_rect_rounded(Vec2 origin, float width, float height, uint16_t radius)
@@ -325,9 +327,9 @@ namespace RoninEngine::Runtime
     {
         origin = Camera::world_to_screen(origin);
         width *= pixelsPerPoint;
-        Rectf rect { origin.x - width / 2, origin.y - width / 2, width, width };
+        Rectf rect {origin.x - width / 2, origin.y - width / 2, width, width};
 
-        SDL_RenderFillRectF(RoninEngine::renderer, reinterpret_cast<SDL_FRect*>(&rect));
+        SDL_RenderFillRectF(RoninEngine::renderer, reinterpret_cast<SDL_FRect *>(&rect));
     }
 
     void Gizmos::draw_fill_square_rounded(Vec2 origin, float width, std::uint16_t radius)
@@ -362,20 +364,20 @@ namespace RoninEngine::Runtime
         int v = 0;
         set_color(0xfff6f6f7);
 
-        if (edges > 0)
-            for (;;)
+        if(edges > 0)
+            for(;;)
             {
 
                 std::uint32_t steps = static_cast<std::uint32_t>(stormMember & const_storm_steps_flag);
                 std::uint32_t maxSteps = static_cast<std::uint32_t>(stormMember >> 32);
                 // Шаг заканчивается (step = turnSteps) происходит поворот
-                if (steps % std::max(1u, (maxSteps / 4)) == 0)
+                if(steps % std::max(1u, (maxSteps / 4)) == 0)
                 {
                     // переход на новое измерение
                     // при steps == maxsteps
-                    if (steps == maxSteps)
+                    if(steps == maxSteps)
                     {
-                        if (--edges <= -1)
+                        if(--edges <= -1)
                             break;
 
                         stormMember = (8ul * (stormFlags = stormFlags & const_storm_dimensions)) << 32;
@@ -383,18 +385,20 @@ namespace RoninEngine::Runtime
                     }
                     else
                     {
-                        if (stormFlags >> 28)
+                        if(stormFlags >> 28)
                         {
                             stormFlags ^= stormFlags & const_storm_xDeterminant; // clear x
-                            stormFlags |= ((stormFlags & const_storm_yDeterminant) >> 4) & const_storm_xDeterminant; // x = y
-                            stormFlags ^= stormFlags & const_storm_yDeterminant; // clear y
+                            stormFlags |=
+                                ((stormFlags & const_storm_yDeterminant) >> 4) & const_storm_xDeterminant; // x = y
+                            stormFlags ^= stormFlags & const_storm_yDeterminant;                           // clear y
                         }
                         else
                         {
                             stormFlags ^= stormFlags & const_storm_yDeterminant; // clear y
-                            stormFlags |= ((stormFlags & const_storm_xDeterminant) << 4) & const_storm_yDeterminant; // y = x
-                            stormFlags ^= const_storm_yDeterminant_inverse; // inverse
-                            stormFlags ^= stormFlags & const_storm_xDeterminant; // clear x
+                            stormFlags |=
+                                ((stormFlags & const_storm_xDeterminant) << 4) & const_storm_yDeterminant; // y = x
+                            stormFlags ^= const_storm_yDeterminant_inverse;                                // inverse
+                            stormFlags ^= stormFlags & const_storm_xDeterminant;                           // clear x
                         }
                     }
                 }
@@ -407,23 +411,25 @@ namespace RoninEngine::Runtime
                 draw_line(last / delim, ray / delim);
                 last = ray;
                 ++v;
-                if (!(stormMember & const_storm_steps_flag))
+                if(!(stormMember & const_storm_steps_flag))
                 {
-                    if (yDeter)
+                    if(yDeter)
                     {
                         stormFlags ^= stormFlags & const_storm_xDeterminant; // clear x
-                        stormFlags |= ((stormFlags & const_storm_yDeterminant) >> 4) & const_storm_xDeterminant; // x = y
-                        stormFlags ^= stormFlags & const_storm_yDeterminant; // clear y
+                        stormFlags |=
+                            ((stormFlags & const_storm_yDeterminant) >> 4) & const_storm_xDeterminant; // x = y
+                        stormFlags ^= stormFlags & const_storm_yDeterminant;                           // clear y
                     }
-                    else if (xDeter)
+                    else if(xDeter)
                     {
                         stormFlags ^= stormFlags & const_storm_yDeterminant; // clear y
-                        stormFlags |= ((stormFlags & const_storm_xDeterminant) << 4) & const_storm_yDeterminant; // y = x
-                        stormFlags ^= stormFlags & const_storm_xDeterminant; // clear x
+                        stormFlags |=
+                            ((stormFlags & const_storm_xDeterminant) << 4) & const_storm_yDeterminant; // y = x
+                        stormFlags ^= stormFlags & const_storm_xDeterminant;                           // clear x
                     }
                 }
 
-                ++(*reinterpret_cast<std::uint32_t*>(&stormMember));
+                ++(*reinterpret_cast<std::uint32_t *>(&stormMember));
             }
 
         set_color(lastColor);

@@ -18,16 +18,16 @@ enum : resource_id
 
 namespace RoninEngine::Runtime
 {
-    extern GidResources* external_global_resources;
+    extern GidResources *external_global_resources;
 
-    void gid_resources_free(GidResources* gid)
+    void gid_resources_free(GidResources *gid)
     {
-        if (gid == nullptr)
+        if(gid == nullptr)
         {
             return;
         }
 
-        for (AudioClip* ac_res : gid->gid_audio_clips)
+        for(AudioClip *ac_res : gid->gid_audio_clips)
         {
             // Handle free
             Mix_FreeChunk(ac_res->mix_chunk);
@@ -36,7 +36,7 @@ namespace RoninEngine::Runtime
             RoninMemory::free(ac_res);
         }
 
-        for (MusicClip* mus_res : gid->gid_music_clips)
+        for(MusicClip *mus_res : gid->gid_music_clips)
         {
             // Handle free
             Mix_FreeMusic(mus_res->mix_music);
@@ -45,7 +45,7 @@ namespace RoninEngine::Runtime
             RoninMemory::free(mus_res);
         }
 
-        for (SDL_Surface* surf_res : gid->gid_surfaces)
+        for(SDL_Surface *surf_res : gid->gid_surfaces)
         {
             SDL_FreeSurface(surf_res);
         }
@@ -53,18 +53,19 @@ namespace RoninEngine::Runtime
         RoninMemory::free(gid);
     }
 
-    inline GidResources* get_resource(resource_id id)
+    inline GidResources *get_resource(resource_id id)
     {
-        return (id & RES_LOCAL_FLAG) ? World::self()->internal_resources->external_local_resources : external_global_resources;
+        return (id & RES_LOCAL_FLAG) ? World::self()->internal_resources->external_local_resources
+                                     : external_global_resources;
     }
 
-    inline GidResources* make_resource(resource_id* resultId, bool local)
+    inline GidResources *make_resource(resource_id *resultId, bool local)
     {
-        GidResources** resources;
+        GidResources **resources;
 
-        if (local)
+        if(local)
         {
-            if (World::self() == nullptr)
+            if(World::self() == nullptr)
             {
                 throw ronin_load_world_error();
             }
@@ -77,7 +78,7 @@ namespace RoninEngine::Runtime
             (*resultId) = 0;
         }
 
-        if ((*resources) == nullptr)
+        if((*resources) == nullptr)
         {
             RoninMemory::alloc_self((*resources));
             (*resources)->gid_surfaces.reserve(16);
@@ -88,11 +89,11 @@ namespace RoninEngine::Runtime
         return *resources;
     }
 
-    SDL_Surface* private_load_surface(const void* memres, int length)
+    SDL_Surface *private_load_surface(const void *memres, int length)
     {
         resource_id __result;
-        SDL_Surface* surf = IMG_Load_RW(SDL_RWFromConstMem(memres, length), SDL_TRUE);
-        if (surf != nullptr)
+        SDL_Surface *surf = IMG_Load_RW(SDL_RWFromConstMem(memres, length), SDL_TRUE);
+        if(surf != nullptr)
         {
             make_resource(&__result, false)->gid_surfaces.emplace_back(surf);
         }
@@ -100,14 +101,14 @@ namespace RoninEngine::Runtime
         return surf;
     }
 
-    resource_id Resources::load_surface(const std::string& path, bool local)
+    resource_id Resources::load_surface(const std::string &path, bool local)
     {
         resource_id id;
-        GidResources* gid;
+        GidResources *gid;
 
-        SDL_Surface* surf = IMG_Load(path.c_str());
+        SDL_Surface *surf = IMG_Load(path.c_str());
 
-        if (surf == nullptr)
+        if(surf == nullptr)
         {
             RoninSimulator::fail("img: \"" + path + "\" can not load");
         }
@@ -119,14 +120,14 @@ namespace RoninEngine::Runtime
         return id;
     }
 
-    resource_id Resources::load_audio_clip(const std::string& path, bool local)
+    resource_id Resources::load_audio_clip(const std::string &path, bool local)
     {
         resource_id id;
-        GidResources* gid;
+        GidResources *gid;
 
-        Mix_Chunk* chunk = Mix_LoadWAV(path.c_str());
+        Mix_Chunk *chunk = Mix_LoadWAV(path.c_str());
 
-        if (chunk == nullptr)
+        if(chunk == nullptr)
         {
             RoninSimulator::fail("sound: \"" + path + "\" can not load");
         }
@@ -138,14 +139,14 @@ namespace RoninEngine::Runtime
         return id;
     }
 
-    resource_id Resources::load_music_clip(const std::string& path, bool local)
+    resource_id Resources::load_music_clip(const std::string &path, bool local)
     {
         resource_id id;
-        GidResources* gid;
+        GidResources *gid;
 
-        Mix_Music* music = Mix_LoadMUS(path.c_str());
+        Mix_Music *music = Mix_LoadMUS(path.c_str());
 
-        if (music == nullptr)
+        if(music == nullptr)
         {
             RoninSimulator::fail("music: \"" + path + "\" can not load");
         }
@@ -159,31 +160,31 @@ namespace RoninEngine::Runtime
 
     native_surface_t *Resources::get_surface(resource_id resource)
     {
-        GidResources* gid;
+        GidResources *gid;
         gid = get_resource(resource);
         resource &= ~RES_LOCAL_FLAG;
-        if (resource >= gid->gid_surfaces.size())
+        if(resource >= gid->gid_surfaces.size())
             return nullptr;
         return gid->gid_surfaces[resource];
     }
 
-    AudioClip* Resources::get_audio_clip(resource_id resource)
+    AudioClip *Resources::get_audio_clip(resource_id resource)
     {
-        GidResources* gid;
+        GidResources *gid;
         gid = get_resource(resource);
         resource &= ~RES_LOCAL_FLAG;
-        if (resource >= gid->gid_audio_clips.size())
+        if(resource >= gid->gid_audio_clips.size())
             return nullptr;
         return gid->gid_audio_clips[resource];
     }
 
-    MusicClip* Resources::get_music_clip(resource_id resource)
+    MusicClip *Resources::get_music_clip(resource_id resource)
     {
-        GidResources* gid;
+        GidResources *gid;
         gid = get_resource(resource);
         resource &= ~RES_LOCAL_FLAG;
-        if (resource >= gid->gid_music_clips.size())
+        if(resource >= gid->gid_music_clips.size())
             return nullptr;
         return gid->gid_music_clips[resource];
     }
-}
+} // namespace RoninEngine::Runtime

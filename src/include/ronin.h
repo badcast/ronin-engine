@@ -33,7 +33,6 @@
 
 #include "just-parser.h"
 
-
 // PROTECTIVE PRIVATE MEMBERs UNLOCK
 #define private public
 #define protected public

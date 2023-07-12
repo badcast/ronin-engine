@@ -3,8 +3,7 @@
 namespace RoninEngine::Runtime
 {
 
-    Camera::Camera(const std::string& name)
-        : Component(DESCRIBE_AS_ONLY_NAME(Camera))
+    Camera::Camera(const std::string &name) : Component(DESCRIBE_AS_ONLY_NAME(Camera))
     {
         DESCRIBE_AS_MAIN(Camera);
 
@@ -33,7 +32,7 @@ namespace RoninEngine::Runtime
     {
         Resolution res = RoninSimulator::get_current_resolution();
         Vec2 offset;
-        if (main_camera())
+        if(main_camera())
             offset = main_camera()->transform()->position();
         Vec2 scale;
         SDL_RenderGetScale(renderer, &scale.x, &scale.y);
@@ -48,7 +47,7 @@ namespace RoninEngine::Runtime
         Resolution res = RoninSimulator::get_current_resolution();
         Vec2 scale;
         Vec2 offset;
-        if (main_camera())
+        if(main_camera())
             offset = main_camera()->transform()->position();
         SDL_RenderGetScale(RoninEngine::renderer, &scale.x, &scale.y);
         scale *= pixelsPerPoint;
@@ -63,7 +62,7 @@ namespace RoninEngine::Runtime
     {
         Resolution res = RoninSimulator::get_current_resolution();
         Vec2 scale, offset;
-        if (main_camera())
+        if(main_camera())
             offset = main_camera()->transform()->position();
         SDL_RenderGetScale(RoninEngine::renderer, &scale.x, &scale.y);
         scale *= pixelsPerPoint;
@@ -80,7 +79,7 @@ namespace RoninEngine::Runtime
         Resolution res = RoninSimulator::get_current_resolution();
         Vec2 scale;
         Vec2 offset;
-        if (main_camera())
+        if(main_camera())
             offset = main_camera()->transform()->position();
         SDL_RenderGetScale(RoninEngine::renderer, &scale.x, &scale.y);
         scale *= pixelsPerPoint;
@@ -98,7 +97,7 @@ namespace RoninEngine::Runtime
         worldPoint.y = Math::clamp01(worldPoint.y);
         return worldPoint;
     }
-    Camera* Camera::main_camera()
+    Camera *Camera::main_camera()
     {
         return World::self()->internal_resources->main_camera;
     }

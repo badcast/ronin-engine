@@ -13,30 +13,30 @@ namespace RoninEngine::Runtime
 
         Color();
 
-        Color(const Color&);
+        Color(const Color &);
 
-        Color(Color&&);
+        Color(Color &&);
 
         Color(int rgb);
 
         Color(std::uint32_t rgb);
 
-        Color(const std::string& colorHex);
+        Color(const std::string &colorHex);
 
-        Color(const char* colorHex);
+        Color(const char *colorHex);
 
-        Color(const native_color_t& color);
+        Color(const native_color_t &color);
 
-        Color(native_color_t&& color);
+        Color(native_color_t &&color);
 
         Color(const std::uint8_t r, const std::uint8_t g, const std::uint8_t b);
 
         Color(const std::uint8_t r, const std::uint8_t g, const std::uint8_t b, const std::uint8_t a);
 
-        Color operator=(const Color& rhs);
-        Color operator=(const int& rhs);
-        Color operator=(const std::uint32_t& rhs);
-        Color operator=(const native_color_t& rhs);
+        Color operator=(const Color &rhs);
+        Color operator=(const int &rhs);
+        Color operator=(const std::uint32_t &rhs);
+        Color operator=(const native_color_t &rhs);
 
         // bool operator==(const Color& rhs);
         // bool operator!=(const Color& rhs);

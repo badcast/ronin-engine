@@ -185,7 +185,7 @@ float Math::repeat(float t, float length)
 float Math::delta_angle(float current, float target)
 {
     float num = repeat(target - current, 360);
-    if (num > 180)
+    if(num > 180)
     {
         num -= 360;
     }
@@ -195,13 +195,13 @@ float Math::delta_angle(float current, float target)
 float Math::gamma(float value, float absmax, float gamma)
 {
     bool flag = false;
-    if (value < 0)
+    if(value < 0)
     {
         flag = true;
     }
     float num = abs(value);
     float result;
-    if (num > absmax)
+    if(num > absmax)
     {
         result = ((!flag) ? num : (-num));
     }
@@ -216,7 +216,7 @@ float Math::gamma(float value, float absmax, float gamma)
 float Math::inverse_lerp(float a, float b, float value)
 {
     float result;
-    if (a != b)
+    if(a != b)
     {
         result = clamp01((value - a) / (b - a));
     }
@@ -235,7 +235,7 @@ float Math::lerp(float a, float b, float t)
 float Math::lerp_angle(float a, float b, float t)
 {
     float num = repeat(b - a, 360);
-    if (num > 180)
+    if(num > 180)
     {
         num -= 360;
     }
@@ -247,7 +247,7 @@ float Math::lerp_unclamped(float a, float b, float t)
     return a + (b - a) * t;
 }
 
-bool Math::line_intersection(Vec2 p1, Vec2 p2, Vec2 p3, Vec2 p4, Vec2& result)
+bool Math::line_intersection(Vec2 p1, Vec2 p2, Vec2 p3, Vec2 p4, Vec2 &result)
 {
     float num = p2.x - p1.x;
     float num2 = p2.y - p1.y;
@@ -255,7 +255,7 @@ bool Math::line_intersection(Vec2 p1, Vec2 p2, Vec2 p3, Vec2 p4, Vec2& result)
     float num4 = p4.y - p3.y;
     float num5 = num * num4 - num2 * num3;
     bool result2;
-    if (num5 == 0)
+    if(num5 == 0)
     {
         result2 = false;
     }
@@ -273,7 +273,7 @@ bool Math::line_intersection(Vec2 p1, Vec2 p2, Vec2 p3, Vec2 p4, Vec2& result)
 float Math::move_towards(float current, float target, float maxDelta)
 {
     float result;
-    if (abs(target - current) <= maxDelta)
+    if(abs(target - current) <= maxDelta)
     {
         result = target;
     }
@@ -284,7 +284,7 @@ float Math::move_towards(float current, float target, float maxDelta)
     return result;
 }
 
-bool Math::line_segment_intersection(Vec2 p1, Vec2 p2, Vec2 p3, Vec2 p4, Vec2& result)
+bool Math::line_segment_intersection(Vec2 p1, Vec2 p2, Vec2 p3, Vec2 p4, Vec2 &result)
 {
     float num = p2.x - p1.x;
     float num2 = p2.y - p1.y;
@@ -292,7 +292,7 @@ bool Math::line_segment_intersection(Vec2 p1, Vec2 p2, Vec2 p3, Vec2 p4, Vec2& r
     float num4 = p4.y - p3.y;
     float num5 = num * num4 - num2 * num3;
     bool result2;
-    if (num5 == 0)
+    if(num5 == 0)
     {
         result2 = false;
     }
@@ -301,14 +301,14 @@ bool Math::line_segment_intersection(Vec2 p1, Vec2 p2, Vec2 p3, Vec2 p4, Vec2& r
         float num6 = p3.x - p1.x;
         float num7 = p3.y - p1.y;
         float num8 = (num6 * num4 - num7 * num3) / num5;
-        if (num8 < 0 || num8 > 1)
+        if(num8 < 0 || num8 > 1)
         {
             result2 = false;
         }
         else
         {
             float num9 = (num6 * num2 - num7 * num) / num5;
-            if (num9 < 0 || num9 > 1)
+            if(num9 < 0 || num9 > 1)
             {
                 result2 = false;
             }
@@ -322,18 +322,19 @@ bool Math::line_segment_intersection(Vec2 p1, Vec2 p2, Vec2 p3, Vec2 p4, Vec2& r
     return result2;
 }
 
-float Math::smooth_damp(float current, float target, float& currentVelocity, float smoothTime, float maxSpeed)
+float Math::smooth_damp(float current, float target, float &currentVelocity, float smoothTime, float maxSpeed)
 {
     return Math::smooth_damp(current, target, currentVelocity, smoothTime, maxSpeed, TimeEngine::deltaTime());
 }
 
-float Math::smooth_damp(float current, float target, float& currentVelocity, float smoothTime)
+float Math::smooth_damp(float current, float target, float &currentVelocity, float smoothTime)
 {
     float maxSpeed = infinity;
     return Math::smooth_damp(current, target, currentVelocity, smoothTime, maxSpeed, TimeEngine::deltaTime());
 }
 
-float Math::smooth_damp(float current, float target, float& currentVelocity, float smoothTime, float maxSpeed, float deltaTime)
+float Math::smooth_damp(
+    float current, float target, float &currentVelocity, float smoothTime, float maxSpeed, float deltaTime)
 {
     smoothTime = max(0.f, max(1.f, smoothTime));
     float num = 2 / smoothTime;
@@ -347,7 +348,7 @@ float Math::smooth_damp(float current, float target, float& currentVelocity, flo
     float num7 = (currentVelocity + num * num4) * deltaTime;
     currentVelocity = (currentVelocity - num * num7) * num3;
     float num8 = target + (num4 + num7) * num3;
-    if (num5 - current > 0 == num8 > num5)
+    if(num5 - current > 0 == num8 > num5)
     {
         num8 = num5;
         currentVelocity = (num8 - num5) / deltaTime;
@@ -365,18 +366,19 @@ float Math::far2cel(float fahrenheit)
     return (fahrenheit - 32) * periodic_fahren;
 }
 
-float Math::smooth_damp_angle(float current, float target, float& currentVelocity, float smoothTime, float maxSpeed)
+float Math::smooth_damp_angle(float current, float target, float &currentVelocity, float smoothTime, float maxSpeed)
 {
     return smooth_damp_angle(current, target, currentVelocity, smoothTime, maxSpeed, TimeEngine::deltaTime());
 }
 
-float Math::smooth_damp_angle(float current, float target, float& currentVelocity, float smoothTime)
+float Math::smooth_damp_angle(float current, float target, float &currentVelocity, float smoothTime)
 {
     float maxSpeed = infinity;
     return smooth_damp_angle(current, target, currentVelocity, smoothTime, maxSpeed, TimeEngine::deltaTime());
 }
 
-float Math::smooth_damp_angle(float current, float target, float& currentVelocity, float smoothTime, float maxSpeed, float deltaTime)
+float Math::smooth_damp_angle(
+    float current, float target, float &currentVelocity, float smoothTime, float maxSpeed, float deltaTime)
 {
     target = current + delta_angle(current, target);
     return smooth_damp(current, target, currentVelocity, smoothTime, maxSpeed, deltaTime);
@@ -393,7 +395,7 @@ std::uint64_t Math::num_lastof(std::uint64_t number, int level)
 {
     std::uint64_t x = std::pow(10, level);
     auto d = std::ldiv(number, x);
-    if (number < x / 10)
+    if(number < x / 10)
         d.rem = 0;
     return d.rem;
 }
@@ -405,11 +407,11 @@ std::string Math::num_beautify(std::uint64_t num, char seperate, int digits)
     std::string result {};
     std::div_t dv;
 
-    while ((num = (dv = std::div(num, radix)).quot))
+    while((num = (dv = std::div(num, radix)).quot))
     {
         result.insert(0, std::to_string(dv.rem));
 
-        if (level % digits == 0)
+        if(level % digits == 0)
             result.insert(0, 1, seperate);
         ++level;
     }
@@ -422,12 +424,12 @@ uint16_t Math::float_to_half(float value)
     uint16_t sign = (std::copysign(1.0f, value) > 0.0f ? 0x0000 : 0x8000);
 
     // Infinity
-    if (std::isinf(value))
+    if(std::isinf(value))
     {
         return sign | 0x7C00;
     }
     // NaN
-    else if (std::isnan(value))
+    else if(std::isnan(value))
     {
         return sign | 0x7FFF;
     }
@@ -440,17 +442,17 @@ uint16_t Math::float_to_half(float value)
     exponent += 15;
 
     // Crosses upper boundary, clamp to infinity
-    if (exponent > 31)
+    if(exponent > 31)
     {
         return sign | 0x7C00;
     }
     // Crosses lower boundary, clamp to zero
-    else if (exponent <= 0)
+    else if(exponent <= 0)
     {
         return sign | 0x0000;
     }
     // Zero
-    else if (significand < 0.25f)
+    else if(significand < 0.25f)
     {
         return sign | 0x0000;
     }
@@ -471,22 +473,22 @@ float Math::half_to_float(uint16_t value)
     float result;
 
     // Zero
-    if ((exponent == 0) && (mantissa == 0))
+    if((exponent == 0) && (mantissa == 0))
     {
         result = 0.0f;
     }
     // Subnormal
-    else if ((exponent == 0) && (mantissa != 0))
+    else if((exponent == 0) && (mantissa != 0))
     {
         result = std::ldexp(static_cast<float>(mantissa), -24);
     }
     // Infinity
-    else if ((exponent == 31) && (mantissa == 0))
+    else if((exponent == 31) && (mantissa == 0))
     {
         result = std::numeric_limits<float>::infinity();
     }
     // NaN
-    else if ((exponent == 31) && (mantissa != 0))
+    else if((exponent == 31) && (mantissa != 0))
     {
         result = std::nanf("");
     }
@@ -524,7 +526,7 @@ float Math::square_circle(float radius)
      */
     return Math::Pi * Math::pow2(radius);
 }
-float Math::square_mesh(std::list<Vec2>& vecs)
+float Math::square_mesh(std::list<Vec2> &vecs)
 {
     /*
      *    get the square a customize figure

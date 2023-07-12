@@ -22,12 +22,13 @@ typedef struct _PROCESS_MEMORY_COUNTERS_EX
     size_t PeakPagefileUsage;
     size_t PrivateUsage;
 } PROCESS_MEMORY_COUNTERS_EX;
-typedef PROCESS_MEMORY_COUNTERS_EX* PPROCESS_MEMORY_COUNTERS_EX;
+typedef PROCESS_MEMORY_COUNTERS_EX *PPROCESS_MEMORY_COUNTERS_EX;
 
 extern "C"
 {
-    __declspec(dllimport) void* __stdcall GetCurrentProcess(void);
-    __declspec(dllimport) int __stdcall K32GetProcessMemoryInfo(void* Process, PROCESS_MEMORY_COUNTERS_EX* ppsmemCounters, unsigned long cb);
+    __declspec(dllimport) void *__stdcall GetCurrentProcess(void);
+    __declspec(dllimport) int __stdcall K32GetProcessMemoryInfo(
+        void *Process, PROCESS_MEMORY_COUNTERS_EX *ppsmemCounters, unsigned long cb);
 }
 #elif __unix__
 
@@ -35,12 +36,12 @@ extern "C"
 #include <sys/sysinfo.h>
 #include <sys/types.h>
 
-int parseLine(char* line)
+int parseLine(char *line)
 {
     // This assumes that a digit will be found and the line ends in " Kb".
     int i = strlen(line);
-    const char* p = line;
-    while (*(p) < '0' || *(p) > '9')
+    const char *p = line;
+    while(*(p) < '0' || *(p) > '9')
         p++;
     line[i - 3] = '\0';
     i = atoi(p);
@@ -52,12 +53,12 @@ size_t get_memory_used()
     char line[64];
     size_t result;
     std::ifstream file("/proc/self/status");
-    if (file.is_open())
+    if(file.is_open())
     {
-        while (!file.eof())
+        while(!file.eof())
         {
             file.getline(line, sizeof(line));
-            if (strncmp(line, "VmRSS:", 6) == 0)
+            if(strncmp(line, "VmRSS:", 6) == 0)
             {
                 result = parseLine(line);
                 break;
@@ -79,7 +80,7 @@ size_t get_memory_used()
     rusage rusg;
 
     // usage from kernel source
-    if (getrusage(RUSAGE_SELF, &rusg))
+    if(getrusage(RUSAGE_SELF, &rusg))
     {
         return -1; // error
     }

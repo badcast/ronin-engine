@@ -31,8 +31,8 @@ namespace RoninEngine::Runtime
     class RONIN_API SpriteRenderer : public Renderer
     {
     private:
-        Sprite* sprite;
-        native_texture_t* save_texture;
+        Sprite *sprite;
+        native_texture_t *save_texture;
         Rect save_src;
         Rectf save_dst;
 
@@ -47,19 +47,19 @@ namespace RoninEngine::Runtime
         Vec2 offset;
 
         SpriteRenderer();
-        SpriteRenderer(const std::string& name);
-        SpriteRenderer(const SpriteRenderer&);
+        SpriteRenderer(const std::string &name);
+        SpriteRenderer(const SpriteRenderer &);
         ~SpriteRenderer();
 
         Vec2 get_size();
         Vec2 get_offset();
         Rect get_relative_size();
 
-        void set_sprite(Sprite* sprite);
-        Sprite* get_sprite();
+        void set_sprite(Sprite *sprite);
+        Sprite *get_sprite();
 
         void free_render_cache();
-        void render(Rendering* rendering);
+        void render(Rendering *rendering);
     };
 
 } // namespace RoninEngine::Runtime

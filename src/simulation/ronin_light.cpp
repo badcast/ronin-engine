@@ -2,12 +2,10 @@
 
 namespace RoninEngine::Runtime
 {
-    Light::Light()
-        : Light(DESCRIBE_AS_MAIN_OFF(Light))
+    Light::Light() : Light(DESCRIBE_AS_MAIN_OFF(Light))
     {
     }
-    Light::Light(const std::string& name)
-        : Component(DESCRIBE_AS_ONLY_NAME(Light))
+    Light::Light(const std::string &name) : Component(DESCRIBE_AS_ONLY_NAME(Light))
     {
         DESCRIBE_AS_MAIN(Light);
         fieldFogTexture = nullptr;
@@ -17,16 +15,17 @@ namespace RoninEngine::Runtime
     {
     }
 
-    void Light::get_light_source(Rendering* render)
+    void Light::get_light_source(Rendering *render)
     {
         auto res = RoninSimulator::get_current_resolution();
         Color c;
         SDL_Texture *target, *lastTarget;
         // TODO: not a work light sources
         return;
-        if (!fieldFogTexture)
+        if(!fieldFogTexture)
         {
-            // Resources::gc_alloc_texture(&fieldFogTexture, res.width, res.height, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING);
+            // Resources::gc_alloc_texture(&fieldFogTexture, res.width, res.height, SDL_PIXELFORMAT_RGBA8888,
+            // SDL_TEXTUREACCESS_STREAMING);
             fieldFogTexture->blendMode(SDL_BlendMode::SDL_BLENDMODE_BLEND);
 
             c = fieldFogTexture->color();
@@ -40,7 +39,8 @@ namespace RoninEngine::Runtime
 
         lastTarget = SDL_GetRenderTarget(renderer);
 
-        target = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TextureAccess::SDL_TEXTUREACCESS_TARGET, res.width, res.height);
+        target = SDL_CreateTexture(
+            renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TextureAccess::SDL_TEXTUREACCESS_TARGET, res.width, res.height);
 
         SDL_SetRenderTarget(renderer, target);
         SDL_SetRenderDrawColor(renderer, 0, 0, 0, 55);

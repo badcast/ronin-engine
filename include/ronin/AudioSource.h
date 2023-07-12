@@ -7,17 +7,17 @@ namespace RoninEngine::Runtime
     class RONIN_API AudioSource : public Component
     {
     protected:
-        struct AudioSourceData* data;
+        struct AudioSourceData *data;
 
     public:
         AudioSource();
-        AudioSource(const std::string& name);
+        AudioSource(const std::string &name);
         ~AudioSource();
 
         // Get audio clip
-        AudioClip* clip() const;
+        AudioClip *clip() const;
         // Set audio clip
-        void clip(AudioClip* clip);
+        void clip(AudioClip *clip);
         // Get volume at range 0.0 ... 1.0
         float volume() const;
         // Set volume at range 0.0 ... 1.0

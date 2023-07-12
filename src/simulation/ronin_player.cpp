@@ -2,13 +2,11 @@
 namespace RoninEngine::Runtime
 {
 
-    MoveController2D::MoveController2D()
-        : MoveController2D(DESCRIBE_AS_MAIN_OFF(MoveController2D))
+    MoveController2D::MoveController2D() : MoveController2D(DESCRIBE_AS_MAIN_OFF(MoveController2D))
     {
     }
 
-    MoveController2D::MoveController2D(const std::string& name)
-        : Behaviour(DESCRIBE_AS_ONLY_NAME(MoveController2D))
+    MoveController2D::MoveController2D(const std::string &name) : Behaviour(DESCRIBE_AS_ONLY_NAME(MoveController2D))
     {
         DESCRIBE_AS_MAIN(MoveController2D);
     }
@@ -16,7 +14,7 @@ namespace RoninEngine::Runtime
     void MoveController2D::OnAwake()
     {
         playerCamera = game_object()->get_component<Camera2D>();
-        if (playerCamera == nullptr)
+        if(playerCamera == nullptr)
             playerCamera = game_object()->add_component<Camera2D>();
         speed = 0.1f / 2;
     }
@@ -31,19 +29,19 @@ namespace RoninEngine::Runtime
 
         float curSpeed = Input::key_down(KB_LSHIFT) ? (speed * 2) : speed;
 
-        if (playerCamera)
+        if(playerCamera)
         {
             auto cameraPoint = playerCamera->transform()->position();
             auto point = cameraPoint;
             Vec2 axis = Input::get_axis();
 
-            if (axis != Vec2::zero && axis.x != axis.y)
+            if(axis != Vec2::zero && axis.x != axis.y)
             {
-                if (axis.x - movementDir.x != 0 && axis.y - movementDir.y != 0)
+                if(axis.x - movementDir.x != 0 && axis.y - movementDir.y != 0)
                     movementDir = axis;
             }
 
-            if (axis == Vec2::zero)
+            if(axis == Vec2::zero)
                 return;
             movementDir = axis;
             // transform()->LookAtLerp(point + movementDir, .5f);

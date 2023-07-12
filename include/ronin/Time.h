@@ -19,4 +19,4 @@ namespace RoninEngine::Runtime
         static void begin_watch();
         static std::uint32_t end_watch();
     };
-} // namespace RoninEngine
+} // namespace RoninEngine::Runtime

@@ -11,9 +11,9 @@
 
 typedef SDL_Surface native_surface_t; // SDL_Surface
 typedef SDL_Texture native_texture_t; // SDL_Texture
-typedef SDL_Rect native_rect_t; // SDL_Rect
-typedef SDL_FRect native_frect_t; // SDL_FRect
-typedef SDL_Color native_color_t; // SDL_Color
+typedef SDL_Rect native_rect_t;       // SDL_Rect
+typedef SDL_FRect native_frect_t;     // SDL_FRect
+typedef SDL_Color native_color_t;     // SDL_Color
 
 // template <typename NativeType>
 // constexpr inline auto native_to(NativeType*& native)

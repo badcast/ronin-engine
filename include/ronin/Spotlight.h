@@ -12,7 +12,7 @@ namespace RoninEngine::Runtime
         float intensity;
 
         Spotlight();
-        Spotlight(const std::string& name);
+        Spotlight(const std::string &name);
         ~Spotlight();
 
     protected:

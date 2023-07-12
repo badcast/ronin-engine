@@ -7,8 +7,7 @@ namespace RoninEngine::Exception
     class ronin_base_error : public std::runtime_error
     {
     public:
-        ronin_base_error(const char* error_str)
-            : std::runtime_error(error_str)
+        ronin_base_error(const char *error_str) : std::runtime_error(error_str)
         {
         }
     };
@@ -16,8 +15,7 @@ namespace RoninEngine::Exception
     class ronin_init_error : public ronin_base_error
     {
     public:
-        ronin_init_error()
-            : ronin_base_error("Engine init fail")
+        ronin_init_error() : ronin_base_error("Engine init fail")
         {
         }
     };
@@ -25,8 +23,7 @@ namespace RoninEngine::Exception
     class ronin_implementation_error : public ronin_base_error
     {
     public:
-        ronin_implementation_error()
-            : ronin_base_error("Not implemented yet")
+        ronin_implementation_error() : ronin_base_error("Not implemented yet")
         {
         }
     };
@@ -34,8 +31,7 @@ namespace RoninEngine::Exception
     class ronin_load_world_error : public ronin_base_error
     {
     public:
-        ronin_load_world_error()
-            : ronin_base_error("World not loaded.")
+        ronin_load_world_error() : ronin_base_error("World not loaded.")
         {
         }
     };
@@ -43,8 +39,7 @@ namespace RoninEngine::Exception
     class ronin_watcher_error : public ronin_base_error
     {
     public:
-        ronin_watcher_error()
-            : ronin_base_error("Watcher stack cat not released")
+        ronin_watcher_error() : ronin_base_error("Watcher stack cat not released")
         {
         }
     };
@@ -52,8 +47,7 @@ namespace RoninEngine::Exception
     class ronin_null_error : public ronin_base_error
     {
     public:
-        ronin_null_error()
-            : ronin_base_error("Object null referenced")
+        ronin_null_error() : ronin_base_error("Object null referenced")
         {
         }
     };
@@ -61,8 +55,7 @@ namespace RoninEngine::Exception
     class ronin_conflict_component_error : public ronin_base_error
     {
     public:
-        ronin_conflict_component_error()
-            : ronin_base_error("Component has Owner GameObject")
+        ronin_conflict_component_error() : ronin_base_error("Component has Owner GameObject")
         {
         }
     };
@@ -70,8 +63,7 @@ namespace RoninEngine::Exception
     class ronin_cant_release_error : public ronin_base_error
     {
     public:
-        ronin_cant_release_error()
-            : ronin_base_error("Object's not released")
+        ronin_cant_release_error() : ronin_base_error("Object's not released")
         {
         }
     };
@@ -79,8 +71,7 @@ namespace RoninEngine::Exception
     class ronin_ui_group_parent_error : public ronin_base_error
     {
     public:
-        ronin_ui_group_parent_error()
-            : ronin_base_error("UI component not group parent")
+        ronin_ui_group_parent_error() : ronin_base_error("UI component not group parent")
         {
         }
     };
@@ -88,8 +79,7 @@ namespace RoninEngine::Exception
     class ronin_ui_cast_group_error : public ronin_base_error
     {
     public:
-        ronin_ui_cast_group_error()
-            : ronin_base_error("UI component is not group")
+        ronin_ui_cast_group_error() : ronin_base_error("UI component is not group")
         {
         }
     };
@@ -97,9 +87,8 @@ namespace RoninEngine::Exception
     class ronin_transform_change_error : public ronin_base_error
     {
     public:
-        ronin_transform_change_error()
-            : ronin_base_error("This transform is not they are parent, or is main parent?")
+        ronin_transform_change_error() : ronin_base_error("This transform is not they are parent, or is main parent?")
         {
         }
     };
-}
+} // namespace RoninEngine::Exception

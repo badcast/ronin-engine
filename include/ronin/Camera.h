@@ -7,10 +7,10 @@ namespace RoninEngine::Runtime
     class RONIN_API Camera : public Component
     {
     protected:
-        struct CameraResource* camera_resources;
+        struct CameraResource *camera_resources;
 
     public:
-        Camera(const std::string& name);
+        Camera(const std::string &name);
 
         virtual ~Camera();
 
@@ -22,7 +22,7 @@ namespace RoninEngine::Runtime
         static const Vec2 viewport_to_world(Vec2 viewportPoint);
         static const Vec2 world_to_viewport(Vec2 worldPoint);
         static const Vec2 world_to_viewport_clamp(Vec2 worldPoint);
-        static Camera* main_camera();
+        static Camera *main_camera();
     };
 
 } // namespace RoninEngine::Runtime

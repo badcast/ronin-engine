@@ -12,19 +12,18 @@ namespace RoninEngine::Runtime
     protected:
         Vec2 m_center;
         Rect m_rect;
-        native_surface_t* surface;
+        native_surface_t *surface;
 
     public:
-
         Sprite();
-        Sprite(native_surface_t* src, const Rect& rect);
-        Sprite(const Sprite&) = default;
+        Sprite(native_surface_t *src, const Rect &rect);
+        Sprite(const Sprite &) = default;
 
-        void set_surface(native_surface_t* surface);
+        void set_surface(native_surface_t *surface);
         const native_surface_t *get_surface() const;
 
         const Rect rect() const;
-        void rect(const Rect& rect);
+        void rect(const Rect &rect);
 
         const Vec2 center() const;
         void center(Vec2 center);
@@ -38,9 +37,9 @@ namespace RoninEngine::Runtime
 
         Rect realityRect(float opaque = 1.f);
 
-        static Sprite* spriteEmpty();
-        static Sprite* spriteBlack();
-        static Sprite* spriteWhite();
+        static Sprite *spriteEmpty();
+        static Sprite *spriteBlack();
+        static Sprite *spriteWhite();
     };
 
 } // namespace RoninEngine::Runtime

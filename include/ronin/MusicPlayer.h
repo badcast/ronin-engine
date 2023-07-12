@@ -5,9 +5,9 @@
 namespace RoninEngine::Runtime::MusicPlayer
 {
     // Get audio clip
-    RONIN_API MusicClip* clip();
+    RONIN_API MusicClip *clip();
     // Set audio clip
-    RONIN_API void clip(MusicClip* clip);
+    RONIN_API void clip(MusicClip *clip);
     // Get volume at range 0.0 ... 1.0
     RONIN_API float volume();
     // Set volume at range 0.0 ... 1.0
@@ -30,4 +30,4 @@ namespace RoninEngine::Runtime::MusicPlayer
     RONIN_API void set_position(double value);
     // Get music position
     RONIN_API double get_position();
-} // namespace RoninEngine::Runtime
+} // namespace RoninEngine::Runtime::MusicPlayer

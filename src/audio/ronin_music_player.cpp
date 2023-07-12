@@ -6,18 +6,18 @@ namespace RoninEngine::Runtime
 
     MusicPlayerData data;
 
-    MusicClip* clip()
+    MusicClip *clip()
     {
         return data.m_clip;
     }
 
-    void MusicPlayer::clip(MusicClip* clip)
+    void MusicPlayer::clip(MusicClip *clip)
     {
         stop();
 #ifndef NDEBUG
-        if (data.m_clip)
+        if(data.m_clip)
             data.m_clip->used--;
-        if (clip)
+        if(clip)
             clip->used++;
 #endif
         data.m_clip = clip;
@@ -79,4 +79,4 @@ namespace RoninEngine::Runtime
     {
         Mix_SetMusicPosition(value);
     }
-}
+} // namespace RoninEngine::Runtime
