@@ -64,8 +64,7 @@ namespace RoninEngine::Runtime
         SDL_Renderer *renderer = SDL_CreateSoftwareRenderer(surface);
 
         // draw circle
-        filledCircleColor(
-            renderer, size.x / 2, size.y / 2, static_cast<std::uint16_t>(radius * pixelsPerPoint / 2) - 1, fillColor);
+        filledCircleColor(renderer, size.x / 2, size.y / 2, static_cast<std::uint16_t>(radius * pixelsPerPoint / 2) - 1, fillColor);
 
         SDL_DestroyRenderer(renderer);
         World::self()->internal_resources->offload_surfaces.push_back(surface);
@@ -106,6 +105,16 @@ namespace RoninEngine::Runtime
         World::self()->internal_resources->offload_surfaces.push_back(surface);
         RoninMemory::alloc_self(sprite, surface, Rect {0, 0, size.x, size.y});
         World::self()->internal_resources->offload_sprites.push_back(sprite);
+        return sprite;
+    }
+
+    Sprite *Primitive::create_sprite2d_from(native_surface_t *surface)
+    {
+        Sprite *sprite;
+
+        sprite = create_empty_sprite2D();
+        sprite->set_surface(surface);
+
         return sprite;
     }
 } // namespace RoninEngine::Runtime
