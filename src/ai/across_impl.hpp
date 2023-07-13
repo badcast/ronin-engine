@@ -1,36 +1,72 @@
 // declarations Across Map (algorithm) part-file
+#ifndef _ACROSS_IMPL_HPP_
+#define _ACROSS_IMPL_HPP_
 
-template <typename Tp = NeuronPoint, typename TpNeuron = NeuronMember>
+#include "across.hpp"
+
+#define ACROSS_TEMPLATE template <typename Tp, typename TpNeuron, typename ContainerType>
+#define ACROSS_DEFINE basic_across_map<Tp, TpNeuron, ContainerType>
+
+ACROSS_TEMPLATE
 class PointerUtils
 {
 public:
-    /// Определяет дистанцию точки от A до точки B
-    /// Используется формула Пифагора "(a^2) + (b^2) = c^2"
-    ///\par lhs Первоначальная точка
-    ///\par rhs Конечная точка
-    ///\return Сумма
-    static inline int distance_phifagor(const Tp &lhs, const Tp &rhs)
+    struct radar_t
     {
-        return pow(lhs.x - rhs.x, 2) + pow(lhs.y - rhs.y, 2); // a->x * a->y + b->x * b->y;
+        ACROSS_DEFINE *map;
+        NavMethodRule method;
+        Tp center;
+        Tp target;
+        ContainerType *detected;
+        std::size_t maxCount = -1;
+        int filterFlag = -1;
+    };
+
+    static std::uint32_t heuristic_euclidean(const Tp &lhs, const Tp &rhs)
+    {
+        // double dx = x2 - x1;
+        // double dy = y2 - y1;
+        // return std::sqrt(dx * dx + dy * dy);
+        int dx = rhs.x - lhs.x;
+        int dy = rhs.y - lhs.y;
+        return static_cast<std::uint32_t>(dx * dx + dy * dy);
     }
 
-    /// Определяет дистанцию точки от A до точки B
-    ///\par lhs Первоначальная точка
-    ///\par rhs Конечная точка
-    ///\return Сумма
-    static inline int distance_manhtatten(const Tp &lhs, const Tp &rhs)
+    static std::uint32_t heuristic_manhtatten(const Tp &lhs, const Tp &rhs)
     {
-        return abs(rhs.x - lhs.x) + abs(rhs.y - lhs.y);
+        return static_cast<std::uint32_t>(abs(rhs.x - lhs.x) + abs(rhs.y - lhs.y));
     }
 
-    /// Определяет, минимальную стоимость
-    static auto get_minimum(basic_across_map<Tp> &map, std::list<Tp> *paths) -> decltype(std::begin(*paths))
+    static std::uint32_t heuristic_pythagorean(const Tp &lhs, const Tp &rhs)
+    {
+        int dx = rhs.x - lhs.x;
+        int dy = rhs.y - lhs.y;
+        return static_cast<std::uint32_t>(dx * dx + dy * dy);
+    }
+
+    static std::uint32_t heuristic_chebyshev(const Tp &lhs, const Tp &rhs)
+    {
+        std::uint32_t dx = std::abs(rhs.x - lhs.x);
+        std::uint32_t dy = std::abs(rhs.y - lhs.y);
+        return std::max(dx, dy);
+    }
+
+    static std::uint32_t heuristic_diagonal(const Tp &lhs, const Tp &rhs)
+    {
+        int dx = std::abs(rhs.x - lhs.x);
+        int dy = std::abs(rhs.y - lhs.y);
+        int minDelta = std::min(dx, dy);
+        int maxDelta = std::max(dx, dy);
+        return static_cast<std::uint32_t>(minDelta * minDelta + (maxDelta - minDelta) * (maxDelta - minDelta));
+    }
+
+    static auto get_minimum(ACROSS_DEFINE &map, ContainerType *paths) -> decltype(std::begin(*paths))
     {
         int min = INTMAX_MAX;
         auto result = begin(*paths);
         for(auto i = result; i != std::end(*paths); ++i)
         {
-            int g = map.neuronGetTotal(*i);
+            int g = map.get_ntotal(*i);
             if(g <= min)
             {
                 min = g;
@@ -39,6 +75,7 @@ public:
         }
         return result;
     }
+
     static int get_matrix(NavMethodRule method, std::int8_t **matrixH, std::int8_t **matrixV)
     {
         static std::int8_t PLUS_H_POINT[] {-1, 1, 0, 0};
@@ -71,22 +108,15 @@ public:
         return 0;
     }
 
-    /// Определяет, функцию пойска по направлениям. Таких как: left, up, right, down. etc.
-    static void gets(
-        basic_across_map<Tp, TpNeuron> &map,
-        NavMethodRule method,
-        Tp arrange,
-        Tp target,
-        std::list<Tp> *pathTo,
-        std::size_t maxCount = -1,
-        int filterFlag = -1)
+    // radar detector free path's
+    static void detect_to(radar_t &radar)
     {
         TpNeuron *it = nullptr;
         Tp point;
         int i = 0, c;
         std::int8_t *matrixH;
         std::int8_t *matrixV;
-        switch(method)
+        switch(radar.method)
         {
             case NavMethodRule::NavigationIntelegency:
             {
@@ -98,39 +128,39 @@ public:
                 c = get_matrix(NavMethodRule::SquareMethod, &matrixH, &matrixV);
                 do
                 {
-                    point.x = arrange.x + matrixH[i];
-                    point.y = arrange.y + matrixV[i];
-                    it = map.get(point);
-                    if(it && !map.get_nlocked(point) && (filterFlag == ~0 || it->flags & filterFlag))
+                    point.x = radar.center.x + matrixH[i];
+                    point.y = radar.center.y + matrixV[i];
+                    it = radar.map->get(point);
+                    if(it && !(radar.map)->get_nlocked(point) && (radar.filterFlag == ~0 || it->flags & radar.filterFlag))
                     {
-                        if(point.x == target.x || point.y == target.y)
+                        if(point.x == radar.target.x || point.y == radar.target.y)
                         {
-                            if(point == target)
+                            if(point == radar.target)
                             {
                                 i = c;
-                                pathTo->clear();
+                                radar.detected->clear();
                             }
-                            pathTo->emplace_front(point);
+                            radar.detected->emplace_front(point);
                         }
                         else
-                            pathTo->emplace_back(point);
+                            radar.detected->emplace_back(point);
                     }
                     // next step
-                } while(maxCount != pathTo->size() && i++ != c);
+                } while(radar.maxCount != radar.detected->size() && i++ != c);
             }
             break;
             default:
 
-                c = get_matrix(method, &matrixH, &matrixV);
+                c = get_matrix(radar.method, &matrixH, &matrixV);
                 for(; i != c; ++i)
                 {
-                    point.x = arrange.x + matrixH[i];
-                    point.y = arrange.y + matrixV[i];
-                    it = map.get(point);
-                    if(it && !map.get_nlocked(point) && (filterFlag == ~0 || it->flags & filterFlag))
+                    point.x = radar.center.x + matrixH[i];
+                    point.y = radar.center.y + matrixV[i];
+                    it = radar.map->get(point);
+                    if(it && !(radar.map)->get_nlocked(point) && (radar.filterFlag == ~0 || it->flags & radar.filterFlag))
                     {
-                        pathTo->emplace_back(point);
-                        if(maxCount == pathTo->size() || point == target)
+                        radar.detected->emplace_back(point);
+                        if(radar.maxCount == radar.detected->size() || point == radar.target)
                             break;
                     }
                 }
@@ -139,8 +169,9 @@ public:
         }
     }
 };
-template <typename Tp, typename TpNeuron>
-basic_across_map<Tp, TpNeuron>::basic_across_map(int lwidth, int lheight)
+
+ACROSS_TEMPLATE
+ACROSS_DEFINE::basic_across_map(int lwidth, int lheight)
 {
     if(!lwidth || !lheight)
         throw std::runtime_error("Width or Height is zero!");
@@ -148,20 +179,22 @@ basic_across_map<Tp, TpNeuron>::basic_across_map(int lwidth, int lheight)
     this->widthSpace = lwidth;
     this->heightSpace = lheight;
 
+    // The Euclidean heuristic is set as default
+    set_heuristic(HeuristicMethod::Euclidean);
+
     std::div_t lockedDiv = div(std::max(lheight = (lwidth * lheight), 8), 8); // add locked bits
     this->segmentOffset = lwidth = lockedDiv.quot + lockedDiv.rem;
     lwidth = lheight * sizeof(TpNeuron) + lwidth + 100;
     this->neurons = static_cast<TpNeuron *>(std::malloc(lwidth));
 }
-
-template <typename Tp, typename TpNeuron>
-basic_across_map<Tp, TpNeuron>::~basic_across_map()
+ACROSS_TEMPLATE
+ACROSS_DEFINE::~basic_across_map()
 {
     std::free(this->neurons);
 }
 
-template <typename Tp, typename TpNeuron>
-void basic_across_map<Tp, TpNeuron>::randomize(int flagFilter)
+ACROSS_TEMPLATE
+void ACROSS_DEFINE::randomize(int flagFilter)
 {
     std::uint32_t lhs, rhs = segmentOffset;
     clear(true);
@@ -175,26 +208,70 @@ void basic_across_map<Tp, TpNeuron>::randomize(int flagFilter)
         rhs -= std::min(rhs, static_cast<std::uint32_t>(sizeof(long)));
     } while(rhs > 0);
 }
-template <typename Tp, typename TpNeuron>
-void basic_across_map<Tp, TpNeuron>::stress()
+ACROSS_TEMPLATE
+void ACROSS_DEFINE::stress()
 {
-    NavResult<Tp> result;
-    Tp first, next = {static_cast<int>(widthSpace - 1), static_cast<int>(heightSpace - 1)};
     // TODO: next a strees
-    find(result, NavMethodRule::NavigationIntelegency, first, next);
 }
-template <typename Tp, typename TpNeuron>
-int basic_across_map<Tp, TpNeuron>::get_width()
+ACROSS_TEMPLATE
+bool ACROSS_DEFINE::set_heuristic(HeuristicMethod method)
+{
+    using PointerUtils = PointerUtils<Tp, TpNeuron, ContainerType>;
+
+    bool status = true;
+    switch(method)
+    {
+        case HeuristicMethod::Euclidean:
+            __heuristic__ = PointerUtils::heuristic_euclidean;
+            break;
+        case HeuristicMethod::Manhattan:
+            __heuristic__ = PointerUtils::heuristic_manhtatten;
+            break;
+        case HeuristicMethod::Pythagorean:
+            __heuristic__ = PointerUtils::heuristic_pythagorean;
+            break;
+        case HeuristicMethod::Chebyshev:
+            __heuristic__ = PointerUtils::heuristic_chebyshev;
+            break;
+        case HeuristicMethod::Diagonal:
+            __heuristic__ = PointerUtils::heuristic_diagonal;
+            break;
+        default:
+            status = false;
+            break;
+    }
+    return status;
+}
+ACROSS_TEMPLATE
+HeuristicMethod ACROSS_DEFINE::get_heuristic()
+{
+    using PointerUtils = PointerUtils<Tp, TpNeuron, ContainerType>;
+
+    if(__heuristic__ == PointerUtils::heuristic_euclidean)
+        return HeuristicMethod::Euclidean;
+    else if(__heuristic__ == PointerUtils::heuristic_manhtatten)
+        return HeuristicMethod::Manhattan;
+    else if(__heuristic__ == PointerUtils::heuristic_pythagorean)
+        return HeuristicMethod::Pythagorean;
+    else if(__heuristic__ == PointerUtils::heuristic_chebyshev)
+        return HeuristicMethod::Chebyshev;
+    else if(__heuristic__ == PointerUtils::heuristic_diagonal)
+        return HeuristicMethod::Diagonal;
+    else
+        return HeuristicMethod::Invalid;
+}
+ACROSS_TEMPLATE
+int ACROSS_DEFINE::get_width()
 {
     return widthSpace;
 }
-template <typename Tp, typename TpNeuron>
-int basic_across_map<Tp, TpNeuron>::get_height()
+ACROSS_TEMPLATE
+int ACROSS_DEFINE::get_height()
 {
     return heightSpace;
 }
-template <typename Tp, typename TpNeuron>
-void basic_across_map<Tp, TpNeuron>::clear(bool clearLocks)
+ACROSS_TEMPLATE
+void ACROSS_DEFINE::clear(bool clearLocks)
 {
     std::uint32_t length = widthSpace * heightSpace * sizeof(TpNeuron);
     std::uint32_t leftOffset;
@@ -209,8 +286,8 @@ void basic_across_map<Tp, TpNeuron>::clear(bool clearLocks)
     }
     memset(reinterpret_cast<void *>(reinterpret_cast<std::size_t>(neurons) + leftOffset), 0, length);
 }
-template <typename Tp, typename TpNeuron>
-void basic_across_map<Tp, TpNeuron>::fill(bool fillLocks)
+ACROSS_TEMPLATE
+void ACROSS_DEFINE::fill(bool fillLocks)
 {
     std::uint32_t length = widthSpace * heightSpace * sizeof(TpNeuron);
     std::uint32_t leftoffset;
@@ -225,13 +302,13 @@ void basic_across_map<Tp, TpNeuron>::fill(bool fillLocks)
     }
     memset(reinterpret_cast<void *>(reinterpret_cast<std::size_t>(neurons) + leftoffset), 0xff, length);
 }
-template <typename Tp, typename TpNeuron>
-TpNeuron *basic_across_map<Tp, TpNeuron>::get(int x, int y)
+ACROSS_TEMPLATE
+TpNeuron *ACROSS_DEFINE::get(int x, int y)
 {
     return get({x, y});
 }
-template <typename Tp, typename TpNeuron>
-TpNeuron *basic_across_map<Tp, TpNeuron>::get(const Tp &range)
+ACROSS_TEMPLATE
+TpNeuron *ACROSS_DEFINE::get(const Tp &range)
 {
     TpNeuron *result = nullptr;
     if(contains(range))
@@ -240,8 +317,8 @@ TpNeuron *basic_across_map<Tp, TpNeuron>::get(const Tp &range)
     return result;
 }
 
-template <typename Tp, typename TpNeuron>
-std::uint32_t basic_across_map<Tp, TpNeuron>::get_cached_size()
+ACROSS_TEMPLATE
+std::uint32_t ACROSS_DEFINE::get_cached_size()
 {
     std::uint32_t cal = 0;
 
@@ -254,19 +331,19 @@ std::uint32_t basic_across_map<Tp, TpNeuron>::get_cached_size()
     }
     return cal;
 }
-template <typename Tp, typename TpNeuronMember>
-TpNeuronMember *basic_across_map<Tp, TpNeuronMember>::front()
+ACROSS_TEMPLATE
+TpNeuron *ACROSS_DEFINE::front()
 {
     return get(0, 0);
 }
-template <typename Tp, typename TpNeuron>
-TpNeuron *basic_across_map<Tp, TpNeuron>::back()
+ACROSS_TEMPLATE
+TpNeuron *ACROSS_DEFINE::back()
 {
     return get(widthSpace - 1, heightSpace - 1);
 }
 
-template <typename Tp, typename TpNeuron>
-bool basic_across_map<Tp, TpNeuron>::get_nlocked(const Tp &range)
+ACROSS_TEMPLATE
+bool ACROSS_DEFINE::get_nlocked(const Tp &range)
 {
     if(!contains(range))
         throw std::out_of_range("range");
@@ -275,107 +352,107 @@ bool basic_across_map<Tp, TpNeuron>::get_nlocked(const Tp &range)
     return (*pointer) & (1 << divide.rem);
 }
 
-template <typename Tp, typename TpNeuron>
-bool basic_across_map<Tp, TpNeuron>::contains(const Tp &range)
+ACROSS_TEMPLATE
+bool ACROSS_DEFINE::contains(const Tp &range)
 {
-    return range.x < widthSpace && range.y < heightSpace && range.x > ~0 && range.y > ~0;
+    return (range.x < widthSpace && range.y < heightSpace && range.x > ~0 && range.y > ~0);
 }
 
-template <typename Tp, typename TpNeuron>
-std::uint8_t &basic_across_map<Tp, TpNeuron>::get_nflag(const Tp &range)
+ACROSS_TEMPLATE
+std::uint8_t &ACROSS_DEFINE::get_nflag(const Tp &range)
 {
     TpNeuron *n = get(range);
     if(!n)
         throw std::out_of_range("range");
     return n->flags;
 }
-template <typename Tp, typename TpNeuron>
-std::uint32_t &basic_across_map<Tp, TpNeuron>::get_ncost(const Tp &range)
+ACROSS_TEMPLATE
+std::uint32_t &ACROSS_DEFINE::get_ncost(const Tp &range)
 {
     TpNeuron *n = get(range);
     if(!n)
         throw std::out_of_range("range");
     return n->cost;
 }
-template <typename Tp, typename TpNeuron>
-std::uint32_t &basic_across_map<Tp, TpNeuron>::get_nheuristic(const Tp &range)
+ACROSS_TEMPLATE
+std::uint32_t &ACROSS_DEFINE::get_nheuristic(const Tp &range)
 {
     TpNeuron *n = get(range);
     if(!n)
         throw std::out_of_range("range");
     return n->h;
 }
-template <typename Tp, typename TpNeuron>
-const int basic_across_map<Tp, TpNeuron>::get_nweight(const Tp &range)
+ACROSS_TEMPLATE
+const int ACROSS_DEFINE::get_nweight(const Tp &range)
 {
     if(!contains(range))
         throw std::out_of_range("range");
     return range.x * range.y + range.y * range.y;
 }
-template <typename Tp, typename TpNeuron>
-const std::uint32_t basic_across_map<Tp, TpNeuron>::get_ntotal(const Tp &range)
+ACROSS_TEMPLATE
+const std::uint32_t ACROSS_DEFINE::get_ntotal(const Tp &range)
 {
     TpNeuron *n = get(range);
     if(!n)
         throw std::out_of_range("range");
     return n->cost + n->h;
 }
-template <typename Tp, typename TpNeuron>
-const bool basic_across_map<Tp, TpNeuron>::get_nempty(const Tp &range)
+ACROSS_TEMPLATE
+const bool ACROSS_DEFINE::get_nempty(const Tp &range)
 {
     return !neuronGetTotal(range);
 }
-template <typename Tp, typename TpNeuron>
-bool basic_across_map<Tp, TpNeuron>::get_nlocked(const TpNeuron *neuron)
+ACROSS_TEMPLATE
+bool ACROSS_DEFINE::get_nlocked(const TpNeuron *neuron)
 {
     return neuronLocked(get_point(neuron));
 }
-template <typename Tp, typename TpNeuron>
-std::uint8_t &basic_across_map<Tp, TpNeuron>::get_nflag(const TpNeuron *neuron)
+ACROSS_TEMPLATE
+std::uint8_t &ACROSS_DEFINE::get_nflag(const TpNeuron *neuron)
 {
     return neuronGetFlag(get_point(neuron));
 }
-template <typename Tp, typename TpNeuron>
-std::uint32_t &basic_across_map<Tp, TpNeuron>::get_ncost(const TpNeuron *neuron)
+ACROSS_TEMPLATE
+std::uint32_t &ACROSS_DEFINE::get_ncost(const TpNeuron *neuron)
 {
     return neuronGetCost(get_point(neuron));
 }
-template <typename Tp, typename TpNeuron>
-std::uint32_t &basic_across_map<Tp, TpNeuron>::get_nheuristic(const TpNeuron *neuron)
+ACROSS_TEMPLATE
+std::uint32_t &ACROSS_DEFINE::get_nheuristic(const TpNeuron *neuron)
 {
     return neuronHeuristic(get_point(neuron));
 }
-template <typename Tp, typename TpNeuron>
-const int basic_across_map<Tp, TpNeuron>::get_nweight(const TpNeuron *neuron)
+ACROSS_TEMPLATE
+const int ACROSS_DEFINE::get_nweight(const TpNeuron *neuron)
 {
     return neuronGetWeight(get_point(neuron));
 }
-template <typename Tp, typename TpNeuron>
-const std::uint32_t basic_across_map<Tp, TpNeuron>::get_ntotal(const TpNeuron *neuron)
+ACROSS_TEMPLATE
+const std::uint32_t ACROSS_DEFINE::get_ntotal(const TpNeuron *neuron)
 {
     return neuronEmpty(get_point(neuron));
 }
-template <typename Tp, typename TpNeuron>
-const bool basic_across_map<Tp, TpNeuron>::get_nempty(const TpNeuron *neuron)
+ACROSS_TEMPLATE
+const bool ACROSS_DEFINE::get_nempty(const TpNeuron *neuron)
 {
     return neuronEmpty(get_point(neuron));
 }
 
-template <typename Tp, typename TpNeuron>
-void basic_across_map<Tp, TpNeuron>::set_nlock(const TpNeuron *neuron, const bool state)
+ACROSS_TEMPLATE
+void ACROSS_DEFINE::set_nlock(const TpNeuron *neuron, const bool state)
 {
     neuronLock(get_point(neuron), state);
 }
 
-template <typename Tp, typename TpNeuron>
-const Tp basic_across_map<Tp, TpNeuron>::get_npoint(const TpNeuron *neuron)
+ACROSS_TEMPLATE
+const Tp ACROSS_DEFINE::get_npoint(const TpNeuron *neuron)
 {
     auto divide = std::div((std::size_t(neuron) - std::size_t(neurons) - segmentOffset) / sizeof(TpNeuron), heightSpace);
     return {divide.quot, divide.rem};
 }
 
-template <typename Tp, typename TpNeuron>
-void basic_across_map<Tp, TpNeuron>::set_nlock(const Tp &range, const bool state)
+ACROSS_TEMPLATE
+void ACROSS_DEFINE::set_nlock(const Tp &range, const bool state)
 {
     auto divide = std::div(range.x * heightSpace + range.y, 8);
     auto pointer = (reinterpret_cast<std::uint8_t *>(neurons) + segmentOffset) + divide.quot;
@@ -384,8 +461,8 @@ void basic_across_map<Tp, TpNeuron>::set_nlock(const Tp &range, const bool state
     (*pointer) ^= (*pointer) & (divide.quot);
     (*pointer) |= divide.quot * (state == true);
 }
-template <typename Tp, typename TpNeuron>
-void basic_across_map<Tp, TpNeuron>::load(const AcrossData &AcrossData)
+ACROSS_TEMPLATE
+void ACROSS_DEFINE::load(const AcrossData &AcrossData)
 {
     if(!AcrossData.widthSpace || !AcrossData.heightSpace)
         throw std::runtime_error("Argument param, width or height is empty");
@@ -405,8 +482,8 @@ void basic_across_map<Tp, TpNeuron>::load(const AcrossData &AcrossData)
 
     memcpy(this->neurons, AcrossData.neurons, widthSpace * heightSpace * sizeof(TpNeuron));
 }
-template <typename Tp, typename TpNeuron>
-void basic_across_map<Tp, TpNeuron>::save(AcrossData *AcrossData)
+ACROSS_TEMPLATE
+void ACROSS_DEFINE::save(AcrossData *AcrossData)
 {
     if(AcrossData == nullptr)
         return;
@@ -415,32 +492,14 @@ void basic_across_map<Tp, TpNeuron>::save(AcrossData *AcrossData)
     AcrossData->heightSpace = this->heightSpace;
     AcrossData->neurons = this->neurons;
 }
-template <typename Tp, typename TpNeuron>
-void basic_across_map<Tp, TpNeuron>::find(NavigateionResult &navResult, NavMethodRule method, TpNeuron *firstNeuron, TpNeuron *lastNeuron)
+ACROSS_TEMPLATE
+void ACROSS_DEFINE::find(NavigationResult &navResult, NavMethodRule method, TpNeuron *firstNeuron, TpNeuron *lastNeuron)
 {
     this->find(navResult, method, this->get_npoint(firstNeuron), this->get_npoint(lastNeuron));
 }
-template <typename TpNeuronPoint, typename TpNeuron>
-void basic_across_map<TpNeuronPoint, TpNeuron>::find(
-    NavigateionResult &navResult, NavMethodRule method, TpNeuronPoint first, TpNeuronPoint last)
+ACROSS_TEMPLATE
+void ACROSS_DEFINE::find(NavigationResult &navigationResult, NavMethodRule method, Tp first, Tp last)
 {
-    using PointerUtils = PointerUtils<TpNeuronPoint, TpNeuron>;
-    TpNeuron *current, *firstNeuron, *lastNeuron, *select;
-    navResult.map = this;
-    navResult.firstNeuron = first;
-    navResult.lastNeuron = last;
-
-    if((firstNeuron = get(first)) == nullptr || (lastNeuron = get(last)) == nullptr)
-    {
-        navResult.status = NavStatus::Undefined;
-        return;
-    }
-    if(get_nlocked(first) || get_nlocked(last))
-    {
-        navResult.status = NavStatus::Locked;
-        return;
-    }
-
     enum : std::uint8_t
     {
         FLAG_CLEAN = 0,
@@ -449,92 +508,128 @@ void basic_across_map<TpNeuronPoint, TpNeuron>::find(
         FLAG_TILED_LIST = 4
     };
 
-    std::list<TpNeuronPoint> finded;
-    typename std::list<TpNeuronPoint>::iterator iter, p1, p2;
-    navResult.RelativePaths.clear();
-    navResult.RelativePaths.emplace_back(first);
-    firstNeuron->h = PointerUtils::distance_manhtatten(first, last);
+    using PointerUtils = PointerUtils<Tp, TpNeuron, ContainerType>;
 
-    // Перестройка
-    navResult.status = NavStatus::Opened;
-    while(!navResult.RelativePaths.empty())
+    TpNeuron *current, *firstNeuron, *lastNeuron, *select;
+
+    if((firstNeuron = get(first)) == nullptr || (lastNeuron = get(last)) == nullptr)
     {
-        iter = navResult.RelativePaths.begin(); // get the best Neuron
-        current = get(iter.operator*());
+        navigationResult.status = NavStatus::Undefined;
+        return;
+    }
+    if(get_nlocked(first) || get_nlocked(last))
+    {
+        navigationResult.status = NavStatus::Locked;
+        return;
+    }
+    typename PointerUtils::radar_t radar_info;
+    typename ContainerType::iterator iter, p1, p2;
+    ContainerType detected;
+
+    radar_info.map = this;
+    radar_info.method = method;
+    radar_info.detected = &detected;
+    radar_info.maxCount = -1;
+    radar_info.filterFlag = -1;
+    radar_info.target = last;
+
+    navigationResult.map = this;
+    navigationResult.firstNeuron = first;
+    navigationResult.lastNeuron = last;
+    navigationResult.roads.clear();
+    navigationResult.roads.emplace_back(first);
+
+    firstNeuron->h = __heuristic__(first, last);
+    // Перестройка
+    navigationResult.status = NavStatus::Opened;
+    while(!navigationResult.roads.empty())
+    {
+        current = get(navigationResult.roads.front()); // get the best Neuron
         if(current == lastNeuron)
         {
-            break;
+            break; // close and combine finded roads
         }
 
         current->flags = FLAG_CLOSED_LIST; // change to closing list
-        navResult.RelativePaths.erase(iter);
+        navigationResult.roads.pop_front();
 
         // Avail
-
-        PointerUtils::gets(*this, method, this->get_npoint(current), last, &finded);
-        for(iter = std::begin(finded); iter != std::end(finded); ++iter)
+        radar_info.center = this->get_npoint(current);
+        PointerUtils::detect_to(radar_info);
+        for(iter = std::begin(detected); iter != std::end(detected); ++iter)
         {
             select = get(*iter);
             if(select->flags == FLAG_CLEAN) // free path
             {
                 select->flags = FLAG_OPEN_LIST;
                 select->cost = current->cost + 1;
-                select->h = PointerUtils::distance_manhtatten((*iter), last);
+                select->h = __heuristic__((*iter), last);
 
-                navResult.RelativePaths.emplace_back((*iter));
-                p1 = std::begin(navResult.RelativePaths);
-                p2 = std::end(navResult.RelativePaths);
+                navigationResult.roads.emplace_back((*iter));
+                p1 = std::begin(navigationResult.roads);
+                p2 = std::end(navigationResult.roads);
 
                 for(; p1 != p2;)
                 {
                     if(get_ntotal(*p1) > get_ntotal(*iter))
                     {
-                        navResult.RelativePaths.emplace(p1, (*iter));
+                        navigationResult.roads.emplace(p1, (*iter));
                         break;
                     }
                     ++p1;
                 }
-                navResult.RelativePaths.emplace_back((*iter));
+                navigationResult.roads.emplace_back((*iter));
             }
         }
 
-        finded.clear(); // clear data
+        detected.clear(); // clear
     }
 
     TpNeuron *lastSelect = nullptr;
     current = lastNeuron;
-    navResult.RelativePaths.clear();
-    navResult.RelativePaths.emplace_back(last);
+    navigationResult.roads.clear();
+    navigationResult.roads.emplace_back(last);
+
+    radar_info.maxCount = -1;
+    radar_info.target = first;
+    radar_info.filterFlag = FLAG_OPEN_LIST | FLAG_CLOSED_LIST;
     while(current != firstNeuron)
     {
         if(current == lastSelect)
         {
-            navResult.status = NavStatus::Closed;
+            navigationResult.status = NavStatus::Closed;
             break;
         }
         lastSelect = current;
-        PointerUtils::gets(*this, method, get_npoint(current), first, &finded, -1, FLAG_OPEN_LIST | FLAG_CLOSED_LIST);
-        for(iter = std::begin(finded); iter != std::end(finded); ++iter)
+        radar_info.center = get_npoint(current);
+
+        PointerUtils::detect_to(radar_info);
+        for(iter = std::begin(detected); iter != std::end(detected); ++iter)
         {
             select = get(*iter);
             if((select->cost && select->cost < current->cost) || select == firstNeuron)
             {
                 current = select;
-                navResult.RelativePaths.emplace_front(*iter);
+                navigationResult.roads.emplace_front(*iter);
                 current->flags = FLAG_TILED_LIST;
             }
         }
 
-        finded.clear();
+        detected.clear(); // clear
     }
 }
 
 bool operator!=(const NeuronPoint &a, const NeuronPoint &b)
 {
-    return (bool) std::memcmp(&a, &b, sizeof(NeuronPoint));
+    return static_cast<bool>(std::memcmp(&a, &b, sizeof(NeuronPoint)));
 }
 
 bool operator==(const NeuronPoint &a, const NeuronPoint &b)
 {
-    return !std::memcmp(&a, &b, sizeof(NeuronPoint));
+    return static_cast<bool>(!std::memcmp(&a, &b, sizeof(NeuronPoint)));
 }
+
+#undef ACROSS_TEMPLATE
+#undef ACROSS_DEFINE
+
+#endif
