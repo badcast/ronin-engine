@@ -333,8 +333,7 @@ float Math::smooth_damp(float current, float target, float &currentVelocity, flo
     return Math::smooth_damp(current, target, currentVelocity, smoothTime, maxSpeed, TimeEngine::deltaTime());
 }
 
-float Math::smooth_damp(
-    float current, float target, float &currentVelocity, float smoothTime, float maxSpeed, float deltaTime)
+float Math::smooth_damp(float current, float target, float &currentVelocity, float smoothTime, float maxSpeed, float deltaTime)
 {
     smoothTime = max(0.f, max(1.f, smoothTime));
     float num = 2 / smoothTime;
@@ -377,8 +376,7 @@ float Math::smooth_damp_angle(float current, float target, float &currentVelocit
     return smooth_damp_angle(current, target, currentVelocity, smoothTime, maxSpeed, TimeEngine::deltaTime());
 }
 
-float Math::smooth_damp_angle(
-    float current, float target, float &currentVelocity, float smoothTime, float maxSpeed, float deltaTime)
+float Math::smooth_damp_angle(float current, float target, float &currentVelocity, float smoothTime, float maxSpeed, float deltaTime)
 {
     target = current + delta_angle(current, target);
     return smooth_damp(current, target, currentVelocity, smoothTime, maxSpeed, deltaTime);

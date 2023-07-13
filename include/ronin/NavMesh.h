@@ -101,8 +101,7 @@ namespace RoninEngine::AI
         const bool get_nempty(const Neuron *neuron);
         void get_nlock(const Neuron *neuron, const bool state);
 
-        void find(
-            NavResult &navResult, NavMethodRule method, Runtime::Vec2 worldPointFirst, Runtime::Vec2 worldPointLast);
+        void find(NavResult &navResult, NavMethodRule method, Runtime::Vec2 worldPointFirst, Runtime::Vec2 worldPointLast);
         void find(NavResult &navResult, NavMethodRule method, Neuron *firstNeuron, Neuron *lastNeuron);
         void find(NavResult &navResult, NavMethodRule method, Runtime::Vec2Int first, Runtime::Vec2Int last);
 

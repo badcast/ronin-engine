@@ -141,11 +141,13 @@ namespace RoninEngine::Runtime
 
                     // generate tiles
                     save_texture = SDL_CreateTexture(
+                        // renderer, sdl_default_pixelformat, SDL_TextureAccess::SDL_TEXTUREACCESS_TARGET, rendering->src.w,
+                        // rendering->src.h);
                         renderer,
                         sdl_default_pixelformat,
                         SDL_TextureAccess::SDL_TEXTUREACCESS_TARGET,
-                        rendering->src.w,
-                        rendering->src.h);
+                        1024,
+                        1024);
                     if(save_texture == nullptr)
                         RoninSimulator::fail("Texture create fail");
 
@@ -170,8 +172,7 @@ namespace RoninEngine::Runtime
                                 {
                                     dest.x = x * dest.w;
                                     dest.y = y * dest.h;
-                                    SDL_RenderCopy(
-                                        renderer, temp_texture, (SDL_Rect *) &sprite->m_rect, (SDL_Rect *) &dest);
+                                    SDL_RenderCopy(renderer, temp_texture, (SDL_Rect *) &sprite->m_rect, (SDL_Rect *) &dest);
                                 }
                             }
                             break;
@@ -185,30 +186,22 @@ namespace RoninEngine::Runtime
                                     dest.x = x * dest.w;
                                     dest.y = y * dest.h;
 
-                                    SDL_RenderCopy(
-                                        renderer, temp_texture, (SDL_Rect *) &sprite->m_rect, (SDL_Rect *) &dest);
+                                    SDL_RenderCopy(renderer, temp_texture, (SDL_Rect *) &sprite->m_rect, (SDL_Rect *) &dest);
                                 }
                             }
                             // place remained
-                            for(x = 0, dest.y = rendering->src.h / dest.h * dest.h, dest.h = size.y - dest.y;
-                                x < rendering->src.x;
-                                ++x)
+                            for(x = 0, dest.y = rendering->src.h / dest.h * dest.h, dest.h = size.y - dest.y; x < rendering->src.x; ++x)
                             {
                                 dest.x = x * dest.w;
-                                SDL_RenderCopy(
-                                    renderer, temp_texture, (SDL_Rect *) &sprite->m_rect, (SDL_Rect *) &dest);
+                                SDL_RenderCopy(renderer, temp_texture, (SDL_Rect *) &sprite->m_rect, (SDL_Rect *) &dest);
                             }
                             ++rendering->src.y;
-                            for(y = 0,
-                            dest.x = rendering->src.w / dest.w * dest.w,
-                            dest.h = sprite->height(),
-                            dest.w = size.x - dest.x;
+                            for(y = 0, dest.x = rendering->src.w / dest.w * dest.w, dest.h = sprite->height(), dest.w = size.x - dest.x;
                                 y < rendering->src.y;
                                 ++y)
                             {
                                 dest.y = y * dest.h;
-                                SDL_RenderCopy(
-                                    renderer, temp_texture, (SDL_Rect *) &sprite->m_rect, (SDL_Rect *) &dest);
+                                SDL_RenderCopy(renderer, temp_texture, (SDL_Rect *) &sprite->m_rect, (SDL_Rect *) &dest);
                             }
 
                             break;

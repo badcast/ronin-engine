@@ -83,20 +83,18 @@ namespace RoninEngine::Runtime
                         if(stormFlags >> 28)
                         {
                             // stormFlags ^= stormFlags & const_storm_xDeterminant;
-                            stormFlags &= ~const_storm_xDeterminant; // clear x
-                            stormFlags |=
-                                ((stormFlags & const_storm_yDeterminant) >> 4) & const_storm_xDeterminant; // x = y
-                            stormFlags &= ~const_storm_yDeterminant;                                       // clear y
+                            stormFlags &= ~const_storm_xDeterminant;                                                 // clear x
+                            stormFlags |= ((stormFlags & const_storm_yDeterminant) >> 4) & const_storm_xDeterminant; // x = y
+                            stormFlags &= ~const_storm_yDeterminant;                                                 // clear y
                             // stormFlags ^= stormFlags & const_storm_yDeterminant;
                         }
                         else
                         {
                             // stormFlags ^= stormFlags & const_storm_yDeterminant;
-                            stormFlags &= ~const_storm_yDeterminant; // clear y
-                            stormFlags |=
-                                ((stormFlags & const_storm_xDeterminant) << 4) & const_storm_yDeterminant; // y = x
-                            stormFlags ^= const_storm_yDeterminant_inverse;                                // inverse
-                            stormFlags &= ~const_storm_xDeterminant;                                       // clear x
+                            stormFlags &= ~const_storm_yDeterminant;                                                 // clear y
+                            stormFlags |= ((stormFlags & const_storm_xDeterminant) << 4) & const_storm_yDeterminant; // y = x
+                            stormFlags ^= const_storm_yDeterminant_inverse;                                          // inverse
+                            stormFlags &= ~const_storm_xDeterminant;                                                 // clear x
                             // stormFlags ^= stormFlags & const_storm_xDeterminant;
                         }
                     }
@@ -130,19 +128,17 @@ namespace RoninEngine::Runtime
                     if(yDeter)
                     {
                         // stormFlags ^= stormFlags & const_storm_xDeterminant;
-                        stormFlags &= ~const_storm_xDeterminant; // clear x
-                        stormFlags |=
-                            ((stormFlags & const_storm_yDeterminant) >> 4) & const_storm_xDeterminant; // x = y
-                        stormFlags &= ~const_storm_yDeterminant;                                       // clear y
+                        stormFlags &= ~const_storm_xDeterminant;                                                 // clear x
+                        stormFlags |= ((stormFlags & const_storm_yDeterminant) >> 4) & const_storm_xDeterminant; // x = y
+                        stormFlags &= ~const_storm_yDeterminant;                                                 // clear y
                         // stormFlags ^= stormFlags & const_storm_yDeterminant;
                     }
                     else if(xDeter)
                     {
                         // stormFlags ^= stormFlags & const_storm_yDeterminant;
-                        stormFlags &= ~const_storm_yDeterminant; // clear y
-                        stormFlags |=
-                            ((stormFlags & const_storm_xDeterminant) << 4) & const_storm_yDeterminant; // y = x
-                        stormFlags &= ~const_storm_xDeterminant;                                       // clear x
+                        stormFlags &= ~const_storm_yDeterminant;                                                 // clear y
+                        stormFlags |= ((stormFlags & const_storm_xDeterminant) << 4) & const_storm_yDeterminant; // y = x
+                        stormFlags &= ~const_storm_xDeterminant;                                                 // clear x
                         // stormFlags ^= stormFlags & const_storm_xDeterminant;
                     }
                 }

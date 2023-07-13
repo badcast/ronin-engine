@@ -168,9 +168,7 @@ namespace RoninEngine
     {
         std::list<Transform *> damaged;
 
-        for(auto x = std::begin(switched_world->internal_resources->matrix);
-            x != end(switched_world->internal_resources->matrix);
-            ++x)
+        for(auto x = std::begin(switched_world->internal_resources->matrix); x != end(switched_world->internal_resources->matrix); ++x)
         {
             for(auto y = begin(x->second); y != end(x->second); ++y)
             {
@@ -245,9 +243,7 @@ namespace RoninEngine
     {
         std::list<typename decltype(this->internal_resources->matrix)::iterator> cached {};
         auto matrix = &this->internal_resources->matrix;
-        for(auto iter = std::begin(internal_resources->matrix), _end = std::end(internal_resources->matrix);
-            iter != _end;
-            ++iter)
+        for(auto iter = std::begin(internal_resources->matrix), _end = std::end(internal_resources->matrix); iter != _end; ++iter)
         {
             if(iter->second.empty())
             {
@@ -524,8 +520,7 @@ namespace RoninEngine
 
         if(World::self()->internal_resources->_destructTasks)
         {
-            for(std::pair<const float, std::set<GameObject *>> &mapIter :
-                *World::self()->internal_resources->_destructTasks)
+            for(std::pair<const float, std::set<GameObject *>> &mapIter : *World::self()->internal_resources->_destructTasks)
             {
                 auto iter = mapIter.second.find(obj);
                 if(iter != std::end(mapIter.second))
@@ -549,8 +544,7 @@ namespace RoninEngine
         if(World::self()->internal_resources->_destructTasks)
         {
             x = 0;
-            for(std::pair<const float, std::set<GameObject *>> &mapIter :
-                *World::self()->internal_resources->_destructTasks)
+            for(std::pair<const float, std::set<GameObject *>> &mapIter : *World::self()->internal_resources->_destructTasks)
             {
                 if(mapIter.second.find(obj) != std::end(mapIter.second))
                 {
@@ -573,8 +567,7 @@ namespace RoninEngine
         int x = 0;
         if(World::self()->internal_resources->_destructTasks)
         {
-            for(std::pair<const float, std::set<GameObject *>> &mapIter :
-                *World::self()->internal_resources->_destructTasks)
+            for(std::pair<const float, std::set<GameObject *>> &mapIter : *World::self()->internal_resources->_destructTasks)
             {
                 x += mapIter.second.size();
             }

@@ -111,7 +111,7 @@ namespace RoninEngine
 
             ui_callback callback;
             void *callbackData;
-            Runtime::World *__level_owner;
+            Runtime::World *owner;
             bool hitCast;
             bool _focusedUI;
             bool visible;
@@ -258,9 +258,7 @@ namespace RoninEngine
         void internal_destroy_object_dyn(Object *obj);
 
         // TODO: Complete that function for types
-        template <
-            typename T,
-            typename std::enable_if<std::is_base_of<Object, T>::value, std::nullptr_t>::type = nullptr>
+        template <typename T, typename std::enable_if<std::is_base_of<Object, T>::value, std::nullptr_t>::type = nullptr>
         void internal_destroy_object(T *obj);
 
         void load_world(World *);

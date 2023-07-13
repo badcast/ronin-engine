@@ -34,12 +34,9 @@ namespace RoninEngine
             template <typename oth_rect>
             RRect(const oth_rect &other)
             {
+                static_assert(std::is_same<T, int>::value && std::is_same<oth_rect, native_rect_t>::value, "Rect not set from SDL_FRect");
                 static_assert(
-                    std::is_same<T, int>::value && std::is_same<oth_rect, native_rect_t>::value,
-                    "Rect not set from SDL_FRect");
-                static_assert(
-                    std::is_same<T, float>::value && std::is_same<oth_rect, native_frect_t>::value,
-                    "Rectf not set from SDL_Rect");
+                    std::is_same<T, float>::value && std::is_same<oth_rect, native_frect_t>::value, "Rectf not set from SDL_Rect");
                 this->x = other.x;
                 this->y = other.y;
                 this->w = other.w;
@@ -116,12 +113,9 @@ namespace RoninEngine
             RRect<T> &operator=(const oth_rect &rhs)
             {
                 if constexpr(std::is_same<T, int>::value)
-                    static_assert(
-                        std::is_same<oth_rect, native_rect_t>::value, "Rect not set from SDL_FRect, require SDL_Rect");
+                    static_assert(std::is_same<oth_rect, native_rect_t>::value, "Rect not set from SDL_FRect, require SDL_Rect");
                 else if constexpr(std::is_same<T, float>::value)
-                    static_assert(
-                        std::is_same<oth_rect, native_frect_t>::value,
-                        "Rectf not set from SDL_Rect, require SDL_FRect");
+                    static_assert(std::is_same<oth_rect, native_frect_t>::value, "Rectf not set from SDL_Rect, require SDL_FRect");
                 this->x = rhs.x;
                 this->y = rhs.y;
                 this->w = rhs.w;

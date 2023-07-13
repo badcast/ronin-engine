@@ -101,8 +101,7 @@ namespace jno
         {
             ++offset;
             for(; content[offset] != jno_syntax.jno_format_string; ++offset)
-                if(content[offset] == jno_syntax.jno_left_seperator &&
-                   content[offset + 1] == jno_syntax.jno_format_string)
+                if(content[offset] == jno_syntax.jno_left_seperator && content[offset + 1] == jno_syntax.jno_format_string)
                     ++offset;
             --offset;
             if(offset)
@@ -180,10 +179,7 @@ namespace jno
         char skipping[sizeof(jno_syntax.jno_trim_segments) + sizeof(jno_syntax.jno_array_segments)];
         skipping[0] = '\0';
         strncpy(skipping, jno_syntax.jno_trim_segments, sizeof(jno_syntax.jno_trim_segments));
-        strncpy(
-            skipping + sizeof jno_syntax.jno_trim_segments,
-            jno_syntax.jno_array_segments,
-            sizeof(jno_syntax.jno_array_segments));
+        strncpy(skipping + sizeof jno_syntax.jno_trim_segments, jno_syntax.jno_array_segments, sizeof(jno_syntax.jno_array_segments));
         for(i = 0; c[i] && i <= len;)
         {
             for(j = 0; j < sizeof(skipping);)
@@ -202,8 +198,7 @@ namespace jno
     jbool jno_is_property(const char *c, int len)
     {
         for(int i = 0; i < len; ++i)
-            if(!((std::toupper(c[i]) >= 'A' && std::toupper(c[i]) <= 'Z') || (i > 0 && jno_is_jnumber(c[i])) ||
-                 c[i] == '_'))
+            if(!((std::toupper(c[i]) >= 'A' && std::toupper(c[i]) <= 'Z') || (i > 0 && jno_is_jnumber(c[i])) || c[i] == '_'))
                 return false;
         return len != 0;
     }
@@ -626,8 +621,7 @@ namespace jno
                 current_jno_node.valueFlag = Node_ValueFlag | valueType << 2;
             }
 
-            entry.insert(
-                std::make_pair(j = jno_string_to_hash(current_jno_node.propertyName.c_str()), current_jno_node));
+            entry.insert(std::make_pair(j = jno_string_to_hash(current_jno_node.propertyName.c_str()), current_jno_node));
 
 #if defined(QDEBUG) || defined(DEBUG)
             // get iter

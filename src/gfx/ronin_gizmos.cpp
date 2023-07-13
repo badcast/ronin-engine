@@ -227,8 +227,7 @@ namespace RoninEngine::Runtime
             maxTotal = std::max(maxTotal, totalC);
 
             Gizmos::draw_text(
-                Camera::screen_to_world(Vec2::zero),
-                "Cached " + std::to_string(totalC) + " (" + std::to_string(maxTotal) + ")");
+                Camera::screen_to_world(Vec2::zero), "Cached " + std::to_string(totalC) + " (" + std::to_string(maxTotal) + ")");
         }
     }
 
@@ -387,18 +386,16 @@ namespace RoninEngine::Runtime
                     {
                         if(stormFlags >> 28)
                         {
-                            stormFlags ^= stormFlags & const_storm_xDeterminant; // clear x
-                            stormFlags |=
-                                ((stormFlags & const_storm_yDeterminant) >> 4) & const_storm_xDeterminant; // x = y
-                            stormFlags ^= stormFlags & const_storm_yDeterminant;                           // clear y
+                            stormFlags ^= stormFlags & const_storm_xDeterminant;                                     // clear x
+                            stormFlags |= ((stormFlags & const_storm_yDeterminant) >> 4) & const_storm_xDeterminant; // x = y
+                            stormFlags ^= stormFlags & const_storm_yDeterminant;                                     // clear y
                         }
                         else
                         {
-                            stormFlags ^= stormFlags & const_storm_yDeterminant; // clear y
-                            stormFlags |=
-                                ((stormFlags & const_storm_xDeterminant) << 4) & const_storm_yDeterminant; // y = x
-                            stormFlags ^= const_storm_yDeterminant_inverse;                                // inverse
-                            stormFlags ^= stormFlags & const_storm_xDeterminant;                           // clear x
+                            stormFlags ^= stormFlags & const_storm_yDeterminant;                                     // clear y
+                            stormFlags |= ((stormFlags & const_storm_xDeterminant) << 4) & const_storm_yDeterminant; // y = x
+                            stormFlags ^= const_storm_yDeterminant_inverse;                                          // inverse
+                            stormFlags ^= stormFlags & const_storm_xDeterminant;                                     // clear x
                         }
                     }
                 }
@@ -415,17 +412,15 @@ namespace RoninEngine::Runtime
                 {
                     if(yDeter)
                     {
-                        stormFlags ^= stormFlags & const_storm_xDeterminant; // clear x
-                        stormFlags |=
-                            ((stormFlags & const_storm_yDeterminant) >> 4) & const_storm_xDeterminant; // x = y
-                        stormFlags ^= stormFlags & const_storm_yDeterminant;                           // clear y
+                        stormFlags ^= stormFlags & const_storm_xDeterminant;                                     // clear x
+                        stormFlags |= ((stormFlags & const_storm_yDeterminant) >> 4) & const_storm_xDeterminant; // x = y
+                        stormFlags ^= stormFlags & const_storm_yDeterminant;                                     // clear y
                     }
                     else if(xDeter)
                     {
-                        stormFlags ^= stormFlags & const_storm_yDeterminant; // clear y
-                        stormFlags |=
-                            ((stormFlags & const_storm_xDeterminant) << 4) & const_storm_yDeterminant; // y = x
-                        stormFlags ^= stormFlags & const_storm_xDeterminant;                           // clear x
+                        stormFlags ^= stormFlags & const_storm_yDeterminant;                                     // clear y
+                        stormFlags |= ((stormFlags & const_storm_xDeterminant) << 4) & const_storm_yDeterminant; // y = x
+                        stormFlags ^= stormFlags & const_storm_xDeterminant;                                     // clear x
                     }
                 }
 

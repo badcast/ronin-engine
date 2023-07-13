@@ -91,8 +91,7 @@ namespace RoninEngine::Runtime
     }
     const void Texture::color(const Color value)
     {
-        if(!(!SDL_SetTextureColorMod(m_native, value.r, value.g, value.b) &&
-             !SDL_SetTextureAlphaMod(m_native, value.a)))
+        if(!(!SDL_SetTextureColorMod(m_native, value.r, value.g, value.b) && !SDL_SetTextureAlphaMod(m_native, value.a)))
             RoninSimulator::back_fail();
     }
 

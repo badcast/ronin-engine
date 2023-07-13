@@ -148,16 +148,14 @@ namespace RoninEngine::Runtime
 
         static float smooth_damp(float current, float target, float &currentVelocity, float smoothTime);
 
-        static float smooth_damp(
-            float current, float target, float &currentVelocity, float smoothTime, float maxSpeed, float deltaTime);
+        static float smooth_damp(float current, float target, float &currentVelocity, float smoothTime, float maxSpeed, float deltaTime);
 
         // Celsius to Fahrenheit
         static float cel2far(float celsius);
         // Fahrenheit to Celsius
         static float far2cel(float fahrenheit);
 
-        static float smooth_damp_angle(
-            float current, float target, float &currentVelocity, float smoothTime, float maxSpeed);
+        static float smooth_damp_angle(float current, float target, float &currentVelocity, float smoothTime, float maxSpeed);
 
         static float smooth_damp_angle(float current, float target, float &currentVelocity, float smoothTime);
 

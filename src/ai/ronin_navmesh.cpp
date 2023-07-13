@@ -94,16 +94,12 @@ namespace RoninEngine::AI
         return shedule->get_cached_size();
     }
 
-    void NavMesh::find(
-        NavResult &navResult, NavMethodRule method, Runtime::Vec2 worldPointFirst, Runtime::Vec2 worldPointLast)
+    void NavMesh::find(NavResult &navResult, NavMethodRule method, Runtime::Vec2 worldPointFirst, Runtime::Vec2 worldPointLast)
     {
         NavContainer::NavigateionResult _nr;
 
         shedule->find(
-            _nr,
-            across::NavMethodRule(method),
-            this->world_position_to_point(worldPointFirst),
-            world_position_to_point(worldPointLast));
+            _nr, across::NavMethodRule(method), this->world_position_to_point(worldPointFirst), world_position_to_point(worldPointLast));
     }
 
     const Runtime::Vec2 NavMesh::point_to_world_position(const Runtime::Vec2Int &range)

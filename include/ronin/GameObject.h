@@ -66,8 +66,7 @@ namespace RoninEngine
         std::enable_if_t<std::is_base_of<Component, T>::value, T *> GameObject::add_component()
         {
             static_assert(
-                !(std::is_same<T, Transform>::value || std::is_base_of<Transform, T>::value),
-                "Transform component can't be assigned");
+                !(std::is_same<T, Transform>::value || std::is_base_of<Transform, T>::value), "Transform component can't be assigned");
 
             // init component
             T *component = RoninMemory::alloc<T>();
@@ -114,10 +113,8 @@ namespace RoninEngine
             }
             else
             {
-                auto iter = std::find_if(
-                    begin(m_components),
-                    end(m_components),
-                    [](Component *c) { return dynamic_cast<T *>(c) != nullptr; });
+                auto iter =
+                    std::find_if(begin(m_components), end(m_components), [](Component *c) { return dynamic_cast<T *>(c) != nullptr; });
 
                 if(iter != end(m_components))
                     return static_cast<T *>(*iter);

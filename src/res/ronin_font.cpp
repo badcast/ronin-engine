@@ -122,8 +122,8 @@ namespace RoninEngine::UI
                             cx = rect_point.x + x;
                             cy = rect_point.y + y;
                             // NOTE: Формула пикселей для SDL :: Y Offset * (Pitch/BytesPerPixel) + X Offset
-                            pixel = (SDL_Color *) pLegacyFont->surfNormal->pixels +
-                                (cy * (model->pitch / model->format->BytesPerPixel) + cx);
+                            pixel =
+                                (SDL_Color *) pLegacyFont->surfNormal->pixels + (cy * (model->pitch / model->format->BytesPerPixel) + cx);
                             if(pixel->a) // isn't transparent
                                 break;
                         }
@@ -140,8 +140,8 @@ namespace RoninEngine::UI
                             // Формула Y Offset * (Pitch/BytesPerPixel) + X Offset
                             cx = rect_point.x + pLegacyFont->data[i].w - 1 - x;
                             cy = rect_point.y + y;
-                            pixel = (SDL_Color *) pLegacyFont->surfNormal->pixels +
-                                (cy * (model->pitch / model->format->BytesPerPixel) + cx);
+                            pixel =
+                                (SDL_Color *) pLegacyFont->surfNormal->pixels + (cy * (model->pitch / model->format->BytesPerPixel) + cx);
                             if(pixel->a) // isn't transparent
                                 break;
                         }
@@ -175,13 +175,7 @@ namespace RoninEngine::UI
     }
 
     void render_string_legacy(
-        Rect rect,
-        const char *text,
-        int len,
-        int fontWidth,
-        RoninEngine::UI::TextAlign textAlign,
-        bool textWrap,
-        bool hilight)
+        Rect rect, const char *text, int len, int fontWidth, RoninEngine::UI::TextAlign textAlign, bool textWrap, bool hilight)
     {
         if(text == nullptr || len <= 0)
             return;

@@ -121,8 +121,7 @@ namespace RoninEngine::Runtime
         if(component->_owner)
             throw ronin_conflict_component_error();
 
-        if(end(m_components) ==
-           std::find_if(begin(m_components), end(m_components), std::bind2nd(std::equal_to<Component *>(), component)))
+        if(end(m_components) == std::find_if(begin(m_components), end(m_components), std::bind2nd(std::equal_to<Component *>(), component)))
         {
             this->m_components.emplace_back(component);
 

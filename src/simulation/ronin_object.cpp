@@ -93,9 +93,7 @@ namespace RoninEngine
         template <typename T, typename std::enable_if<std::is_base_of<Object, T>::value, std::nullptr_t>::type>
         void internal_destroy_object(T *obj)
         {
-            static_assert(
-                std::is_base_of<Object, T>::value && !std::is_same<GameObject, T>::value,
-                "obj var not based of Object");
+            static_assert(std::is_base_of<Object, T>::value && !std::is_same<GameObject, T>::value, "obj var not based of Object");
 
             if constexpr(std::is_same<T, Transform>::value)
             {
@@ -178,8 +176,8 @@ namespace RoninEngine
 
             if(!provider)
             {
-                provider = World::self()->internal_resources->_destructTasks = RoninMemory::alloc<
-                    std::remove_pointer<decltype(World::self()->internal_resources->_destructTasks)>::type>();
+                provider = World::self()->internal_resources->_destructTasks =
+                    RoninMemory::alloc<std::remove_pointer<decltype(World::self()->internal_resources->_destructTasks)>::type>();
             }
             else
             {
@@ -240,8 +238,7 @@ namespace RoninEngine
         {
             GameObject *clone;
 
-            clone = create_game_object(
-                (obj->m_name.find(_cloneStr) == std::string::npos ? obj->m_name + _cloneStr : obj->m_name));
+            clone = create_game_object((obj->m_name.find(_cloneStr) == std::string::npos ? obj->m_name + _cloneStr : obj->m_name));
             for(auto iter = begin(obj->m_components); iter != end(obj->m_components); ++iter)
             {
                 Component *replacement = *iter;
@@ -264,13 +261,11 @@ namespace RoninEngine
                 }
                 else if(dynamic_cast<SpriteRenderer *>(replacement))
                 {
-                    replacement = internal_factory_base<SpriteRenderer>(
-                        false, reinterpret_cast<SpriteRenderer *>(replacement), nullptr);
+                    replacement = internal_factory_base<SpriteRenderer>(false, reinterpret_cast<SpriteRenderer *>(replacement), nullptr);
                 }
                 else if(dynamic_cast<Camera2D *>(replacement))
                 {
-                    replacement =
-                        internal_factory_base<Camera2D>(false, reinterpret_cast<Camera2D *>(replacement), nullptr);
+                    replacement = internal_factory_base<Camera2D>(false, reinterpret_cast<Camera2D *>(replacement), nullptr);
                     //} else if (dynamic_cast<Behaviour*>(replacement)) {
 
                     /// replacement = internal_factory_base<Behaviour>(false, reinterpret_cast<Behaviour*>(replacement),

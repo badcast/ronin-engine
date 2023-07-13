@@ -21,6 +21,7 @@
 #include <map>
 #include <memory>
 #include <numeric>
+#include <deque>
 #include <set>
 #include <stdexcept>
 #include <unordered_map>

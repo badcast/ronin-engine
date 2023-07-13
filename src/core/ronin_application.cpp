@@ -406,8 +406,7 @@ namespace RoninEngine
                 else
                 {
                     // on first load level
-                    renderer =
-                        SDL_CreateRenderer(main_window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE);
+                    renderer = SDL_CreateRenderer(main_window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE);
                     if(!renderer)
                         fail(SDL_GetError());
 
@@ -545,14 +544,9 @@ namespace RoninEngine
 
     void RoninSimulator::show_message(const std::string &message)
     {
-        SDL_LogMessage(
-            SDL_LogCategory::SDL_LOG_CATEGORY_APPLICATION,
-            SDL_LogPriority::SDL_LOG_PRIORITY_VERBOSE,
-            "%s",
-            message.c_str());
+        SDL_LogMessage(SDL_LogCategory::SDL_LOG_CATEGORY_APPLICATION, SDL_LogPriority::SDL_LOG_PRIORITY_VERBOSE, "%s", message.c_str());
         printf("%s\n", message.c_str());
-        SDL_ShowSimpleMessageBox(
-            SDL_MessageBoxFlags::SDL_MESSAGEBOX_INFORMATION, nullptr, message.c_str(), main_window);
+        SDL_ShowSimpleMessageBox(SDL_MessageBoxFlags::SDL_MESSAGEBOX_INFORMATION, nullptr, message.c_str(), main_window);
     }
 
     void RoninSimulator::fail(const std::string &message)
@@ -570,13 +564,8 @@ namespace RoninEngine
 
         fprintf(stderr, "%s", _template.data());
 
-        SDL_LogMessage(
-            SDL_LogCategory::SDL_LOG_CATEGORY_APPLICATION,
-            SDL_LogPriority::SDL_LOG_PRIORITY_CRITICAL,
-            "%s",
-            _template.c_str());
-        SDL_ShowSimpleMessageBox(
-            SDL_MessageBoxFlags::SDL_MESSAGEBOX_ERROR, "Ronin Engine: failed", _template.c_str(), main_window);
+        SDL_LogMessage(SDL_LogCategory::SDL_LOG_CATEGORY_APPLICATION, SDL_LogPriority::SDL_LOG_PRIORITY_CRITICAL, "%s", _template.c_str());
+        SDL_ShowSimpleMessageBox(SDL_MessageBoxFlags::SDL_MESSAGEBOX_ERROR, "Ronin Engine: failed", _template.c_str(), main_window);
         back_fail();
     }
 

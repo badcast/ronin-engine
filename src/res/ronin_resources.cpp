@@ -55,8 +55,7 @@ namespace RoninEngine::Runtime
 
     inline GidResources *get_resource(resource_id id)
     {
-        return (id & RES_LOCAL_FLAG) ? World::self()->internal_resources->external_local_resources
-                                     : external_global_resources;
+        return (id & RES_LOCAL_FLAG) ? World::self()->internal_resources->external_local_resources : external_global_resources;
     }
 
     inline GidResources *make_resource(resource_id *resultId, bool local)

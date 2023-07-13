@@ -17,6 +17,7 @@ function format_file() {
 
 check_util clang-format
 check_util find
+check_util tee
 
 format_file "${_script_path}"
 format_file "${_script_path}/../include"

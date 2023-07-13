@@ -49,8 +49,7 @@ float AudioSource::volume() const
 void AudioSource::volume(float value)
 {
     // set volume (clamping)
-    Mix_Volume(
-        data->target_channel, data->m_volume = Math::map<float, std::uint8_t>(value, 0.f, 1.f, 0, MIX_MAX_VOLUME));
+    Mix_Volume(data->target_channel, data->m_volume = Math::map<float, std::uint8_t>(value, 0.f, 1.f, 0, MIX_MAX_VOLUME));
 }
 
 void AudioSource::rewind()

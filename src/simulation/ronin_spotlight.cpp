@@ -30,8 +30,7 @@ namespace RoninEngine::Runtime
 
         SDL_QueryTexture(texture, nullptr, reinterpret_cast<int *>(&access), nullptr, nullptr);
 
-        SDL_RenderCopyEx(
-            renderer, texture, nullptr, nullptr, transform()->angle(), nullptr, SDL_RendererFlip::SDL_FLIP_NONE);
+        SDL_RenderCopyEx(renderer, texture, nullptr, nullptr, transform()->angle(), nullptr, SDL_RendererFlip::SDL_FLIP_NONE);
 
         SDL_DestroyTexture(texture);
     }

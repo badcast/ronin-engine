@@ -108,9 +108,7 @@ namespace RoninEngine::Runtime
                     camera2d->distanceEvcall);
             std::list<Renderer *> _removes;
             // собираем оставшиеся которые прикреплены к видимости
-            for(auto x = std::begin(camera2d->camera_resources->prev);
-                false && x != std::end(camera2d->camera_resources->prev);
-                ++x)
+            for(auto x = std::begin(camera2d->camera_resources->prev); false && x != std::end(camera2d->camera_resources->prev); ++x)
             {
                 if(area_cast(*x, wpLeftTop, wpRightBottom))
                 {
@@ -158,12 +156,10 @@ namespace RoninEngine::Runtime
         if(camera2d->camera_resources->_lightsOutResults.empty())
         {
             camera2d->camera_resources->_lightsOutResults.insert(
-                World::self()->internal_resources->_assoc_lightings.begin(),
-                World::self()->internal_resources->_assoc_lightings.end());
+                World::self()->internal_resources->_assoc_lightings.begin(), World::self()->internal_resources->_assoc_lightings.end());
         }
 
-        return std::make_tuple(
-            &(camera2d->camera_resources->renders), &(camera2d->camera_resources->_lightsOutResults));
+        return std::make_tuple(&(camera2d->camera_resources->renders), &(camera2d->camera_resources->_lightsOutResults));
     }
 
     Camera2D::Camera2D() : Camera2D(DESCRIBE_AS_MAIN_OFF(Camera2D))
@@ -171,11 +167,7 @@ namespace RoninEngine::Runtime
     }
 
     Camera2D::Camera2D(const std::string &name)
-        : Camera(DESCRIBE_AS_ONLY_NAME(Camera2D)),
-          scale(Vec2::one),
-          visibleBorders(false),
-          visibleGrids(false),
-          visibleObjects(false)
+        : Camera(DESCRIBE_AS_ONLY_NAME(Camera2D)), scale(Vec2::one), visibleBorders(false), visibleGrids(false), visibleObjects(false)
     {
         DESCRIBE_AS_MAIN(Camera2D);
         distanceEvcall = 2;
@@ -245,9 +237,7 @@ namespace RoninEngine::Runtime
                     {
                         // local position is direction
                         sourcePoint = Vec2::rotate_around(
-                            render_parent->_position,
-                            render_transform->local_position(),
-                            render_parent->angle() * Math::deg2rad);
+                            render_parent->_position, render_transform->local_position(), render_parent->angle() * Math::deg2rad);
                     }
 
                     wrapper.dst.w *= pixelsPerPoint; //_scale.x;
@@ -255,8 +245,7 @@ namespace RoninEngine::Runtime
 
                     Vec2 arranged = wrapper.dst.getXY();
                     if(arranged != Vec2::zero)
-                        arranged =
-                            Vec2::rotate_around(sourcePoint, arranged, render_transform->angle() * Math::deg2rad);
+                        arranged = Vec2::rotate_around(sourcePoint, arranged, render_transform->angle() * Math::deg2rad);
 
                     sourcePoint += render_iobject->get_offset();
 
@@ -264,12 +253,10 @@ namespace RoninEngine::Runtime
 
                     // Положение по горизонтале
                     wrapper.dst.x = arranged.x +
-                        ((active_resolution.width - wrapper.dst.w) / 2.0f -
-                         (camera_position.x - sourcePoint.x) * pixelsPerPoint);
+                        ((active_resolution.width - wrapper.dst.w) / 2.0f - (camera_position.x - sourcePoint.x) * pixelsPerPoint);
                     // Положение по вертикале
                     wrapper.dst.y = arranged.y +
-                        ((active_resolution.height - wrapper.dst.h) / 2.0f +
-                         (camera_position.y - sourcePoint.y) * pixelsPerPoint);
+                        ((active_resolution.height - wrapper.dst.h) / 2.0f + (camera_position.y - sourcePoint.y) * pixelsPerPoint);
 #if USE_OMP
                     SDL_LockMutex(m);
 #endif
@@ -341,23 +328,16 @@ namespace RoninEngine::Runtime
 
             // borders
             Gizmos::draw_line(Vec2(offset, offset), Vec2(offset + height, offset));
-            Gizmos::draw_line(
-                Vec2(active_resolution.width - offset, offset),
-                Vec2(active_resolution.width - offset - height, offset));
-            Gizmos::draw_line(
-                Vec2(offset, active_resolution.height - offset),
-                Vec2(offset + height, active_resolution.height - offset));
+            Gizmos::draw_line(Vec2(active_resolution.width - offset, offset), Vec2(active_resolution.width - offset - height, offset));
+            Gizmos::draw_line(Vec2(offset, active_resolution.height - offset), Vec2(offset + height, active_resolution.height - offset));
             Gizmos::draw_line(
                 Vec2(active_resolution.width - offset, active_resolution.height - offset),
                 Vec2(active_resolution.width - offset - height, active_resolution.height - offset));
 
             Gizmos::draw_line(Vec2(offset, 1 + offset), Vec2(offset, offset + height));
+            Gizmos::draw_line(Vec2(active_resolution.width - offset, 1 + offset), Vec2(active_resolution.width - offset, offset + height));
             Gizmos::draw_line(
-                Vec2(active_resolution.width - offset, 1 + offset),
-                Vec2(active_resolution.width - offset, offset + height));
-            Gizmos::draw_line(
-                Vec2(offset, active_resolution.height - 1 - offset),
-                Vec2(offset, active_resolution.height - offset - height));
+                Vec2(offset, active_resolution.height - 1 - offset), Vec2(offset, active_resolution.height - offset - height));
             Gizmos::draw_line(
                 Vec2(active_resolution.width - offset, active_resolution.height - 1 - offset),
                 Vec2(active_resolution.width - offset, active_resolution.height - offset - height));
