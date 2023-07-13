@@ -42,6 +42,9 @@ namespace RoninEngine
             RONIN_API static const Vec2Int left;
             RONIN_API static const Vec2Int right;
             RONIN_API static const Vec2Int up;
+
+            static bool has_intersection(const Vec2Int &point, const Rect &rect);
+            static bool has_intersection(const Rect &lhs, const Rect &rhs);
         };
 
         struct RONIN_API Vec2
@@ -99,8 +102,7 @@ namespace RoninEngine
             static float angle(Vec2 from, Vec2 to);
             static float signed_angle(Vec2 from, Vec2 to);
             static Vec2 clamp_magnitude(Vec2 vector, float maxLength);
-            static Vec2 smooth_damp(
-                Vec2 current, Vec2 target, Vec2 &currentVelocity, float smoothTime, float maxSpeed, float deltaTime);
+            static Vec2 smooth_damp(Vec2 current, Vec2 target, Vec2 &currentVelocity, float smoothTime, float maxSpeed, float deltaTime);
             static float dot(const Vec2 &lhs, const Vec2 &rhs);
             static float sqr_magnitude(const Vec2 &lhs);
             static Vec2 round(Vec2 lhs);
@@ -128,8 +130,7 @@ namespace RoninEngine
         API_EXPORT inline const Vec2 Vec2::left(-1.f, 0.f);
         API_EXPORT inline const Vec2 Vec2::right(1.f, 0.f);
         API_EXPORT inline const Vec2 Vec2::up(0.f, 1.f);
-        API_EXPORT inline const Vec2 Vec2::infinity(
-            std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity());
+        API_EXPORT inline const Vec2 Vec2::infinity(std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity());
         API_EXPORT inline const Vec2 Vec2::negativeInfinity(
             -std::numeric_limits<float>::infinity(), -std::numeric_limits<float>::infinity());
 

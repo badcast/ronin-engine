@@ -47,6 +47,16 @@ namespace RoninEngine::Runtime
         return *this * -1;
     }
 
+    bool Vec2Int::has_intersection(const Vec2Int &point, const Rect &rect)
+    {
+        return ((point.x >= rect.x) && (point.x < (rect.x + rect.w)) && (point.y >= rect.y) && (point.y < (rect.y + rect.h)));
+    }
+
+    bool Vec2Int::has_intersection(const Rect &lhs, const Rect &rhs)
+    {
+        return SDL_HasIntersection(reinterpret_cast<const SDL_Rect *>(&lhs), reinterpret_cast<const SDL_Rect *>(&rhs));
+    }
+
     Vec2Int &Vec2Int::operator=(Vec2Int &&rhs)
     {
         this->x = rhs.x;
@@ -235,8 +245,7 @@ namespace RoninEngine::Runtime
         return result;
     }
 
-    Vec2 Vec2::smooth_damp(
-        Vec2 current, Vec2 target, Vec2 &currentVelocity, float smoothTime, float maxSpeed, float deltaTime)
+    Vec2 Vec2::smooth_damp(Vec2 current, Vec2 target, Vec2 &currentVelocity, float smoothTime, float maxSpeed, float deltaTime)
     {
         smoothTime = Math::max(0.f, Math::max(0001.f, smoothTime));
         float n0 = 2 / smoothTime;
@@ -287,8 +296,7 @@ namespace RoninEngine::Runtime
 
     bool Vec2::has_intersection(const Rectf &lhs, const Rectf &rhs)
     {
-        return SDL_HasIntersectionF(
-            reinterpret_cast<const SDL_FRect *>(&lhs), reinterpret_cast<const SDL_FRect *>(&rhs));
+        return SDL_HasIntersectionF(reinterpret_cast<const SDL_FRect *>(&lhs), reinterpret_cast<const SDL_FRect *>(&rhs));
     }
 
     bool Vec2::in_area(const Vec2 &p, const Rectf &r)
