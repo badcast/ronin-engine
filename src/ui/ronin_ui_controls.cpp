@@ -83,8 +83,7 @@ namespace RoninEngine::UI
         }
     }
 
-    bool general_render_ui_section(
-        GUI *gui, UIElement &element, const bool ms_hover, const bool ms_click, bool &ui_focus)
+    bool general_render_ui_section(GUI *gui, UIElement &element, const bool ms_hover, const bool ms_click, bool &ui_focus)
     {
         // TODO: OPTIMIZE HERE (HIGH PRIORITY)
         static float dropDownLinear = 0;
@@ -123,18 +122,15 @@ namespace RoninEngine::UI
                 Rect rect;
 
                 // fill
-                Color col(
-                    ms_hover ? colorSpace.defaultInteraction.pressState : colorSpace.defaultInteraction.normalState);
+                Color col(ms_hover ? colorSpace.defaultInteraction.pressState : colorSpace.defaultInteraction.normalState);
                 rect = element.rect;
                 rect += inside / 2;
                 gui->set_color_rgb(col);
                 if(show_down_side)
                 {
-                    roundedBoxColor(
-                        renderer, rect.x, rect.y, rect.w + rect.x, rect.h + rect.y, 4, colorSpace.buttonDownSide);
+                    roundedBoxColor(renderer, rect.x, rect.y, rect.w + rect.x, rect.h + rect.y, 4, colorSpace.buttonDownSide);
                 }
-                roundedBoxColor(
-                    renderer, rect.x, rect.y, rect.w + rect.x, rect.h + rect.y - (show_down_side ? 4 : 0), 4, col);
+                roundedBoxColor(renderer, rect.x, rect.y, rect.w + rect.x, rect.h + rect.y - (show_down_side ? 4 : 0), 4, col);
                 // SDL_RenderFillRect(renderer, (SDL_Rect*)&rect);
 
                 // render text
@@ -160,8 +156,7 @@ namespace RoninEngine::UI
                 rect = element.rect + thick;
 
                 // uielement background
-                Gizmos::set_color(
-                    (ms_hover) ? colorSpace.defaultInteraction.normalState : colorSpace.defaultInteraction.hoverState);
+                Gizmos::set_color((ms_hover) ? colorSpace.defaultInteraction.normalState : colorSpace.defaultInteraction.hoverState);
                 SDL_RenderFillRect(renderer, (SDL_Rect *) &rect);
                 Gizmos::set_color(Color::gray);
                 for(int x = 0; x < thickness; ++x)
@@ -171,8 +166,7 @@ namespace RoninEngine::UI
                 }
 
                 // draw main text
-                surface = TTF_RenderUTF8_Solid(
-                    ttf_arial_font, element.text.c_str(), *reinterpret_cast<SDL_Color *>(&colorSpace.editText));
+                surface = TTF_RenderUTF8_Solid(ttf_arial_font, element.text.c_str(), *reinterpret_cast<SDL_Color *>(&colorSpace.editText));
                 if((texture = SDL_CreateTextureFromSurface(renderer, surface)) != nullptr)
                 {
                     rect = element.rect;
@@ -236,8 +230,7 @@ namespace RoninEngine::UI
                     if(Input::is_mouse_down())
                     {
                         // get *x* component from mouse point for set cursor point
-                        resource->value = Math::map(
-                            (float) ms.x, (float) rect.x, (float) rect.x + rect.w, resource->min, resource->max);
+                        resource->value = Math::map((float) ms.x, (float) rect.x, (float) rect.x + rect.w, resource->min, resource->max);
                     }
                 }
                 else
@@ -308,8 +301,7 @@ namespace RoninEngine::UI
                 r += thick;
 
                 // uielement background
-                Gizmos::set_color(
-                    (ms_hover) ? colorSpace.defaultInteraction.normalState : colorSpace.defaultInteraction.hoverState);
+                Gizmos::set_color((ms_hover) ? colorSpace.defaultInteraction.normalState : colorSpace.defaultInteraction.hoverState);
                 SDL_RenderFillRect(renderer, (SDL_Rect *) &r);
                 Gizmos::set_color(Color::gray);
                 for(int x = 0; x < thickness; ++x)
@@ -320,8 +312,8 @@ namespace RoninEngine::UI
 
                 // draw main text
                 SDL_Texture *texture;
-                SDL_Surface *surf = TTF_RenderUTF8_Blended(
-                    ttf_arial_font, element.text.c_str(), *reinterpret_cast<SDL_Color *>(&colorSpace.dropdownText));
+                SDL_Surface *surf =
+                    TTF_RenderUTF8_Blended(ttf_arial_font, element.text.c_str(), *reinterpret_cast<SDL_Color *>(&colorSpace.dropdownText));
                 if((texture = SDL_CreateTextureFromSurface(renderer, surf)) != nullptr)
                 {
                     r = element.rect;
@@ -346,8 +338,7 @@ namespace RoninEngine::UI
                     r = element.rect;
                     r.y += r.h;
 
-                    r.h = dropDownLinear =
-                        Math::ceil(Math::lerp(dropDownLinear, link->second.size() * sz, TimeEngine::deltaTime()));
+                    r.h = dropDownLinear = Math::ceil(Math::lerp(dropDownLinear, link->second.size() * sz, TimeEngine::deltaTime()));
 
                     Gizmos::set_color(colorSpace.defaultInteraction.hoverState);
                     // draw background
@@ -381,8 +372,8 @@ namespace RoninEngine::UI
                             surf = TTF_RenderUTF8_Blended(
                                 ttf_arial_font,
                                 iter->c_str(),
-                                *reinterpret_cast<SDL_Color *>(&(
-                                    link->first != index ? colorSpace.dropdownText : colorSpace.dropdownSelectedText)));
+                                *reinterpret_cast<SDL_Color *>(
+                                    &(link->first != index ? colorSpace.dropdownText : colorSpace.dropdownSelectedText)));
                             texture = SDL_CreateTextureFromSurface(renderer, surf);
                             SDL_QueryTexture(texture, nullptr, nullptr, &r.w, &r.h);
 
@@ -426,23 +417,16 @@ namespace RoninEngine::UI
                 ((ui_callback_void) (element->event))(element->id);
                 break;
             case RGUI_DROPDOWN:
-                ((ui_callback_integer) (element->event))(
-                    element->id, (static_cast<DropDownResource *>(element->resources)->first));
+                ((ui_callback_integer) (element->event))(element->id, (static_cast<DropDownResource *>(element->resources)->first));
                 break;
             case RGUI_HSLIDER:
             case RGUI_VSLIDER:
-                ((ui_callback_float) (element->event))(
-                    element->id, static_cast<SliderResource *>(element->resources)->value);
+                ((ui_callback_float) (element->event))(element->id, static_cast<SliderResource *>(element->resources)->value);
         }
     }
 
     void draw_font_at(
-        SDL_Renderer *renderer,
-        const std::string &text,
-        int fontSize,
-        Runtime::Vec2Int screenPoint,
-        const Color color,
-        bool alignCenter)
+        SDL_Renderer *renderer, const std::string &text, int fontSize, Runtime::Vec2Int screenPoint, const Color color, bool alignCenter)
     {
         SDL_Rect r;
 

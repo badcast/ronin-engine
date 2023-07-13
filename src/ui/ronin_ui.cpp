@@ -1,4 +1,3 @@
-#include <deque>
 #include "ronin.h"
 
 enum
@@ -15,8 +14,7 @@ namespace RoninEngine::UI
 
     extern ui_resource *factory_resource(GUIControlPresents type);
     extern void factory_free(UIElement *element);
-    extern bool general_render_ui_section(
-        GUI *gui, UIElement &element, const bool ms_hover, const bool ms_click, bool &ui_focus);
+    extern bool general_render_ui_section(GUI *gui, UIElement &element, const bool ms_hover, const bool ms_click, bool &ui_focus);
     extern void event_action(UIElement *element);
 
     extern void ui_reset_controls();
@@ -32,8 +30,7 @@ namespace RoninEngine::UI
         data.id = gui->resources->ui_layer.elements.size();
         // add the child
         if(parent)
-            gui->resources->ui_layer.elements[parent - 1].childs.emplace_back(
-                gui->resources->ui_layer.elements.size() - 1);
+            gui->resources->ui_layer.elements[parent].childs.emplace_back(data.id);
         else
             gui->resources->ui_layer.layers.push_back(data.id);
 
@@ -47,7 +44,7 @@ namespace RoninEngine::UI
     GUI::GUI(RoninEngine::Runtime::World *world)
     {
         Runtime::RoninMemory::alloc_self<GUIResources>(resources);
-        resources->__level_owner = world;
+        resources->owner = world;
         resources->hitCast = true;
         resources->visible = true;
         // resources->callback = nullptr;
@@ -119,12 +116,10 @@ namespace RoninEngine::UI
 
     uid GUI::push_button(const std::string &text, const Vec2Int &point, ui_callback_void event_callback, uid parent)
     {
-        return push_button(
-            text, {point.x, point.y, defaultMakets.buttonSize.x, defaultMakets.buttonSize.y}, event_callback, parent);
+        return push_button(text, {point.x, point.y, defaultMakets.buttonSize.x, defaultMakets.buttonSize.y}, event_callback, parent);
     }
 
-    uid GUI::push_button(
-        const std::string &text, const Rect &rect, RoninEngine::UI::ui_callback_void event_callback, uid parent)
+    uid GUI::push_button(const std::string &text, const Rect &rect, RoninEngine::UI::ui_callback_void event_callback, uid parent)
     {
         uid id = call_register_ui(this, parent);
         UIElement &data = call_get_element(this, id);
@@ -168,12 +163,7 @@ namespace RoninEngine::UI
 
     template <typename Container>
     uid internal_push_dropdown(
-        GUI *guiInstance,
-        const Container &container,
-        int index,
-        const Runtime::Rect &rect,
-        ui_callback_integer changed,
-        uid parent)
+        GUI *guiInstance, const Container &container, int index, const Runtime::Rect &rect, ui_callback_integer changed, uid parent)
     {
         using T = typename std::iterator_traits<decltype(container.cbegin())>::value_type;
 
@@ -213,11 +203,7 @@ namespace RoninEngine::UI
     }
 
     uid GUI::push_drop_down(
-        const std::list<std::string> &elements,
-        int index,
-        const Runtime::Rect &rect,
-        ui_callback_integer changed,
-        uid parent)
+        const std::list<std::string> &elements, int index, const Runtime::Rect &rect, ui_callback_integer changed, uid parent)
     {
         return internal_push_dropdown(this, elements, index, rect, changed, parent);
     }
@@ -333,8 +319,8 @@ namespace RoninEngine::UI
         if(!is_group(id))
             throw ronin_ui_cast_group_error();
 
-        auto iter = std::find_if(
-            begin(resources->ui_layer.layers), end(resources->ui_layer.layers), std::bind2nd(std::equal_to<uid>(), id));
+        auto iter =
+            std::find_if(begin(resources->ui_layer.layers), end(resources->ui_layer.layers), std::bind2nd(std::equal_to<uid>(), id));
 
         if(iter == std::end(resources->ui_layer.layers))
         {
@@ -406,15 +392,17 @@ namespace RoninEngine::UI
 
         ms_click = Input::is_mouse_up();
 
-        while(ui_drains.empty() == false)
+        while(ui_drains.empty() == false && !resources->owner->internal_resources->request_unloading)
         {
             id = ui_drains.front();
+            ui_drains.pop_front();
             uielement = &call_get_element(gui, id);
-
-            ms_hover = SDL_PointInRect((SDL_Point *) &ms, (SDL_Rect *) &uielement->rect);
+            for(auto iter = begin(uielement->childs); iter != end(uielement->childs); ++iter)
+                ui_drains.push_back(*iter);
+            // status mouse hovered
+            ms_hover = Vec2Int::has_intersection(ms, uielement->rect);
             ui_contex = !uielement->contextRect.empty();
 
-            ui_drains.pop_front();
             if(!(uielement->options & ElementGroupMask) && uielement->options & ElementVisibleMask)
             {
                 ui_hover = id == resources->ui_layer.focusedID;
@@ -426,8 +414,7 @@ namespace RoninEngine::UI
                     resources->ui_layer.focusedID = 0;
                 }
 
-                if((general_render_ui_section(gui, *uielement, ms_hover, ms_click && ms_hover, ui_hover)) &&
-                   resources->hitCast)
+                if((general_render_ui_section(gui, *uielement, ms_hover, ms_click && ms_hover, ui_hover)) && resources->hitCast)
                 {
                     // Избавляемся от перекликов в UI
                     resources->_focusedUI = true;
@@ -457,12 +444,6 @@ namespace RoninEngine::UI
                 if(!resources->_focusedUI)
                     resources->_focusedUI = ui_hover;
             }
-
-            if(resources->__level_owner->internal_resources->request_unloading)
-                break;
-
-            for(auto iter = begin(uielement->childs); iter != end(uielement->childs); ++iter)
-                ui_drains.emplace_back(*iter);
         }
     }
     void GUI::set_color_rgb(std::uint32_t rgb)
@@ -472,11 +453,7 @@ namespace RoninEngine::UI
     void GUI::set_color_rgba(std::uint32_t argb)
     {
         SDL_SetRenderDrawColor(
-            RoninEngine::renderer,
-            (uid) (argb >> 24) & 0xFF,
-            (uid) (argb >> 16) & 0xFF,
-            (uid) (argb >> 8) & 0xFF,
-            (uid) argb & 0xFF);
+            RoninEngine::renderer, (uid) (argb >> 24) & 0xFF, (uid) (argb >> 16) & 0xFF, (uid) (argb >> 8) & 0xFF, (uid) argb & 0xFF);
     }
     bool GUI::has_focused_ui()
     {
