@@ -5,27 +5,41 @@
 namespace RoninEngine::Runtime::RoninMemory
 {
     // main memory controller
-    extern RONIN_API void *ronin_memory_alloc(std::size_t size);
-    extern RONIN_API void ronin_memory_free(void *memory);
+    RONIN_API void *ronin_memory_alloc(std::size_t size);
+    RONIN_API void ronin_memory_free(void *memory);
+    RONIN_API std::uint64_t total_allocated();
 
     template <typename T, typename... Args>
-    constexpr inline T *_paste_oop_init(T *m, Args &&...args)
+    constexpr inline T *_paste_oop_init(T *raw_memory, Args &&...args)
     {
-        return new(m) T(std::forward<Args &&>(args)...);
+        return new(raw_memory) T(std::forward<Args>(args)...);
     }
 
     template <typename T>
-    constexpr inline T *_cut_oop_from(T *m)
+    constexpr inline T *_paste_oop_init(T *raw_memory)
     {
-        m->~T();
-        return m;
+        return new(raw_memory) T();
+    }
+
+    template <typename T>
+    constexpr inline T *_cut_oop_from(T *pointer)
+    {
+        pointer->~T();
+        return pointer;
     }
 
     template <typename T, typename... Args>
     T *alloc(Args &&...args)
     {
         void *mem = ronin_memory_alloc(sizeof(T));
-        return _paste_oop_init<T>(static_cast<T *>(mem), std::forward<Args &&>(args)...);
+        return _paste_oop_init<T>(static_cast<T *>(mem), std::forward<Args>(args)...);
+    }
+
+    template <typename T, typename... Args>
+    T *alloc()
+    {
+        void *mem = ronin_memory_alloc(sizeof(T));
+        return _paste_oop_init<T>(static_cast<T *>(mem));
     }
 
     template <typename T>
@@ -37,7 +51,7 @@ namespace RoninEngine::Runtime::RoninMemory
     template <typename T, typename... Args>
     T *&alloc_self(T *&self, Args &&...args)
     {
-        return self = alloc<T>(std::forward<Args &&>(args)...);
+        return self = alloc<T>(std::forward<Args>(args)...);
     }
 
     template <typename T>
@@ -46,5 +60,4 @@ namespace RoninEngine::Runtime::RoninMemory
         ronin_memory_free(_cut_oop_from(memory));
     }
 
-    std::uint64_t total_allocated();
 } // namespace RoninEngine::Runtime::RoninMemory
