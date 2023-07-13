@@ -23,22 +23,22 @@ namespace RoninEngine::UI
     {
         if(!gui->has_ui(parent))
             throw ronin_ui_group_parent_error();
-
-        UIElement &data = gui->resources->ui_layer.elements.emplace_back();
+        UIElement &data = gui->resources->ui_layer.elements.emplace_back(UIElement {});
         data.parentId = parent;
         data.options = ElementVisibleMask | ElementEnableMask;
-        data.id = gui->resources->ui_layer.elements.size();
+        data.id = gui->resources->ui_layer.elements.size() - 1;
         // add the child
         if(parent)
-            gui->resources->ui_layer.elements[parent].childs.emplace_back(data.id);
+            gui->resources->ui_layer.elements.at(parent).childs.emplace_back(data.id);
         else
             gui->resources->ui_layer.layers.push_back(data.id);
 
         return data.id;
     }
+
     inline UIElement &call_get_element(GUI *gui, uid id)
     {
-        return gui->resources->ui_layer.elements[id - 1];
+        return gui->resources->ui_layer.elements[id];
     }
 
     GUI::GUI(RoninEngine::Runtime::World *world)
@@ -47,10 +47,12 @@ namespace RoninEngine::UI
         resources->owner = world;
         resources->hitCast = true;
         resources->visible = true;
+        // push main component
+        resources->ui_layer.elements.push_back(UIElement {});
         // resources->callback = nullptr;
         // resources->callbackData = nullptr;
         // resources->_focusedUI = false;
-    };
+    }
 
     GUI::~GUI()
     {

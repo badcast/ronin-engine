@@ -95,7 +95,7 @@ namespace RoninEngine
             uid parentId;
             std::string text;
             GUIControlPresents prototype;
-            std::list<uint8_t> childs;
+            std::vector<uint8_t> childs;
             void *resources;
             void *event;
         };
