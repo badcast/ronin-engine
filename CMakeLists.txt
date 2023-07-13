@@ -1,6 +1,11 @@
 cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
+
+set(RONINENGINE_VERSION_MIN 1.0)
+
 # SET PROJECT NAME, VERSION
-project(RoninEngineLibrary VERSION 1.0)
+project(RoninEngineLibrary VERSION ${RONINENGINE_VERSION_MIN})
+
+set(RUNTIME_OUTPUT_NAME "ronin_framework")
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -23,9 +28,6 @@ elseif(CMAKE_SIZEOF_VOID_P STREQUAL "8")
 endif()
 
 message(STATUS "Architecture select ${ARCHITECTURE}")
-
-set(RONINENGINE_VERSION_MIN 1.0)
-set(RUNTIME_OUTPUT_NAME "ronin_framework")
 
 # compilling sources
 add_subdirectory(src)
