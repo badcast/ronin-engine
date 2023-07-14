@@ -72,9 +72,12 @@ suitable one for your task.
 #include <cstring>
 #include <stdexcept>
 
+#define ACROSS_TEMPLATE template <typename TpNeuronPoint, typename TpNeuronMember, typename ContainerType>
+#define ACROSS_DEFINE basic_across_map<TpNeuronPoint, TpNeuronMember, ContainerType>
+
 namespace across
 {
-    enum class NavStatus
+    enum class NavigationStatus
     {
         Undefined,
         Locked,
@@ -82,12 +85,11 @@ namespace across
         Opened
     };
 
-    enum class NavMethodRule
+    enum class MatrixIdentity
     {
-        NavigationIntelegency,
-        PlusMethod,
         SquareMethod,
-        CrossMethod
+        CrossMethod,
+        PlusMethod
     };
 
     enum class HeuristicMethod
@@ -106,9 +108,9 @@ namespace across
         int y;
     };
 
-    bool operator==(const NeuronPoint &a, const NeuronPoint &b);
+    bool operator==(const NeuronPoint &lhs, const NeuronPoint &rhs);
 
-    bool operator!=(const NeuronPoint &a, const NeuronPoint &b);
+    bool operator!=(const NeuronPoint &lhs, const NeuronPoint &rhs);
 
     struct NeuronMember
     {
@@ -124,29 +126,28 @@ namespace across
         void *neurons;
     };
 
+    ACROSS_TEMPLATE
+    class PointerUtils;
+
     template <typename AcrossMapType, typename ContainerType>
     struct NavResult
     {
-        NavStatus status;
+        NavigationStatus status;
         typename AcrossMapType::TypePoint firstNeuron;
         typename AcrossMapType::TypePoint lastNeuron;
         ContainerType roads;
-        const AcrossMapType *map;
     };
 
-    template <typename TpNeuronPoint, typename TpNeuronMember, typename ContainerType>
+    ACROSS_TEMPLATE
     class basic_across_map
     {
-    protected:
-        int segmentOffset;
-        TpNeuronMember *neurons;
-        int widthSpace, heightSpace;
-        std::uint32_t (*__heuristic__)(const TpNeuronPoint &, const TpNeuronPoint &);
-
     public:
+        friend class PointerUtils<TpNeuronPoint, TpNeuronMember, ContainerType>;
         typedef TpNeuronMember TypeNeuron;
         typedef TpNeuronPoint TypePoint;
         typedef NavResult<basic_across_map, ContainerType> NavigationResult;
+
+        using PointerUtilsInstance = PointerUtils<TpNeuronPoint, TpNeuronMember, ContainerType>;
 
         explicit basic_across_map(int width, int height);
 
@@ -154,8 +155,10 @@ namespace across
 
         void clear(bool clearLocks = false);
         void fill(bool fillLocks = false);
-        void randomize(int flagFilter = 0xdeadbef);
+        void randomize_hardware(int flagFilter = 0xdeadbef);
         void stress();
+
+        bool set_identity(MatrixIdentity identity);
 
         bool set_heuristic(HeuristicMethod method);
         HeuristicMethod get_heuristic();
@@ -179,29 +182,37 @@ namespace across
         inline const int get_nweight(const TpNeuronPoint &point);
         inline const std::uint32_t get_ntotal(const TpNeuronPoint &point);
         inline const bool get_nempty(const TpNeuronPoint &point);
-        void set_nlock(const TpNeuronPoint &point, const bool state);
+        void set_nlock(const TpNeuronPoint &point, const bool lock_state);
 
         // pointer with pointer
-        bool get_nlocked(const TpNeuronMember *neuron);
-        std::uint8_t &get_nflag(const TpNeuronMember *neuron);
-        std::uint32_t &get_ncost(const TpNeuronMember *neuron);
-        std::uint32_t &get_nheuristic(const TpNeuronMember *neuron);
-        const int get_nweight(const TpNeuronMember *neuron);
-        const std::uint32_t get_ntotal(const TpNeuronMember *neuron);
-        inline const bool get_nempty(const TpNeuronMember *neuron);
-        void set_nlock(const TpNeuronMember *neuron, const bool state);
+        inline bool get_nlocked(const TpNeuronMember *neuron);
+        inline const std::uint32_t get_ntotal(const TpNeuronMember *neuron);
+        void set_nlock(const TpNeuronMember *neuron, const bool lock_state);
 
         inline const TpNeuronPoint get_npoint(const TpNeuronMember *neuron);
 
-        void find(NavigationResult &navResult, NavMethodRule method, TpNeuronMember *firstNeuron, TpNeuronMember *lastNeuron);
+        bool find(NavigationResult &navResult, TpNeuronMember *firstNeuron, TpNeuronMember *lastNeuron);
 
-        void find(NavigationResult &navResult, NavMethodRule method, TpNeuronPoint first, TpNeuronPoint last);
+        bool find(NavigationResult &navResult, TpNeuronPoint first, TpNeuronPoint last);
 
         void load(const AcrossData &AcrossData);
 
         void save(AcrossData *AcrossData);
 
         std::uint32_t get_cached_size();
+
+    protected:
+        int segmentOffset;
+        TpNeuronMember *neurons;
+        int widthSpace, heightSpace;
+        std::uint32_t (*__heuristic__)(const TpNeuronPoint &, const TpNeuronPoint &);
+
+        struct
+        {
+            int length;
+            std::int8_t *horizontal;
+            std::int8_t *vertical;
+        } identity;
     };
 
 #include "across_impl.hpp"
@@ -209,5 +220,8 @@ namespace across
     typedef basic_across_map<NeuronPoint, NeuronMember, std::deque<NeuronPoint>> AcrossMap;
 
 } // namespace across
+
+#undef ACROSS_TEMPLATE
+#undef ACROSS_DEFINE
 
 #endif

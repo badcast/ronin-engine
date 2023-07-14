@@ -91,4 +91,12 @@ namespace RoninEngine::Exception
         {
         }
     };
+
+    class ronin_invlaid_range_error : public ronin_base_error
+    {
+    public:
+        ronin_invlaid_range_error() : ronin_base_error("Invalid range")
+        {
+        }
+    };
 } // namespace RoninEngine::Exception

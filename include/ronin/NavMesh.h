@@ -20,12 +20,21 @@ namespace RoninEngine::AI
         Opened
     };
 
-    enum class NavMethodRule
+    enum class NavIdentity
     {
-        NavigationIntelegency,
-        PlusMethod,
         SquareMethod,
+        PlusMethod,
         CrossMethod
+    };
+
+    enum class HeuristicMethod
+    {
+        Invalid = -1,
+        NavEuclidean,
+        NavManhattan,
+        NavPythagorean,
+        NavChebyshev,
+        NavDiagonal
     };
 
     struct NavResult
@@ -33,8 +42,7 @@ namespace RoninEngine::AI
         NavStatus status;
         Runtime::Vec2Int firstNeuron;
         Runtime::Vec2Int lastNeuron;
-        std::list<Runtime::Vec2Int> RelativePaths;
-        NavMesh *map;
+        std::deque<Runtime::Vec2Int> roads;
     };
 
     struct Neuron
@@ -81,6 +89,11 @@ namespace RoninEngine::AI
 
         const Runtime::Vec2Int get_npoint(const Neuron *neuron) const;
 
+        HeuristicMethod get_heuristic_method();
+        bool set_heuristic_method(HeuristicMethod method);
+
+        bool set_identity(NavIdentity newIdentity);
+
         // pointer with Point
         bool get_nlocked(const Runtime::Vec2Int &point);
         std::uint8_t &get_nflag(const Runtime::Vec2Int &point);
@@ -89,7 +102,7 @@ namespace RoninEngine::AI
         const int get_nweight(const Runtime::Vec2Int &point);
         const std::uint32_t get_ntotal(const Runtime::Vec2Int &point);
         const bool get_nempty(const Runtime::Vec2Int &point);
-        void get_nlock(const Runtime::Vec2Int &point, const bool state);
+        void set_nlock(const Runtime::Vec2Int &point, const bool state);
 
         // pointer with pointer
         bool get_nlocked(const Neuron *neuron);
@@ -99,11 +112,11 @@ namespace RoninEngine::AI
         const int get_nweight(const Neuron *neuron);
         const std::uint32_t get_ntotal(const Neuron *neuron);
         const bool get_nempty(const Neuron *neuron);
-        void get_nlock(const Neuron *neuron, const bool state);
+        void set_nlock(const Neuron *neuron, const bool state);
 
-        void find(NavResult &navResult, NavMethodRule method, Runtime::Vec2 worldPointFirst, Runtime::Vec2 worldPointLast);
-        void find(NavResult &navResult, NavMethodRule method, Neuron *firstNeuron, Neuron *lastNeuron);
-        void find(NavResult &navResult, NavMethodRule method, Runtime::Vec2Int first, Runtime::Vec2Int last);
+        bool find(NavResult &navResult, Neuron *firstNeuron, Neuron *lastNeuron);
+        bool find(NavResult &navResult, Runtime::Vec2Int first, Runtime::Vec2Int last);
+        bool find(NavResult &navResult, Runtime::Vec2 worldPointFirst, Runtime::Vec2 worldPointLast);
 
         const Runtime::Vec2Int world_position_to_point(const Runtime::Vec2 &worldPoint);
         const Runtime::Vec2 point_to_world_position(const Runtime::Vec2Int &point);

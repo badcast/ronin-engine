@@ -9,6 +9,7 @@
 // standard listing include
 #include <list>
 #include <vector>
+#include <deque>
 
 #include "Defines.h"
 
