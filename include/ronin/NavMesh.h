@@ -7,9 +7,10 @@
 
 namespace RoninEngine::AI
 {
-
     class Neuron;
-    class NavContainer;
+    typedef std::vector<Runtime::Vec2Int> NavListSite;
+    typedef std::vector<Neuron *> NavListNeuron;
+    class Sheduller;
     class NavMesh;
 
     enum class NavStatus
@@ -30,26 +31,29 @@ namespace RoninEngine::AI
     enum class HeuristicMethod
     {
         Invalid = -1,
-        NavEuclidean,
-        NavManhattan,
         NavPythagorean,
-        NavChebyshev,
-        NavDiagonal
+        NavManhattan,
+        NavChebyshev
     };
 
+    template <typename ResultList>
     struct NavResult
     {
         NavStatus status;
-        Runtime::Vec2Int firstNeuron;
-        Runtime::Vec2Int lastNeuron;
-        std::deque<Runtime::Vec2Int> roads;
+        typename ResultList::value_type from;
+        typename ResultList::value_type to;
+        ResultList connections;
     };
+
+    typedef NavResult<NavListSite> NavResultSite;
+    typedef NavResult<NavListNeuron> NavResultNeuron;
 
     struct Neuron
     {
-        std::uint8_t flags;
-        std::uint32_t h;
-        std::uint32_t cost;
+        std::uint8_t flags; // Флаги (Содержит OpenList, ClosedList)
+        std::uint32_t g;    // - стоимость пути от начальной_точки до текущей_точки
+        std::uint32_t h;    // - оценка эвристики (обычно расстояние до конечной_точки)
+        std::uint32_t f;    // общая оценка стоимости (f = g + h)
     };
 
     struct NavMeshData
@@ -62,7 +66,7 @@ namespace RoninEngine::AI
     class RONIN_API NavMesh
     {
     private:
-        NavContainer *shedule;
+        Sheduller *shedule;
 
     public:
         Runtime::Vec2 worldScale;
@@ -80,14 +84,14 @@ namespace RoninEngine::AI
         int width() const;
         int height() const;
 
-        Neuron *get_neuron(int x, int y);
-        Neuron *get_neuron(const Runtime::Vec2Int &point);
-        Neuron *get_neuron(const Runtime::Vec2 &worldPoint);
-        Neuron *get_neuron(const Runtime::Vec2 &worldPoint, Runtime::Vec2Int &outPoint);
+        Neuron *get(int x, int y);
+        Neuron *get(const Runtime::Vec2Int &point);
+        Neuron *get(const Runtime::Vec2 &worldPoint);
+        Neuron *get(const Runtime::Vec2 &worldPoint, Runtime::Vec2Int &outPoint);
 
         bool get_ncontains(const Runtime::Vec2Int &point) const;
 
-        const Runtime::Vec2Int get_npoint(const Neuron *neuron) const;
+        const Runtime::Vec2Int get_point(const Neuron *neuron) const;
 
         HeuristicMethod get_heuristic_method();
         bool set_heuristic_method(HeuristicMethod method);
@@ -95,36 +99,30 @@ namespace RoninEngine::AI
         bool set_identity(NavIdentity newIdentity);
 
         // pointer with Point
-        bool get_nlocked(const Runtime::Vec2Int &point);
-        std::uint8_t &get_nflag(const Runtime::Vec2Int &point);
-        std::uint32_t &get_ncost(const Runtime::Vec2Int &point);
-        std::uint32_t &get_nheuristic(const Runtime::Vec2Int &point);
-        const int get_nweight(const Runtime::Vec2Int &point);
-        const std::uint32_t get_ntotal(const Runtime::Vec2Int &point);
-        const bool get_nempty(const Runtime::Vec2Int &point);
-        void set_nlock(const Runtime::Vec2Int &point, const bool state);
+        bool has_locked(const Runtime::Vec2Int &point);
+        void set_lock(const Runtime::Vec2Int &point, const bool state);
 
         // pointer with pointer
-        bool get_nlocked(const Neuron *neuron);
-        std::uint8_t &get_nflag(const Neuron *neuron);
-        std::uint32_t &get_ncost(const Neuron *neuron);
-        std::uint32_t &get_nheuristic(const Neuron *neuron);
-        const int get_nweight(const Neuron *neuron);
-        const std::uint32_t get_ntotal(const Neuron *neuron);
-        const bool get_nempty(const Neuron *neuron);
-        void set_nlock(const Neuron *neuron, const bool state);
+        bool has_locked(const Neuron *neuron);
+        void set_lock(const Neuron *neuron, const bool state);
 
-        bool find(NavResult &navResult, Neuron *firstNeuron, Neuron *lastNeuron);
-        bool find(NavResult &navResult, Runtime::Vec2Int first, Runtime::Vec2Int last);
-        bool find(NavResult &navResult, Runtime::Vec2 worldPointFirst, Runtime::Vec2 worldPointLast);
+        template <typename ResultList = NavResultSite>
+        bool find(NavResult<ResultList> &navResult, Neuron *firstNeuron, Neuron *lastNeuron);
+        template <typename ResultList = NavResultSite>
+        bool find(NavResult<ResultList> &navResult, const Runtime::Vec2Int &first, const Runtime::Vec2Int &last);
+        template <typename ResultList = NavResultSite>
+        bool find(NavResult<ResultList> &navResult, const Runtime::Vec2 &worldPointFirst, const Runtime::Vec2 &worldPointLast);
 
         const Runtime::Vec2Int world_position_to_point(const Runtime::Vec2 &worldPoint);
         const Runtime::Vec2 point_to_world_position(const Runtime::Vec2Int &point);
-        const Runtime::Vec2 point_to_world_position(Neuron *neuron);
-        const Runtime::Vec2 point_to_world_position(const int &x, const int &y);
+        const Runtime::Vec2 point_to_world_position(int x, int y);
+        const Runtime::Vec2 neuron_to_world_position(Neuron* neuron);
+
         void load(const NavMeshData &navmeshData);
         void save(NavMeshData *navmeshData);
 
         std::uint32_t get_cache_size();
+
+        // TODO: add operator for Vec2Int -> get Neuron
     };
 } // namespace RoninEngine::AI

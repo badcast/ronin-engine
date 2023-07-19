@@ -392,7 +392,7 @@ namespace RoninEngine::UI
         for(auto iter = begin(resources->ui_layer.layers); iter != end(resources->ui_layer.layers); ++iter)
             ui_drains.emplace_back(*iter);
 
-        ms_click = Input::is_mouse_up();
+        ms_click = Input::mouse_up(MouseState::Left);
 
         while(ui_drains.empty() == false && !resources->owner->internal_resources->request_unloading)
         {

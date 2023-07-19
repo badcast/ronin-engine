@@ -118,7 +118,7 @@ namespace RoninEngine::UI
             {
                 static uint8_t pSize = 2; // pen size
                 static Rect inside = Rect(pSize, pSize, -pSize * 2, -pSize * 2);
-                bool show_down_side = Input::is_mouse_down() == false || !ms_hover;
+                bool show_down_side = Input::mouse_down(MouseState::Left) == false || !ms_hover;
                 Rect rect;
 
                 // fill
@@ -227,7 +227,7 @@ namespace RoninEngine::UI
                 // focused state
                 if(result = (ui_focus && ms_hover))
                 {
-                    if(Input::is_mouse_down())
+                    if(Input::mouse_down(MouseState::Left))
                     {
                         // get *x* component from mouse point for set cursor point
                         resource->value = Math::map((float) ms.x, (float) rect.x, (float) rect.x + rect.w, resource->min, resource->max);
@@ -338,7 +338,7 @@ namespace RoninEngine::UI
                     r = element.rect;
                     r.y += r.h;
 
-                    r.h = dropDownLinear = Math::ceil(Math::lerp(dropDownLinear, link->second.size() * sz, TimeEngine::deltaTime()));
+                    r.h = dropDownLinear = Math::ceil(Math::lerp(dropDownLinear, link->second.size() * sz, TimeEngine::delta_time()));
 
                     Gizmos::set_color(colorSpace.defaultInteraction.hoverState);
                     // draw background
@@ -357,7 +357,7 @@ namespace RoninEngine::UI
                             {
                                 Gizmos::set_color(colorSpace.defaultInteraction.pressState);
                                 SDL_RenderFillRect(renderer, (SDL_Rect *) &elrect);
-                                if(Input::is_mouse_down())
+                                if(Input::mouse_down(MouseState::Left))
                                 {
                                     link->first = index;
                                     element.text = *iter;

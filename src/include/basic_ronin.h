@@ -133,6 +133,15 @@ namespace RoninEngine
             CAM_TARGET
         };
 
+        struct RoninInput
+        {
+            int _mouse_wheels;
+            bool _mouse_state_down[SDL_BUTTON_X2];
+            bool _mouse_state_up[SDL_BUTTON_X2];
+            Vec2Int _mouse_position;
+            Vec2 _movement_axis;
+        };
+
         struct Rendering
         {
             Rect src;

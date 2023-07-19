@@ -9,7 +9,7 @@ namespace RoninEngine::Runtime
     public:
         static float time();
         static float startUpTime();
-        static float deltaTime();
+        static float delta_time();
         static bool is_paused();
         static bool is_playing();
         static float get_time_scale();

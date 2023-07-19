@@ -39,7 +39,7 @@ namespace RoninEngine
     {
         class Neuron;
         class NavMesh;
-        class NavContainer;
+        class Sheduller;
     } // namespace AI
 
     namespace Runtime

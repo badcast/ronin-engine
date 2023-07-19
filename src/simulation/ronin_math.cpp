@@ -324,13 +324,13 @@ bool Math::line_segment_intersection(Vec2 p1, Vec2 p2, Vec2 p3, Vec2 p4, Vec2 &r
 
 float Math::smooth_damp(float current, float target, float &currentVelocity, float smoothTime, float maxSpeed)
 {
-    return Math::smooth_damp(current, target, currentVelocity, smoothTime, maxSpeed, TimeEngine::deltaTime());
+    return Math::smooth_damp(current, target, currentVelocity, smoothTime, maxSpeed, TimeEngine::delta_time());
 }
 
 float Math::smooth_damp(float current, float target, float &currentVelocity, float smoothTime)
 {
     float maxSpeed = infinity;
-    return Math::smooth_damp(current, target, currentVelocity, smoothTime, maxSpeed, TimeEngine::deltaTime());
+    return Math::smooth_damp(current, target, currentVelocity, smoothTime, maxSpeed, TimeEngine::delta_time());
 }
 
 float Math::smooth_damp(float current, float target, float &currentVelocity, float smoothTime, float maxSpeed, float deltaTime)
@@ -367,13 +367,13 @@ float Math::far2cel(float fahrenheit)
 
 float Math::smooth_damp_angle(float current, float target, float &currentVelocity, float smoothTime, float maxSpeed)
 {
-    return smooth_damp_angle(current, target, currentVelocity, smoothTime, maxSpeed, TimeEngine::deltaTime());
+    return smooth_damp_angle(current, target, currentVelocity, smoothTime, maxSpeed, TimeEngine::delta_time());
 }
 
 float Math::smooth_damp_angle(float current, float target, float &currentVelocity, float smoothTime)
 {
     float maxSpeed = infinity;
-    return smooth_damp_angle(current, target, currentVelocity, smoothTime, maxSpeed, TimeEngine::deltaTime());
+    return smooth_damp_angle(current, target, currentVelocity, smoothTime, maxSpeed, TimeEngine::delta_time());
 }
 
 float Math::smooth_damp_angle(float current, float target, float &currentVelocity, float smoothTime, float maxSpeed, float deltaTime)

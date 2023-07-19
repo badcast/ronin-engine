@@ -29,11 +29,7 @@ namespace RoninEngine
         std::uint32_t internal_frames; // framecounter
         std::vector<std::uint32_t> _watcher_time;
         int _matrix_overflow_ = 1;
-        Vec2Int internal_mouse_point;
-        std::uint8_t mouseState;
-        std::uint8_t lastMouseState;
-        std::uint8_t mouseWheels;
-        Vec2 m_axis;
+        RoninInput internal_input;
         bool text_inputState;
 
         extern GameObject *create_empty_gameobject();
@@ -74,8 +70,12 @@ namespace RoninEngine
 
     void internal_reseting()
     {
-        mouseState = 0;
-        mouseWheels = 0;
+        int x;
+        for(x = 0; x < sizeof(internal_input._mouse_state_up); ++x)
+        {
+            internal_input._mouse_state_up[x] = false;
+        }
+        internal_input._mouse_wheels = 0;
     }
 
     void RoninSimulator::init()
@@ -361,9 +361,6 @@ namespace RoninEngine
         {
             // TODO: m_level->request_unloading use as WNILE block (list proc)
 
-            // update events
-            internal_reseting();
-
             TimeEngine::begin_watch();
 
             delayed = TimeEngine::tick_millis();
@@ -523,6 +520,9 @@ namespace RoninEngine
 
             if(switched_world == nullptr || switched_world->internal_resources->request_unloading)
                 break; // break on unload state
+
+            // update events
+            internal_reseting();
 
             // delaying
             SDL_Delay(delayed);

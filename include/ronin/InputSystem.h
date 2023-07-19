@@ -3,34 +3,23 @@
 
 namespace RoninEngine::Runtime
 {
-    enum MouseState
+    enum class MouseState
     {
-        MouseLeft,
-        MouseRight,
-        MouseMiddle,
-        MouseWheel
+        Left = 0,
+        Middle = 1,
+        Right = 2,
+        X1 = 3,
+        X2 = 4
     };
 
-    enum KeyboardState
+    enum class KeyboardState
     {
         // The CAPS LOCK light is on.
-        CapsLock_On,
-        // The key is enhanced.
-        Enchanced_Key,
-        // The left ALT key is pressed.
-        LeftAlt_Pressed,
-        // The left CTRL key is pressed.
-        LeftCtrl_Pressed,
+        CapsLock = 57,
         // The NUM LOCK light is on.
-        NumLock_On,
-        // The right ALT key is pressed.
-        RightAlt_Pressed,
-        // The right CTRL key is pressed.
-        RightCtrl_Pressed,
+        NumLock = 83,
         // The SCROLL LOCK light is on.
-        ScrollLock_On,
-        // The SHIFT key is pressed.
-        Shift_Pressed,
+        ScrollLock = 71,
     };
 
     // This Code applyies from SDL_SCANCODE
@@ -99,17 +88,19 @@ namespace RoninEngine::Runtime
     class RONIN_API Input
     {
     public:
-        static const bool is_mouse_up(int button = 1);
+        static const bool mouse_up(MouseState state);
 
-        static const bool is_mouse_down(int button = 1);
+        static const bool mouse_down(MouseState state);
 
-        static const char wheel_radix();
+        static const int wheel_radix();
 
         static const Vec2Int get_mouse_point();
 
         static const Vec2 get_mouse_pointf();
 
         static const Vec2 get_axis();
+
+        static const bool key_state(KeyboardState state);
 
         static const bool key_down(KeyboardCode code);
 

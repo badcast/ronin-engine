@@ -18,7 +18,7 @@ namespace RoninEngine::Runtime
         return static_cast<float>(tick_millis()) / 1000;
     }
 
-    float TimeEngine::deltaTime()
+    float TimeEngine::delta_time()
     {
         return internal_delta_time;
     }

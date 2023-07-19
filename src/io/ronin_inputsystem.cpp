@@ -2,11 +2,7 @@
 
 namespace RoninEngine::Runtime
 {
-    extern Runtime::Vec2Int internal_mouse_point;
-    extern std::uint8_t mouseState;
-    extern std::uint8_t lastMouseState;
-    extern std::uint8_t mouseWheels;
-    extern Runtime::Vec2 m_axis;
+    extern RoninInput internal_input;
     extern bool text_inputState;
     std::string internalText;
 
@@ -14,18 +10,18 @@ namespace RoninEngine::Runtime
     {
         const uint8_t *s = SDL_GetKeyboardState(nullptr);
         if(s[SDL_SCANCODE_D] || s[SDL_SCANCODE_RIGHT])
-            m_axis.x = 1;
+            internal_input._movement_axis.x = 1;
         else if(s[SDL_SCANCODE_A] || s[SDL_SCANCODE_LEFT])
-            m_axis.x = -1;
+            internal_input._movement_axis.x = -1;
         else
-            m_axis.x = 0;
+            internal_input._movement_axis.x = 0;
 
         if(s[SDL_SCANCODE_W] || s[SDL_SCANCODE_UP])
-            m_axis.y = 1;
+            internal_input._movement_axis.y = 1;
         else if(s[SDL_SCANCODE_S] || s[SDL_SCANCODE_DOWN])
-            m_axis.y = -1;
+            internal_input._movement_axis.y = -1;
         else
-            m_axis.y = 0;
+            internal_input._movement_axis.y = 0;
     }
 
     void internal_update_input(SDL_Event *e)
@@ -36,36 +32,41 @@ namespace RoninEngine::Runtime
                 internalText += e->text.text;
                 break;
             case SDL_EventType::SDL_MOUSEMOTION:
-                internal_mouse_point.x = e->motion.x;
-                internal_mouse_point.y = e->motion.y;
+                internal_input._mouse_position.x = e->motion.x;
+                internal_input._mouse_position.y = e->motion.y;
                 break;
             case SDL_MOUSEWHEEL:
-                mouseWheels = e->wheel.y;
+                internal_input._mouse_wheels = e->wheel.y;
+                break;
+            case SDL_MOUSEBUTTONDOWN:
+                internal_input._mouse_state_down[e->button.button - 1] = true;
+                internal_input._mouse_state_up[e->button.button - 1] = false;
                 break;
             case SDL_MOUSEBUTTONUP:
-                mouseState = e->button.button;
+                internal_input._mouse_state_up[e->button.button - 1] = true;
+                internal_input._mouse_state_down[e->button.button - 1] = false;
                 break;
             case SDL_EventType::SDL_KEYDOWN:
             {
-                if(false || e->key.repeat != 0)
+                if(e->key.repeat != 0)
                 {
                     switch(e->key.keysym.sym)
                     {
                         case SDL_KeyCode::SDLK_a:
                         case SDL_KeyCode::SDLK_LEFT:
-                            m_axis.x = 1;
+                            internal_input._movement_axis.x = 1;
                             break;
                         case SDL_KeyCode::SDLK_d:
                         case SDL_KeyCode::SDLK_RIGHT:
-                            m_axis.x = -1;
+                            internal_input._movement_axis.x = -1;
                             break;
                         case SDL_KeyCode::SDLK_w:
                         case SDL_KeyCode::SDLK_UP:
-                            m_axis.y = 1;
+                            internal_input._movement_axis.y = 1;
                             break;
                         case SDL_KeyCode::SDLK_s:
                         case SDL_KeyCode::SDLK_DOWN:
-                            m_axis.y = -1;
+                            internal_input._movement_axis.y = -1;
                             break;
                     }
                 }
@@ -80,13 +81,13 @@ namespace RoninEngine::Runtime
                         case SDL_KeyCode::SDLK_LEFT:
                         case SDL_KeyCode::SDLK_d:
                         case SDL_KeyCode::SDLK_RIGHT:
-                            m_axis.x = 0;
+                            internal_input._movement_axis.x = 0;
                             break;
                         case SDL_KeyCode::SDLK_w:
                         case SDL_KeyCode::SDLK_UP:
                         case SDL_KeyCode::SDLK_s:
                         case SDL_KeyCode::SDLK_DOWN:
-                            m_axis.y = 0;
+                            internal_input._movement_axis.y = 0;
                             break;
                     }
                 }
@@ -112,34 +113,39 @@ namespace RoninEngine::Runtime
         internalText.resize(0);
     }
 
-    const bool Input::is_mouse_up(int button)
+    const bool Input::mouse_up(MouseState state)
     {
-        return mouseState == button;
+        return internal_input._mouse_state_up[static_cast<int>(state)];
     }
 
-    const bool Input::is_mouse_down(int button)
+    const bool Input::mouse_down(MouseState state)
     {
-        return SDL_GetMouseState(nullptr, nullptr) & SDL_BUTTON_LMASK != 0;
+        return internal_input._mouse_state_down[static_cast<int>(state)];
     }
 
-    const char Input::wheel_radix()
+    const int Input::wheel_radix()
     {
-        return mouseWheels;
+        return internal_input._mouse_wheels;
     }
 
     const Vec2Int Input::get_mouse_point()
     {
-        return internal_mouse_point;
+        return internal_input._mouse_position;
     }
 
     const Vec2 Input::get_mouse_pointf()
     {
-        return {static_cast<float>(internal_mouse_point.x), static_cast<float>(internal_mouse_point.y)};
+        return Vec2 {internal_input._mouse_position};
     }
 
     const Vec2 Input::get_axis()
     {
-        return m_axis;
+        return internal_input._movement_axis;
+    }
+
+    const bool Input::key_state(KeyboardState state)
+    {
+        return SDL_GetKeyboardState(nullptr)[static_cast<int>(state)] != 0;
     }
 
     const bool Input::key_down(KeyboardCode code)
