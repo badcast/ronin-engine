@@ -34,10 +34,6 @@ namespace RoninEngine::AI
         shedule->randomize_hardware(flagFilter);
     }
 
-    void NavMesh::stress()
-    {
-    }
-
     int NavMesh::width() const
     {
         return shedule->_xsize;
@@ -71,23 +67,23 @@ namespace RoninEngine::AI
     Neuron *NavMesh::get(const Vec2 &worldPoint)
     {
         Vec2Int p {
-            Math::ceil(shedule->_xsize / 2 + worldPoint.x / worldScale.x),
-            Math::ceil(shedule->_ysize / 2 - worldPoint.y / worldScale.y)};
+            Math::round(shedule->_xsize / 2 + worldPoint.x / worldScale.x), Math::round(shedule->_ysize / 2 - worldPoint.y / worldScale.y)};
+
         return get(p);
     }
 
     Neuron *NavMesh::get(const Vec2 &worldPoint, Vec2Int &outPoint)
     {
-        outPoint.x = Math::ceil(shedule->_xsize / 2 + (worldPoint.x + worldOffset.x) / worldScale.x);
-        outPoint.y = Math::ceil(shedule->_ysize / 2 - (worldPoint.y + worldOffset.y) / worldScale.y);
+        outPoint.x = Math::round(shedule->_xsize / 2 + (worldPoint.x + worldOffset.x) / worldScale.x);
+        outPoint.y = Math::round(shedule->_ysize / 2 - (worldPoint.y + worldOffset.y) / worldScale.y);
         return get(outPoint);
     }
 
     const Vec2Int NavMesh::world_position_to_point(const Vec2 &worldPoint)
     {
         Vec2Int p;
-        p.x = Math::ceil(shedule->_xsize / 2 + (worldPoint.x + worldOffset.x) / worldScale.x);
-        p.y = Math::ceil(shedule->_ysize / 2 - (worldPoint.y + worldOffset.y) / worldScale.y);
+        p.x = Math::round(shedule->_xsize / 2 + (worldPoint.x + worldOffset.x) / worldScale.x);
+        p.y = Math::round(shedule->_ysize / 2 - (worldPoint.y + worldOffset.y) / worldScale.y);
         return p;
     }
 
