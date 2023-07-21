@@ -70,11 +70,11 @@ namespace RoninEngine
 
     void internal_reseting()
     {
-        int x;
-        for(x = 0; x < sizeof(internal_input._mouse_state_up); ++x)
-        {
-            internal_input._mouse_state_up[x] = false;
-        }
+        std::replace_if(
+            internal_input._mouse_state,
+            internal_input._mouse_state + sizeof(internal_input._mouse_state),
+            [](auto ms_check) { return ms_check == MouseStateFlags::MouseUp; },
+            0);
         internal_input._mouse_wheels = 0;
     }
 
@@ -366,6 +366,9 @@ namespace RoninEngine
             delayed = TimeEngine::tick_millis();
 
             TimeEngine::begin_watch();
+
+            // update internal events
+            SDL_PumpEvents();
 
             while(SDL_PollEvent(&event))
             {

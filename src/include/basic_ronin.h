@@ -88,14 +88,14 @@ namespace RoninEngine
         struct ui_resource;
         struct UIElement
         {
-            Runtime::Rect rect;
-            Runtime::Rect contextRect;
-            std::uint8_t options;
             uid id;
             uid parentId;
-            std::string text;
+            std::uint8_t options;
+            std::vector<uid> childs;
+            Runtime::Rect rect;
+            Runtime::Rect contextRect;
             GUIControlPresents prototype;
-            std::vector<uint8_t> childs;
+            std::string text;
             void *resources;
             void *event;
         };
@@ -115,6 +115,7 @@ namespace RoninEngine
             bool hitCast;
             bool _focusedUI;
             bool visible;
+            bool mouse_hover;
         };
 
         extern void draw_font_at(
@@ -133,11 +134,16 @@ namespace RoninEngine
             CAM_TARGET
         };
 
+        enum MouseStateFlags
+        {
+            MouseDown = 1,
+            MouseUp = 2
+        };
+
         struct RoninInput
         {
             int _mouse_wheels;
-            bool _mouse_state_down[SDL_BUTTON_X2];
-            bool _mouse_state_up[SDL_BUTTON_X2];
+            std::int8_t _mouse_state[SDL_BUTTON_X2];
             Vec2Int _mouse_position;
             Vec2 _movement_axis;
         };

@@ -174,18 +174,15 @@ namespace RoninEngine::Runtime
     void Gizmos::draw_nav_mesh(AI::NavMesh *mesh, bool drawText)
     {
         Vec2 lastPoint;
-        Vec2 a, b;
         AI::Neuron *p;
         Vec2Int p1, p2;
         Color prev;
         Color next;
         int yDefault;
-        Resolution res = RoninSimulator::get_current_resolution();
-
         prev = get_color();
         set_color(next = 0xfff6f723);
         mesh->get(Camera::screen_to_world(Vec2::zero), p1);
-        mesh->get(Camera::screen_to_world(Vec2(res.width-1, res.height-1)), p2);
+        mesh->get(Camera::screen_to_world(Vec2(active_resolution.width - 1, active_resolution.height - 1)), p2);
         yDefault = p1.y;
         while(p1.x <= p2.x)
         {
@@ -193,7 +190,7 @@ namespace RoninEngine::Runtime
             {
                 p = mesh->get(p1);
                 lastPoint = mesh->point_to_world_position(p1);
-                if(p == nullptr || mesh->has_locked (p))
+                if(p == nullptr || mesh->has_locked(p))
                 {
                     next.r = 255;
                     next.g = 0;
@@ -202,7 +199,7 @@ namespace RoninEngine::Runtime
                 else
                 {
                     next.r = 53;
-                    next.g = mesh->get(p1)->f ? 200 : 0;
+                    next.g = p->f ? 200 : 0;
                     next.b = 246;
                 }
                 set_color(next);

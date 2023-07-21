@@ -3,13 +3,14 @@
 
 namespace RoninEngine::Runtime
 {
-    enum class MouseState
+    /* Mouse State */
+    enum MouseState
     {
-        Left = 0,
-        Middle = 1,
-        Right = 2,
-        X1 = 3,
-        X2 = 4
+        MouseLeft = 0,
+        MouseMiddle = 1,
+        MouseRight = 2,
+        MouseX1 = 3,
+        MouseX2 = 4
     };
 
     enum class KeyboardState
@@ -88,11 +89,11 @@ namespace RoninEngine::Runtime
     class RONIN_API Input
     {
     public:
-        static const bool mouse_up(MouseState state);
+        static const bool get_mouse_down(MouseState state);
 
-        static const bool mouse_down(MouseState state);
+        static const bool get_mouse_up(MouseState state);
 
-        static const int wheel_radix();
+        static const int get_mouse_wheel();
 
         static const Vec2Int get_mouse_point();
 
@@ -100,11 +101,11 @@ namespace RoninEngine::Runtime
 
         static const Vec2 get_axis();
 
-        static const bool key_state(KeyboardState state);
+        static const bool get_key_state(KeyboardState state);
 
-        static const bool key_down(KeyboardCode code);
+        static const bool get_key_down(KeyboardCode code);
 
-        static const bool key_up(KeyboardCode code);
+        static const bool get_key_up(KeyboardCode code);
     };
 
 } // namespace RoninEngine::Runtime

@@ -15,6 +15,7 @@
 #include <cassert>
 #include <algorithm>
 #include <functional>
+#include <cstring>
 
 // standard listing include
 #include <initializer_list>

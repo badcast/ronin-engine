@@ -92,37 +92,31 @@ namespace RoninEngine::AI
         return shedule->get_cached_size();
     }
 
-    template <>
     bool NavMesh::find(NavResultSite &navResult, Neuron *firstNeuron, Neuron *lastNeuron)
     {
         return shedule->find(*reinterpret_cast<Sheduller::result_site *>(&navResult), firstNeuron, lastNeuron);
     }
 
-    template <>
     bool NavMesh::find(NavResultSite &navResult, const Runtime::Vec2Int &first, const Runtime::Vec2Int &last)
     {
         return find(navResult, get(first), get(last));
     }
 
-    template <>
     bool NavMesh::find(NavResultSite &navResult, const Runtime::Vec2 &worldPointFirst, const Runtime::Vec2 &worldPointLast)
     {
         return find(navResult, this->world_position_to_point(worldPointFirst), world_position_to_point(worldPointLast));
     }
 
-    template <>
     bool NavMesh::find(NavResultNeuron &navResult, Neuron *firstNeuron, Neuron *lastNeuron)
     {
         return shedule->find(*reinterpret_cast<Sheduller::result_neuron *>(&navResult), firstNeuron, lastNeuron);
     }
 
-    template <>
     bool NavMesh::find(NavResultNeuron &navResult, const Runtime::Vec2Int &first, const Runtime::Vec2Int &last)
     {
         return find(navResult, get(first), get(last));
     }
 
-    template <>
     bool NavMesh::find(NavResultNeuron &navResult, const Runtime::Vec2 &worldPointFirst, const Runtime::Vec2 &worldPointLast)
     {
         return find(navResult, this->world_position_to_point(worldPointFirst), world_position_to_point(worldPointLast));

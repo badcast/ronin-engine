@@ -54,7 +54,7 @@ namespace RoninEngine
         class RONIN_API GUI final
         {
         private:
-            struct GUIResources *resources;
+            struct GUIResources *_resources;
 
         public:
             CI GUI(Runtime::World *);
@@ -182,6 +182,8 @@ namespace RoninEngine
             CI bool close_group(uid id) throw();
 
             // other--------------------------------------------------------------------------------------------------------------
+
+            bool has_mouse_hover();
 
             CI void set_cast(bool state);
             CI bool get_cast();

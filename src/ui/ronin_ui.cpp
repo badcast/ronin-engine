@@ -23,32 +23,32 @@ namespace RoninEngine::UI
     {
         if(!gui->has_ui(parent))
             throw ronin_ui_group_parent_error();
-        UIElement &data = gui->resources->ui_layer.elements.emplace_back(UIElement {});
+        UIElement &data = gui->_resources->ui_layer.elements.emplace_back(UIElement {});
         data.parentId = parent;
         data.options = ElementVisibleMask | ElementEnableMask;
-        data.id = gui->resources->ui_layer.elements.size() - 1;
+        data.id = gui->_resources->ui_layer.elements.size() - 1;
         // add the child
         if(parent)
-            gui->resources->ui_layer.elements.at(parent).childs.emplace_back(data.id);
+            gui->_resources->ui_layer.elements.at(parent).childs.emplace_back(data.id);
         else
-            gui->resources->ui_layer.layers.push_back(data.id);
+            gui->_resources->ui_layer.layers.push_back(data.id);
 
         return data.id;
     }
 
     inline UIElement &call_get_element(GUI *gui, uid id)
     {
-        return gui->resources->ui_layer.elements[id];
+        return gui->_resources->ui_layer.elements[id];
     }
 
     GUI::GUI(RoninEngine::Runtime::World *world)
     {
-        Runtime::RoninMemory::alloc_self<GUIResources>(resources);
-        resources->owner = world;
-        resources->hitCast = true;
-        resources->visible = true;
+        Runtime::RoninMemory::alloc_self<GUIResources>(_resources);
+        _resources->owner = world;
+        _resources->hitCast = true;
+        _resources->visible = true;
         // push main component
-        resources->ui_layer.elements.push_back(UIElement {});
+        _resources->ui_layer.elements.push_back(UIElement {});
         // resources->callback = nullptr;
         // resources->callbackData = nullptr;
         // resources->_focusedUI = false;
@@ -57,7 +57,7 @@ namespace RoninEngine::UI
     GUI::~GUI()
     {
         remove_all();
-        Runtime::RoninMemory::free(resources);
+        Runtime::RoninMemory::free(_resources);
     }
 
     // private--------------------------------------
@@ -66,7 +66,7 @@ namespace RoninEngine::UI
     {
         std::list<uid> groups;
 
-        for(auto &iter : gui->resources->ui_layer.elements)
+        for(auto &iter : gui->_resources->ui_layer.elements)
         {
             if(gui->is_group(iter.id))
                 groups.push_back(iter.id);
@@ -79,7 +79,7 @@ namespace RoninEngine::UI
 
     bool GUI::has_ui(uid id)
     {
-        return resources->ui_layer.elements.size() >= id;
+        return _resources->ui_layer.elements.size() >= id;
     }
 
     uid GUI::push_group(const Runtime::Rect &rect)
@@ -312,7 +312,7 @@ namespace RoninEngine::UI
         if(!is_group(id))
             throw ronin_ui_cast_group_error();
 
-        resources->ui_layer.layers.remove_if([this](auto v) { return is_group(v); });
+        _resources->ui_layer.layers.remove_if([this](auto v) { return is_group(v); });
 
         show_group(id);
     }
@@ -322,11 +322,11 @@ namespace RoninEngine::UI
             throw ronin_ui_cast_group_error();
 
         auto iter =
-            std::find_if(begin(resources->ui_layer.layers), end(resources->ui_layer.layers), std::bind2nd(std::equal_to<uid>(), id));
+            std::find_if(begin(_resources->ui_layer.layers), end(_resources->ui_layer.layers), std::bind2nd(std::equal_to<uid>(), id));
 
-        if(iter == std::end(resources->ui_layer.layers))
+        if(iter == std::end(_resources->ui_layer.layers))
         {
-            resources->ui_layer.layers.emplace_back(id);
+            _resources->ui_layer.layers.emplace_back(id);
             set_visible(id, true);
         }
     }
@@ -335,23 +335,28 @@ namespace RoninEngine::UI
     {
         if(!is_group(id))
             throw ronin_ui_cast_group_error();
-        resources->ui_layer.layers.remove(id);
+        _resources->ui_layer.layers.remove(id);
         set_visible(id, false);
+    }
+
+    bool GUI::has_mouse_hover()
+    {
+        return _resources->mouse_hover;
     }
 
     void GUI::set_cast(bool state)
     {
-        resources->hitCast = state;
+        _resources->hitCast = state;
     }
     bool GUI::get_cast()
     {
-        return resources->hitCast;
+        return _resources->hitCast;
     }
 
     void GUI::register_general_callback(ui_callback callback, void *userData)
     {
-        resources->callback = callback;
-        resources->callbackData = userData;
+        _resources->callback = callback;
+        _resources->callbackData = userData;
     }
     bool GUI::pop_element(uid id)
     {
@@ -361,16 +366,16 @@ namespace RoninEngine::UI
     }
     void GUI::remove_all()
     {
-        for(int x = 0; x < resources->ui_layer.elements.size(); ++x)
+        for(int x = 0; x < _resources->ui_layer.elements.size(); ++x)
         {
-            factory_free(&(resources->ui_layer.elements[x]));
+            factory_free(&(_resources->ui_layer.elements[x]));
         }
-        resources->ui_layer.layers.clear();
-        resources->ui_layer.elements.clear();
+        _resources->ui_layer.layers.clear();
+        _resources->ui_layer.elements.clear();
     }
     void native_draw_render(GUI *gui)
     {
-        GUIResources *resources = gui->resources;
+        GUIResources *resources = gui->_resources;
 
         if(resources->visible == false)
             return;
@@ -392,7 +397,9 @@ namespace RoninEngine::UI
         for(auto iter = begin(resources->ui_layer.layers); iter != end(resources->ui_layer.layers); ++iter)
             ui_drains.emplace_back(*iter);
 
-        ms_click = Input::mouse_up(MouseState::Left);
+        ms_click = Input::get_mouse_up(MouseState::MouseLeft);
+
+        gui->_resources->mouse_hover = false;
 
         while(ui_drains.empty() == false && !resources->owner->internal_resources->request_unloading)
         {
@@ -446,6 +453,9 @@ namespace RoninEngine::UI
                 if(!resources->_focusedUI)
                     resources->_focusedUI = ui_hover;
             }
+
+            if(ms_hover)
+                gui->_resources->mouse_hover = ms_hover;
         }
     }
     void GUI::set_color_rgb(std::uint32_t rgb)
@@ -459,7 +469,7 @@ namespace RoninEngine::UI
     }
     bool GUI::has_focused_ui()
     {
-        return resources->_focusedUI;
+        return _resources->_focusedUI;
     }
 
 } // namespace RoninEngine::UI

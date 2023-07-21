@@ -39,12 +39,10 @@ namespace RoninEngine::Runtime
                 internal_input._mouse_wheels = e->wheel.y;
                 break;
             case SDL_MOUSEBUTTONDOWN:
-                internal_input._mouse_state_down[e->button.button - 1] = true;
-                internal_input._mouse_state_up[e->button.button - 1] = false;
+                internal_input._mouse_state[e->button.button - 1] = MouseStateFlags::MouseDown;
                 break;
             case SDL_MOUSEBUTTONUP:
-                internal_input._mouse_state_up[e->button.button - 1] = true;
-                internal_input._mouse_state_down[e->button.button - 1] = false;
+                internal_input._mouse_state[e->button.button - 1] = MouseStateFlags::MouseUp;
                 break;
             case SDL_EventType::SDL_KEYDOWN:
             {
@@ -98,7 +96,6 @@ namespace RoninEngine::Runtime
     void text_start_input()
     {
         //    SDL_IsTextInputActive for check state
-
         SDL_StartTextInput();
     }
 
@@ -113,17 +110,17 @@ namespace RoninEngine::Runtime
         internalText.resize(0);
     }
 
-    const bool Input::mouse_up(MouseState state)
+    const bool Input::get_mouse_down(MouseState state)
     {
-        return internal_input._mouse_state_up[static_cast<int>(state)];
+        return internal_input._mouse_state[static_cast<int>(state)] & MouseStateFlags::MouseDown;
     }
 
-    const bool Input::mouse_down(MouseState state)
+    const bool Input::get_mouse_up(MouseState state)
     {
-        return internal_input._mouse_state_down[static_cast<int>(state)];
+        return internal_input._mouse_state[static_cast<int>(state)] & MouseStateFlags::MouseUp;
     }
 
-    const int Input::wheel_radix()
+    const int Input::get_mouse_wheel()
     {
         return internal_input._mouse_wheels;
     }
@@ -143,17 +140,17 @@ namespace RoninEngine::Runtime
         return internal_input._movement_axis;
     }
 
-    const bool Input::key_state(KeyboardState state)
+    const bool Input::get_key_state(KeyboardState state)
     {
-        return SDL_GetKeyboardState(nullptr)[static_cast<int>(state)] != 0;
+        return static_cast<bool>(SDL_GetKeyboardState(nullptr)[static_cast<int>(state)]);
     }
 
-    const bool Input::key_down(KeyboardCode code)
+    const bool Input::get_key_down(KeyboardCode code)
     {
         return static_cast<bool>(SDL_GetKeyboardState(nullptr)[code]);
     }
 
-    const bool Input::key_up(KeyboardCode code)
+    const bool Input::get_key_up(KeyboardCode code)
     {
         return !static_cast<bool>(SDL_GetKeyboardState(nullptr)[code]);
     }
