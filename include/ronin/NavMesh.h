@@ -33,7 +33,8 @@ namespace RoninEngine::AI
         Invalid = -1,
         NavPythagorean = 0,
         NavManhattan = 1,
-        NavChebyshev = 2
+        NavChebyshev = 2,
+        NavOctile = 3
     };
 
     template <typename ResultList>

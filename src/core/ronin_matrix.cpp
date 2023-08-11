@@ -8,7 +8,7 @@ namespace RoninEngine::Runtime
 
     Vec2Int Matrix::matrix_get_key(Vec2 position)
     {
-        return Vec2::round_to_int(position) * _matrix_overflow_;
+        return Vec2::round_to_int(position * _matrix_overflow_);
     }
 
     void Matrix::matrix_nature(Transform *target, Vec2Int lastPoint)

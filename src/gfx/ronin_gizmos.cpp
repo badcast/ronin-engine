@@ -178,6 +178,7 @@ namespace RoninEngine::Runtime
         Vec2Int p1, p2;
         Color prev;
         Color next;
+        int drawed = 0;
         int yDefault;
         prev = get_color();
         set_color(next = 0xfff6f723);
@@ -204,6 +205,7 @@ namespace RoninEngine::Runtime
                 }
                 set_color(next);
                 draw_position(lastPoint, 0.01f);
+                ++drawed;
                 ++p1.y;
             }
             p1.y = yDefault;
