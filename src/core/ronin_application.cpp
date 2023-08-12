@@ -330,6 +330,11 @@ namespace RoninEngine
 #undef GET_INT_SDL
     }
 
+    const char *RoninSimulator::get_linked_targets()
+    {
+        return RGE_LINKED_TARGETS;
+    }
+
     void RoninSimulator::simulate()
     {
         bool isQuiting = false;

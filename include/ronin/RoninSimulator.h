@@ -78,6 +78,8 @@ namespace RoninEngine
         static ScoreWatcher get_watches();
         // Get linked version
         static VersionInfo get_version();
+        // Get Linked targets system, for example: ui, ai, res etc.
+        static const char * get_linked_targets();
 
         // Message handler
 

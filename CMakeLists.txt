@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.10 FATAL_ERROR)
 
 set(RONINENGINE_VERSION_MIN 1.0)
 
@@ -34,16 +34,11 @@ add_subdirectory(src)
 
 add_library(RoninEngineLibrary SHARED ${ronin_targets} ${RONIN_ENGINE_HEADERS})
 
-set_target_properties(RoninEngineLibrary
-    PROPERTIES
-        OUTPUT_NAME ${RUNTIME_OUTPUT_NAME})
+set_target_properties(RoninEngineLibrary PROPERTIES OUTPUT_NAME
+                                                    ${RUNTIME_OUTPUT_NAME})
 
 # include to #include <ronin/...>
 target_include_directories(RoninEngineLibrary
                            INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/include")
 
 find_packages()
-
-target_link_libraries(
-  RoninEngineLibrary PRIVATE SDL2::SDL2 SDL2_mixer::SDL2_mixer
-                            SDL2_ttf::SDL2_ttf SDL2_gfx SDL2_image::SDL2_image)

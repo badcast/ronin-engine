@@ -1,6 +1,10 @@
 ﻿#include "ronin.h"
 
+#ifdef OVERRIDE_LIBACROSS
+#include <across.hpp>
+#else
 #include "across.hpp"
+#endif
 
 using namespace RoninEngine::Exception;
 
