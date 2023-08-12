@@ -1,0 +1,13 @@
+###############################################
+#####   Pkg-Config file for RoninEngine   #####
+###############################################
+
+prefix=@CMAKE_INSTALL_PREFIX@
+libdir=${prefix}/lib
+includedir=${libdir}/RoninEngine
+
+Name: RoninEngine
+Version: @PROJECT_VERSION@
+Description: RoninEngine - The Ronin Engine Framework. For World simulation, UI intersection, Game Emulation, 2D game, etc.
+Libs: -L${libdir} -lSDL2 -lSDL2_mixer -lSDL2_image -lSDL2_ttf -lSDL2_gfx -l@RUNTIME_OUTPUT_NAME@
+Cflags: -I${includedir}

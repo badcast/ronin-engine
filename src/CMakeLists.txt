@@ -11,12 +11,12 @@ function(find_packages)
   find_package(OpenMP)
 
   target_link_libraries(
-    RoninEngineLibrary
+    RoninEngine
     PRIVATE ${SDL2_LIBRARIES} ${SDL2_image_LIBRARIES} ${SDL2_mixer_LIBRARIES}
             ${SDL2_ttf_LIBRARIES} ${SDL2_gfx_LIBRARIES})
 
   target_include_directories(
-    RoninEngineLibrary
+    RoninEngine
     PRIVATE ${SDL2_INCLUDE_DIRS} ${SDL2_image_INCLUDE_DIRS}
             ${SDL2_mixer_INCLUDE_DIRS} ${SDL2_ttf_INCLUDE_DIRS}
             ${SDL2_gfx_INCLUDE_DIRS})
