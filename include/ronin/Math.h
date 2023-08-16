@@ -7,7 +7,7 @@ namespace RoninEngine::Runtime
     class RONIN_API Random
     {
     public:
-        static void srand(int seed);
+        static void srand(std::uint32_t seed);
 
         static int range(int min, int max);
 

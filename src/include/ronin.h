@@ -16,6 +16,7 @@
 #include <algorithm>
 #include <functional>
 #include <cstring>
+#include <random>
 
 // standard listing include
 #include <initializer_list>
