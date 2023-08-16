@@ -7,11 +7,6 @@ project(RoninEngine VERSION ${RONINENGINE_VERSION_MIN})
 
 set(RUNTIME_OUTPUT_NAME "roninengine")
 
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp")
-
 option(BUILD_SHARED_LIBS "Build a shared lib ?" ON)
 option(RGIO "Define Input/Output system" ON)
 option(RGGRAPHICS "Define Graphics, Sprite, Textures system" ON)
@@ -35,12 +30,14 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
-# compilling sources
+# RONIN ENGINE SOURCES
 add_subdirectory(src)
 
 add_library(RoninEngine ${ronin_targets} ${RONIN_ENGINE_HEADERS})
 
 set_target_properties(RoninEngine PROPERTIES OUTPUT_NAME ${RUNTIME_OUTPUT_NAME})
+
+target_compile_options(RoninEngine PRIVATE cxx_std_17)
 
 # DEPENDENCIES
 
@@ -48,4 +45,9 @@ find_packages()
 
 # INSTALLS
 
-add_subdirectory(config)
+if(${RONIN_NO_CONFIG})
+  target_include_directories(RoninEngine
+                             INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/include")
+else()
+  add_subdirectory(config)
+endif()
