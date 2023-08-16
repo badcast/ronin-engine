@@ -2,13 +2,11 @@
 
 using namespace RoninEngine;
 
-static const char seperator =
 #ifdef __WIN32__
-    '\\'
+static const char seperator = '\\';
 #elif __unix__ || __linux__
-    '/'
+static const char seperator = '/';
 #endif
-    ;
 
 static std::string __organization__ {"Ronin Engine"};
 static std::string __application__ {"Framework"};
