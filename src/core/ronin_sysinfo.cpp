@@ -1,9 +1,12 @@
 #include "ronin.h"
 
 #ifdef __linux__
-#include <cstdio>
 
 #define USE_PROCFS 0
+
+#if USE_PROCFS
+#include <cstdio>
+#endif
 
 #endif
 
