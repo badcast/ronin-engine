@@ -65,7 +65,7 @@ public:
      */
     static weight_t heuristic_octile(weight_t dx, weight_t dy)
     {
-        constexpr float F = std::sqrt(2.f) - 1;
+        static const float F = std::sqrt(2.f) - 1;
         return (dx < dy) ? F * dx + dy : F * dy + dx;
     }
 
@@ -137,7 +137,7 @@ public:
 };
 
 ACROSS_TEMPLATE
-ACROSS_DEFINE::basic_brain_map(int xlength, int ylength)
+ACROSS_DEFINE::basic_brain_map(std::uint32_t xlength, std::uint32_t ylength)
 {
     if(1 > xlength || 1 > ylength)
         throw std::runtime_error("dimensions is zero");
@@ -163,7 +163,7 @@ void ACROSS_DEFINE::_internal_realloc()
         std::free(this->neurons);
     }
 
-    std::div_t lockedDiv = div(std::max<int>(ylength = (xlength * ylength), ByteSize), ByteSize); // add locked bits
+    std::div_t lockedDiv = div(std::max<std::uint32_t>(ylength = (xlength * ylength), ByteSize), ByteSize); // add locked bits
     this->_seg_off = xlength = lockedDiv.quot + lockedDiv.rem;
     xlength = ylength * sizeof(INeuron) + xlength;
     this->neurons = static_cast<INeuron *>(std::malloc(xlength));
@@ -221,7 +221,8 @@ bool ACROSS_DEFINE::set_identity(MatrixIdentity matrixIdentity)
     return len > 0;
 }
 
-ACROSS_TEMPLATE bool ACROSS_DEFINE::set_heuristic(HeuristicMethod method)
+ACROSS_TEMPLATE
+bool ACROSS_DEFINE::set_heuristic(HeuristicMethod method)
 {
     bool status = true;
     switch(method)
@@ -261,13 +262,13 @@ HeuristicMethod ACROSS_DEFINE::get_heuristic()
 }
 
 ACROSS_TEMPLATE
-int ACROSS_DEFINE::get_width()
+std::uint32_t ACROSS_DEFINE::get_width()
 {
     return _xsize;
 }
 
 ACROSS_TEMPLATE
-int ACROSS_DEFINE::get_height()
+std::uint32_t ACROSS_DEFINE::get_height()
 {
     return _ysize;
 }
@@ -346,7 +347,7 @@ INeuron *ACROSS_DEFINE::back()
 ACROSS_TEMPLATE
 bool ACROSS_DEFINE::has_lock(const ISite &range)
 {
-    auto divide = std::div(range.x * _ysize + range.y, ByteSize);
+    auto divide = std::div(range.x * std::size_t(_ysize) + range.y, ByteSize);
     auto pointer = reinterpret_cast<std::uint8_t *>(neurons) + divide.quot;
     return (*pointer) & (1 << divide.rem);
 }
@@ -360,18 +361,33 @@ bool ACROSS_DEFINE::contains(const ISite &range)
 ACROSS_TEMPLATE
 const ISite ACROSS_DEFINE::get_point(const INeuron *neuron)
 {
-    auto divide = std::div((std::size_t(neuron) - std::size_t(neurons) - _seg_off) / sizeof(INeuron), _ysize);
+    auto divide = std::div((std::size_t(neuron) - std::size_t(neurons) - _seg_off) / sizeof(INeuron), (int) _ysize);
     return {divide.quot, divide.rem};
 }
 
 ACROSS_TEMPLATE
 void ACROSS_DEFINE::set_lock(const ISite &range, const bool state)
 {
-    auto divide = std::div(range.x * _ysize + range.y, ByteSize);
+    auto divide = std::div(range.x * std::size_t(_ysize) + range.y, ByteSize);
     auto pointer = (reinterpret_cast<std::uint8_t *>(neurons)) + divide.quot;
     divide.quot = (1 << divide.rem);
     // FIXME: Optimize to ~divide.quout (xor)
+    // Reset bit
     (*pointer) ^= (*pointer) & (divide.quot);
+    // Write bit
+    (*pointer) |= divide.quot * (state == true);
+}
+
+ACROSS_TEMPLATE
+void ACROSS_DEFINE::set_lock(const INeuron *neuron, const bool state)
+{
+    auto divide = std::lldiv(static_cast<std::size_t>(neuron - front()), ByteSize);
+    auto pointer = (reinterpret_cast<std::uint8_t *>(neurons)) + divide.quot;
+    divide.quot = (1 << divide.rem);
+    // FIXME: Optimize to ~divide.quout (xor)
+    // Reset bit
+    (*pointer) ^= (*pointer) & (divide.quot);
+    // Write bit
     (*pointer) |= divide.quot * (state == true);
 }
 
@@ -391,12 +407,6 @@ ACROSS_TEMPLATE
 bool ACROSS_DEFINE::has_lock(const INeuron *neuron)
 {
     return has_lock(get_point(neuron));
-}
-
-ACROSS_TEMPLATE
-void ACROSS_DEFINE::set_lock(const INeuron *neuron, const bool state)
-{
-    set_lock(get_point(neuron), state);
 }
 
 ACROSS_TEMPLATE
