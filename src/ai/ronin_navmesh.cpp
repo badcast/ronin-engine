@@ -1,9 +1,9 @@
 ﻿#include "ronin.h"
 
-#ifdef OVERRIDE_LIBACROSS
-#include <across.hpp>
+#ifdef OVERRIDE_LIBBRAINMAP
+#include <brain_map.hpp>
 #else
-#include "across.hpp"
+#include "brain_map.hpp"
 #endif
 
 using namespace RoninEngine::Exception;
@@ -12,7 +12,7 @@ namespace RoninEngine::AI
 {
     using namespace RoninEngine::Runtime;
 
-    class Sheduller : public across::basic_brain_map<Vec2Int, Neuron>
+    class Sheduller : public brain::basic_brain_map<Vec2Int, Neuron>
     {
         friend class NavMesh;
 
@@ -36,6 +36,11 @@ namespace RoninEngine::AI
     void NavMesh::randomize(int flagFilter)
     {
         shedule->randomize_hardware(flagFilter);
+    }
+
+    void NavMesh::create_maze()
+    {
+        shedule->create_maze();
     }
 
     int NavMesh::width() const
@@ -176,12 +181,27 @@ namespace RoninEngine::AI
 
     bool NavMesh::set_heuristic_method(HeuristicMethod method)
     {
-        return shedule->set_heuristic(across::HeuristicMethod(method));
+        return shedule->set_heuristic(brain::HeuristicMethod(method));
     }
 
     bool NavMesh::set_identity(NavIdentity newIdentity)
     {
-        return shedule->set_identity(across::MatrixIdentity(newIdentity));
+        return shedule->set_identity(brain::MatrixIdentity(newIdentity));
+    }
+
+    NavIdentity NavMesh::get_identity()
+    {
+        return NavIdentity(shedule->get_identity());
+    }
+
+    NavListSite NavMesh::get_neighbours(NavIdentity identity, const Vec2Int &pick)
+    {
+        return shedule->get_neighbours<NavListSite>(brain::MatrixIdentity(identity), pick);
+    }
+
+    NavListNeuron NavMesh::get_neighbours(NavIdentity identity, const Neuron *pick)
+    {
+        return shedule->get_neighbours<NavListNeuron>(brain::MatrixIdentity(identity), pick);
     }
 
     void NavMesh::set_lock(const Vec2Int &range, const bool state)
@@ -191,11 +211,11 @@ namespace RoninEngine::AI
 
     void NavMesh::load(const NavMeshData &navmeshData)
     {
-        shedule->load(*reinterpret_cast<const across::brain_breakfast *>(&navmeshData));
+        shedule->load(*reinterpret_cast<const brain::brain_breakfast *>(&navmeshData));
     }
 
     void NavMesh::save(NavMeshData *navmeshData)
     {
-        shedule->save(reinterpret_cast<across::brain_breakfast *>(navmeshData));
+        shedule->save(reinterpret_cast<brain::brain_breakfast *>(navmeshData));
     }
 } // namespace RoninEngine::AI

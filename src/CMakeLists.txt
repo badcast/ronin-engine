@@ -6,7 +6,7 @@ function(find_packages)
   pkg_check_modules(SDL2_mixer REQUIRED SDL2_mixer)
   pkg_check_modules(SDL2_ttf REQUIRED SDL2_ttf)
   pkg_check_modules(SDL2_gfx REQUIRED SDL2_gfx)
-  pkg_check_modules(AcrossLibrary libacross)
+  pkg_check_modules(LibraryBrainMap brainmap)
 
   find_package(OpenMP)
 
@@ -99,9 +99,10 @@ endif()
 # ai sources
 if(RGAI)
   libdef(ronin_aif "ai")
-  if(${AcrossLibrary_FOUND})
-    target_include_directories(ronin_aif PRIVATE ${AcrossLibrary_INCLUDE_DIRS})
-    target_compile_definitions(ronin_aif PRIVATE OVERRIDE_LIBACROSS)
+  if(${LibraryBrainMap_FOUND})
+    target_include_directories(ronin_aif
+                               PRIVATE ${LibraryBrainMap_INCLUDE_DIRS})
+    target_compile_definitions(ronin_aif PRIVATE OVERRIDE_LIBBRAINMAP)
   endif()
 endif()
 # audio sources

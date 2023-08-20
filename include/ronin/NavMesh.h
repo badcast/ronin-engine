@@ -86,6 +86,8 @@ namespace RoninEngine::AI
         void fill(bool fillLocks = false);
         void randomize(int flagFilter = 0xffffff);
 
+        void create_maze();
+
         int width() const;
         int height() const;
 
@@ -102,6 +104,11 @@ namespace RoninEngine::AI
         bool set_heuristic_method(HeuristicMethod method);
 
         bool set_identity(NavIdentity newIdentity);
+
+        NavIdentity get_identity();
+
+        NavListSite get_neighbours(NavIdentity identity, const Runtime::Vec2Int &pick);
+        NavListNeuron get_neighbours(NavIdentity identity, const Neuron *pick);
 
         // pointer with Point
         bool has_locked(const Runtime::Vec2Int &point);

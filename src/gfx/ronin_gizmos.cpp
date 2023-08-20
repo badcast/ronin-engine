@@ -174,36 +174,61 @@ namespace RoninEngine::Runtime
     void Gizmos::draw_nav_mesh(AI::NavMesh *mesh)
     {
         Vec2 lastPoint;
-        AI::Neuron *p;
+        AI::Neuron *self;
         Vec2Int p1, p2;
         Color prev;
         Color next;
         int yDefault;
-        prev = get_color();
-        set_color(next = 0xfff6f723);
+
         mesh->get(Camera::screen_to_world(Vec2::zero), p1);
         mesh->get(Camera::screen_to_world(Vec2(active_resolution.width - 1, active_resolution.height - 1)), p2);
+
+        prev = get_color();
+        set_color(next = 0xfff6f723);
+
         yDefault = p1.y;
         while(p1.x <= p2.x)
         {
             while(p1.y <= p2.y)
             {
-                p = mesh->get(p1);
+                bool draw_pos = true;
+                self = mesh->get(p1);
                 lastPoint = mesh->point_to_world_position(p1);
-                if(p == nullptr || mesh->has_locked(p))
+                if(self == nullptr)
                 {
-                    next.r = 255;
+                    next.r = 64;
                     next.g = 0;
                     next.b = 0;
                 }
+                else if(mesh->has_locked(self))
+                {
+                    next.r = 255;
+                    next.g = 255;
+                    next.b = 255;
+                    set_color(next);
+                    // draw line
+                    AI::NavListNeuron neigbours = mesh->get_neighbours(AI::NavIdentity::PlusMethod, self);
+                    for(int x = 0; x < neigbours.size(); ++x)
+                    {
+                        if(mesh->has_locked(neigbours[x]))
+                            Gizmos::draw_line(mesh->neuron_to_world_position(self), mesh->neuron_to_world_position(neigbours[x]));
+                    }
+                    draw_pos = false;
+                }
                 else
                 {
-                    next.r = 53;
-                    next.g = p->f ? 200 : 0;
-                    next.b = 246;
+                    if(self->f)
+                    {
+                        next.r = 53;
+                        next.g = 200;
+                        next.b = 100;
+                    }
+                    else
+                        draw_pos = false;
                 }
                 set_color(next);
-                draw_position(lastPoint, 0.01f);
+                if(draw_pos)
+                    draw_position(lastPoint, 0.01f);
                 ++p1.y;
             }
             p1.y = yDefault;

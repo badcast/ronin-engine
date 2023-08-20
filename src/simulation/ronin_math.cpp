@@ -6,12 +6,14 @@ using namespace RoninEngine::Runtime;
 
 constexpr auto periodic_fahren = 5.0 / 9;
 
+constexpr auto ronin_rand_max = std::numeric_limits<std::uint32_t>::max();
+
 static std::uint32_t __seed__ = 1;
 
 // get random value
-inline int rand()
+inline std::uint32_t internal_rand()
 {
-    __seed__ = (__seed__ * 73129u + 95121u) % std::numeric_limits<uint32_t>::max();
+    __seed__ = (__seed__ * 73129u + 95121u) % ronin_rand_max;
     return __seed__;
 }
 
@@ -24,7 +26,7 @@ void Random::srand(std::uint32_t seed)
 
 int Random::range(int min, int max)
 {
-    return Math::map<int>(rand(), std::numeric_limits<int>::min(), std::numeric_limits<int>::max(), min, max);
+    return Math::map<std::uint32_t>(internal_rand(), 0, ronin_rand_max, min, max);
 }
 
 float Random::range(float min, float max)
@@ -35,7 +37,7 @@ float Random::range(float min, float max)
 float Random::value()
 {
     // const for diaz. 0.0 - 1.0
-    return rand() * static_cast<float>(4.6566128752458E-10);
+    return internal_rand() / static_cast<float>(ronin_rand_max);
 }
 
 Vec2 Random::random_vector()
