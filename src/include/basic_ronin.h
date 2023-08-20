@@ -73,6 +73,8 @@ namespace RoninEngine
 {
     extern SDL_Renderer *renderer;
     extern Resolution active_resolution;
+    extern bool ronin_debug_mode;
+
     namespace UI
     {
         enum GUIControlPresents : std::uint8_t
@@ -266,6 +268,7 @@ namespace RoninEngine
             void event_camera_changed(Camera *target, CameraEvent state);
         };
 
+        // Global variables
         extern World *switched_world;
 
         void native_render_2D(Camera2D *camera);

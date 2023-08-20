@@ -30,6 +30,8 @@ namespace RoninEngine::Runtime
         static void draw_fill_square(Vec2 origin, float width);
         static void draw_fill_square_rounded(Vec2 origin, float width, std::uint16_t radius);
 
+        static void draw_text_to_screen(Vec2Int screen_point, const std::string &text, int font_size = 11);
+
         //@origin offset point
         //@edges count edge
         //@delim delim > 1 = scale mode, for inverse use negative value

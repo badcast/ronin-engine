@@ -180,7 +180,7 @@ namespace RoninEngine::Runtime
         Color next;
         int yDefault;
 
-        mesh->get(Camera::screen_to_world(Vec2::zero), p1);
+        mesh->get(Camera::screen_to_world(Vec2::one), p1);
         mesh->get(Camera::screen_to_world(Vec2(active_resolution.width - 1, active_resolution.height - 1)), p2);
 
         prev = get_color();
@@ -340,6 +340,11 @@ namespace RoninEngine::Runtime
     void Gizmos::draw_fill_square_rounded(Vec2 origin, float width, std::uint16_t radius)
     {
         draw_fill_rect_rounded(origin, width, width, radius);
+    }
+
+    void Gizmos::draw_text_to_screen(Vec2Int screen_point, const std::string &text, int font_size)
+    {
+        RoninEngine::UI::draw_font_at(RoninEngine::renderer, text, font_size, screen_point, get_color(), false);
     }
 
     void Gizmos::draw_storm(Vec2 ray, int edges, int delim)

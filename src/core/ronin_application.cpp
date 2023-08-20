@@ -53,12 +53,13 @@ namespace RoninEngine
     } // namespace UI
 
     SDL_Renderer *renderer = nullptr;
+    bool ronin_debug_mode = false;
     Resolution active_resolution {0, 0, 0};
-    static bool internal_level_loaded = false;
-    static bool world_can_start = false;
-    static Runtime::World *destroyableLevel = nullptr;
-    static SDL_Window *main_window = nullptr;
-    static ScoreWatcher last_watcher = {};
+    bool internal_level_loaded = false;
+    bool world_can_start = false;
+    Runtime::World *destroyableLevel = nullptr;
+    SDL_Window *main_window = nullptr;
+    ScoreWatcher last_watcher = {};
 
     void internal_init_timer()
     {
@@ -327,12 +328,16 @@ namespace RoninEngine
         SDL_memcpy(&version.SDL_Mix_Version, Mix_Linked_Version(), sizeof(Version));
 
         return version;
-#undef GET_INT_SDL
     }
 
     const char *RoninSimulator::get_linked_targets()
     {
         return RGE_LINKED_TARGETS;
+    }
+
+    void RoninSimulator::set_debug_mode(bool state)
+    {
+        ronin_debug_mode = state;
     }
 
     void RoninSimulator::simulate()
@@ -450,12 +455,12 @@ namespace RoninEngine
                     switched_world->on_update();
 
                     // end watcher
-                    queue_watcher.ms_wait_exec_level = TimeEngine::end_watch();
+                    queue_watcher.ms_wait_exec_world = TimeEngine::end_watch();
                 }
                 else
                 {
                     // end watcher
-                    queue_watcher.ms_wait_exec_level = TimeEngine::end_watch();
+                    queue_watcher.ms_wait_exec_world = TimeEngine::end_watch();
 
                     goto end_simulate; // break on unload state
                 }
@@ -485,7 +490,7 @@ namespace RoninEngine
                 // begin watcher
                 TimeEngine::begin_watch();
                 SDL_RenderPresent(renderer);
-                queue_watcher.ms_wait_render_level = TimeEngine::end_watch();
+                queue_watcher.ms_wait_render_world = TimeEngine::end_watch();
                 // end watcher
 
                 switched_world->level_render_world_late();
@@ -497,7 +502,7 @@ namespace RoninEngine
 
             queue_watcher.ms_wait_frame = TimeEngine::end_watch();
 
-            //update watcher
+            // update watcher
             last_watcher = queue_watcher;
 
             ++internal_frames;

@@ -40,10 +40,10 @@ namespace RoninEngine
 
     struct ScoreWatcher
     {
-        std::uint32_t ms_wait_exec_level;
+        std::uint32_t ms_wait_exec_world;
         std::uint32_t ms_wait_exec_scripts;
         std::uint32_t ms_wait_render_collect;
-        std::uint32_t ms_wait_render_level;
+        std::uint32_t ms_wait_render_world;
         std::uint32_t ms_wait_render_ui;
         std::uint32_t ms_wait_render_gizmos;
         std::uint32_t ms_wait_destructions;
@@ -79,7 +79,9 @@ namespace RoninEngine
         // Get linked version
         static VersionInfo get_version();
         // Get Linked targets system, for example: ui, ai, res etc.
-        static const char * get_linked_targets();
+        static const char *get_linked_targets();
+        // Show FPS, frametime, render time, gizmos, etc.
+        static void set_debug_mode(bool state);
 
         // Message handler
 
