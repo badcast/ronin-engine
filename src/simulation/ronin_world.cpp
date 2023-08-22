@@ -436,39 +436,73 @@ namespace RoninEngine
         {
             using Gizmos = RoninEngine::Runtime::Gizmos;
             constexpr int font_height = 12;
-            std::string text_render;
 
             static struct
             {
                 const char *label;
-                std::uint32_t value;
-            } elements[] = {{"UI: ", 0}, {"Scripts: ", 0}, {"World: ", 0}, {"Gizmos: ", 0}, {"Collect: ", 0}};
 
-            Vec2 g_size = Vec2 {138, font_height * 6 + 15};
+                std::uint32_t value;
+                std::string format;
+                Color format_color;
+            } elements[] = {{"Render Frame", 0}, {"UI", 0}, {"Scripts", 0}, {"2D Space", 0}, {"Gizmos", 0}, {"Collect", 0}, {"Memory", 0}};
+            static std::uint32_t max_elements = sizeof(elements) / sizeof(elements[0]);
+            static std::uint32_t max;
+            static std::uint32_t averrage;
+
+            Vec2 g_size = Vec2 {138, font_height * (max_elements + 2)};
             Vec2Int screen_point = {g_size.x, active_resolution.height};
             Vec2 g_pos = Camera::screen_to_world({screen_point.x / 2.f, screen_point.y - g_size.y / 2});
-
-            ScoreWatcher stat = RoninSimulator::get_watches();
-            if(TimeEngine::frame() % 16 == 0)
-            {
-                // Update data
-                elements[0].value = stat.ms_wait_render_ui;
-                elements[1].value = stat.ms_wait_exec_scripts;
-                elements[2].value = stat.ms_wait_render_world;
-                elements[3].value = stat.ms_wait_render_gizmos;
-                elements[4].value = stat.ms_wait_render_collect;
-            }
-
-            // calculate averrage and max
-            std::uint32_t max = 0;
-            std::uint32_t averrage = 0;
             int x;
-            for(x = 0; x < sizeof(elements) / sizeof(elements[0]); ++x)
+
+            if(TimeEngine::frame() % 10 == 0)
             {
-                max = std::max(elements[x].value, max);
-                averrage += elements[x].value;
+
+                ScoreWatcher stat = RoninSimulator::get_watches();
+                // Update data
+                elements[0].value = stat.ms_wait_frame;
+                elements[1].value = stat.ms_wait_render_ui;
+                elements[2].value = stat.ms_wait_exec_scripts;
+                elements[3].value = stat.ms_wait_render_world;
+                elements[4].value = stat.ms_wait_render_gizmos;
+                elements[5].value = stat.ms_wait_render_collect;
+                elements[6].value = get_process_sizeMemory() / 1024 / 1024;
+
+                // calculate averrage and max
+                max = 0;
+                averrage = 0;
+                for(x = 1; x < max_elements - 1; ++x)
+                {
+                    max = std::max(elements[x].value, max);
+                    averrage += elements[x].value;
+                }
+                averrage /= std::max(1, x);
+
+                // format text
+                for(x = 0; x < max_elements; ++x)
+                {
+                    if(x != 0)
+                        elements[x].format = " > ";
+                    else
+                        elements[x].format.clear();
+                    elements[x].format += elements[x].label;
+                    elements[x].format += ": " + std::to_string(elements[x].value) + ' ';
+
+                    // format color
+                    if(max && elements[x].value == max)
+                        elements[x].format_color = Color::red;
+                    else if(averrage && elements[x].value >= averrage)
+                        elements[x].format_color = Color::yellow;
+                    else
+                        elements[x].format_color = Color::white;
+                }
+
+                // write ISO
+                // ms
+                for(x = 0; x < max_elements - 1; ++x)
+                    elements[x].format += "ms";
+                elements[x].format += "MiB";
+                elements[x].format_color = Color::white;
             }
-            averrage /= std::max(1, x);
 
             // Set background color
             Gizmos::set_color(Color(0, 0, 0, 100));
@@ -479,22 +513,13 @@ namespace RoninEngine
             screen_point.x = 10;
             screen_point.y -= static_cast<int>(g_size.y) - font_height / 2;
             Gizmos::set_color(Color::white);
-            Gizmos::draw_text_to_screen(screen_point, "Render Frame: " + std::to_string(stat.ms_wait_frame) + "ms", font_height);
-            for(x = 0; x < sizeof(elements) / sizeof(elements[0]); ++x)
+            Gizmos::draw_text_to_screen(screen_point, elements[0].format, font_height);
+            for(x = 1; x < max_elements; ++x)
             {
-                text_render = " > ";
-                text_render += elements[x].label + std::to_string(elements[x].value) + " ms";
+                Gizmos::set_color(elements[x].format_color);
+
                 screen_point.y += font_height + 1;
-
-                // Set foreground color
-                if(max && elements[x].value == max)
-                    Gizmos::set_color(Color::darkred);
-                else if(averrage && elements[x].value >= averrage)
-                    Gizmos::set_color(Color::yellow);
-                else
-                    Gizmos::set_color(Color::green);
-
-                Gizmos::draw_text_to_screen(screen_point, text_render, font_height);
+                Gizmos::draw_text_to_screen(screen_point, elements[x].format, font_height);
             }
         }
         watcher->ms_wait_render_gizmos = TimeEngine::end_watch();
