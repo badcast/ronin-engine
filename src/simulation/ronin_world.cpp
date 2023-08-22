@@ -436,31 +436,66 @@ namespace RoninEngine
         {
             using Gizmos = RoninEngine::Runtime::Gizmos;
             constexpr int font_height = 12;
+            std::string text_render;
+
+            static struct
+            {
+                const char *label;
+                std::uint32_t value;
+            } elements[] = {{"UI: ", 0}, {"Scripts: ", 0}, {"World: ", 0}, {"Gizmos: ", 0}, {"Collect: ", 0}};
+
             Vec2 g_size = Vec2 {138, font_height * 6 + 15};
             Vec2Int screen_point = {g_size.x, active_resolution.height};
             Vec2 g_pos = Camera::screen_to_world({screen_point.x / 2.f, screen_point.y - g_size.y / 2});
+
             ScoreWatcher stat = RoninSimulator::get_watches();
+            if(TimeEngine::frame() % 16 == 0)
+            {
+                // Update data
+                elements[0].value = stat.ms_wait_render_ui;
+                elements[1].value = stat.ms_wait_exec_scripts;
+                elements[2].value = stat.ms_wait_render_world;
+                elements[3].value = stat.ms_wait_render_gizmos;
+                elements[4].value = stat.ms_wait_render_collect;
+            }
+
+            // calculate averrage and max
+            std::uint32_t max = 0;
+            std::uint32_t averrage = 0;
+            int x;
+            for(x = 0; x < sizeof(elements) / sizeof(elements[0]); ++x)
+            {
+                max = std::max(elements[x].value, max);
+                averrage += elements[x].value;
+            }
+            averrage /= std::max(1, x);
+
             // Set background color
             Gizmos::set_color(Color(0, 0, 0, 100));
 
             // Draw box
             Gizmos::draw_fill_rect_rounded(g_pos, g_size.x / pixelsPerPoint, g_size.y / pixelsPerPoint, 8);
 
-            // Set foreground color
-            Gizmos::set_color(Color::white);
             screen_point.x = 10;
             screen_point.y -= static_cast<int>(g_size.y) - font_height / 2;
+            Gizmos::set_color(Color::white);
             Gizmos::draw_text_to_screen(screen_point, "Render Frame: " + std::to_string(stat.ms_wait_frame) + "ms", font_height);
-            screen_point.y += font_height + 1;
-            Gizmos::draw_text_to_screen(screen_point, "Render UI: " + std::to_string(stat.ms_wait_render_ui) + "ms", font_height);
-            screen_point.y += font_height + 1;
-            Gizmos::draw_text_to_screen(screen_point, "Render Scripts: " + std::to_string(stat.ms_wait_exec_scripts) + "ms", font_height);
-            screen_point.y += font_height + 1;
-            Gizmos::draw_text_to_screen(screen_point, "Render World: " + std::to_string(stat.ms_wait_render_world) + "ms", font_height);
-            screen_point.y += font_height + 1;
-            Gizmos::draw_text_to_screen(screen_point, "Render Gizmos: " + std::to_string(stat.ms_wait_render_gizmos) + "ms", font_height);
-            screen_point.y += font_height + 1;
-            Gizmos::draw_text_to_screen(screen_point, "Render Collect: " + std::to_string(stat.ms_wait_render_collect) + "ms", font_height);
+            for(x = 0; x < sizeof(elements) / sizeof(elements[0]); ++x)
+            {
+                text_render = " > ";
+                text_render += elements[x].label + std::to_string(elements[x].value) + " ms";
+                screen_point.y += font_height + 1;
+
+                // Set foreground color
+                if(max && elements[x].value == max)
+                    Gizmos::set_color(Color::darkred);
+                else if(averrage && elements[x].value >= averrage)
+                    Gizmos::set_color(Color::yellow);
+                else
+                    Gizmos::set_color(Color::green);
+
+                Gizmos::draw_text_to_screen(screen_point, text_render, font_height);
+            }
         }
         watcher->ms_wait_render_gizmos = TimeEngine::end_watch();
         // end watcher
