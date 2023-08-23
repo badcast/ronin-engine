@@ -178,7 +178,7 @@ namespace RoninEngine::Runtime
         Vec2Int p1, p2;
         Color prev;
         Color next;
-        int yDefault;
+        std::uint32_t yDefault;
 
         mesh->get(Camera::screen_to_world(Vec2::one), p1);
         mesh->get(Camera::screen_to_world(Vec2(active_resolution.width - 1, active_resolution.height - 1)), p2);
@@ -199,7 +199,6 @@ namespace RoninEngine::Runtime
                     next.r = 64;
                     next.g = 0;
                     next.b = 0;
-                    draw_pos=false;
                 }
                 else if(mesh->has_locked(self))
                 {

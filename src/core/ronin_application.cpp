@@ -93,18 +93,18 @@ namespace RoninEngine
         // init graphics
         init_flags = IMG_InitFlags::IMG_INIT_PNG | IMG_InitFlags::IMG_INIT_JPG;
         if(IMG_Init(init_flags) != init_flags)
-            fail("Fail init imageformats. (libPNG, libJPG) not defined");
+            fail("Fail init image library.");
 
         if(TTF_Init() == -1)
-            fail("Fail init ttf-font");
+            fail("Fail init font library.");
 
         // init Audio system
         init_flags = MIX_InitFlags::MIX_INIT_OGG | MIX_InitFlags::MIX_INIT_MP3;
         if(Mix_Init(init_flags) != init_flags)
-            fail("Fail init audio.");
+            show_message("Fail init audio.");
 
         if(Mix_OpenAudio(MIX_DEFAULT_FREQUENCY, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS, 1024))
-            fail("Fail open audio.");
+            show_message("Fail open audio.");
 
         // setup
         switched_world = nullptr;

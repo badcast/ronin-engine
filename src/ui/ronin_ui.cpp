@@ -395,8 +395,10 @@ namespace RoninEngine::UI
         ui_reset_controls(); // Reset
 
         for(auto iter = begin(resources->ui_layer.layers); iter != end(resources->ui_layer.layers); ++iter)
-            ui_drains.emplace_back(*iter);
-
+        {
+            if(gui->get_visible(*iter))
+                ui_drains.emplace_back(*iter);
+        }
         ms_click = Input::get_mouse_up(MouseState::MouseLeft);
 
         gui->_resources->mouse_hover = false;
