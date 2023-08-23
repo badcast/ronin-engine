@@ -1,5 +1,5 @@
-#ifndef RONINENGINE_H_
-#define RONINENGINE_H_
+#ifndef _RONIN_ENGINE_H_
+#define _RONIN_ENGINE_H_
 
 // C++ STL
 #include <iostream>
@@ -32,7 +32,7 @@
 #include "ronin_native.h"
 
 // base headers
-#include "../../include/ronin/begin.h"
+#include "begin.h"
 
 #include "just-parser.h"
 
@@ -41,43 +41,43 @@
 #define protected public
 
 // applications
-#include "../../include/ronin/Time.h"
-#include "../../include/ronin/RoninSimulator.h"
-#include "../../include/ronin/Resources.h"
-#include "../../include/ronin/SystemInformation.h"
+#include "Time.h"
+#include "RoninSimulator.h"
+#include "Resources.h"
+#include "SystemInformation.h"
 
-#include "../../include/ronin/Controls.h"
-#include "../../include/ronin/Math.h"
-#include "../../include/ronin/Paths.h"
-#include "../../include/ronin/Texture.h"
-#include "../../include/ronin/InputSystem.h"
+#include "Controls.h"
+#include "Math.h"
+#include "Paths.h"
+#include "Texture.h"
+#include "InputSystem.h"
 
 // objects
-#include "../../include/ronin/Object.h"
-#include "../../include/ronin/Behaviour.h"
-#include "../../include/ronin/Camera.h"
-#include "../../include/ronin/Camera2D.h"
-#include "../../include/ronin/Component.h"
-#include "../../include/ronin/World.h"
-#include "../../include/ronin/Light.h"
-#include "../../include/ronin/Player.h"
-#include "../../include/ronin/Renderer.h"
-#include "../../include/ronin/Spotlight.h"
-#include "../../include/ronin/Sprite.h"
-#include "../../include/ronin/SpriteRenderer.h"
-#include "../../include/ronin/Terrain2D.h"
+#include "Object.h"
+#include "Behaviour.h"
+#include "Camera.h"
+#include "Camera2D.h"
+#include "Component.h"
+#include "World.h"
+#include "Light.h"
+#include "Player.h"
+#include "Renderer.h"
+#include "Spotlight.h"
+#include "Sprite.h"
+#include "SpriteRenderer.h"
+#include "Terrain2D.h"
 
-#include "../../include/ronin/Transform.h"
+#include "Transform.h"
 
-#include "../../include/ronin/UI.h"
-#include "../../include/ronin/Gizmos.h"
-#include "../../include/ronin/NavMesh.h"
-#include "../../include/ronin/Physics2D.h"
-#include "../../include/ronin/Atlas.h"
-#include "../../include/ronin/AudioSource.h"
-#include "../../include/ronin/MusicPlayer.h"
+#include "UI.h"
+#include "Gizmos.h"
+#include "NavMesh.h"
+#include "Physics2D.h"
+#include "Atlas.h"
+#include "AudioSource.h"
+#include "MusicPlayer.h"
 
-#include "../../include/ronin/GameObject.h"
+#include "GameObject.h"
 
 #undef private
 #undef protected

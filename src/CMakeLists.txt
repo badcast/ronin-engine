@@ -44,14 +44,13 @@ function(libdef libname path)
 
   add_library(${libname} OBJECT ${SRC})
 
+  target_include_directories(
+    ${libname} PUBLIC $<BUILD_INTERFACE:${RONIN_INCLUDE_DIRS}/ronin>
+                      ${CMAKE_CURRENT_SOURCE_DIR}/include)
+
   target_compile_options(${libname} PRIVATE -fPIC)
 
   target_compile_definitions(${libname} PRIVATE RONIN_COMPILLING)
-
-  target_include_directories(
-    ${libname}
-    PRIVATE "${CMAKE_SOURCE_DIR}/include/ronin"
-    PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/include")
 
   set(ronin_targets
       "${ronin_targets}" "$<TARGET_OBJECTS:${libname}>"
@@ -67,14 +66,8 @@ function(libdef libname path)
       PARENT_SCOPE)
 endfunction()
 
-file(GLOB_RECURSE RONIN_INCLUDE_MAINH
-     "${CMAKE_CURRENT_SOURCE_DIR}/include/*.hpp"
-     "${CMAKE_CURRENT_SOURCE_DIR}/include/*.h")
-
 # core sources
 libdef(ronin "core")
-
-target_sources(ronin PUBLIC ${RONIN_INCLUDE_MAINH})
 
 # simulation sources
 if(RGSIMULATION)
