@@ -199,6 +199,7 @@ namespace RoninEngine::Runtime
                     next.r = 64;
                     next.g = 0;
                     next.b = 0;
+                    draw_pos=false;
                 }
                 else if(mesh->has_locked(self))
                 {

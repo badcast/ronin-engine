@@ -36,7 +36,7 @@ add_subdirectory(src)
 
 add_library(RoninEngine ${ronin_targets} ${RONIN_ENGINE_HEADERS})
 
-target_compile_options(RoninEngine PRIVATE cxx_std_11)
+target_compile_options(RoninEngine PRIVATE cxx_std_17)
 
 target_link_directories(RoninEngine PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
 

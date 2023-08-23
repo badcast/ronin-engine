@@ -68,7 +68,7 @@ void AudioSource::play(bool loop)
     {
         stop();
 
-        Mix_PlayChannel(data->target_channel, data->m_clip->mix_chunk, loop ? 1 : 0);
+        Mix_PlayChannel(data->target_channel, data->m_clip->mix_chunk, loop ? -1 : 0);
     }
 }
 

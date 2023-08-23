@@ -161,7 +161,7 @@ namespace RoninEngine::AI
 
     bool NavMesh::has_locked(const Neuron *neuron)
     {
-        return has_locked(get_point(neuron));
+        return shedule->has_lock(neuron);
     }
 
     void NavMesh::set_lock(const Neuron *neuron, const bool state)

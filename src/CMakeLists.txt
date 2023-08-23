@@ -71,6 +71,7 @@ libdef(ronin "core")
 
 # simulation sources
 if(RGSIMULATION)
+
   libdef(ronin_sim "simulation")
 endif()
 # res sources
