@@ -109,7 +109,8 @@ namespace RoninEngine::Runtime
 
         if(surf == nullptr)
         {
-            RoninSimulator::fail("img: \"" + path + "\" can not load");
+            SDL_LogError(SDL_LOG_CATEGORY_ERROR, "Surface: \"%s\" can not load", path.data());
+            return RES_INVALID;
         }
 
         gid = make_resource(&id, local);
@@ -128,7 +129,8 @@ namespace RoninEngine::Runtime
 
         if(chunk == nullptr)
         {
-            RoninSimulator::fail("sound: \"" + path + "\" can not load");
+            SDL_LogError(SDL_LOG_CATEGORY_ERROR, "Sound: \"%s\" can not load", path.data());
+            return RES_INVALID;
         }
 
         gid = make_resource(&id, local);
@@ -147,7 +149,8 @@ namespace RoninEngine::Runtime
 
         if(music == nullptr)
         {
-            RoninSimulator::fail("music: \"" + path + "\" can not load");
+            SDL_LogError(SDL_LOG_CATEGORY_ERROR, "Music: \"%s\" can not load", path.c_str());
+            return RES_INVALID;
         }
 
         gid = make_resource(&id, local);
@@ -159,6 +162,8 @@ namespace RoninEngine::Runtime
 
     native_surface_t *Resources::get_surface(resource_id resource)
     {
+        if(resource == RES_INVALID)
+            return nullptr;
         GidResources *gid;
         gid = get_resource(resource);
         resource &= ~RES_LOCAL_FLAG;
@@ -169,8 +174,9 @@ namespace RoninEngine::Runtime
 
     AudioClip *Resources::get_audio_clip(resource_id resource)
     {
-        GidResources *gid;
-        gid = get_resource(resource);
+        if(resource == RES_INVALID)
+            return nullptr;
+        GidResources *gid = get_resource(resource);
         resource &= ~RES_LOCAL_FLAG;
         if(resource >= gid->gid_audio_clips.size())
             return nullptr;
@@ -179,8 +185,9 @@ namespace RoninEngine::Runtime
 
     MusicClip *Resources::get_music_clip(resource_id resource)
     {
-        GidResources *gid;
-        gid = get_resource(resource);
+        if(resource == RES_INVALID)
+            return nullptr;
+        GidResources *gid = get_resource(resource);
         resource &= ~RES_LOCAL_FLAG;
         if(resource >= gid->gid_music_clips.size())
             return nullptr;
