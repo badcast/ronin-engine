@@ -13,83 +13,202 @@ namespace RoninEngine
             bool m_active;
 
         public:
+            /**
+             * @brief Default constructor for GameObject.
+             */
             GameObject();
 
-            GameObject(const std::string &);
+            /**
+             * @brief Constructor for GameObject with a specified name.
+             * @param name The name to assign to the GameObject.
+             */
+            GameObject(const std::string &name);
 
+            /**
+             * @brief Deleted copy constructor for GameObject.
+             */
             GameObject(const GameObject &) = delete;
 
+            /**
+             * @brief Destructor for GameObject.
+             */
             ~GameObject();
 
-            bool is_active();
+            /**
+             * @brief Check if the GameObject is active.
+             * @return True if the GameObject is active, false otherwise.
+             */
+            bool isActive();
 
-            bool is_active_hierarchy();
+            /**
+             * @brief Check if the GameObject or any of its children is active.
+             * @return True if the GameObject or any child is active, false otherwise.
+             */
+            bool isActiveInHierarchy();
 
-            void set_active(bool state);
+            /**
+             * @brief Set the active state of the GameObject.
+             * @param state The new active state.
+             */
+            void SetActive(bool state);
 
-            void set_active_recursivelly(bool state);
+            /**
+             * @brief Set the active state recursively for the GameObject and its children.
+             * @param state The new active state.
+             */
+            void SetActiveRecursivelly(bool state);
 
+            /**
+             * @brief Get the Transform component of the GameObject.
+             * @return A pointer to the Transform component.
+             */
             Transform *transform();
 
-            SpriteRenderer *get_sprite_renderer();
+            /**
+             * @brief Get the SpriteRenderer component of the GameObject.
+             * @return A pointer to the SpriteRenderer component, or nullptr if not found.
+             */
+            SpriteRenderer *spriteRenderer();
 
-            Camera2D *get_camera2D();
+            /**
+             * @brief Get the Camera2D component of the GameObject.
+             * @return A pointer to the Camera2D component, or nullptr if not found.
+             */
+            Camera2D *camera2D();
 
-            Terrain2D *get_terrain2D();
+            /**
+             * @brief Get the Terrain2D component of the GameObject.
+             * @return A pointer to the Terrain2D component, or nullptr if not found.
+             */
+            Terrain2D *terrain2D();
 
-            void destroy();
+            /**
+             * @brief Mark the GameObject for destruction now.
+             */
+            void Destroy();
 
-            void destroy(float time);
+            /**
+             * @brief Mark the GameObject for destruction with a delayed time.
+             * @param time The time delay before destruction.
+             */
+            void Destroy(float time);
 
-            const bool destroy_cancel();
+            /**
+             * @brief Cancel the scheduled destruction for the GameObject.
+             * @return True if the destruction was canceled, false otherwise.
+             */
+            const bool CancelDestroy();
 
-            const bool is_destruction();
+            /**
+             * @brief Checks whether the object is currently being destroyed.
+             *
+             * This function is used to determine if the object is in the process of being destroyed.
+             * It returns true if the destruction process is currently ongoing, and false otherwise.
+             *
+             * @return True if the object is being destroyed, false otherwise.
+             */
+            const bool isDestroying();
 
-            Component *add_component(Component *component);
+            /**
+             * @brief Adds a specific component to the GameObject.
+             *
+             * This function adds the provided component to the GameObject's list of components.
+             * The component must be a valid instance derived from the base class Component.
+             *
+             * @param component A pointer to the component to be added.
+             * @return A pointer to the added component, or nullptr if adding failed.
+             */
+            Component *AddComponent(Component *component);
 
-            bool remove_component(Component *component);
+            /**
+             * @brief Removes a specific component from the GameObject.
+             *
+             * This function removes the provided component from the GameObject's list of components.
+             * The component must be a valid instance that is currently attached to the GameObject.
+             *
+             * @param component A pointer to the component to be removed.
+             * @return True if the component was successfully removed, false if it was not found.
+             */
+            bool RemoveComponent(Component *component);
 
+            /**
+             * @brief Adds a new component of the specified type to the GameObject.
+             *
+             * This function adds a new instance of the specified component type to the GameObject.
+             * The component type must be derived from the base class Component.
+             *
+             * @tparam T The type of component to add. Must be derived from Component.
+             * @return A pointer to the newly added component, or nullptr if adding failed.
+             */
             template <typename T>
-            std::enable_if_t<std::is_base_of<Component, T>::value, T *> add_component();
+            std::enable_if_t<std::is_base_of<Component, T>::value, T *> AddComponent();
 
+            /**
+             * @brief Retrieves the first component of the specified type from the GameObject.
+             *
+             * This function attempts to retrieve the first instance of the specified component type
+             * that is attached to the GameObject. The component type must be derived from the base class Component.
+             *
+             * @tparam T The type of component to retrieve. Must be derived from Component.
+             * @return A pointer to the found component, or nullptr if the component was not found.
+             */
             template <typename T>
-            std::enable_if_t<std::is_base_of<Component, T>::value, T *> get_component();
+            std::enable_if_t<std::is_base_of<Component, T>::value, T *> GetComponent();
 
+            /**
+             * @brief Removes the first component of the specified type from the GameObject.
+             *
+             * This function removes the first instance of the specified component type from the GameObject.
+             * The component type must be derived from the base class Component.
+             *
+             * @tparam T The type of component to remove. Must be derived from Component.
+             * @return True if the component was successfully removed, false if it was not found.
+             */
             template <typename T>
-            std::enable_if_t<std::is_base_of<Component, T>::value, bool> remove_component();
+            std::enable_if_t<std::is_base_of<Component, T>::value, bool> RemoveComponent();
 
+            /**
+             * @brief Retrieves a list of all components of the specified type from the GameObject.
+             *
+             * This function collects all instances of the specified component type that are attached
+             * to the GameObject and returns them in a list.
+             * The component type must be derived from the base class Component.
+             *
+             * @tparam T The type of components to retrieve. Must be derived from Component.
+             * @return A list containing pointers to the found components.
+             */
             template <typename T>
-            std::enable_if_t<std::is_base_of<Component, T>::value, std::list<T *>> get_components();
+            std::enable_if_t<std::is_base_of<Component, T>::value, std::list<T *>> GetComponents();
         };
 
         template <typename T>
-        std::enable_if_t<std::is_base_of<Component, T>::value, T *> GameObject::add_component()
+        std::enable_if_t<std::is_base_of<Component, T>::value, T *> GameObject::AddComponent()
         {
             static_assert(
                 !(std::is_same<T, Transform>::value || std::is_base_of<Transform, T>::value), "Transform component can't be assigned");
 
             // init component
             T *component = RoninMemory::alloc<T>();
-            this->add_component(static_cast<Component *>(component));
+            this->AddComponent(static_cast<Component *>(component));
 
             return component;
         }
 
         template <typename T>
-        std::enable_if_t<std::is_base_of<Component, T>::value, bool> GameObject::remove_component()
+        std::enable_if_t<std::is_base_of<Component, T>::value, bool> GameObject::RemoveComponent()
         {
             static_assert(
                 !(std::is_same<T, Transform>::value || std::is_base_of<Transform, T>::value),
                 "Transform component can't remove, basic component type");
 
-            T *target = get_component<T>();
+            T *target = GetComponent<T>();
             if(target == nullptr)
                 return false;
-            return remove_component(target);
+            return RemoveComponent(target);
         }
 
         template <typename T>
-        std::enable_if_t<std::is_base_of<Component, T>::value, std::list<T *>> GameObject::get_components()
+        std::enable_if_t<std::is_base_of<Component, T>::value, std::list<T *>> GameObject::GetComponents()
         {
             std::list<T *> types;
             T *cast;
@@ -105,7 +224,7 @@ namespace RoninEngine
         }
 
         template <typename T>
-        std::enable_if_t<std::is_base_of<Component, T>::value, T *> GameObject::get_component()
+        std::enable_if_t<std::is_base_of<Component, T>::value, T *> GameObject::GetComponent()
         {
             if constexpr(std::is_same<T, Transform>::value)
             {

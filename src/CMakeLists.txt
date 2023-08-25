@@ -1,4 +1,4 @@
-function(find_packages)
+function(find_ronin_packages)
   find_package(PkgConfig REQUIRED)
 
   pkg_check_modules(SDL2 REQUIRED sdl2)
@@ -48,7 +48,11 @@ function(libdef libname path)
     ${libname} PUBLIC $<BUILD_INTERFACE:${RONIN_INCLUDE_DIRS}/ronin>
                       ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
-  target_compile_options(${libname} PRIVATE -fPIC)
+  target_compile_features(${libname} PUBLIC cxx_std_17)
+
+  if(NOT MSVC)
+    target_compile_options(${libname} PRIVATE -fPIC)
+  endif()
 
   target_compile_definitions(${libname} PRIVATE RONIN_COMPILLING)
 

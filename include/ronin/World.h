@@ -20,11 +20,11 @@ namespace RoninEngine::Runtime
         virtual void level_render_world(RoninEngine::ScoreWatcher *watcher);
         virtual void level_render_world_late();
 
-        virtual void on_awake();
-        virtual void on_start();
-        virtual void on_update();
-        virtual void on_gizmo();
-        virtual void on_unloading();
+        virtual void OnAwake();
+        virtual void OnStart();
+        virtual void OnUpdate();
+        virtual void OnGizmos();
+        virtual void OnUnloading();
 
     public:
         World() = delete;
@@ -34,25 +34,25 @@ namespace RoninEngine::Runtime
 
         std::string &name();
 
-        UI::GUI *get_gui();
+        UI::GUI *getGUI();
 
-        bool is_hierarchy();
+        bool isHierarchy();
 
-        void request_unload();
+        void RequestUnload();
 
-        int get_culled();
-        int get_destroyed_frames();
+        int GetCulled();
+        int GetDestroyedFrames();
 
-        std::list<GameObject *> get_all_gameobjects();
-        std::list<Component *> get_all_components();
+        std::list<GameObject *> GetAllGameObjects();
+        std::list<Component *> GetAllComponents();
 
         template <typename T>
-        std::list<T *> find_objects_with_type();
+        std::list<T *> FindObjectsWithType();
 
-        const bool object_desctruction_cancel(GameObject *obj);
-        const int object_destruction_cost(GameObject *obj);
-        const bool object_destruction_state(GameObject *obj);
-        const int object_destruction_count();
+        const bool CancelObjectDestruction(GameObject *obj);
+        const int CostObjectDestruction(GameObject *obj);
+        const bool StateObjectDestruction(GameObject *obj);
+        const int CountObjectDestruction();
 
         std::list<Transform *> matrix_check_damaged();
         int matrix_restore();
@@ -66,12 +66,12 @@ namespace RoninEngine::Runtime
     };
 
     template <typename T>
-    std::list<T *> World::find_objects_with_type()
+    std::list<T *> World::FindObjectsWithType()
     {
         T *_target;
         std::list<T *> __classes;
 
-        std::list<Component *> __compr = get_all_components();
+        std::list<Component *> __compr = GetAllComponents();
 
         for(auto iter = __compr.begin(); iter != __compr.end(); ++iter)
         {

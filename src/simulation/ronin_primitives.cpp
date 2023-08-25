@@ -14,14 +14,14 @@ namespace RoninEngine::Runtime
     GameObject *Primitive::create_box2d(Vec2 position, float angle, RoninEngine::Runtime::Color fillColor)
     {
         GameObject *obj = create_empty_game_object(position);
-        obj->add_component<SpriteRenderer>()->set_sprite(create_sprite2D_box(Vec2::one, fillColor));
+        obj->AddComponent<SpriteRenderer>()->set_sprite(create_sprite2D_box(Vec2::one, fillColor));
         obj->transform()->angle(angle);
         return obj;
     }
 
     Camera2D *Primitive::create_camera2D(Vec2 position)
     {
-        return create_empty_game_object(position)->add_component<Camera2D>();
+        return create_empty_game_object(position)->AddComponent<Camera2D>();
     }
 
     Sprite *Primitive::create_empty_sprite2D()

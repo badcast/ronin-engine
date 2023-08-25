@@ -24,34 +24,34 @@ namespace RoninEngine
             return _owner->transform();
         }
 
-        GameObject *Component::game_object()
+        GameObject *Component::gameObject()
         {
             return _owner;
         }
 
-        Camera2D *Component::get_camera2D()
+        Camera2D *Component::camera2D()
         {
-            return _owner->get_camera2D();
+            return _owner->camera2D();
         }
 
-        SpriteRenderer *Component::get_sprite_renderer()
+        SpriteRenderer *Component::spriteRenderer()
         {
-            return _owner->get_sprite_renderer();
+            return _owner->spriteRenderer();
         }
 
-        Terrain2D *Component::get_terrain2D()
+        Terrain2D *Component::terrain2D()
         {
-            return _owner->get_terrain2D();
+            return _owner->terrain2D();
         }
 
-        Component *Component::add_component(Component *component)
+        Component *Component::AddComponent(Component *component)
         {
-            return game_object()->add_component(component);
+            return gameObject()->AddComponent(component);
         }
 
-        bool Component::remove_component(Component *component)
+        bool Component::RemoveComponent(Component *component)
         {
-            return game_object()->remove_component(component);
+            return gameObject()->RemoveComponent(component);
         }
 
     } // namespace Runtime

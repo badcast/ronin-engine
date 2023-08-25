@@ -130,11 +130,11 @@ namespace RoninEngine
         struct IComponents
         {
             virtual Transform *transform() = 0;
-            virtual SpriteRenderer *get_sprite_renderer() = 0;
-            virtual Camera2D *get_camera2D() = 0;
-            virtual Terrain2D *get_terrain2D() = 0;
-            virtual Component *add_component(Component *component) = 0;
-            virtual bool remove_component(Component *component) = 0;
+            virtual SpriteRenderer *spriteRenderer() = 0;
+            virtual Camera2D *camera2D() = 0;
+            virtual Terrain2D *terrain2D() = 0;
+            virtual Component *AddComponent(Component *component) = 0;
+            virtual bool RemoveComponent(Component *component) = 0;
         };
     } // namespace Runtime
 

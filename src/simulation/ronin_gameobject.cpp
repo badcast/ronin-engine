@@ -9,24 +9,24 @@ namespace RoninEngine::Runtime
     extern Transform *create_empty_transform();
 
     // NOTE: Решение многих проблем и времени, объявление
-    template RONIN_API MoveController2D *GameObject::add_component<MoveController2D>();
-    template RONIN_API SpriteRenderer *GameObject::add_component<SpriteRenderer>();
-    template RONIN_API Camera2D *GameObject::add_component<Camera2D>();
-    template RONIN_API Spotlight *GameObject::add_component<Spotlight>();
-    template RONIN_API Terrain2D *GameObject::add_component<Terrain2D>();
+    template RONIN_API MoveController2D *GameObject::AddComponent<MoveController2D>();
+    template RONIN_API SpriteRenderer *GameObject::AddComponent<SpriteRenderer>();
+    template RONIN_API Camera2D *GameObject::AddComponent<Camera2D>();
+    template RONIN_API Spotlight *GameObject::AddComponent<Spotlight>();
+    template RONIN_API Terrain2D *GameObject::AddComponent<Terrain2D>();
     //----------------
-    template RONIN_API MoveController2D *GameObject::get_component<MoveController2D>();
-    template RONIN_API SpriteRenderer *GameObject::get_component<SpriteRenderer>();
-    template RONIN_API Camera2D *GameObject::get_component<Camera2D>();
-    template RONIN_API Spotlight *GameObject::get_component<Spotlight>();
-    template RONIN_API Terrain2D *GameObject::get_component<Terrain2D>();
-    template RONIN_API Transform *GameObject::get_component<Transform>();
+    template RONIN_API MoveController2D *GameObject::GetComponent<MoveController2D>();
+    template RONIN_API SpriteRenderer *GameObject::GetComponent<SpriteRenderer>();
+    template RONIN_API Camera2D *GameObject::GetComponent<Camera2D>();
+    template RONIN_API Spotlight *GameObject::GetComponent<Spotlight>();
+    template RONIN_API Terrain2D *GameObject::GetComponent<Terrain2D>();
+    template RONIN_API Transform *GameObject::GetComponent<Transform>();
     // Remove Component
-    template RONIN_API bool GameObject::remove_component<MoveController2D>();
-    template RONIN_API bool GameObject::remove_component<SpriteRenderer>();
-    template RONIN_API bool GameObject::remove_component<Camera2D>();
-    template RONIN_API bool GameObject::remove_component<Spotlight>();
-    template RONIN_API bool GameObject::remove_component<Terrain2D>();
+    template RONIN_API bool GameObject::RemoveComponent<MoveController2D>();
+    template RONIN_API bool GameObject::RemoveComponent<SpriteRenderer>();
+    template RONIN_API bool GameObject::RemoveComponent<Camera2D>();
+    template RONIN_API bool GameObject::RemoveComponent<Spotlight>();
+    template RONIN_API bool GameObject::RemoveComponent<Terrain2D>();
 
     GameObject::GameObject() : GameObject(DESCRIBE_AS_MAIN_OFF(GameObject))
     {
@@ -44,12 +44,12 @@ namespace RoninEngine::Runtime
     {
     }
 
-    bool GameObject::is_active()
+    bool GameObject::isActive()
     {
         return m_active;
     }
 
-    void GameObject::set_active(bool state)
+    void GameObject::SetActive(bool state)
     {
         if(m_active == state)
             return;
@@ -58,17 +58,17 @@ namespace RoninEngine::Runtime
         transform()->parent_notify_active_state(this);
     }
 
-    const bool GameObject::destroy_cancel()
+    const bool GameObject::CancelDestroy()
     {
-        return World::self()->object_desctruction_cancel(this);
+        return World::self()->CancelObjectDestruction(this);
     }
 
-    const bool GameObject::is_destruction()
+    const bool GameObject::isDestroying()
     {
-        return World::self()->object_destruction_state(this);
+        return World::self()->StateObjectDestruction(this);
     }
 
-    void GameObject::set_active_recursivelly(bool state)
+    void GameObject::SetActiveRecursivelly(bool state)
     {
         std::list<GameObject *> __stack;
         __stack.emplace_back(this);
@@ -76,9 +76,9 @@ namespace RoninEngine::Runtime
         {
             for(Transform *h : __stack.front()->transform()->hierarchy)
             {
-                __stack.emplace_back(h->game_object());
+                __stack.emplace_back(h->gameObject());
             }
-            __stack.front()->set_active(state);
+            __stack.front()->SetActive(state);
             __stack.pop_front();
         }
     }
@@ -89,32 +89,32 @@ namespace RoninEngine::Runtime
         return static_cast<Transform *>(m_components.front());
     }
 
-    SpriteRenderer *GameObject::get_sprite_renderer()
+    SpriteRenderer *GameObject::spriteRenderer()
     {
-        return get_component<SpriteRenderer>();
+        return GetComponent<SpriteRenderer>();
     }
 
-    Camera2D *GameObject::get_camera2D()
+    Camera2D *GameObject::camera2D()
     {
-        return get_component<Camera2D>();
+        return GetComponent<Camera2D>();
     }
 
-    Terrain2D *GameObject::get_terrain2D()
+    Terrain2D *GameObject::terrain2D()
     {
-        return get_component<Terrain2D>();
+        return GetComponent<Terrain2D>();
     }
 
-    void GameObject::destroy()
+    void GameObject::Destroy()
     {
-        this->destroy(0);
+        this->Destroy(0);
     }
 
-    void GameObject::destroy(float t)
+    void GameObject::Destroy(float t)
     {
         Runtime::destroy(this, t);
     }
 
-    Component *GameObject::add_component(Component *component)
+    Component *GameObject::AddComponent(Component *component)
     {
         if(!component)
             throw ronin_null_error();
@@ -145,7 +145,7 @@ namespace RoninEngine::Runtime
         return component;
     }
 
-    bool GameObject::remove_component(Component *component)
+    bool GameObject::RemoveComponent(Component *component)
     {
         if(component == nullptr)
             throw ronin_null_error();

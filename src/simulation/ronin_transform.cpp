@@ -71,17 +71,17 @@ namespace RoninEngine::Runtime
         _angle_ = 0;
         layer = 1;
         // create matrix-slot for transform object
-        Matrix::matrix_nature(this, Matrix::matrix_get_key(local_position() + Vec2::one));
+        Matrix::matrix_nature(this, Matrix::matrix_get_key(localPosition() + Vec2::one));
     }
 
-    int Transform::child_count() const
+    int Transform::ChildCount() const
     {
         return hierarchy.size();
     }
 
-    Transform *Transform::child_of(int index)
+    Transform *Transform::ChildOf(int index)
     {
-        if(child_count() <= index || child_count() >= index)
+        if(ChildCount() <= index || ChildCount() >= index)
             throw std::out_of_range("index");
 
         auto iter = begin(hierarchy);
@@ -97,24 +97,29 @@ namespace RoninEngine::Runtime
         return nullptr;
     }
 
-    void Transform::look_at(Transform *target)
+    Transform *Transform::root()
     {
-        look_at(target->_position, Vec2::up);
+        return World::self()->internal_resources->main_object->transform();
     }
 
-    void Transform::look_at(Transform *target, Vec2 axis)
+    void Transform::LookAt(Transform *target)
     {
-        look_at(target->_position, axis);
+        LookAt(target->_position, Vec2::up);
     }
 
-    void Transform::look_at(Vec2 target)
+    void Transform::LookAt(Transform *target, Vec2 axis)
     {
-        look_at(target, Vec2::up);
+        LookAt(target->_position, axis);
     }
 
-    void Transform::look_at(Vec2 target, Vec2 axis)
+    void Transform::LookAt(Vec2 target)
     {
-        _angle_ = Vec2::angle(axis, target - _position) * Math::rad2deg;
+        LookAt(target, Vec2::up);
+    }
+
+    void Transform::LookAt(Vec2 target, Vec2 axis)
+    {
+        _angle_ = Vec2::Angle(axis, target - _position) * Math::rad2deg;
         // normalize horz
         if(axis.x == 1)
         {
@@ -139,10 +144,10 @@ namespace RoninEngine::Runtime
         }
     }
 
-    void Transform::look_at_lerp(Vec2 target, float t)
+    void Transform::LookAtLerp(Vec2 target, float t)
     {
         Vec2 axis = Vec2::up;
-        float a = Vec2::angle(axis, target - _position) * Math::rad2deg;
+        float a = Vec2::Angle(axis, target - _position) * Math::rad2deg;
         // normalize
         if(axis.x == 1)
         {
@@ -166,107 +171,107 @@ namespace RoninEngine::Runtime
                 a = -a;
         }
 
-        local_angle(Math::lerp_angle(_angle_, a, t));
+        localAngle(Math::lerp_angle(_angle_, a, t));
     }
 
-    void Transform::look_at_lerp(Transform *target, float t)
+    void Transform::LookAtLerp(Transform *target, float t)
     {
-        look_at_lerp(target->_position, t);
+        LookAtLerp(target->_position, t);
     }
 
-    void Transform::as_first_child()
+    void Transform::AsFirstChild()
     {
         if(this->m_parent == nullptr)
             return;
         hierarchy_sibiling(m_parent, 0); // 0 is first
     }
 
-    bool Transform::child_has(Transform *child)
+    bool Transform::ChildContain(Transform *child)
     {
         return std::find(std::begin(hierarchy), std::end(hierarchy), child) != std::end(hierarchy);
     }
 
-    void Transform::child_append(Transform *child)
+    void Transform::ChildAdd(Transform *child)
     {
         hierarchy_append(this, child);
     }
 
-    void Transform::child_remove(Transform *child)
+    void Transform::ChildRemove(Transform *child)
     {
         hierarchy_remove(this, child);
     }
 
     const Vec2 Transform::forward() const
     {
-        return Vec2::rotate_around(_position, around_frwd, _angle_ * Math::deg2rad);
+        return Vec2::RotateAround(_position, around_frwd, _angle_ * Math::deg2rad);
     }
 
     const Vec2 Transform::forward(float force) const
     {
-        return Vec2::rotate_around(_position, around_frwd * force, _angle_ * Math::deg2rad);
+        return Vec2::RotateAround(_position, around_frwd * force, _angle_ * Math::deg2rad);
     }
 
     const Vec2 Transform::back() const
     {
-        return Vec2::rotate_around(_position, around_frwd, (_angle_ - 180) * Math::deg2rad);
+        return Vec2::RotateAround(_position, around_frwd, (_angle_ - 180) * Math::deg2rad);
     }
 
     const Vec2 Transform::back(float force) const
     {
-        return Vec2::rotate_around(_position, around_frwd * force, (_angle_ - 180) * Math::deg2rad);
+        return Vec2::RotateAround(_position, around_frwd * force, (_angle_ - 180) * Math::deg2rad);
     }
 
     const Vec2 Transform::right()
     {
-        return transform_direction(Vec2::right);
+        return TransformDirection(Vec2::right);
     }
 
     const Vec2 Transform::left()
     {
-        return transform_direction(Vec2::left);
+        return TransformDirection(Vec2::left);
     }
 
     const Vec2 Transform::up()
     {
-        return transform_direction(Vec2::up);
+        return TransformDirection(Vec2::up);
     }
 
     const Vec2 Transform::down()
     {
-        return transform_direction(Vec2::down);
+        return TransformDirection(Vec2::down);
     }
 
-    const Vec2 Transform::transform_direction(Vec2 direction)
+    const Vec2 Transform::TransformDirection(Vec2 direction)
     {
-        return Vec2::rotate(_position + direction, _angle_);
+        return Vec2::Rotate(_position + direction, _angle_);
     }
 
-    const Vec2 Transform::transform_direction(float x, float y)
+    const Vec2 Transform::TransformDirection(float x, float y)
     {
-        return transform_direction({x, y});
+        return TransformDirection({x, y});
     }
 
-    const bool Transform::look_of_angle(Transform *target, float maxAngle) const
+    const bool Transform::LookOfAngle(Transform *target, float maxAngle) const
     {
-        return look_of_angle(target->_position, maxAngle);
+        return LookOfAngle(target->_position, maxAngle);
     }
 
-    const bool Transform::look_of_angle(Vec2 target, float maxAngle) const
+    const bool Transform::LookOfAngle(Vec2 target, float maxAngle) const
     {
-        float angle = Vec2::angle(this->_position - target, this->_position - this->forward());
+        float angle = Vec2::Angle(this->_position - target, this->_position - this->forward());
         return angle <= maxAngle * Math::deg2rad;
     }
 
-    Vec2 Transform::local_position() const
+    Vec2 Transform::localPosition() const
     {
         return (this->m_parent ? _position - this->m_parent->_position : _position);
     }
 
-    const Vec2 &Transform::local_position(const Vec2 &value)
+    const Vec2 &Transform::localPosition(const Vec2 &value)
     {
         Vec2Int lastPoint = Matrix::matrix_get_key(_position);
         _position = (this->m_parent ? this->m_parent->_position + value : value);
-        if(game_object()->is_active())
+        if(gameObject()->isActive())
             Matrix::matrix_nature(this, lastPoint);
         return value;
     }
@@ -328,12 +333,12 @@ namespace RoninEngine::Runtime
         this->_angle_ = (this->m_parent) ? this->m_parent->angle() - value : value;
     }
 
-    float Transform::local_angle() const
+    float Transform::localAngle() const
     {
         return this->_angle_;
     }
 
-    void Transform::local_angle(float value)
+    void Transform::localAngle(float value)
     {
         while(value > 360)
             value -= 360;

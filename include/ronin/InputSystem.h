@@ -86,26 +86,70 @@ namespace RoninEngine::Runtime
         KB_RGUI = 231,
     };
 
+    /**
+     * @brief The Input class provides methods for handling user input within the RONIN game engine.
+     */
     class RONIN_API Input
     {
     public:
-        static const bool get_mouse_down(MouseState state);
+        /**
+         * @brief Check if a mouse button is currently in a pressed state.
+         * @param state The state of the mouse button to check.
+         * @return True if the mouse button is currently pressed, false otherwise.
+         */
+        static const bool GetMouseDown(MouseState state);
 
-        static const bool get_mouse_up(MouseState state);
+        /**
+         * @brief Check if a mouse button is currently in a released state.
+         * @param state The state of the mouse button to check.
+         * @return True if the mouse button is currently released, false otherwise.
+         */
+        static const bool GetMouseUp(MouseState state);
 
-        static const int get_mouse_wheel();
+        /**
+         * @brief Get the current mouse wheel scroll amount.
+         * @return The amount of mouse wheel scroll.
+         */
+        static const int GetMouseWheel();
 
-        static const Vec2Int get_mouse_point();
+        /**
+         * @brief Get the current mouse pointer coordinates as integers.
+         * @return A Vec2Int containing the x and y coordinates of the mouse pointer.
+         */
+        static const Vec2Int GetMousePoint();
 
-        static const Vec2 get_mouse_pointf();
+        /**
+         * @brief Get the current mouse pointer coordinates as floating-point values.
+         * @return A Vec2 containing the x and y coordinates of the mouse pointer.
+         */
+        static const Vec2 GetMousePointf();
 
-        static const Vec2 get_axis();
+        /**
+         * @brief Get the current state of a specific axis.
+         * @return A Vec2 representing the state of the specified axis.
+         */
+        static const Vec2 GetAxis();
 
-        static const bool get_key_state(KeyboardState state);
+        /**
+         * @brief Check the state of a keyboard key.
+         * @param state The state of the keyboard key to check.
+         * @return True if the keyboard key is currently in the specified state, false otherwise.
+         */
+        static const bool GetKeyState(KeyboardState state);
 
-        static const bool get_key_down(KeyboardCode code);
+        /**
+         * @brief Check if a keyboard key is currently in a pressed state.
+         * @param code The code of the keyboard key to check.
+         * @return True if the keyboard key is currently pressed, false otherwise.
+         */
+        static const bool GetKeyDown(KeyboardCode code);
 
-        static const bool get_key_up(KeyboardCode code);
+        /**
+         * @brief Check if a keyboard key is currently in a released state.
+         * @param code The code of the keyboard key to check.
+         * @return True if the keyboard key is currently released, false otherwise.
+         */
+        static const bool GetKeyUp(KeyboardCode code);
     };
 
 } // namespace RoninEngine::Runtime

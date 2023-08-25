@@ -110,47 +110,47 @@ namespace RoninEngine::Runtime
         internalText.resize(0);
     }
 
-    const bool Input::get_mouse_down(MouseState state)
+    const bool Input::GetMouseDown(MouseState state)
     {
         return internal_input._mouse_state[static_cast<int>(state)] & MouseStateFlags::MouseDown;
     }
 
-    const bool Input::get_mouse_up(MouseState state)
+    const bool Input::GetMouseUp(MouseState state)
     {
         return internal_input._mouse_state[static_cast<int>(state)] & MouseStateFlags::MouseUp;
     }
 
-    const int Input::get_mouse_wheel()
+    const int Input::GetMouseWheel()
     {
         return internal_input._mouse_wheels;
     }
 
-    const Vec2Int Input::get_mouse_point()
+    const Vec2Int Input::GetMousePoint()
     {
         return internal_input._mouse_position;
     }
 
-    const Vec2 Input::get_mouse_pointf()
+    const Vec2 Input::GetMousePointf()
     {
         return Vec2 {internal_input._mouse_position};
     }
 
-    const Vec2 Input::get_axis()
+    const Vec2 Input::GetAxis()
     {
         return internal_input._movement_axis;
     }
 
-    const bool Input::get_key_state(KeyboardState state)
+    const bool Input::GetKeyState(KeyboardState state)
     {
         return static_cast<bool>(SDL_GetKeyboardState(nullptr)[static_cast<int>(state)]);
     }
 
-    const bool Input::get_key_down(KeyboardCode code)
+    const bool Input::GetKeyDown(KeyboardCode code)
     {
         return static_cast<bool>(SDL_GetKeyboardState(nullptr)[code]);
     }
 
-    const bool Input::get_key_up(KeyboardCode code)
+    const bool Input::GetKeyUp(KeyboardCode code)
     {
         return !static_cast<bool>(SDL_GetKeyboardState(nullptr)[code]);
     }

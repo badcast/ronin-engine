@@ -89,7 +89,7 @@ namespace RoninEngine::UI
         static float dropDownLinear = 0;
         static Color colors[3];
         bool result = false;
-        Vec2Int ms = Input::get_mouse_point();
+        Vec2Int ms = Input::GetMousePoint();
         SDL_Texture *texture;
         SDL_Surface *surface;
         Rect rect;
@@ -118,7 +118,7 @@ namespace RoninEngine::UI
             {
                 static uint8_t pSize = 2; // pen size
                 static Rect inside = Rect(pSize, pSize, -pSize * 2, -pSize * 2);
-                bool show_down_side = Input::get_mouse_down(MouseState::MouseLeft) == false || !ms_hover;
+                bool show_down_side = Input::GetMouseDown(MouseState::MouseLeft) == false || !ms_hover;
                 Rect rect;
 
                 // fill
@@ -217,17 +217,16 @@ namespace RoninEngine::UI
                     ui_focus = ms_click;
                 }
 
-                if(ms_hover && Input::get_mouse_wheel())
+                if(ms_hover && Input::GetMouseWheel())
                 {
-                    resource->value += Input::get_mouse_wheel() / 10.f; // step wheel mouse = ±0.1
+                    resource->value += Input::GetMouseWheel() / 10.f; // step wheel mouse = ±0.1
                     resource->value = Math::clamp(resource->value, resource->min, resource->max);
-                    // result = true;
+                    result = true;
                 }
-
                 // focused state
-                if(result = (ui_focus && ms_hover))
+                else if(result = (ui_focus && ms_hover))
                 {
-                    if(Input::get_mouse_down(MouseState::MouseLeft))
+                    if(Input::GetMouseDown(MouseState::MouseLeft))
                     {
                         // get *x* component from mouse point for set cursor point
                         resource->value = Math::map((float) ms.x, (float) rect.x, (float) rect.x + rect.w, resource->min, resource->max);
@@ -257,12 +256,12 @@ namespace RoninEngine::UI
                 roundedRectangleColor(renderer, rect.x, rect.y, rect.x + rect.w, rect.y + rect.h, 3, color);
 
                 // Draw text
-                char __[32];
+                //char __[32];
 
-                TTF_SizeText(ttf_arial_font, __, &rect.w, &rect.h);
-                sprintf(__, "%.1f", &resource->value);
-                Vec2Int tpos = {element.rect.x + element.rect.w - 22, element.rect.y + element.rect.h - 8};
-                draw_font_at(renderer, __, 1, tpos, color);
+                //TTF_SizeText(ttf_arial_font, __, &rect.w, &rect.h);
+                //sprintf(__, "%.1f", &resource->value);
+                //Vec2Int tpos = {element.rect.x + element.rect.w - 22, element.rect.y + element.rect.h - 8};
+                //draw_font_at(renderer, __, 1, tpos, color);
 
                 break;
             }
@@ -357,7 +356,7 @@ namespace RoninEngine::UI
                             {
                                 Gizmos::set_color(colorSpace.defaultInteraction.pressState);
                                 SDL_RenderFillRect(renderer, (SDL_Rect *) &elrect);
-                                if(Input::get_mouse_down(MouseState::MouseLeft))
+                                if(Input::GetMouseDown(MouseState::MouseLeft))
                                 {
                                     link->first = index;
                                     element.text = *iter;

@@ -3,12 +3,12 @@
 
 namespace RoninEngine::Runtime
 {
-    extern int _matrix_overflow_;
+    extern int _matrix_threshold_;
     extern World *switched_world;
 
     Vec2Int Matrix::matrix_get_key(Vec2 position)
     {
-        return Vec2::round_to_int(position * _matrix_overflow_);
+        return Vec2::RoundToInt(position * _matrix_threshold_);
     }
 
     void Matrix::matrix_nature(Transform *target, Vec2Int lastPoint)

@@ -28,23 +28,21 @@ namespace RoninEngine::Runtime
         Transform *parent() const;
         void set_parent(Transform *parent, bool worldPositionStays = true);
 
-        int child_count() const;
-        Transform *child_of(int index);
+        int ChildCount() const;
+        Transform *ChildOf(int index);
 
-        Transform *root();
+        void LookAt(Vec2 target, Vec2 axis);
+        void LookAt(Vec2 target);
+        void LookAt(Transform *target, Vec2 axis);
+        void LookAt(Transform *target);
+        void LookAtLerp(Vec2 target, float t);
+        void LookAtLerp(Transform *target, float t);
 
-        void look_at(Vec2 target, Vec2 axis);
-        void look_at(Vec2 target);
-        void look_at(Transform *target, Vec2 axis);
-        void look_at(Transform *target);
-        void look_at_lerp(Vec2 target, float t);
-        void look_at_lerp(Transform *target, float t);
+        void AsFirstChild();
 
-        void as_first_child();
-
-        bool child_has(Transform *child);
-        void child_append(Transform *child);
-        void child_remove(Transform *child);
+        bool ChildContain(Transform *child);
+        void ChildAdd(Transform *child);
+        void ChildRemove(Transform *child);
 
         // look forward axis from world coordinates
         const Vec2 forward() const;
@@ -63,27 +61,29 @@ namespace RoninEngine::Runtime
         // look down axis from world coordinates
         const Vec2 down();
         // look axis from world coordinates
-        const Vec2 transform_direction(Vec2 direction);
+        const Vec2 TransformDirection(Vec2 direction);
         // look axis from world coordinates
-        const Vec2 transform_direction(float x, float y);
+        const Vec2 TransformDirection(float x, float y);
 
-        /** Looks at the target
-         * \param target - the target candidate for look
-         * \param maxAngle - the angle
-         * \return result of viewed sector
+        /**
+         * @brief Looks at the target
+         * @param target the target candidate for look
+         * @param maxAngle the angle, value from degress 0 ... 360
+         * @return result of viewed sector
          */
-        const bool look_of_angle(Transform *target, float maxAngle) const;
-        /** Looks at the target
-         * \param target - the target candidate for look
-         * \param maxAngle - the angle, value from degres 0 ... 360
-         * \return result of viewed sector
+        const bool LookOfAngle(Transform *target, float maxAngle) const;
+        /**
+         * @brief Looks at the target
+         * @param target the target candidate for look
+         * @param maxAngle the angle, value from degress 0 ... 360
+         * @return result of viewed sector
          */
-        const bool look_of_angle(Vec2 target, float maxAngle) const;
+        const bool LookOfAngle(Vec2 target, float maxAngle) const;
 
         // get position in local space from parent
-        Vec2 local_position() const;
+        Vec2 localPosition() const;
         // set position in local space from parent
-        const Vec2 &local_position(const Vec2 &value);
+        const Vec2 &localPosition(const Vec2 &value);
 
         // get position in world space
         Vec2 position() const;
@@ -93,8 +93,10 @@ namespace RoninEngine::Runtime
         // Angle with Degress
         float angle() const;
         void angle(float value);
-        float local_angle() const;
-        void local_angle(float value);
+        float localAngle() const;
+        void localAngle(float value);
+
+        static Transform *root();
     };
 
 } // namespace RoninEngine::Runtime

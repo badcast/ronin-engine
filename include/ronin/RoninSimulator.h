@@ -42,9 +42,8 @@ namespace RoninEngine
     {
         std::uint32_t ms_wait_exec_world;
         std::uint32_t ms_wait_exec_scripts;
-        std::uint32_t ms_wait_render_collect;
         std::uint32_t ms_wait_render_world;
-        std::uint32_t ms_wait_render_ui;
+        std::uint32_t ms_wait_render_gui;
         std::uint32_t ms_wait_render_gizmos;
         std::uint32_t ms_wait_destructions;
         std::uint32_t ms_wait_internal_instructions;

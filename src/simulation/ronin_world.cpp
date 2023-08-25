@@ -54,10 +54,10 @@ namespace RoninEngine
             lastLevel = switched_world;
             switched_world = world;
 
-            world->request_unload();
+            world->RequestUnload();
 
             // unloading owner
-            world->on_unloading();
+            world->OnUnloading();
 
             if(world->internal_resources->_firstRunScripts)
             {
@@ -105,7 +105,7 @@ namespace RoninEngine
             {
                 for(Transform *e : target->transform()->hierarchy)
                 {
-                    stacks.emplace_front(e->game_object());
+                    stacks.emplace_front(e->gameObject());
                 }
 
                 // destroy
@@ -216,7 +216,7 @@ namespace RoninEngine
         return restored;
     }
 
-    int World::get_culled()
+    int World::GetCulled()
     {
         if(internal_resources == nullptr || internal_resources->main_camera == nullptr)
             return -1;
@@ -384,7 +384,7 @@ namespace RoninEngine
 
             for(Behaviour *exec : *(internal_resources->_firstRunScripts))
             {
-                if(exec->game_object()->m_active)
+                if(exec->gameObject()->m_active)
                     exec->OnStart(); // go start (first draw)
                 internal_resources->_realtimeScripts->emplace_back(exec);
             }
@@ -396,7 +396,7 @@ namespace RoninEngine
         {
             for(Behaviour *exec : *(internal_resources->_realtimeScripts))
             {
-                if(exec->game_object()->m_active)
+                if(exec->gameObject()->m_active)
                     exec->OnUpdate();
             };
         }
@@ -415,19 +415,19 @@ namespace RoninEngine
             // draw world in world size
             RoninEngine::Runtime::native_render_2D(reinterpret_cast<Camera2D *>(cam));
         }
-        watcher->ms_wait_render_collect = TimeEngine::end_watch();
+        watcher->ms_wait_render_world = TimeEngine::end_watch();
 
         // begin watcher
         TimeEngine::begin_watch();
         if(!switched_world->internal_resources->request_unloading && cam)
         {
-            this->on_gizmo(); // Draw gizmos
+            this->OnGizmos(); // Draw gizmos
 
             if(internal_resources->_realtimeScripts)
             {
                 for(auto exec : *(internal_resources->_realtimeScripts))
                 {
-                    if(exec->game_object()->m_active)
+                    if(exec->gameObject()->m_active)
                         exec->OnGizmos();
                 };
             }
@@ -444,28 +444,27 @@ namespace RoninEngine
                 std::uint32_t value;
                 std::string format;
                 Color format_color;
-            } elements[] = {{"Render Frame", 0}, {"UI", 0}, {"Scripts", 0}, {"2D Space", 0}, {"Gizmos", 0}, {"Collect", 0}, {"Memory", 0}};
+            } elements[] = {{"Render Frame", 0}, {"GUI", 0}, {"Scripts", 0}, {"Render", 0}, {"Gizmos", 0}, {"Memory", 0}};
+
             static std::uint32_t max_elements = sizeof(elements) / sizeof(elements[0]);
             static std::uint32_t max;
             static std::uint32_t averrage;
 
-            Vec2 g_size = Vec2 {138, font_height * (max_elements + 2)};
-            Vec2Int screen_point = {g_size.x, active_resolution.height};
-            Vec2 g_pos = Camera::screen_to_world({screen_point.x / 2.f, screen_point.y - g_size.y / 2});
+            Vec2 g_size = Vec2 {138, static_cast<float>(font_height * (max_elements + 2))};
+            Vec2Int screen_point = {g_size.x, static_cast<float>(active_resolution.height)};
+            Vec2 g_pos = Camera::ScreenToWorldPoint({screen_point.x / 2.f, screen_point.y - g_size.y / 2});
             int x;
 
             if(TimeEngine::frame() % 10 == 0)
             {
-
                 ScoreWatcher stat = RoninSimulator::get_watches();
                 // Update data
                 elements[0].value = stat.ms_wait_frame;
-                elements[1].value = stat.ms_wait_render_ui;
-                elements[2].value = stat.ms_wait_exec_scripts;
+                elements[1].value = stat.ms_wait_render_gui;
+                elements[2].value = stat.ms_wait_exec_scripts + stat.ms_wait_exec_world;
                 elements[3].value = stat.ms_wait_render_world;
                 elements[4].value = stat.ms_wait_render_gizmos;
-                elements[5].value = stat.ms_wait_render_collect;
-                elements[6].value = get_process_sizeMemory() / 1024 / 1024;
+                elements[5].value = get_process_sizeMemory() / 1024 / 1024;
 
                 // calculate averrage and max
                 max = 0;
@@ -537,12 +536,12 @@ namespace RoninEngine
         {
             for(auto exec : *(internal_resources->_realtimeScripts))
             {
-                if(exec->game_object()->m_active)
+                if(exec->gameObject()->m_active)
                     exec->OnLateUpdate();
             }
         }
     }
-    bool World::is_hierarchy()
+    bool World::isHierarchy()
     {
         return this->internal_resources->main_object != nullptr;
     }
@@ -552,22 +551,22 @@ namespace RoninEngine
         return this->m_name;
     }
 
-    UI::GUI *World::get_gui()
+    UI::GUI *World::getGUI()
     {
         return this->internal_resources->gui;
     }
 
-    void World::request_unload()
+    void World::RequestUnload()
     {
         this->internal_resources->request_unloading = true;
     }
 
-    int World::get_destroyed_frames()
+    int World::GetDestroyedFrames()
     {
         return internal_resources->_destroyed;
     }
 
-    std::list<GameObject *> World::get_all_gameobjects()
+    std::list<GameObject *> World::GetAllGameObjects()
     {
         std::list<GameObject *> all_gobjects;
         GameObject *next = internal_resources->main_object;
@@ -576,7 +575,7 @@ namespace RoninEngine
         {
             for(Transform *e : next->transform()->hierarchy)
             {
-                all_gobjects.emplace_front(e->game_object());
+                all_gobjects.emplace_front(e->gameObject());
             }
             if(next == all_gobjects.front())
                 next = nullptr;
@@ -586,10 +585,10 @@ namespace RoninEngine
         return all_gobjects;
     }
 
-    std::list<Component *> World::get_all_components()
+    std::list<Component *> World::GetAllComponents()
     {
         std::list<Component *> components;
-        std::list<GameObject *> all_objects = get_all_gameobjects();
+        std::list<GameObject *> all_objects = GetAllGameObjects();
 
         for(GameObject *curObject : all_objects)
         {
@@ -601,15 +600,13 @@ namespace RoninEngine
         return components;
     }
 
-    const bool World::object_desctruction_cancel(GameObject *obj)
+    const bool World::CancelObjectDestruction(GameObject *obj)
     {
         if(!obj || !obj->exists())
         {
             RoninSimulator::fail_oom_kill();
-            return false;
         }
-
-        if(World::self()->internal_resources->_destructTasks)
+        else if(World::self()->internal_resources->_destructTasks)
         {
             for(std::pair<const float, std::set<GameObject *>> &mapIter : *World::self()->internal_resources->_destructTasks)
             {
@@ -624,7 +621,7 @@ namespace RoninEngine
         return false;
     }
 
-    const int World::object_destruction_cost(GameObject *obj)
+    const int World::CostObjectDestruction(GameObject *obj)
     {
         int x;
         if(!obj || !obj->exists())
@@ -648,12 +645,12 @@ namespace RoninEngine
         return -1;
     }
 
-    const bool World::object_destruction_state(GameObject *obj)
+    const bool World::StateObjectDestruction(GameObject *obj)
     {
-        return object_destruction_cost(obj) > ~0;
+        return this->CostObjectDestruction(obj) > ~0;
     }
 
-    const int World::object_destruction_count()
+    const int World::CountObjectDestruction()
     {
         int x = 0;
         if(World::self()->internal_resources->_destructTasks)
@@ -666,23 +663,23 @@ namespace RoninEngine
         return x;
     }
 
-    void World::on_awake()
+    void World::OnAwake()
     {
     }
 
-    void World::on_start()
+    void World::OnStart()
     {
     }
 
-    void World::on_update()
+    void World::OnUpdate()
     {
     }
 
-    void World::on_gizmo()
+    void World::OnGizmos()
     {
     }
 
-    void World::on_unloading()
+    void World::OnUnloading()
     {
     }
 

@@ -155,7 +155,7 @@ namespace RoninEngine::Runtime
         container_result result;
         auto &mx = World::self()->internal_resources->matrix;
 
-        size = Vec2::abs(size) / 2.f;
+        size = Vec2::Abs(size) / 2.f;
         Vec2Int leftUpPoint {Matrix::matrix_get_key(center - size)};
         Vec2Int rightDownPoint {Matrix::matrix_get_key(center + size)};
         Vec2Int pointer = leftUpPoint;
@@ -200,7 +200,7 @@ namespace RoninEngine::Runtime
             [distance](Vec2 lhs, Vec2 rhs)
             {
                 // condition
-                return (lhs - rhs).sqr_magnitude() <= distance;
+                return (lhs - rhs).SqrMagnitude() <= distance;
             });
         return result;
     }

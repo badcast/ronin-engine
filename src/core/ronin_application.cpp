@@ -28,7 +28,7 @@ namespace RoninEngine
         std::uint32_t internal_start_engine_time;
         std::uint32_t internal_frames; // framecounter
         std::vector<std::uint32_t> _watcher_time;
-        int _matrix_overflow_ = 2;
+        int _matrix_threshold_ = 2;
         RoninInput internal_input;
         bool text_inputState;
 
@@ -189,7 +189,7 @@ namespace RoninEngine
     void RoninSimulator::request_quit()
     {
         if(switched_world)
-            switched_world->request_unload();
+            switched_world->RequestUnload();
     }
 
     void RoninSimulator::load_world(World *world, bool unloadPrevious)
@@ -208,7 +208,7 @@ namespace RoninEngine
         if(unloadPrevious && switched_world)
         {
             destroyableLevel = switched_world;
-            destroyableLevel->request_unload();
+            destroyableLevel->RequestUnload();
         }
 
         // switching as main
@@ -220,7 +220,7 @@ namespace RoninEngine
         // set state load
         world->internal_resources->request_unloading = false;
 
-        if(!world->is_hierarchy())
+        if(!world->isHierarchy())
         {
             // init main object
             world->internal_resources->main_object = create_empty_gameobject();
@@ -388,7 +388,7 @@ namespace RoninEngine
                     case SDL_QUIT:
                     {
                         isQuiting = true;
-                        switched_world->request_unload();
+                        switched_world->RequestUnload();
                         destroyableLevel = switched_world;
                         switched_world = nullptr;
                         internal_level_loaded = false;
@@ -417,11 +417,11 @@ namespace RoninEngine
                 {
                     // on first load level
                     renderer = SDL_CreateRenderer(main_window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE);
-                    if(!renderer)
+                    if(renderer == nullptr)
                         fail(SDL_GetError());
 
                     internal_init_timer();
-                    switched_world->on_awake();
+                    switched_world->OnAwake();
                     internal_level_loaded = true;
                 }
             }
@@ -446,22 +446,19 @@ namespace RoninEngine
                 if(!world_can_start)
                 {
 
-                    switched_world->on_start();
+                    switched_world->OnStart();
                     world_can_start = true;
                 }
+
                 if(!switched_world->internal_resources->request_unloading)
                 {
-
-                    switched_world->on_update();
-
-                    // end watcher
-                    queue_watcher.ms_wait_exec_world = TimeEngine::end_watch();
+                    switched_world->OnUpdate();
                 }
-                else
-                {
-                    // end watcher
-                    queue_watcher.ms_wait_exec_world = TimeEngine::end_watch();
+                // end watcher
+                queue_watcher.ms_wait_exec_world = TimeEngine::end_watch();
 
+                if(switched_world->internal_resources->request_unloading)
+                {
                     goto end_simulate; // break on unload state
                 }
             }
@@ -479,7 +476,7 @@ namespace RoninEngine
             // begin watcher
             TimeEngine::begin_watch();
             UI::native_draw_render(switched_world->internal_resources->gui);
-            queue_watcher.ms_wait_render_ui = TimeEngine::end_watch();
+            queue_watcher.ms_wait_render_gui = TimeEngine::end_watch();
             // end watcher
 
             if(switched_world->internal_resources->request_unloading)
@@ -490,7 +487,7 @@ namespace RoninEngine
                 // begin watcher
                 TimeEngine::begin_watch();
                 SDL_RenderPresent(renderer);
-                queue_watcher.ms_wait_render_world = TimeEngine::end_watch();
+                queue_watcher.ms_wait_render_world += TimeEngine::end_watch();
                 // end watcher
 
                 switched_world->level_render_world_late();

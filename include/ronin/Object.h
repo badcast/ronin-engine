@@ -23,11 +23,11 @@ namespace RoninEngine
         extern RONIN_API bool instanced(Object *obj);
 
         // Клонирует объект
-        extern RONIN_API GameObject *instantiate(GameObject *obj);
+        extern RONIN_API GameObject *Instantiate(GameObject *obj);
         // Клонирует объект
-        extern RONIN_API GameObject *instantiate(GameObject *obj, Vec2 position, float angle = 0);
+        extern RONIN_API GameObject *Instantiate(GameObject *obj, Vec2 position, float angle = 0);
         // Клонирует объект
-        extern RONIN_API GameObject *instantiate(GameObject *obj, Vec2 position, Transform *parent, bool worldPositionStay = true);
+        extern RONIN_API GameObject *Instantiate(GameObject *obj, Vec2 position, Transform *parent, bool worldPositionStay = true);
 
         class RONIN_API Object
         {

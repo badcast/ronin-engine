@@ -5,10 +5,8 @@
 
 namespace RoninEngine
 {
-
     namespace Runtime
     {
-
         class RONIN_API Component : public Object, public IComponents
         {
         private:
@@ -22,34 +20,37 @@ namespace RoninEngine
             virtual ~Component() = default;
 
             const bool is_binded();
-            GameObject *game_object();
+            GameObject *gameObject();
             Transform *transform();
-            SpriteRenderer *get_sprite_renderer();
-            Camera2D *get_camera2D();
-            Terrain2D *get_terrain2D();
-            Component *add_component(Component *component);
-            bool remove_component(Component *component);
+            SpriteRenderer *spriteRenderer();
+            Camera2D *camera2D();
+            Terrain2D *terrain2D();
+            Component *AddComponent(Component *component);
+            bool RemoveComponent(Component *component);
 
             template <typename T>
-            std::enable_if_t<std::is_base_of<Component, T>::value, T *> add_component()
+            std::enable_if_t<std::is_base_of<Component, T>::value, T *> AddComponent()
             {
-                return _owner->add_component<T>();
-            };
+                return _owner->AddComponent<T>();
+            }
+
             template <typename T>
-            std::enable_if_t<std::is_base_of<Component, T>::value, T *> get_component()
+            std::enable_if_t<std::is_base_of<Component, T>::value, T *> GetComponent()
             {
-                return _owner->get_component<T>();
-            };
+                return _owner->GetComponent<T>();
+            }
+
             template <typename T>
-            std::enable_if_t<std::is_base_of<Component, T>::value, bool> remove_component()
+            std::enable_if_t<std::is_base_of<Component, T>::value, bool> RemoveComponent()
             {
-                return _owner->remove_component<T>();
-            };
+                return _owner->RemoveComponent<T>();
+            }
+
             template <typename T>
-            std::enable_if_t<std::is_base_of<Component, T>::value, std::list<T *>> get_components()
+            std::enable_if_t<std::is_base_of<Component, T>::value, std::list<T *>> GetComponents()
             {
-                return _owner->get_components<T>();
-            };
+                return _owner->GetComponents<T>();
+            }
         };
     } // namespace Runtime
 } // namespace RoninEngine

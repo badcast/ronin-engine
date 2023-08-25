@@ -505,14 +505,17 @@ float Math::square_triangle(float base, float height)
 {
     return base * height / 2;
 }
+
 float Math::square(float x)
 {
     return x * x;
 }
+
 float Math::square_rectangle(float a, float b)
 {
     return a * b;
 }
+
 float Math::square_circle(float radius)
 {
     /*
@@ -523,22 +526,4 @@ float Math::square_circle(float radius)
      *
      */
     return Math::Pi * Math::pow2(radius);
-}
-float Math::square_mesh(std::list<Vec2> &vecs)
-{
-    /*
-     *    get the square a customize figure
-     *    S = square
-     *    S1 = cell square
-     *    n = closed cell
-     *    r = partially closed cell
-     *    S = S1 * (n + 1/2 * r)
-     *
-     */
-
-    float S = -1;
-
-    // TODO: написать алгоритм измерение площади произвольным фигурам
-    throw ronin_implementation_error();
-    return S;
 }

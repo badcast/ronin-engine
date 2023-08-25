@@ -6,9 +6,6 @@
 #include "omp.h"
 #endif
 
-// TODO: how to create shadow ? for all sprite renderer component
-using namespace RoninEngine;
-
 namespace RoninEngine::Runtime
 {
     void native_render_2D(Camera2D *camera);
@@ -97,8 +94,8 @@ namespace RoninEngine::Runtime
         if(camera2d->camera_resources->renders.empty())
         {
             Resolution res = active_resolution;
-            Vec2Int wpLeftTop = Vec2::round_to_int(Camera::screen_to_world(Vec2::zero));
-            Vec2Int wpRightBottom = Vec2::round_to_int(Camera::screen_to_world(Vec2(res.width, res.height)));
+            Vec2Int wpLeftTop = Vec2::RoundToInt(Camera::ScreenToWorldPoint(Vec2::zero));
+            Vec2Int wpRightBottom = Vec2::RoundToInt(Camera::ScreenToWorldPoint(Vec2(res.width, res.height)));
             Vec2 camera_position = camera2d->transform()->position();
             // RUN STORM CAST
 
@@ -144,7 +141,7 @@ namespace RoninEngine::Runtime
             else
                 for(auto iter = std::begin(storm_result); iter != std::end(storm_result); ++iter)
                 {
-                    std::list<Renderer *> rends = (*iter)->game_object()->get_components<Renderer>();
+                    std::list<Renderer *> rends = (*iter)->gameObject()->GetComponents<Renderer>();
                     for(Renderer *x : rends)
                     {
                         camera2d->camera_resources->renders[x->transform()->layer].emplace_back(x);
@@ -236,8 +233,8 @@ namespace RoninEngine::Runtime
                     else
                     {
                         // local position is direction
-                        sourcePoint = Vec2::rotate_around(
-                            render_parent->_position, render_transform->local_position(), render_parent->angle() * Math::deg2rad);
+                        sourcePoint = Vec2::RotateAround(
+                            render_parent->_position, render_transform->localPosition(), render_parent->angle() * Math::deg2rad);
                     }
 
                     wrapper.dst.w *= pixelsPerPoint; //_scale.x;
@@ -245,7 +242,7 @@ namespace RoninEngine::Runtime
 
                     Vec2 arranged = wrapper.dst.getXY();
                     if(arranged != Vec2::zero)
-                        arranged = Vec2::rotate_around(sourcePoint, arranged, render_transform->angle() * Math::deg2rad);
+                        arranged = Vec2::RotateAround(sourcePoint, arranged, render_transform->angle() * Math::deg2rad);
 
                     sourcePoint += render_iobject->get_offset();
 
@@ -353,7 +350,7 @@ namespace RoninEngine::Runtime
                     if(camera->visibleObjects)
                     {
                         Rect factSz = face->get_relative_size();
-                        Vec2 sz = Vec2::scale(face->get_size(), Vec2(factSz.getWH()) / pixelsPerPoint);
+                        Vec2 sz = Vec2::Scale(face->get_size(), Vec2(factSz.getWH()) / pixelsPerPoint);
                         Gizmos::set_color(Color::blue);
                         Gizmos::draw_rectangle_rounded(p, sz.x, sz.y, 10);
                         Gizmos::set_color(Color::black);
@@ -362,7 +359,7 @@ namespace RoninEngine::Runtime
                     if(camera->visibleNames)
                     {
                         Gizmos::set_color(Color::white);
-                        Gizmos::draw_text(p, face->game_object()->m_name);
+                        Gizmos::draw_text(p, face->gameObject()->m_name);
                     }
                 }
         }

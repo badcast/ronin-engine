@@ -100,7 +100,7 @@ namespace RoninEngine::Runtime
         return surf;
     }
 
-    resource_id Resources::load_surface(const std::string &path, bool local)
+    resource_id Resources::LoadImage(const std::string &path, bool local)
     {
         resource_id id;
         GidResources *gid;
@@ -120,7 +120,7 @@ namespace RoninEngine::Runtime
         return id;
     }
 
-    resource_id Resources::load_audio_clip(const std::string &path, bool local)
+    resource_id Resources::LoadAudioClip(const std::string &path, bool local)
     {
         resource_id id;
         GidResources *gid;
@@ -140,7 +140,7 @@ namespace RoninEngine::Runtime
         return id;
     }
 
-    resource_id Resources::load_music_clip(const std::string &path, bool local)
+    resource_id Resources::LoadMusicClip(const std::string &path, bool local)
     {
         resource_id id;
         GidResources *gid;
@@ -160,7 +160,7 @@ namespace RoninEngine::Runtime
         return id;
     }
 
-    native_surface_t *Resources::get_surface(resource_id resource)
+    native_surface_t *Resources::GetImageSource(resource_id resource)
     {
         if(resource == RES_INVALID)
             return nullptr;
@@ -172,7 +172,7 @@ namespace RoninEngine::Runtime
         return gid->gid_surfaces[resource];
     }
 
-    AudioClip *Resources::get_audio_clip(resource_id resource)
+    AudioClip *Resources::GetAudioClipSource(resource_id resource)
     {
         if(resource == RES_INVALID)
             return nullptr;
@@ -183,7 +183,7 @@ namespace RoninEngine::Runtime
         return gid->gid_audio_clips[resource];
     }
 
-    MusicClip *Resources::get_music_clip(resource_id resource)
+    MusicClip *Resources::GetMusicClipSource(resource_id resource)
     {
         if(resource == RES_INVALID)
             return nullptr;

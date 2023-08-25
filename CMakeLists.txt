@@ -5,6 +5,9 @@ set(RONINENGINE_VERSION_MIN 1.0.0)
 # SET PROJECT NAME, VERSION
 project(RoninEngine VERSION ${RONINENGINE_VERSION_MIN})
 
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
 set(RUNTIME_OUTPUT_NAME "RoninEngine")
 
 option(BUILD_SHARED_LIBS "Build a shared lib ?" ON)
@@ -36,15 +39,13 @@ add_subdirectory(src)
 
 add_library(RoninEngine ${ronin_targets} ${RONIN_ENGINE_HEADERS})
 
-target_compile_features(RoninEngine PRIVATE cxx_std_17)
-
 target_link_directories(RoninEngine PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 set_target_properties(RoninEngine PROPERTIES OUTPUT_NAME ${RUNTIME_OUTPUT_NAME})
 
 # DEPENDENCIES
 
-find_packages()
+find_ronin_packages()
 
 # INSTALLS
 

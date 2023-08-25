@@ -21,7 +21,7 @@ namespace RoninEngine
             {
                 T *newTComponent;
                 if constexpr(std::is_same<T, GameObject>::value)
-                    newTComponent = instantiate(clone);
+                    newTComponent = Instantiate(clone);
                 else if constexpr(std::is_same<T, Transform>::value)
                 {
                     RoninMemory::alloc_self(newTComponent);
@@ -59,13 +59,13 @@ namespace RoninEngine
                     if(World::self() == nullptr)
                         throw std::runtime_error("self is null");
 
-                    if(!World::self()->is_hierarchy())
+                    if(!World::self()->isHierarchy())
                         throw std::runtime_error(">mainObject is null");
 
                     auto mainObj = World::self()->internal_resources->main_object;
                     auto root = mainObj->transform();
                     Transform *tr = ((GameObject *) clone)->transform();
-                    root->child_append(tr);
+                    root->ChildAdd(tr);
                 }
             }
 
@@ -74,18 +74,21 @@ namespace RoninEngine
 
         void internal_destroy_object_dyn(Object *obj)
         {
-            Renderer *r;
-            Transform *t;
-            Behaviour *b;
-            Camera *cam;
-            if((t = dynamic_cast<Transform *>(obj)))
-                internal_destroy_object<Transform>(t);
-            else if((b = dynamic_cast<Behaviour *>(obj)))
-                internal_destroy_object<Behaviour>(b);
-            else if((r = dynamic_cast<Renderer *>(obj)))
-                internal_destroy_object<Renderer>(r);
-            else if((cam = dynamic_cast<Camera *>(obj)))
-                internal_destroy_object<Camera>(cam);
+            union
+            {
+                Renderer *renderer;
+                Transform *transform;
+                Behaviour *script;
+                Camera *camera;
+            } candidate;
+            if((candidate.transform = dynamic_cast<Transform *>(obj)))
+                internal_destroy_object<Transform>(candidate.transform);
+            else if((candidate.script = dynamic_cast<Behaviour *>(obj)))
+                internal_destroy_object<Behaviour>(candidate.script);
+            else if((candidate.renderer = dynamic_cast<Renderer *>(obj)))
+                internal_destroy_object<Renderer>(candidate.renderer);
+            else if((candidate.camera = dynamic_cast<Camera *>(obj)))
+                internal_destroy_object<Camera>(candidate.camera);
             else
                 internal_destroy_object<Object>(obj);
         }
@@ -234,7 +237,7 @@ namespace RoninEngine
             return iter != end(World::self()->internal_resources->world_objects);
         }
 
-        GameObject *instantiate(GameObject *obj)
+        GameObject *Instantiate(GameObject *obj)
         {
             GameObject *clone;
 
@@ -251,9 +254,9 @@ namespace RoninEngine
                     //  Clone childs recursive
                     for(Transform *y : t->hierarchy)
                     {
-                        GameObject *yClone = instantiate(y->game_object());
+                        GameObject *yClone = Instantiate(y->gameObject());
                         yClone->transform()->set_parent(existent);
-                        yClone->m_name = t->game_object()->m_name; // put " (clone)" name
+                        yClone->m_name = t->gameObject()->m_name; // put " (clone)" name
                         yClone->m_name.shrink_to_fit();
                     }
                     // skip transform existent component
@@ -278,21 +281,21 @@ namespace RoninEngine
                 }
 
                 replacement->_owner = nullptr;
-                clone->add_component(replacement);
+                clone->AddComponent(replacement);
             }
 
             return clone;
         }
-        GameObject *instantiate(GameObject *obj, Vec2 position, float angle)
+        GameObject *Instantiate(GameObject *obj, Vec2 position, float angle)
         {
-            obj = instantiate(obj);
+            obj = Instantiate(obj);
             obj->transform()->position(position);
             obj->transform()->angle(angle);
             return obj;
         }
-        GameObject *instantiate(GameObject *obj, Vec2 position, Transform *parent, bool worldPositionStay)
+        GameObject *Instantiate(GameObject *obj, Vec2 position, Transform *parent, bool worldPositionStay)
         {
-            obj = instantiate(obj);
+            obj = Instantiate(obj);
             obj->transform()->position(position);
             obj->transform()->set_parent(parent, worldPositionStay);
             return obj;

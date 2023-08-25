@@ -389,7 +389,7 @@ namespace RoninEngine::UI
         bool ms_hover;
         bool ms_click;
 
-        ms = Input::get_mouse_point();
+        ms = Input::GetMousePoint();
 
         resources->_focusedUI = false;
         ui_reset_controls(); // Reset
@@ -399,7 +399,7 @@ namespace RoninEngine::UI
             if(gui->get_visible(*iter))
                 ui_drains.emplace_back(*iter);
         }
-        ms_click = Input::get_mouse_up(MouseState::MouseLeft);
+        ms_click = Input::GetMouseUp(MouseState::MouseLeft);
 
         gui->_resources->mouse_hover = false;
 
@@ -411,7 +411,7 @@ namespace RoninEngine::UI
             for(auto iter = begin(uielement->childs); iter != end(uielement->childs); ++iter)
                 ui_drains.push_back(*iter);
             // status mouse hovered
-            ms_hover = Vec2Int::has_intersection(ms, uielement->rect);
+            ms_hover = Vec2Int::HasIntersection(ms, uielement->rect);
             ui_contex = !uielement->contextRect.empty();
 
             if(!(uielement->options & ElementGroupMask) && uielement->options & ElementVisibleMask)

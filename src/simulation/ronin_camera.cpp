@@ -28,7 +28,7 @@ namespace RoninEngine::Runtime
         World::self()->internal_resources->event_camera_changed(this, CameraEvent::CAM_TARGET);
     }
 
-    const Vec2 Camera::screen_to_world(Vec2 screenPoint)
+    const Vec2 Camera::ScreenToWorldPoint(Vec2 screenPoint)
     {
         Resolution res = RoninSimulator::get_current_resolution();
         Vec2 offset;
@@ -42,7 +42,7 @@ namespace RoninEngine::Runtime
         screenPoint += offset;
         return screenPoint;
     }
-    const Vec2 Camera::world_to_screen(Vec2 worldPoint)
+    const Vec2 Camera::WorldToScreenPoint(Vec2 worldPoint)
     {
         Resolution res = RoninSimulator::get_current_resolution();
         Vec2 scale;
@@ -58,7 +58,7 @@ namespace RoninEngine::Runtime
         return worldPoint;
     }
 
-    const Vec2 Camera::viewport_to_world(Vec2 viewportPoint)
+    const Vec2 Camera::ViewportToWorldPoint(Vec2 viewportPoint)
     {
         Resolution res = RoninSimulator::get_current_resolution();
         Vec2 scale, offset;
@@ -74,7 +74,7 @@ namespace RoninEngine::Runtime
         return viewportPoint;
     }
 
-    const Vec2 Camera::world_to_viewport(Vec2 worldPoint)
+    const Vec2 Camera::WorldToViewportPoint(Vec2 worldPoint)
     {
         Resolution res = RoninSimulator::get_current_resolution();
         Vec2 scale;
@@ -90,9 +90,9 @@ namespace RoninEngine::Runtime
         return worldPoint;
     }
 
-    const Vec2 Camera::world_to_viewport_clamp(Vec2 worldPoint)
+    const Vec2 Camera::WorldToViewportPointClamp(Vec2 worldPoint)
     {
-        worldPoint = world_to_viewport(worldPoint);
+        worldPoint = WorldToViewportPoint(worldPoint);
         worldPoint.x = Math::clamp01(worldPoint.x);
         worldPoint.y = Math::clamp01(worldPoint.y);
         return worldPoint;

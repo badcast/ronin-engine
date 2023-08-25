@@ -65,54 +65,7 @@ namespace RoninEngine::Runtime
     Rect Sprite::realityRect(float opaque)
     {
         // NOTE: Формула пикселей для SDL :: Y Offset * (Pitch/BytesPerPixel) + X Offset
-        // pixel = (SDL_Color*)pLegacyFont->surfNormal->pixels + (cy * (model->pitch / model->format->BytesPerPixel) +
-        // cx);
-        Rect rect = m_rect;
-        bool _place[2] {};
-        if(surface)
-        {
-            Color *pixels = static_cast<Color *>(surface->pixels);
-            Color *argb;
-            // pitch /= SDL_BYTESPERPIXEL(texture->format());
-            for(; !_place[0] || !_place[1];)
-            {
-                if(!_place[0])
-                {
-                    argb = pixels + (rect.y * surface->pitch + rect.x);
-                    _place[0] = (Math::map<float>(argb->a, 0, 255, 0, opaque) > opaque);
-                }
-                if(!_place[1])
-                {
-                    argb = pixels + (rect.w * surface->pitch + rect.h);
-                    _place[1] = (Math::map<float>(argb->a, 0, 255, 0, opaque) > opaque);
-                }
-
-                if(!_place[0])
-                {
-                    if(rect.x < rect.w)
-                        ++rect.x;
-                    else
-                    {
-                        rect.x = 0;
-                        if(not(_place[0] = not(rect.y < rect.h)))
-                            ++rect.y;
-                    }
-                }
-
-                if(!_place[1])
-                {
-                    if(rect.w > rect.x)
-                        --rect.w;
-                    else
-                    {
-                        rect.w = m_rect.w;
-                        if(not(_place[1] = not(rect.h > rect.y)))
-                            --rect.h;
-                    }
-                }
-            }
-        }
-        return rect;
+        return m_rect;
     }
 
     Sprite *Sprite::spriteEmpty()

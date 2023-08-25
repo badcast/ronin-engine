@@ -178,6 +178,5 @@ namespace RoninEngine::Runtime
         static float square_circle(float radius);
         static float square_triangle(float base, float height);
         static float square_triangle(Vec2 p1, Vec2 p2, Vec2 p3);
-        static float square_mesh(std::list<Vec2> &vec);
     };
 } // namespace RoninEngine::Runtime
