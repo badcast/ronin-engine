@@ -308,8 +308,8 @@ namespace RoninEngine::Runtime
         */
         if(camera->visibleBorders)
         {
-            float offset = 25 * std::max(1 - TimeEngine::delta_time(), 0.1f);
-            float height = 200 * TimeEngine::delta_time();
+            float offset = 25 * std::max(1 - TimeEngine::deltaTime(), 0.1f);
+            float height = 200 * TimeEngine::deltaTime();
 
             wrapper.dst.x = ((active_resolution.width) / 2.0f);
             wrapper.dst.y = ((active_resolution.height) / 2.0f);

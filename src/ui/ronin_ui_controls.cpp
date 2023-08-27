@@ -337,7 +337,7 @@ namespace RoninEngine::UI
                     r = element.rect;
                     r.y += r.h;
 
-                    r.h = dropDownLinear = Math::ceil(Math::lerp(dropDownLinear, link->second.size() * sz, TimeEngine::delta_time()));
+                    r.h = dropDownLinear = Math::ceil(Math::lerp(dropDownLinear, link->second.size() * sz, TimeEngine::deltaTime()));
 
                     Gizmos::set_color(colorSpace.defaultInteraction.hoverState);
                     // draw background

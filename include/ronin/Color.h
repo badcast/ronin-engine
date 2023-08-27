@@ -6,7 +6,7 @@ namespace RoninEngine::Runtime
 {
 
 #define COLOR_IMPL API_EXPORT static const
-#define COLOR_IMPL_INLINE API_EXPORT static inline const Color
+#define COLOR_IMPL_INLINE API_EXPORT inline const Color
 
     struct RONIN_API Color
     {
@@ -33,17 +33,13 @@ namespace RoninEngine::Runtime
 
         Color(Color &&);
 
-        Color(int rgb);
+        Color(const int rgba);
 
-        Color(int rgb, std::uint8_t a);
+        Color(const int rgb, const std::uint8_t a);
 
-        Color(std::uint32_t rgb);
+        Color(const char *hex);
 
-        Color(std::uint32_t rgb, std::uint8_t a);
-
-        Color(const std::string &colorHex);
-
-        Color(const char *colorHex);
+        Color(const std::string &hex);
 
         Color(const native_color_t &color);
 
@@ -51,19 +47,107 @@ namespace RoninEngine::Runtime
 
         Color(const std::uint8_t r, const std::uint8_t g, const std::uint8_t b, const std::uint8_t a);
 
+        /**
+         * @brief Converts the color to its hexadecimal representation.
+         * @return The color in hexadecimal format (e.g., "#RRGGBBAA").
+         */
+        std::string toHex() const;
+
+        /**
+         * @brief Converts the color to its integer RGBA representation.
+         * @return The color in RGBA.
+         */
+        int toRGBA() const;
+
+        /**
+         * @brief Converts the color to its integer ARGB representation.
+         * @return The color in ARGB.
+         */
+        int toARGB() const;
+
         Color operator=(const Color &rhs);
         Color operator=(const int &rhs);
-        Color operator=(const std::uint32_t &rhs);
         Color operator=(const native_color_t &rhs);
+
+        Color operator+(const Color &rhs);
+        Color operator-(const Color &rhs);
 
         bool operator==(const Color &rhs);
         bool operator!=(const Color &rhs);
 
         operator int() const;
-        operator std::uint32_t() const;
         operator native_color_t() const;
 
-        // Basic Collors
+        /**
+         * @brief Converts the color to its hexadecimal representation.
+         *
+         * @param color The color to be converted.
+         * @return The color in hexadecimal format (e.g., "#RRGGBBAA").
+         */
+        static std::string ColorToHex(const Color &color);
+
+        /**
+         * @brief Converts a hexadecimal color value to a Color object.
+         *
+         * @param hex The hexadecimal color value (e.g., "#RRGGBB", "RRGGBB" or "#RRGGBBAA").
+         * @return The Color object representing the converted color.
+         */
+        static Color HexToColor(const char *hex);
+
+        /**
+         * @brief Converts a hexadecimal color value to a Color object.
+         *
+         * @param hex The hexadecimal color value (e.g., "#RRGGBB", "RRGGBB" or "#RRGGBBAA").
+         * @return The Color object representing the converted color.
+         */
+        static Color HexToColor(const std::string &hex);
+
+        /**
+         * @brief Converts HSV (Hue, Saturation, Value) color representation to RGB (Red, Green, Blue).
+         *
+         * @param h Hue value in the range [0, 360].
+         * @param s Saturation value in the range [0, 1].
+         * @param v Value (brightness) value in the range [0, 1].
+         *
+         * @return Color object in RGB representation.
+         *
+         * This function takes HSV color values and converts them to RGB color representation.
+         * The input hue value should be in the range of [0, 360], where 0 corresponds to red,
+         * 120 to green, and 240 to blue. The saturation value should be in the range of [0, 1],
+         * where 0 represents grayscale and 1 represents full saturation. The value (brightness)
+         * value should also be in the range of [0, 1], where 0 is black and 1 is the maximum brightness.
+         *
+         * The function returns a Color object with the corresponding RGB values after the conversion.
+         */
+        static Color HSVToRGB(float h, float s, float v);
+
+        /**
+         * @brief Convert RGB color components to HSV (Hue, Saturation, Value) color space.
+         *
+         * @param r Red color component (0-255)
+         * @param g Green color component (0-255)
+         * @param b Blue color component (0-255)
+         * @return Color in HSV color space
+         */
+        static Color RGBToHSV(std::uint8_t r, std::uint8_t g, std::uint8_t b);
+
+        /**
+         * @brief Create a Color object from an integer value in the RGBA format.
+         *
+         * @param rgba The integer value representing the color in the RGBA format.
+         * @return The Color object corresponding to the given RGBA value.
+         */
+        static Color FromRGBA(int rgba);
+
+        /**
+         * @brief Create a Color object from an integer value in the ARGB format.
+         *
+         * @param argb The integer value representing the color in the ARGB format.
+         * @return The Color object corresponding to the given ARGB value.
+         */
+        static Color FromARGB(int argb);
+
+        // Basic Colors
         COLOR_IMPL Color transparent;
         COLOR_IMPL Color black;
         COLOR_IMPL Color silver;
