@@ -1,8 +1,8 @@
-﻿/************************************************************************   *** *** *** *** *** *** *** *** *** ***   **********************
- *                                                                          ***                                 ***
- * ASTAR Algorithm composed to RoninEngine (Navigation AI)                  ***         badcast for cast        ***
- * creation date: 18.01.2023                                                ***                                 ***
- * author: badcast <lmecomposer@gmail.com>                                  *** *** *** *** *** *** *** *** *** ***
+﻿/************************************************************************   *** *** *** *** *** *** *** *** ***  ***   *********************
+ *                                                                          ***                                  ***
+ * ASTAR Algorithm composed to RoninEngine (Navigation AI)                  ***         badcast for cast         ***
+ * creation date: 18.01.2023                                                ***                                  ***
+ * author: badcast <lmecomposer@gmail.com>                                  *** *** *** *** *** *** *** *** ***  ***
  * C++17 minimum required
  * License: GPLv3
  *
@@ -21,6 +21,7 @@
 #include <stdexcept>
 #include <cstring>
 #include <algorithm>
+#include <functional>
 
 #define BRAIN_TEMPLATE template <typename ISite, typename INeuron>
 #define BRAIN_DEFINE basic_brain_map<ISite, INeuron>
@@ -51,6 +52,12 @@ namespace brain
         Octile = 3
     };
 
+    enum class MazeAlgorithm
+    {
+        RecursiveBacktracer = 0,
+        RecursiveDivison = 1
+    };
+
     typedef int weight_t;
 
     struct the_neuron
@@ -68,25 +75,44 @@ namespace brain
         int y;
     };
 
+    struct brain_identity
+    {
+        int length;
+        std::int8_t *horizontal;
+        std::int8_t *vertical;
+        std::int8_t *g_weight;
+    };
+
     bool operator==(const the_site &lhs, const the_site &rhs);
 
     bool operator!=(const the_site &lhs, const the_site &rhs);
 
     struct brain_breakfast
     {
+        /**
+         * @brief Horizontal length of data
+         */
         std::uint32_t widthSpace;
+        /**
+         * @brief Vertical length of data
+         */
         std::uint32_t heightSpace;
+        /**
+         * @brief Length of data
+         */
         int len;
+        /**
+         * @brief The bits of locks (raw data)
+         */
         void *data;
+        /**
+         * @brief Default constructor
+         */
         brain_breakfast() : widthSpace(0), heightSpace(0), len(0), data(nullptr)
         {
         }
     };
 
-    BRAIN_TEMPLATE
-    class immune_system;
-    BRAIN_TEMPLATE
-    class maze_system;
     BRAIN_TEMPLATE
     class basic_brain_map;
 
@@ -103,19 +129,16 @@ namespace brain
     class basic_brain_map
     {
     public:
-        friend class immune_system<ISite, INeuron>;
-
         template <typename T>
         using basic_list = std::vector<T>;
 
         using site_type = ISite;
         using neuron_type = INeuron;
-        using immune_system = immune_system<ISite, INeuron>;
-        using maze_system = maze_system<ISite, INeuron>;
         using list_site = basic_list<ISite>;
         using list_neuron = basic_list<INeuron *>;
         using result_site = navigate_result<list_site>;
         using result_neuron = navigate_result<list_neuron>;
+        using randomize_function = std::function<int(void)>;
 
         explicit basic_brain_map(std::uint32_t xlength, std::uint32_t ylength);
 
@@ -146,9 +169,23 @@ namespace brain
         inline void randomize_hardware(int flagFilter = 0xdeadbeff);
 
         /**
+         * @brief set the custom randomize functions
+         * @param randomizer The candidate for set (default std::rand())
+         */
+        inline void set_random_function(const randomize_function &randomizer);
+
+        /**
          * @brief create maze for map
          */
         inline void create_maze();
+
+        /**
+         * @brief create maze for map with extensions
+         * @param mazeAlgorithm The Algoritm for generate maze system
+         * @param startOf The candidate for start generation
+         * @param endOf The candidate for end generation
+         */
+        inline void create_maze_ex(MazeAlgorithm mazeAlgoritm, ISite startOf, ISite endOf);
 
         /**
          * @brief size of the neurons
@@ -323,19 +360,21 @@ namespace brain
         template <typename list_type = list_site, typename target_type = typename list_type::value_type>
         inline list_type get_neighbours(MatrixIdentity matrixIdentity, const target_type &from);
 
+        /**
+         * @brief Get the random value of min to max
+         * @param min the minimum
+         * @param max the maximum
+         * @return unique randomized value
+         */
+        inline int random_number(int min, int max);
+
     protected:
         INeuron *neurons;
+        randomize_function _rand_ = std::rand;
         weight_t (*__heuristic__)(weight_t dx, weight_t dy);
         std::uint32_t _seg_off;
         std::uint32_t _xsize, _ysize;
-
-        struct
-        {
-            int length;
-            std::int8_t *horizontal;
-            std::int8_t *vertical;
-            std::int8_t *g_weight;
-        } identity;
+        brain_identity identity;
 
         void _internal_realloc();
     };

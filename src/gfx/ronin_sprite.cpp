@@ -10,7 +10,7 @@ namespace RoninEngine::Runtime
     {
     }
 
-    void Sprite::set_surface(native_surface_t *surface)
+    void Sprite::setSurface(native_surface_t *surface)
     {
         this->surface = surface;
 
@@ -68,15 +68,15 @@ namespace RoninEngine::Runtime
         return m_rect;
     }
 
-    Sprite *Sprite::spriteEmpty()
+    Sprite *Sprite::CreateEmptySprite()
     {
         return Primitive::create_empty_sprite2D();
     }
-    Sprite *Sprite::spriteBlack()
+    Sprite *Sprite::CreateBlackSprite()
     {
         return Primitive::create_sprite2D_box(Vec2::one, Color::black);
     }
-    Sprite *Sprite::spriteWhite()
+    Sprite *Sprite::CreateWhiteSprite()
     {
         return Primitive::create_sprite2D_box(Vec2::one, Color::white);
     }

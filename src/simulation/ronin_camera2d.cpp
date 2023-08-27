@@ -188,13 +188,13 @@ namespace RoninEngine::Runtime
         Rendering wrapper;
         Transform *root_transform = World::self()->internal_resources->main_object->transform();
         Vec2 sourcePoint, camera_position = camera->transform()->_position;
-        Color prevColor = Gizmos::get_color();
+        Color prevColor = Gizmos::GetColor();
 
-        Gizmos::set_color(0xffc4c4c4);
+        Gizmos::SetColor(0xffc4c4c4);
         if(camera->visibleGrids)
         {
-            Gizmos::draw_2D_world_space(Vec2::zero);
-            Gizmos::draw_position(camera_position, maxWorldScalar);
+            Gizmos::Draw2DWorldSpace(Vec2::zero);
+            Gizmos::DrawPosition(camera_position, maxWorldScalar);
         }
         // get from matrix selection
         std::tuple<std::map<int, std::vector<Renderer *>> *, std::set<Light *> *> filter = matrix_select(camera);
@@ -324,18 +324,17 @@ namespace RoninEngine::Runtime
             SDL_RenderDrawPointF(renderer, wrapper.dst.x, wrapper.dst.y + offset);
 
             // borders
-            Gizmos::draw_line(Vec2(offset, offset), Vec2(offset + height, offset));
-            Gizmos::draw_line(Vec2(active_resolution.width - offset, offset), Vec2(active_resolution.width - offset - height, offset));
-            Gizmos::draw_line(Vec2(offset, active_resolution.height - offset), Vec2(offset + height, active_resolution.height - offset));
-            Gizmos::draw_line(
+            Gizmos::DrawLine(Vec2(offset, offset), Vec2(offset + height, offset));
+            Gizmos::DrawLine(Vec2(active_resolution.width - offset, offset), Vec2(active_resolution.width - offset - height, offset));
+            Gizmos::DrawLine(Vec2(offset, active_resolution.height - offset), Vec2(offset + height, active_resolution.height - offset));
+            Gizmos::DrawLine(
                 Vec2(active_resolution.width - offset, active_resolution.height - offset),
                 Vec2(active_resolution.width - offset - height, active_resolution.height - offset));
 
-            Gizmos::draw_line(Vec2(offset, 1 + offset), Vec2(offset, offset + height));
-            Gizmos::draw_line(Vec2(active_resolution.width - offset, 1 + offset), Vec2(active_resolution.width - offset, offset + height));
-            Gizmos::draw_line(
-                Vec2(offset, active_resolution.height - 1 - offset), Vec2(offset, active_resolution.height - offset - height));
-            Gizmos::draw_line(
+            Gizmos::DrawLine(Vec2(offset, 1 + offset), Vec2(offset, offset + height));
+            Gizmos::DrawLine(Vec2(active_resolution.width - offset, 1 + offset), Vec2(active_resolution.width - offset, offset + height));
+            Gizmos::DrawLine(Vec2(offset, active_resolution.height - 1 - offset), Vec2(offset, active_resolution.height - offset - height));
+            Gizmos::DrawLine(
                 Vec2(active_resolution.width - offset, active_resolution.height - 1 - offset),
                 Vec2(active_resolution.width - offset, active_resolution.height - offset - height));
         }
@@ -351,20 +350,20 @@ namespace RoninEngine::Runtime
                     {
                         Rect factSz = face->get_relative_size();
                         Vec2 sz = Vec2::Scale(face->get_size(), Vec2(factSz.getWH()) / pixelsPerPoint);
-                        Gizmos::set_color(Color::blue);
-                        Gizmos::draw_rectangle_rounded(p, sz.x, sz.y, 10);
-                        Gizmos::set_color(Color::black);
-                        Gizmos::draw_position(p, 0.2f);
+                        Gizmos::SetColor(Color::blue);
+                        Gizmos::DrawRectangleRounded(p, sz.x, sz.y, 10);
+                        Gizmos::SetColor(Color::black);
+                        Gizmos::DrawPosition(p, 0.2f);
                     }
                     if(camera->visibleNames)
                     {
-                        Gizmos::set_color(Color::white);
-                        Gizmos::draw_text(p, face->gameObject()->m_name);
+                        Gizmos::SetColor(Color::white);
+                        Gizmos::DrawText(p, face->gameObject()->m_name);
                     }
                 }
         }
 
-        Gizmos::set_color(prevColor);
+        Gizmos::SetColor(prevColor);
     }
 
 } // namespace RoninEngine::Runtime

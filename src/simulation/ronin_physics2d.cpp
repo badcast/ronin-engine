@@ -200,7 +200,7 @@ namespace RoninEngine::Runtime
             [distance](Vec2 lhs, Vec2 rhs)
             {
                 // condition
-                return (lhs - rhs).SqrMagnitude() <= distance;
+                return (lhs - rhs).sqrMagnitude() <= distance;
             });
         return result;
     }

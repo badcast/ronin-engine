@@ -113,7 +113,7 @@ namespace RoninEngine::Runtime
         Sprite *sprite;
 
         sprite = create_empty_sprite2D();
-        sprite->set_surface(surface);
+        sprite->setSurface(surface);
 
         return sprite;
     }

@@ -20,7 +20,7 @@ namespace RoninEngine::Runtime
 
     Terrain2D::Terrain2D(const Terrain2D &source)
     {
-        RoninMemory::alloc_self(navigation, source.navigation->width(), source.navigation->height());
+        RoninMemory::alloc_self(navigation, source.navigation->getWidth(), source.navigation->getHeight());
     }
     Terrain2D::~Terrain2D()
     {
@@ -39,7 +39,7 @@ namespace RoninEngine::Runtime
     const bool Terrain2D::is_collider(const Vec2 destination)
     {
         auto n = this->navigation->get(destination);
-        return n && navigation->has_locked (navigation->get_point (n));
+        return n && navigation->hasLocked (navigation->getPoint (n));
     }
 
     Vec2 Terrain2D::get_size()
@@ -57,8 +57,8 @@ namespace RoninEngine::Runtime
 
         if(navigation)
         {
-            rect.w = navigation->width();
-            rect.h = navigation->height();
+            rect.w = navigation->getWidth();
+            rect.h = navigation->getHeight();
         }
 
         return rect;

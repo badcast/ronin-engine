@@ -1,14 +1,23 @@
 #pragma once
-#include "Object.h"
+
+#include "begin.h"
 
 namespace RoninEngine
 {
+    enum InitializeFlags
+    {
+        All = -1,
+        Graphics = 1,
+        Audio = 2
+    };
+
     struct Version
     {
         std::uint8_t major;
         std::uint8_t minor;
         std::uint8_t patch;
     };
+
     struct VersionInfo
     {
         Version Engine_Version;
@@ -16,6 +25,7 @@ namespace RoninEngine
         Version SDL_TTF_Version;
         Version SDL_IMG_Version;
         Version SDL_Mix_Version;
+        Version SDL_GFX_Version;
     };
 
     struct Resolution
@@ -55,8 +65,9 @@ namespace RoninEngine
     public:
         /**
          * @brief Initializes the RoninEngine library.
+         * @param flags The InitializeFlags for init switch.
          */
-        static void Init();
+        static void Init(InitializeFlags flags = InitializeFlags::All);
 
         /**
          * @brief Closes the library and performs necessary cleanup.

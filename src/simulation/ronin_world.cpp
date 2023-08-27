@@ -369,7 +369,7 @@ namespace RoninEngine
     void World::level_render_world()
     {
         // set default color
-        Gizmos::set_color(Color::white);
+        Gizmos::SetColor(Color::white);
 
         TimeEngine::begin_watch();
 
@@ -449,7 +449,7 @@ namespace RoninEngine
             static std::uint32_t averrage;
 
             Vec2 g_size = Vec2 {138, static_cast<float>(font_height * (max_elements + 2))};
-            Vec2Int screen_point = {g_size.x, static_cast<float>(active_resolution.height)};
+            Vec2Int screen_point = Vec2::RoundToInt({g_size.x, static_cast<float>(active_resolution.height)});
             Vec2 g_pos = Camera::ScreenToWorldPoint({screen_point.x / 2.f, screen_point.y - g_size.y / 2});
             int x;
 
@@ -502,21 +502,21 @@ namespace RoninEngine
             }
 
             // Set background color
-            Gizmos::set_color(Color(0, 0, 0, 100));
+            Gizmos::SetColor(Color(0, 0, 0, 100));
 
             // Draw box
-            Gizmos::draw_fill_rect_rounded(g_pos, g_size.x / pixelsPerPoint, g_size.y / pixelsPerPoint, 8);
+            Gizmos::DrawFillRectRounded(g_pos, g_size.x / pixelsPerPoint, g_size.y / pixelsPerPoint, 8);
 
             screen_point.x = 10;
             screen_point.y -= static_cast<int>(g_size.y) - font_height / 2;
-            Gizmos::set_color(Color::white);
-            Gizmos::draw_text_to_screen(screen_point, elements[0].format, font_height);
+            Gizmos::SetColor(Color::white);
+            Gizmos::DrawTextToScreen(screen_point, elements[0].format, font_height);
             for(x = 1; x < max_elements; ++x)
             {
-                Gizmos::set_color(elements[x].format_color);
+                Gizmos::SetColor(elements[x].format_color);
 
                 screen_point.y += font_height + 1;
-                Gizmos::draw_text_to_screen(screen_point, elements[x].format, font_height);
+                Gizmos::DrawTextToScreen(screen_point, elements[x].format, font_height);
             }
         }
         queue_watcher.ms_wait_render_gizmos = TimeEngine::end_watch();

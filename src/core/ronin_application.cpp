@@ -75,32 +75,42 @@ namespace RoninEngine
         internal_input._mouse_wheels = 0;
     }
 
-    void RoninSimulator::Init()
+    void RoninSimulator::Init(InitializeFlags flags)
     {
-        std::uint32_t init_flags;
+        std::uint32_t current_inits;
 
         if(main_window != nullptr)
             return;
 
-        init_flags = SDL_INIT_EVENTS | SDL_INIT_TIMER | SDL_INIT_VIDEO;
-        if(SDL_Init(init_flags) == -1)
-            ShowMessageFail("Fail init main system.");
+        current_inits = SDL_INIT_EVENTS | SDL_INIT_TIMER;
+        if(SDL_Init(current_inits) == -1)
+            ShowMessageFail("Fail init SDL2 main system.");
 
         // init graphics
-        init_flags = IMG_InitFlags::IMG_INIT_PNG | IMG_InitFlags::IMG_INIT_JPG;
-        if(IMG_Init(init_flags) != init_flags)
-            ShowMessageFail("Fail init image library.");
+        if(flags & InitializeFlags::Graphics)
+        {
+            current_inits = SDL_INIT_VIDEO;
+            if(SDL_InitSubSystem(current_inits) == -1)
+                ShowMessageFail("Fail ini Video system.");
 
-        if(TTF_Init() == -1)
-            ShowMessageFail("Fail init font library.");
+            current_inits = IMG_InitFlags::IMG_INIT_PNG | IMG_InitFlags::IMG_INIT_JPG;
+            if(IMG_Init(current_inits) != current_inits)
+                ShowMessageFail("Fail init Image library.");
+
+            if(TTF_Init() == -1)
+                ShowMessageFail("Fail init Font library.");
+        }
 
         // init Audio system
-        init_flags = MIX_InitFlags::MIX_INIT_OGG | MIX_InitFlags::MIX_INIT_MP3;
-        if(Mix_Init(init_flags) != init_flags)
-            ShowMessage("Fail init audio.");
+        if(flags & InitializeFlags::Audio)
+        {
+            current_inits = MIX_InitFlags::MIX_INIT_OGG | MIX_InitFlags::MIX_INIT_MP3;
+            if(Mix_Init(current_inits) != current_inits)
+                ShowMessage("Fail init audio.");
 
-        if(Mix_OpenAudio(MIX_DEFAULT_FREQUENCY, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS, 1024))
-            ShowMessage("Fail open audio.");
+            if(Mix_OpenAudio(MIX_DEFAULT_FREQUENCY, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS, 1024))
+                ShowMessage("Fail open audio.");
+        }
 
         // setup
         switched_world = nullptr;

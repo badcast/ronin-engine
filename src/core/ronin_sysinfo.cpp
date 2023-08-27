@@ -34,7 +34,6 @@ extern "C"
         void *Process, PROCESS_MEMORY_COUNTERS_EX *ppsmemCounters, unsigned long cb);
 }
 #elif __unix__
-
 #if USE_PROCFS
 #include <sys/sysinfo.h>
 #include <sys/types.h>
@@ -112,13 +111,14 @@ TODO: % CPU в настоящее время используется этим �
 // get an bytes
 const size_t get_process_sizeMemory()
 {
+    size_t total;
+
 #ifdef WIN32
     PROCESS_MEMORY_COUNTERS_EX pm;
     K32GetProcessMemoryInfo(GetCurrentProcess(), &pm, sizeof(pm));
-    size_t total = pm.WorkingSetSize;
+    total = pm.WorkingSetSize;
 #elif __unix__
-
-    size_t total = get_memory_used();
+    total = get_memory_used();
 #endif
     return total;
 }

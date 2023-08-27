@@ -45,8 +45,8 @@ function(libdef libname path)
   add_library(${libname} OBJECT ${SRC})
 
   target_include_directories(
-    ${libname} PUBLIC $<BUILD_INTERFACE:${RONIN_INCLUDE_DIRS}/ronin>
-                      ${CMAKE_CURRENT_SOURCE_DIR}/include)
+    ${libname} PRIVATE $<BUILD_INTERFACE:${RONIN_INCLUDE_DIRS}/ronin>
+                       ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
   target_compile_features(${libname} PUBLIC cxx_std_17)
 
@@ -65,9 +65,7 @@ function(libdef libname path)
   set(sources
       ${sources} "${SRC}"
       PARENT_SCOPE)
-  set(RGE_LINKED_NAMES
-      "${libname} ${RGE_LINKED_NAMES}"
-      PARENT_SCOPE)
+  list(APPEND RGE_LINKED_NAMES "${RGE_LINKED_NAMES}" PARENT_SCOPE)
 endfunction()
 
 # core sources

@@ -51,11 +51,11 @@ namespace RoninEngine::AI
 
     struct Neuron
     {
-        std::uint8_t flags; // Флаги (Содержит OpenList, ClosedList)
-        std::uint32_t g;    // - стоимость пути от начальной_точки до текущей_точки
-        std::uint32_t h;    // - оценка эвристики (обычно расстояние до конечной_точки)
-        std::uint32_t f;    // общая оценка стоимости (f = g + h)
-        Neuron *parent;     // родитель
+        std::uint8_t flags;
+        std::uint32_t g;
+        std::uint32_t h;
+        std::uint32_t f;
+        Neuron *parent;
     };
 
     struct NavMeshData
@@ -78,63 +78,62 @@ namespace RoninEngine::AI
         Runtime::Vec2 worldScale;
         Runtime::Vec2 worldOffset;
 
-        explicit NavMesh(int width, int height);
+        explicit NavMesh(std::uint32_t width, std::uint32_t height);
 
         ~NavMesh();
 
-        void clear(bool clearLocks = false);
-        void fill(bool fillLocks = false);
-        void randomize(int flagFilter = 0xffffff);
+        void Clear(bool clearLocks = false);
+        void fillAll(bool fillLocks = false);
+        void Shuffle(int flagFilter = 0xffffff);
 
-        void create_maze();
+        void GenerateMaze();
 
-        int width() const;
-        int height() const;
+        int getWidth() const;
+        int getHeight() const;
 
         Neuron *get(int x, int y);
         Neuron *get(const Runtime::Vec2Int &point);
         Neuron *get(const Runtime::Vec2 &worldPoint);
         Neuron *get(const Runtime::Vec2 &worldPoint, Runtime::Vec2Int &outPoint);
 
-        bool get_ncontains(const Runtime::Vec2Int &point) const;
+        bool Contains(const Runtime::Vec2Int &point) const;
 
-        const Runtime::Vec2Int get_point(const Neuron *neuron) const;
+        const Runtime::Vec2Int getPoint(const Neuron *neuron) const;
 
-        HeuristicMethod get_heuristic_method();
-        bool set_heuristic_method(HeuristicMethod method);
+        HeuristicMethod getHeuristic();
+        bool setHeuristic(HeuristicMethod method);
 
-        bool set_identity(NavIdentity newIdentity);
+        bool setIdentity(NavIdentity newIdentity);
+        NavIdentity getIdentity();
 
-        NavIdentity get_identity();
-
-        NavListSite get_neighbours(NavIdentity identity, const Runtime::Vec2Int &pick);
-        NavListNeuron get_neighbours(NavIdentity identity, const Neuron *pick);
+        NavListSite GetNeighbours(NavIdentity identity, const Runtime::Vec2Int &pick);
+        NavListNeuron GetNeighbours(NavIdentity identity, const Neuron *pick);
 
         // pointer with Point
-        bool has_locked(const Runtime::Vec2Int &point);
-        void set_lock(const Runtime::Vec2Int &point, const bool state);
+        bool hasLocked(const Runtime::Vec2Int &point);
+        void setLock(const Runtime::Vec2Int &point, const bool state);
 
         // pointer with pointer
-        bool has_locked(const Neuron *neuron);
-        void set_lock(const Neuron *neuron, const bool state);
+        bool hasLocked(const Neuron *neuron);
+        void setLock(const Neuron *neuron, const bool state);
 
-        bool find(NavResultSite &navResult, Neuron *firstNeuron, Neuron *lastNeuron);
-        bool find(NavResultSite &navResult, const Runtime::Vec2Int &first, const Runtime::Vec2Int &last);
-        bool find(NavResultSite &navResult, const Runtime::Vec2 &worldPointFirst, const Runtime::Vec2 &worldPointLast);
+        bool Find(NavResultSite &navResult, Neuron *firstNeuron, Neuron *lastNeuron);
+        bool Find(NavResultSite &navResult, const Runtime::Vec2Int &first, const Runtime::Vec2Int &last);
+        bool Find(NavResultSite &navResult, const Runtime::Vec2 &worldPointFirst, const Runtime::Vec2 &worldPointLast);
 
-        bool find(NavResultNeuron &navResult, Neuron *firstNeuron, Neuron *lastNeuron);
-        bool find(NavResultNeuron &navResult, const Runtime::Vec2Int &first, const Runtime::Vec2Int &last);
-        bool find(NavResultNeuron &navResult, const Runtime::Vec2 &worldPointFirst, const Runtime::Vec2 &worldPointLast);
+        bool Find(NavResultNeuron &navResult, Neuron *firstNeuron, Neuron *lastNeuron);
+        bool Find(NavResultNeuron &navResult, const Runtime::Vec2Int &first, const Runtime::Vec2Int &last);
+        bool Find(NavResultNeuron &navResult, const Runtime::Vec2 &worldPointFirst, const Runtime::Vec2 &worldPointLast);
 
-        const Runtime::Vec2Int world_position_to_point(const Runtime::Vec2 &worldPoint);
-        const Runtime::Vec2 point_to_world_position(const Runtime::Vec2Int &point);
-        const Runtime::Vec2 point_to_world_position(int x, int y);
+        const Runtime::Vec2Int WorldPointToPoint(const Runtime::Vec2 &worldPoint);
+        const Runtime::Vec2 PointToWorldPoint(const Runtime::Vec2Int &point);
+        const Runtime::Vec2 PointToWorldPoint(int x, int y);
         const Runtime::Vec2 neuron_to_world_position(Neuron *neuron);
 
-        void load(const NavMeshData &navmeshData);
-        void save(NavMeshData *navmeshData);
+        void LoadFrom(const NavMeshData &navmeshData);
+        void SaveTo(NavMeshData *navmeshData);
 
-        std::uint32_t get_cache_size();
+        std::uint32_t getCached();
 
         // TODO: add operator for Vec2Int -> get Neuron
     };

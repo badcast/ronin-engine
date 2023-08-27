@@ -4,13 +4,22 @@
 
 #include "brain_map.hpp"
 
-BRAIN_TEMPLATE
-class maze_system
-{
-    using brain_map = basic_brain_map<ISite, INeuron>;
+#if not defined(BRAIN_TEMPLATE)
+#error "main header not included"
+#endif
 
-private:
-    static void recursive_division(brain_map *map, int l, int r, int t, int b)
+#ifndef BRAIN_TEMPLATE
+#define BRAIN_TEMPLATE template <typename ISite, typename INeuron>
+#endif
+
+#ifndef BRAIN_DEFINE
+#define BRAIN_DEFINE brain::basic_brain_map<ISite, INeuron>
+#endif
+
+namespace maze_system
+{
+    BRAIN_TEMPLATE
+    static void maze_recursive_division(BRAIN_DEFINE *map, int l, int r, int t, int b)
     {
         if(r < l || b < t)
             return;
@@ -21,8 +30,8 @@ private:
         if(rw < 2 || rh < 2)
             return;
 
-        int hs = random_number(t + 1, b - 1);
-        int vs = random_number(l + 1, r - 1);
+        int hs = map->random_number(t + 1, b - 1);
+        int vs = map->random_number(l + 1, r - 1);
 
         // horizontal
         for(int x = l; x <= r; ++x)
@@ -36,8 +45,8 @@ private:
             map->set_lock(map->get(y, vs), true);
         }
 
-        int dx = random_number(l, r);
-        int dy = random_number(t, b);
+        int dx = map->random_number(l, r);
+        int dy = map->random_number(t, b);
         map->set_lock(map->get(dx, dy), false);
 
         recursive_division(map, l, vs - 1, t, hs - 1);
@@ -46,58 +55,47 @@ private:
         recursive_division(map, vs + 1, r, hs + 1, b);
     }
 
-public:
-    static int random_number(int min, int max)
+    BRAIN_TEMPLATE
+    static void maze_recursive_backtrace(BRAIN_DEFINE *map, ISite start)
     {
-        return min + abs(rand()) % (max - min);
-    }
+        static brain::brain_identity maze_identity;
+        static auto __g_bss__ {brain::immune_system::get_matrix(brain::MatrixIdentity::PlusMethod, maze_identity)};
 
-    static void maze_recbuf(brain_map *map)
-    {
-
-        static struct
-        {
-            int length;
-            std::int8_t *horizontal;
-            std::int8_t *vertical;
-            std::int8_t *g_weight;
-        } maze_identity;
-        static auto __g_bss__ {brain_map::immune_system::get_matrix(MatrixIdentity::PlusMethod, maze_identity)};
-
+        int dx, dy;
+        INeuron *free_neighbours[4];
         INeuron *current, *self;
         ISite current_site, self_site;
-
         std::vector<INeuron *> stack;
-        std::vector<INeuron *> free_neighbours;
-        // reserve
-        free_neighbours.reserve(maze_identity.length);
+
+        if(!map->contains(start))
+            return;
 
         map->clear();
         map->fill_locks(true);
 
-        current = map->front();
-        current->flags = NEURON_CAPTURE_CAPITALIZED;
-        // stack.push_back(current);
+        current = map->get(start);
+        current->flags = brain::NEURON_CAPTURE_CAPITALIZED;
+
         do
         {
             current_site = map->get_point(current);
 
             // get neighbors
-            for(int s = 0; s < maze_identity.length; ++s)
+            for(dx = dy = 0; dx < maze_identity.length; ++dx)
             {
                 // Get the closest neurons
-                self_site.x = current_site.x + maze_identity.horizontal[s] * 2;
-                self_site.y = current_site.y + maze_identity.vertical[s] * 2;
+                self_site.x = current_site.x + maze_identity.horizontal[dx] * 2;
+                self_site.y = current_site.y + maze_identity.vertical[dx] * 2;
                 self = map->get(self_site);
-                if(self == nullptr || self->flags == NEURON_CAPTURE_CAPITALIZED)
+                if(self == nullptr || self->flags == brain::NEURON_CAPTURE_CAPITALIZED)
                 {
                     continue;
                 }
 
-                free_neighbours.push_back(self);
+                free_neighbours[dy++] = self;
             }
 
-            if(free_neighbours.empty())
+            if(!dy)
             {
                 current = stack.back();
                 stack.pop_back();
@@ -105,25 +103,7 @@ public:
             else
             {
 
-                self = free_neighbours[random_number(0, free_neighbours.size())];
-                // remove wall
-                /*
-                 // a = current
-                 // b = self
-                 if(a.X == b.X)
-                 {
-                     if(a.Y > b.Y)
-                         a.WallBottom = false;
-                     else
-                         b.WallBottom = false;
-                 }
-                 else
-                 {
-                     if(a.X > b.X)
-                         a.WallLeft = false;
-                     else
-                         b.WallLeft = false;
-                 }*/
+                self = free_neighbours[map->random_number(0, dy)];
                 self_site = map->get_point(self);
 
                 // Bottom wall
@@ -160,25 +140,34 @@ public:
                 }
 
                 // locked and visited
-                self->flags = NEURON_CAPTURE_CAPITALIZED;
-                map->set_lock(self,false);
+                self->flags = brain::NEURON_CAPTURE_CAPITALIZED;
+                map->set_lock(self, false);
                 stack.push_back(self);
                 current = self;
             }
-
-            free_neighbours.clear();
         } while(!stack.empty());
     }
-    static void maze_recursive_division(brain_map *map)
-    {
-        recursive_division(map, 0, map->get_width() - 1, 0, map->get_height() - 1);
-    }
-};
+}; // namespace maze_system
 
 BRAIN_TEMPLATE
 void BRAIN_DEFINE::create_maze()
 {
-    maze_system::maze_recbuf(this);
+    maze_system::maze_recursive_backtrace(this, {0, 0});
+}
+
+BRAIN_TEMPLATE
+void BRAIN_DEFINE::create_maze_ex(brain::MazeAlgorithm mazeAlgoritm, ISite startOf, ISite endOf)
+{
+    switch(mazeAlgoritm)
+    {
+
+        case MazeAlgorithm::RecursiveBacktracer:
+            maze_system::maze_recursive_backtrace(this, startOf);
+            break;
+        case MazeAlgorithm::RecursiveDivison:
+            maze_system::maze_recursive_division(this, startOf.x, startOf.y, endOf.x, endOf.y);
+            break;
+    }
 }
 
 #endif

@@ -80,26 +80,26 @@ namespace RoninEngine::Runtime
     {
     }
 
-    float Vec2::Magnitude() const
+    float Vec2::magnitude() const
     {
         return Math::sqrt(x * x + y * y);
     }
 
-    float Vec2::SqrMagnitude() const
+    float Vec2::sqrMagnitude() const
     {
         return x * x + y * y;
     }
 
-    Vec2 Vec2::Normalized() const
+    Vec2 Vec2::normalized() const
     {
         Vec2 result = *this;
-        result.Normalize();
+        result.normalize();
         return result;
     }
 
-    void Vec2::Normalize()
+    void Vec2::normalize()
     {
-        float mag = Magnitude();
+        float mag = magnitude();
         if(mag > 1E-05)
         {
             *this /= mag;
@@ -120,12 +120,12 @@ namespace RoninEngine::Runtime
         return {Math::nabs(value.x), Math::nabs(value.y)};
     }
 
-    Vec2 Vec2::Slerp(Vec2 a, Vec2 b, float t)
+    Vec2 Vec2::Slerp(Vec2 lhs, Vec2 rhs, float t)
     {
         t = Math::clamp01(t);
 
         // get cosine of angle between disposition (-1 -> 1)
-        float CosAlpha = Dot(a, b);
+        float CosAlpha = Dot(lhs, rhs);
         // get angle (0 -> pi)
         float Alpha = Math::acos(CosAlpha);
         // get sine of angle between disposition (0 -> 1)
@@ -135,13 +135,13 @@ namespace RoninEngine::Runtime
         float t2 = Math::sin(t * Alpha) / SinAlpha;
 
         // interpolate src disposition
-        Vec2 p = a * t1 + b * t2;
+        Vec2 p = lhs * t1 + rhs * t2;
         return p;
     }
-    Vec2 Vec2::SlerpUnclamped(Vec2 a, Vec2 b, float t)
+    Vec2 Vec2::SlerpUnclamped(const Vec2& lhs, const Vec2& rhs, float t)
     {
         // get cosine of angle between disposition (-1 -> 1)
-        float CosAlpha = Dot(a, b);
+        float CosAlpha = Dot(lhs, rhs);
         // get angle (0 -> pi)
         float Alpha = Math::acos(CosAlpha);
         // get sine of angle between disposition (0 -> 1)
@@ -151,17 +151,17 @@ namespace RoninEngine::Runtime
         float t2 = Math::sin(t * Alpha) / SinAlpha;
 
         // interpolate src disposition
-        return a * t1 + b * t2;
+        return lhs * t1 + rhs * t2;
     }
-    Vec2 Vec2::Lerp(const Vec2 &a, const Vec2 &b, float t)
+    Vec2 Vec2::Lerp(const Vec2 &lhs, const Vec2 &rhs, float t)
     {
         t = Math::clamp01(t);
-        return Vec2(a.x + (b.x - a.x) * t, a.y + (b.y - a.y) * t);
+        return Vec2(lhs.x + (rhs.x - lhs.x) * t, lhs.y + (rhs.y - lhs.y) * t);
     }
 
-    Vec2 Vec2::LerpUnclamped(const Vec2 &a, const Vec2 &b, float t)
+    Vec2 Vec2::LerpUnclamped(const Vec2 &lhs, const Vec2 &rhs, float t)
     {
-        return Vec2(a.x + (b.x - a.x) * t, a.y + (b.y - a.y) * t);
+        return Vec2(lhs.x + (rhs.x - lhs.x) * t, lhs.y + (rhs.y - lhs.y) * t);
     }
 
     Vec2 Vec2::Max(const Vec2 &lhs, const Vec2 &rhs)
@@ -177,7 +177,7 @@ namespace RoninEngine::Runtime
     Vec2 Vec2::MoveTowards(const Vec2 &current, const Vec2 &target, float maxDistanceDelta)
     {
         Vec2 a = target - current;
-        float mag = a.Magnitude();
+        float mag = a.magnitude();
         Vec2 result;
         if(mag <= maxDistanceDelta || mag == 0)
         {
@@ -216,16 +216,16 @@ namespace RoninEngine::Runtime
 
     float Vec2::Angle(Vec2 from, Vec2 to)
     {
-        from.Normalize();
-        to.Normalize();
+        from.normalize();
+        to.normalize();
         return Math::acos(Math::clamp(Vec2::Dot(from, to), -1.f, 1.f));
     }
 
     float Vec2::SignedAngle(Vec2 from, Vec2 to)
     {
         float num = Angle(from, to);
-        from.Normalize();
-        to.Normalize();
+        from.normalize();
+        to.normalize();
         float num2 = Math::sign(from.x * to.y - from.y * to.x);
 
         return num * num2;
@@ -234,9 +234,9 @@ namespace RoninEngine::Runtime
     Vec2 Vec2::ClampMagnitude(Vec2 vector, float maxLength)
     {
         Vec2 result;
-        if(vector.SqrMagnitude() > maxLength * maxLength)
+        if(vector.sqrMagnitude() > maxLength * maxLength)
         {
-            result = vector.Normalized() * maxLength;
+            result = vector.normalized() * maxLength;
         }
         else
         {

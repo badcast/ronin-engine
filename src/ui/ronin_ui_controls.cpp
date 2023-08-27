@@ -125,7 +125,7 @@ namespace RoninEngine::UI
                 Color col(ms_hover ? colorSpace.defaultInteraction.pressState : colorSpace.defaultInteraction.normalState);
                 rect = element.rect;
                 rect += inside / 2;
-                Gizmos::set_color(col);
+                Gizmos::SetColor(col);
                 if(show_down_side)
                 {
                     roundedBoxColor(renderer, rect.x, rect.y, rect.w + rect.x, rect.h + rect.y, 4, colorSpace.buttonDownSide);
@@ -156,9 +156,9 @@ namespace RoninEngine::UI
                 rect = element.rect + thick;
 
                 // uielement background
-                Gizmos::set_color((ms_hover) ? colorSpace.defaultInteraction.normalState : colorSpace.defaultInteraction.hoverState);
+                Gizmos::SetColor((ms_hover) ? colorSpace.defaultInteraction.normalState : colorSpace.defaultInteraction.hoverState);
                 SDL_RenderFillRect(renderer, (SDL_Rect *) &rect);
-                Gizmos::set_color(Color::gray);
+                Gizmos::SetColor(Color::gray);
                 for(int x = 0; x < thickness; ++x)
                 {
                     rect -= thickPer;
@@ -240,8 +240,8 @@ namespace RoninEngine::UI
                 rect.h = 4;
                 rect.y += (element.rect.h - rect.h) / 2;
 
-                Gizmos::set_color(ms_hover ? Color::lightgray : Color::gray);
-                Color color = Gizmos::get_color();
+                Gizmos::SetColor(ms_hover ? Color::lightgray : Color::gray);
+                Color color = Gizmos::GetColor();
                 roundedBoxColor(renderer, rect.x, rect.y, rect.x + rect.w, rect.y + rect.h, 3, Color::slategray);
                 roundedRectangleColor(renderer, rect.x, rect.y, rect.x + rect.w, rect.y + rect.h, 3, color);
 
@@ -300,9 +300,9 @@ namespace RoninEngine::UI
                 r += thick;
 
                 // uielement background
-                Gizmos::set_color((ms_hover) ? colorSpace.defaultInteraction.normalState : colorSpace.defaultInteraction.hoverState);
+                Gizmos::SetColor((ms_hover) ? colorSpace.defaultInteraction.normalState : colorSpace.defaultInteraction.hoverState);
                 SDL_RenderFillRect(renderer, (SDL_Rect *) &r);
-                Gizmos::set_color(Color::gray);
+                Gizmos::SetColor(Color::gray);
                 for(int x = 0; x < thickness; ++x)
                 {
                     r -= Rect(1, 1, -1, -1);
@@ -339,7 +339,7 @@ namespace RoninEngine::UI
 
                     r.h = dropDownLinear = Math::ceil(Math::lerp(dropDownLinear, link->second.size() * sz, TimeEngine::deltaTime()));
 
-                    Gizmos::set_color(colorSpace.defaultInteraction.hoverState);
+                    Gizmos::SetColor(colorSpace.defaultInteraction.hoverState);
                     // draw background
                     SDL_RenderFillRect(renderer, (SDL_Rect *) &r);
                     if(link->second.size() * sz == r.h)
@@ -354,7 +354,7 @@ namespace RoninEngine::UI
                             // draw element highligh
                             if(!result && SDL_PointInRect((SDL_Point *) &(ms), (SDL_Rect *) &elrect))
                             {
-                                Gizmos::set_color(colorSpace.defaultInteraction.pressState);
+                                Gizmos::SetColor(colorSpace.defaultInteraction.pressState);
                                 SDL_RenderFillRect(renderer, (SDL_Rect *) &elrect);
                                 if(Input::GetMouseDown(MouseState::MouseLeft))
                                 {
@@ -366,7 +366,7 @@ namespace RoninEngine::UI
                                 }
                             }
 
-                            Gizmos::set_color(colorSpace.defaultInteraction.hoverState);
+                            Gizmos::SetColor(colorSpace.defaultInteraction.hoverState);
                             // Draw element text
                             surf = TTF_RenderUTF8_Blended(
                                 ttf_arial_font,

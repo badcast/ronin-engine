@@ -60,11 +60,11 @@ namespace RoninEngine
             Vec2(Vec2 &&) = default;
             ~Vec2() = default;
 
-            float Magnitude() const;
-            float SqrMagnitude() const;
-            void Normalize();
+            float magnitude() const;
+            float sqrMagnitude() const;
+            void normalize();
 
-            Vec2 Normalized() const;
+            Vec2 normalized() const;
 
             Vec2 &operator+=(const Vec2 &rhs);
             Vec2 &operator-=(const Vec2 &rhs);
@@ -84,13 +84,17 @@ namespace RoninEngine
             static const Vec2 left;
             static const Vec2 right;
             static const Vec2 up;
+            static const Vec2 up_right;
+            static const Vec2 up_left;
+            static const Vec2 down_right;
+            static const Vec2 down_left;
             static const Vec2 infinity;
             static const Vec2 negativeInfinity;
 
             static const Vec2 Abs(const Vec2 &value);
             static const Vec2 NAbs(const Vec2 &value);
             static Vec2 Slerp(Vec2 lhs, Vec2 rhs, float t);
-            static Vec2 SlerpUnclamped(Vec2 lhs, Vec2 rhs, float t);
+            static Vec2 SlerpUnclamped(const Vec2 &lhs, const Vec2 &rhs, float t);
             static Vec2 Lerp(const Vec2 &lhs, const Vec2 &rhs, float t);
             static Vec2 LerpUnclamped(const Vec2 &lhs, const Vec2 &rhs, float t);
             static Vec2 Max(const Vec2 &lhs, const Vec2 &rhs);
@@ -131,6 +135,10 @@ namespace RoninEngine
         API_EXPORT inline const Vec2 Vec2::left(-1.f, 0.f);
         API_EXPORT inline const Vec2 Vec2::right(1.f, 0.f);
         API_EXPORT inline const Vec2 Vec2::up(0.f, 1.f);
+        API_EXPORT inline const Vec2 Vec2::up_right(1.f, 1.f);
+        API_EXPORT inline const Vec2 Vec2::up_left(1.f, -1.f);
+        API_EXPORT inline const Vec2 Vec2::down_right(-1.f, 1.f);
+        API_EXPORT inline const Vec2 Vec2::down_left(-1.f, -1.f);
         API_EXPORT inline const Vec2 Vec2::infinity(std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity());
         API_EXPORT inline const Vec2 Vec2::negativeInfinity(
             -std::numeric_limits<float>::infinity(), -std::numeric_limits<float>::infinity());

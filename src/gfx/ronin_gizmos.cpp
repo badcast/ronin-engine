@@ -10,7 +10,6 @@ namespace RoninEngine::Runtime
     extern std::uint32_t const_storm_yDeterminant_start;
     extern std::uint32_t const_storm_yDeterminant_inverse;
 
-    float Gizmos::angle;
     void internal_drawLine(Vec2 a, Vec2 b)
     {
         if(!Camera::main_camera())
@@ -38,34 +37,35 @@ namespace RoninEngine::Runtime
         SDL_RenderDrawLineF(RoninEngine::renderer, a.x, a.y, b.x, b.y);
     }
 
-    Color Gizmos::get_color()
+    Color Gizmos::GetColor()
     {
         Color clb;
         SDL_GetRenderDrawColor(RoninEngine::renderer, &clb.r, &clb.g, &clb.b, &clb.a);
         return clb;
     }
 
-    void Gizmos::set_color(const Color &newColor)
+    void Gizmos::SetColor(const Color &newColor)
     {
         SDL_SetRenderDrawColor(RoninEngine::renderer, newColor.r, newColor.g, newColor.b, newColor.a);
     }
 
-    void Gizmos::draw_line(Vec2 a, Vec2 b)
+    void Gizmos::DrawLine(Vec2 a, Vec2 b)
     {
         internal_drawLine(a, b);
     }
 
-    void Gizmos::draw_line_pivot(Vec2 ared, Vec2 bblue)
+    void Gizmos::DrawLineWithPivot(Vec2 ared, Vec2 bblue)
     {
-        Color last = get_color();
-        draw_line(ared, bblue);
+        Color last = GetColor();
+        DrawLine(ared, bblue);
 
-        set_color(Color::red);
-        draw_circle(ared, 0.1f);
-        set_color(Color::blue);
-        draw_circle(bblue, 0.1f);
-        set_color(last);
+        SetColor(Color::red);
+        DrawCircle(ared, 0.1f);
+        SetColor(Color::blue);
+        DrawCircle(bblue, 0.1f);
+        SetColor(last);
     }
+
     void drawBox()
     {
         Vec2 a, b;
@@ -95,7 +95,7 @@ namespace RoninEngine::Runtime
         internal_drawLine(a, b);
     }
 
-    void Gizmos::draw_position(const Vec2 &origin, float scalar)
+    void Gizmos::DrawPosition(const Vec2 &origin, float scalar)
     {
         Vec2 a(origin), b(origin);
 
@@ -112,29 +112,12 @@ namespace RoninEngine::Runtime
         internal_drawLine(a, b);
     }
 
-    void Gizmos::draw_square(Vec2 origin, float width)
+    void Gizmos::DrawSquare(Vec2 origin, float width)
     {
-        draw_rectangle(origin, width, width);
+        DrawRectangle(origin, width, width);
     }
 
-    void Gizmos::draw_rectangle(Vec2 origin, float width, float height)
-    {
-        origin = Camera::main_camera()->WorldToScreenPoint(origin);
-        std::uint16_t x, y;
-        width *= pixelsPerPoint;
-        height *= pixelsPerPoint;
-        x = origin.x - width / 2;
-        y = origin.y - height / 2;
-
-        rectangleColor(RoninEngine::renderer, x, y, x + width, y + height, get_color());
-    }
-
-    void Gizmos::draw_square_rounded(Vec2 origin, float width, std::uint16_t radius)
-    {
-        draw_rectangle_rounded(origin, width, width, radius);
-    }
-
-    void Gizmos::draw_rectangle_rounded(Vec2 origin, float width, float height, std::uint16_t radius)
+    void Gizmos::DrawRectangle(Vec2 origin, float width, float height)
     {
         origin = Camera::main_camera()->WorldToScreenPoint(origin);
         std::uint16_t x, y;
@@ -143,46 +126,66 @@ namespace RoninEngine::Runtime
         x = origin.x - width / 2;
         y = origin.y - height / 2;
 
-        roundedRectangleColor(RoninEngine::renderer, x, y, x + width, y + height, radius, get_color());
+        rectangleColor(RoninEngine::renderer, x, y, x + width, y + height, GetColor());
     }
 
-    void Gizmos::draw_2D_world_space(const Vec2 &origin, int depth)
+    void Gizmos::DrawSquareRounded(Vec2 origin, float width, std::uint16_t radius)
+    {
+        DrawRectangleRounded(origin, width, width, radius);
+    }
+
+    void Gizmos::DrawRectangleRounded(Vec2 origin, float width, float height, std::uint16_t radius)
+    {
+        origin = Camera::main_camera()->WorldToScreenPoint(origin);
+        std::uint16_t x, y;
+        width *= pixelsPerPoint;
+        height *= pixelsPerPoint;
+        x = origin.x - width / 2;
+        y = origin.y - height / 2;
+
+        roundedRectangleColor(RoninEngine::renderer, x, y, x + width, y + height, radius, GetColor());
+    }
+
+    void Gizmos::Draw2DWorldSpace(const Vec2 &origin, int depth)
     {
         int i;
         Vec2 dest1, dest2;
         dest1 = dest2 = origin;
-        Color lastColor = get_color();
-        set_color(0xaa575757);
+        Color lastColor = GetColor();
+        SetColor(0xaa575757);
 
         // Draw H and V position
-        draw_position(std::move(origin), maxWorldScalar);
+        DrawPosition(std::move(origin), maxWorldScalar);
 
         for(i = 0; i < depth; ++i)
         {
             dest1 += Vec2::one;
-            draw_position(std::move(dest1), maxWorldScalar);
+            DrawPosition(std::move(dest1), maxWorldScalar);
 
             dest2 += Vec2::minusOne;
-            draw_position(std::move(dest2), maxWorldScalar);
+            DrawPosition(std::move(dest2), maxWorldScalar);
         }
 
-        set_color(lastColor);
+        SetColor(lastColor);
     }
 
-    void Gizmos::draw_nav_mesh(AI::NavMesh *mesh)
+    void Gizmos::DrawNavMesh(AI::NavMesh *navMesh)
     {
-        Vec2 lastPoint;
-        AI::Neuron *self;
+        using namespace AI;
         Vec2Int p1, p2;
         Color prev;
         Color next;
         std::uint32_t yDefault;
 
-        mesh->get(Camera::ScreenToWorldPoint(Vec2::one), p1);
-        mesh->get(Camera::ScreenToWorldPoint(Vec2(active_resolution.width - 1, active_resolution.height - 1)), p2);
+        Neuron *self;
 
-        prev = get_color();
-        set_color(next = 0xfff6f723);
+        // First Point (Top Left)
+        navMesh->get(Camera::ScreenToWorldPoint(Vec2::zero), p1);
+        // Last Point (Bottom Right)
+        navMesh->get(Camera::ScreenToWorldPoint(Vec2(active_resolution.width, active_resolution.height)), p2);
+
+        prev = GetColor();
+        SetColor(next = 0xfff6f723);
 
         yDefault = p1.y;
         while(p1.x <= p2.x)
@@ -190,26 +193,31 @@ namespace RoninEngine::Runtime
             while(p1.y <= p2.y)
             {
                 bool draw_pos = true;
-                self = mesh->get(p1);
-                lastPoint = mesh->point_to_world_position(p1);
+                self = navMesh->get(p1);
+                Vec2 lastPosition = navMesh->PointToWorldPoint(p1);
                 if(self == nullptr)
                 {
                     next.r = 64;
                     next.g = 0;
                     next.b = 0;
                 }
-                else if(mesh->has_locked(self))
+                else if(navMesh->hasLocked(p1))
                 {
                     next.r = 255;
                     next.g = 255;
                     next.b = 255;
-                    set_color(next);
+                    // draw indexed
+                    SetColor(next);
+
                     // draw line
-                    AI::NavListNeuron neigbours = mesh->get_neighbours(AI::NavIdentity::PlusMethod, self);
+                    AI::NavListSite neigbours = navMesh->GetNeighbours(AI::NavIdentity::PlusMethod, p1);
                     for(int x = 0; x < neigbours.size(); ++x)
                     {
-                        if(mesh->has_locked(neigbours[x]))
-                            Gizmos::draw_line(mesh->neuron_to_world_position(self), mesh->neuron_to_world_position(neigbours[x]));
+                        Vec2Int *npoint = &neigbours[x];
+                        if(navMesh->hasLocked(*npoint))
+                        {
+                            internal_drawLine(navMesh->PointToWorldPoint(p1), navMesh->PointToWorldPoint(*npoint));
+                        }
                     }
                     draw_pos = false;
                 }
@@ -224,18 +232,19 @@ namespace RoninEngine::Runtime
                     else
                         draw_pos = false;
                 }
-                set_color(next);
+                SetColor(next);
                 if(draw_pos)
-                    draw_position(lastPoint, 0.01f);
+                    DrawPosition(lastPosition, 0.01f);
                 ++p1.y;
             }
             p1.y = yDefault;
             ++p1.x;
         }
-        set_color(prev);
+
+        SetColor(prev);
     }
 
-    void Gizmos::draw_triangle(Vec2 origin, float base, float height, bool fill)
+    void Gizmos::DrawTriangle(Vec2 origin, float base, float height, bool fill)
     {
         Vec2 a, b, pivot = origin;
         pivot.y -= height / 2;
@@ -245,13 +254,13 @@ namespace RoninEngine::Runtime
         pivot.y += height;
 
         // draw base
-        draw_line(a, b);
+        DrawLine(a, b);
 
         // draw left side
-        draw_line(a, pivot);
+        DrawLine(a, pivot);
 
         // draw right side
-        draw_line(b, pivot);
+        DrawLine(b, pivot);
 
         if(fill)
         {
@@ -259,15 +268,17 @@ namespace RoninEngine::Runtime
             height /= 2;
 
             pivot.y = a.y + height / 2;
-            draw_fill_rect(pivot, base, height);
+            DrawFillRect(pivot, base, height);
         }
     }
-    void Gizmos::draw_text(Vec2 origin, const std::string &text)
+
+    void Gizmos::DrawText(Vec2 origin, const std::string &text)
     {
         origin = Camera::WorldToScreenPoint(origin);
-        RoninEngine::UI::draw_font_at(RoninEngine::renderer, text, 11, Vec2::RoundToInt(origin), get_color(), true);
+        RoninEngine::UI::draw_font_at(RoninEngine::renderer, text, 11, Vec2::RoundToInt(origin), GetColor(), true);
     }
-    void Gizmos::draw_text_legacy(Vec2 origin, const std::string &text)
+
+    void Gizmos::DrawTextLegacy(Vec2 origin, const std::string &text)
     {
         Rect r;
         auto cam = Camera::main_camera();
@@ -279,19 +290,19 @@ namespace RoninEngine::Runtime
         UI::render_string_legacy(r, text.c_str(), text.length(), 2);
     }
 
-    void Gizmos::draw_circle(Vec2 origin, float distance)
+    void Gizmos::DrawCircle(Vec2 origin, float distance)
     {
         origin = Camera::main_camera()->WorldToScreenPoint(origin);
         std::uint16_t x, y, r;
         x = Math::number(origin.x);
         y = Math::number(origin.y);
         r = static_cast<std::uint16_t>(distance * pixelsPerPoint);
-        Color m_color = get_color();
+        Color m_color = GetColor();
 
         circleRGBA(RoninEngine::renderer, x, y, r, m_color.r, m_color.g, m_color.b, m_color.a);
     }
 
-    void Gizmos::draw_arrow(Vec2 origin, Vec2 dir, float tailLength)
+    void Gizmos::DrawArrow(Vec2 origin, Vec2 dir, float tailLength)
     {
         // tail
         tailLength = Math::abs(tailLength);
@@ -304,7 +315,7 @@ namespace RoninEngine::Runtime
         internal_drawLine(pos2, origin);
     }
 
-    void Gizmos::draw_fill_rect(Vec2 center, float width, float height)
+    void Gizmos::DrawFillRect(Vec2 center, float width, float height)
     {
         center = Camera::WorldToScreenPoint(center);
         width *= pixelsPerPoint;
@@ -314,19 +325,19 @@ namespace RoninEngine::Runtime
         SDL_RenderFillRectF(RoninEngine::renderer, reinterpret_cast<SDL_FRect *>(&rect));
     }
 
-    void Gizmos::draw_fill_rect_rounded(Vec2 origin, float width, float height, uint16_t radius)
+    void Gizmos::DrawFillRectRounded(Vec2 origin, float width, float height, uint16_t radius)
     {
-        origin = Camera::main_camera()->WorldToScreenPoint(origin);
         std::uint16_t x, y;
+        origin = Camera::main_camera()->WorldToScreenPoint(origin);
         width *= pixelsPerPoint;
         height *= pixelsPerPoint;
         x = origin.x - width / 2;
         y = origin.y - height / 2;
 
-        roundedBoxColor(RoninEngine::renderer, x, y, x + width, y + height, radius, get_color());
+        roundedBoxColor(RoninEngine::renderer, x, y, x + width, y + height, radius, GetColor());
     }
 
-    void Gizmos::draw_fill_square(Vec2 origin, float width)
+    void Gizmos::DrawFillSquare(Vec2 origin, float width)
     {
         origin = Camera::WorldToScreenPoint(origin);
         width *= pixelsPerPoint;
@@ -335,17 +346,17 @@ namespace RoninEngine::Runtime
         SDL_RenderFillRectF(RoninEngine::renderer, reinterpret_cast<SDL_FRect *>(&rect));
     }
 
-    void Gizmos::draw_fill_square_rounded(Vec2 origin, float width, std::uint16_t radius)
+    void Gizmos::DrawFillSquareRounded(Vec2 origin, float width, std::uint16_t radius)
     {
-        draw_fill_rect_rounded(origin, width, width, radius);
+        DrawFillRectRounded(origin, width, width, radius);
     }
 
-    void Gizmos::draw_text_to_screen(Vec2Int screen_point, const std::string &text, int font_size)
+    void Gizmos::DrawTextToScreen(Vec2Int screen_point, const std::string &text, int font_size)
     {
-        RoninEngine::UI::draw_font_at(RoninEngine::renderer, text, font_size, screen_point, get_color(), false);
+        RoninEngine::UI::draw_font_at(RoninEngine::renderer, text, font_size, screen_point, GetColor(), false);
     }
 
-    void Gizmos::draw_storm(Vec2 ray, int edges, int delim)
+    void Gizmos::DrawStormCast(Vec2 ray, int edges, int delim)
     {
         /*
         Описание данных stormMember
@@ -368,9 +379,8 @@ namespace RoninEngine::Runtime
 
         // draw current point
 
-        Color lastColor = get_color();
-        int v = 0;
-        set_color(0xfff6f6f7);
+        Color lastColor = GetColor();
+        SetColor(0xfff6f6f7);
 
         if(edges > 0)
             for(;;)
@@ -414,9 +424,8 @@ namespace RoninEngine::Runtime
                 ray.x += xDeter == 2 ? -1 : xDeter;
                 ray.y += yDeter == 2 ? -1 : yDeter;
 
-                draw_line(last / delim, ray / delim);
+                DrawLine(last / delim, ray / delim);
                 last = ray;
-                ++v;
                 if(!(stormMember & const_storm_steps_flag))
                 {
                     if(yDeter)
@@ -436,7 +445,7 @@ namespace RoninEngine::Runtime
                 ++(*reinterpret_cast<std::uint32_t *>(&stormMember));
             }
 
-        set_color(lastColor);
+        SetColor(lastColor);
     }
 
 } // namespace RoninEngine::Runtime
