@@ -125,7 +125,7 @@ namespace RoninEngine::UI
                 Color col(ms_hover ? colorSpace.defaultInteraction.pressState : colorSpace.defaultInteraction.normalState);
                 rect = element.rect;
                 rect += inside / 2;
-                gui->set_color_rgb(col);
+                Gizmos::set_color(col);
                 if(show_down_side)
                 {
                     roundedBoxColor(renderer, rect.x, rect.y, rect.w + rect.x, rect.h + rect.y, 4, colorSpace.buttonDownSide);
@@ -147,7 +147,7 @@ namespace RoninEngine::UI
                 break;
             }
 
-            case RGUI_EDIT:
+            case RGUI_TEXT_EDIT:
             {
                 // uielement background
                 static const int thickness = 2;
@@ -256,12 +256,12 @@ namespace RoninEngine::UI
                 roundedRectangleColor(renderer, rect.x, rect.y, rect.x + rect.w, rect.y + rect.h, 3, color);
 
                 // Draw text
-                //char __[32];
+                // char __[32];
 
-                //TTF_SizeText(ttf_arial_font, __, &rect.w, &rect.h);
-                //sprintf(__, "%.1f", &resource->value);
-                //Vec2Int tpos = {element.rect.x + element.rect.w - 22, element.rect.y + element.rect.h - 8};
-                //draw_font_at(renderer, __, 1, tpos, color);
+                // TTF_SizeText(ttf_arial_font, __, &rect.w, &rect.h);
+                // sprintf(__, "%.1f", &resource->value);
+                // Vec2Int tpos = {element.rect.x + element.rect.w - 22, element.rect.y + element.rect.h - 8};
+                // draw_font_at(renderer, __, 1, tpos, color);
 
                 break;
             }
@@ -276,7 +276,7 @@ namespace RoninEngine::UI
                 break;
             }
 
-            case RGUI_IMAGE:
+            case RGUI_PICTURE_BOX:
             {
                 SDL_Rect sdlr;
                 Sprite *sprite = reinterpret_cast<Sprite *>(element.resources);

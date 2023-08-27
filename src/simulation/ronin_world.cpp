@@ -1,5 +1,6 @@
 #include "ronin.h"
 #include "ronin_matrix.h"
+
 using namespace RoninEngine;
 using namespace RoninEngine::Exception;
 using namespace RoninEngine::Runtime;
@@ -365,13 +366,10 @@ namespace RoninEngine
         }
     }
 
-    void World::level_render_world(ScoreWatcher *watcher)
+    void World::level_render_world()
     {
         // set default color
         Gizmos::set_color(Color::white);
-
-        if(watcher == nullptr)
-            throw ronin_null_error();
 
         TimeEngine::begin_watch();
 
@@ -400,7 +398,7 @@ namespace RoninEngine
                     exec->OnUpdate();
             };
         }
-        watcher->ms_wait_exec_scripts = TimeEngine::end_watch();
+        queue_watcher.ms_wait_exec_scripts = TimeEngine::end_watch();
         // end watcher
 
         TimeEngine::begin_watch();
@@ -415,7 +413,7 @@ namespace RoninEngine
             // draw world in world size
             RoninEngine::Runtime::native_render_2D(reinterpret_cast<Camera2D *>(cam));
         }
-        watcher->ms_wait_render_world = TimeEngine::end_watch();
+        queue_watcher.ms_wait_render_world = TimeEngine::end_watch();
 
         // begin watcher
         TimeEngine::begin_watch();
@@ -457,7 +455,7 @@ namespace RoninEngine
 
             if(TimeEngine::frame() % 10 == 0)
             {
-                ScoreWatcher stat = RoninSimulator::get_watches();
+                TimingWatcher stat = RoninSimulator::GetTimingWatches();
                 // Update data
                 elements[0].value = stat.ms_wait_frame;
                 elements[1].value = stat.ms_wait_render_gui;
@@ -521,13 +519,13 @@ namespace RoninEngine
                 Gizmos::draw_text_to_screen(screen_point, elements[x].format, font_height);
             }
         }
-        watcher->ms_wait_render_gizmos = TimeEngine::end_watch();
+        queue_watcher.ms_wait_render_gizmos = TimeEngine::end_watch();
         // end watcher
 
         TimeEngine::begin_watch();
         if(!switched_world->internal_resources->request_unloading)
             runtime_destructs();
-        watcher->ms_wait_destructions = TimeEngine::end_watch();
+        queue_watcher.ms_wait_destructions = TimeEngine::end_watch();
     }
 
     void World::level_render_world_late()
@@ -604,7 +602,7 @@ namespace RoninEngine
     {
         if(!obj || !obj->exists())
         {
-            RoninSimulator::fail_oom_kill();
+            RoninSimulator::BreakSimulate();
         }
         else if(World::self()->internal_resources->_destructTasks)
         {
@@ -626,7 +624,7 @@ namespace RoninEngine
         int x;
         if(!obj || !obj->exists())
         {
-            RoninSimulator::fail_oom_kill();
+            RoninSimulator::BreakSimulate();
             return false;
         }
         if(World::self()->internal_resources->_destructTasks)

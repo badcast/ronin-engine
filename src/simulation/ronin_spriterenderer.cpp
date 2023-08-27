@@ -149,7 +149,7 @@ namespace RoninEngine::Runtime
                         1024,
                         1024);
                     if(save_texture == nullptr)
-                        RoninSimulator::fail("Texture create fail");
+                        RoninSimulator::ShowMessageFail("Texture create fail");
 
                     SDL_SetRenderTarget(renderer, save_texture);
 

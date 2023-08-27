@@ -17,7 +17,7 @@ namespace RoninEngine::Runtime
         std::string m_name;
         virtual void runtime_destructs();
 
-        virtual void level_render_world(RoninEngine::ScoreWatcher *watcher);
+        virtual void level_render_world();
         virtual void level_render_world_late();
 
         virtual void OnAwake();

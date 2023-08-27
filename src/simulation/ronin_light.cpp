@@ -17,7 +17,6 @@ namespace RoninEngine::Runtime
 
     void Light::get_light_source(Rendering *render)
     {
-        auto res = RoninSimulator::get_current_resolution();
         Color c;
         SDL_Texture *target, *lastTarget;
         // TODO: not a work light sources
@@ -39,7 +38,7 @@ namespace RoninEngine::Runtime
 
         lastTarget = SDL_GetRenderTarget(renderer);
 
-        target = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TextureAccess::SDL_TEXTUREACCESS_TARGET, res.width, res.height);
+        target = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TextureAccess::SDL_TEXTUREACCESS_TARGET, active_resolution.width, active_resolution.height);
 
         SDL_SetRenderTarget(renderer, target);
         SDL_SetRenderDrawColor(renderer, 0, 0, 0, 55);

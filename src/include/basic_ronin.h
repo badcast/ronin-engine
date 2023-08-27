@@ -74,6 +74,7 @@ namespace RoninEngine
     extern SDL_Renderer *renderer;
     extern Resolution active_resolution;
     extern bool ronin_debug_mode;
+    extern TimingWatcher queue_watcher;
 
     namespace UI
     {
@@ -81,10 +82,10 @@ namespace RoninEngine
         {
             RGUI_TEXT,
             RGUI_BUTTON,
-            RGUI_EDIT,
+            RGUI_TEXT_EDIT,
             RGUI_HSLIDER,
             RGUI_VSLIDER,
-            RGUI_IMAGE,
+            RGUI_PICTURE_BOX,
             RGUI_DROPDOWN
         };
         struct ui_resource;
@@ -114,7 +115,7 @@ namespace RoninEngine
             ui_callback callback;
             void *callbackData;
             Runtime::World *owner;
-            bool hitCast;
+            bool interactable;
             bool _focusedUI;
             bool visible;
             bool mouse_hover;

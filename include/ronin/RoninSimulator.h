@@ -38,7 +38,7 @@ namespace RoninEngine
         Display
     };
 
-    struct ScoreWatcher
+    struct TimingWatcher
     {
         std::uint32_t ms_wait_exec_world;
         std::uint32_t ms_wait_exec_scripts;
@@ -53,41 +53,123 @@ namespace RoninEngine
     class RONIN_API RoninSimulator
     {
     public:
-        // First initing RoninEngine Library
-        static void init();
-        // Close and Utilize
-        static void utilize();
-        // Show main frame for simulation
-        static void show(const Resolution &resolution, bool fullscreen = false);
-        // Load world for simmulate
-        static void load_world(Runtime::World *world, bool unloadPrevious = true);
-        // Simulate world
-        static void simulate();
-        // Request sent Quiting (Destroy current world)
-        static void request_quit();
-        // Get resolution of screen
-        static Resolution get_current_resolution();
-        // Get resolution of active display
-        static std::list<Resolution> get_display_resolutions();
-        // Set resolution of active display
-        static bool set_display_resolution(const Resolution &new_resolution);
-        // Set active window to fullscreen mode
-        static bool set_display_fullscreen(FullscreenMode mode);
-        // Get timming watches
-        static ScoreWatcher get_watches();
-        // Get linked version
-        static VersionInfo get_version();
-        // Get Linked targets system, for example: ui, ai, res etc.
-        static const char *get_linked_targets();
-        // Show FPS, frametime, render time, gizmos, etc.
-        static void set_debug_mode(bool state);
+        /**
+         * @brief Initializes the RoninEngine library.
+         */
+        static void Init();
 
-        // Message handler
+        /**
+         * @brief Closes the library and performs necessary cleanup.
+         */
+        static void Finalize();
 
-        static void back_fail(void);
-        static void show_message(const std::string &message);
-        static void fail(const std::string &message);
-        static void fail_oom_kill();
+        /**
+         * @brief Displays the main simulation frame.
+         *
+         * @param resolution The desired resolution for the frame.
+         * @param fullscreen Whether to display in fullscreen mode.
+         */
+        static void Show(const Resolution &resolution, bool fullscreen = false);
+
+        /**
+         * @brief Loads a simulation world for simulation.
+         *
+         * @param world The world to load.
+         * @param unloadPrevious Whether to unload the previous world.
+         */
+        static void LoadWorld(Runtime::World *world, bool unloadPrevious = true);
+
+        /**
+         * @brief Simulates the loaded world.
+         */
+        static void Simulate();
+
+        /**
+         * @brief Requests to quit the simulation and destroys the current world.
+         */
+        static void RequestQuit();
+
+        /**
+         * @brief Retrieves the current screen resolution.
+         *
+         * @return The current screen resolution.
+         */
+        static Resolution GetCurrentResolution();
+
+        /**
+         * @brief Enumerates the available screen resolutions of the active display.
+         *
+         * @return A list of available screen resolutions.
+         */
+        static std::list<Resolution> EnumerateResolutions();
+
+        /**
+         * @brief Sets the display resolution of the active display.
+         *
+         * @param new_resolution The new resolution to set.
+         * @return True if the resolution was set successfully, false otherwise.
+         */
+        static bool SetDisplayResolution(const Resolution &new_resolution);
+
+        /**
+         * @brief Sets the active window to fullscreen mode.
+         *
+         * @param mode The desired fullscreen mode.
+         * @return True if fullscreen mode was set successfully, false otherwise.
+         */
+        static bool SetFullscreenMode(FullscreenMode mode);
+
+        /**
+         * @brief Retrieves timing information from the simulation.
+         *
+         * @return TimingWatcher containing timing information.
+         */
+        static TimingWatcher GetTimingWatches();
+
+        /**
+         * @brief Retrieves version information of the linked library.
+         *
+         * @return VersionInfo containing version details.
+         */
+        static VersionInfo GetVersion();
+
+        /**
+         * @brief Retrieves the linked targets system (e.g., ui, ai, res, etc.).
+         *
+         * @return Linked targets information.
+         */
+        static const char *GetLinkedTargets();
+
+        /**
+         * @brief Toggles debug mode to display FPS, frametime, render time, gizmos, etc.
+         *
+         * @param state The state of debug mode (on/off).
+         */
+        static void SetDebugMode(bool state);
+
+        /**
+         * @brief Handles a failure during a back operation.
+         */
+        static void BreakSimulate(void);
+
+        /**
+         * @brief Displays a message.
+         *
+         * @param message The message to display.
+         */
+        static void ShowMessage(const std::string &message);
+
+        /**
+         * @brief Handles a failure by displaying an error message.
+         *
+         * @param message The error message.
+         */
+        static void ShowMessageFail(const std::string &message);
+
+        /**
+         * @brief Handles an out-of-memory failure by terminating the application.
+         */
+        static void Kill();
     };
 
 } // namespace RoninEngine

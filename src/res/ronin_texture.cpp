@@ -25,14 +25,14 @@ namespace RoninEngine::Runtime
     {
         int w;
         if(SDL_QueryTexture(m_native, nullptr, nullptr, &w, nullptr))
-            RoninSimulator::back_fail();
+            RoninSimulator::BreakSimulate();
         return w;
     }
     const int Texture::height()
     {
         int h;
         if(SDL_QueryTexture(m_native, nullptr, nullptr, nullptr, &h))
-            RoninSimulator::back_fail();
+            RoninSimulator::BreakSimulate();
         return h;
     }
 
@@ -40,7 +40,7 @@ namespace RoninEngine::Runtime
     {
         std::uint32_t f;
         if(SDL_QueryTexture(m_native, &f, nullptr, nullptr, nullptr))
-            RoninSimulator::back_fail();
+            RoninSimulator::BreakSimulate();
         return f;
     }
 
@@ -49,35 +49,35 @@ namespace RoninEngine::Runtime
         SDL_BlendMode bmode;
 
         if(SDL_GetTextureBlendMode(m_native, &bmode))
-            RoninSimulator::back_fail();
+            RoninSimulator::BreakSimulate();
 
         return static_cast<std::uint32_t>(bmode);
     }
     const void Texture::blendMode(const int blendMode)
     {
         if(SDL_SetTextureBlendMode(m_native, static_cast<SDL_BlendMode>(blendMode)))
-            RoninSimulator::fail("Error unsupported operation");
+            RoninSimulator::ShowMessageFail("Error unsupported operation");
     }
     const int Texture::scaleMode()
     {
         SDL_ScaleMode smode;
 
         if(SDL_GetTextureScaleMode(m_native, &smode))
-            RoninSimulator::back_fail();
+            RoninSimulator::BreakSimulate();
 
         return smode;
     }
     const void Texture::scaleMode(const int scaleMode)
     {
         if(SDL_SetTextureScaleMode(m_native, static_cast<SDL_ScaleMode>(scaleMode)))
-            RoninSimulator::back_fail();
+            RoninSimulator::BreakSimulate();
     }
 
     const int Texture::access()
     {
         int ac;
         if(SDL_QueryTexture(m_native, nullptr, &ac, nullptr, nullptr))
-            RoninSimulator::back_fail();
+            RoninSimulator::BreakSimulate();
         return static_cast<SDL_TextureAccess>(ac);
     }
 
@@ -85,14 +85,14 @@ namespace RoninEngine::Runtime
     {
         Color c;
         if(!(!SDL_GetTextureColorMod(m_native, &c.r, &c.g, &c.b) && !SDL_GetTextureAlphaMod(m_native, &c.a)))
-            RoninSimulator::back_fail();
+            RoninSimulator::BreakSimulate();
 
         return c;
     }
     const void Texture::color(const Color value)
     {
         if(!(!SDL_SetTextureColorMod(m_native, value.r, value.g, value.b) && !SDL_SetTextureAlphaMod(m_native, value.a)))
-            RoninSimulator::back_fail();
+            RoninSimulator::BreakSimulate();
     }
 
     int Texture::lockTexture(const native_rect_t *rect, void **pixels, int *pitch)

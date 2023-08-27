@@ -30,21 +30,19 @@ namespace RoninEngine::Runtime
 
     const Vec2 Camera::ScreenToWorldPoint(Vec2 screenPoint)
     {
-        Resolution res = RoninSimulator::get_current_resolution();
         Vec2 offset;
         if(main_camera())
             offset = main_camera()->transform()->position();
         Vec2 scale;
         SDL_RenderGetScale(renderer, &scale.x, &scale.y);
         scale *= pixelsPerPoint;
-        screenPoint.x = ((res.width / 2.f - screenPoint.x) * -1) / scale.x;
-        screenPoint.y = (res.height / 2.f - screenPoint.y) / scale.y;
+        screenPoint.x = ((active_resolution.width / 2.f - screenPoint.x) * -1) / scale.x;
+        screenPoint.y = (active_resolution.height / 2.f - screenPoint.y) / scale.y;
         screenPoint += offset;
         return screenPoint;
     }
     const Vec2 Camera::WorldToScreenPoint(Vec2 worldPoint)
     {
-        Resolution res = RoninSimulator::get_current_resolution();
         Vec2 scale;
         Vec2 offset;
         if(main_camera())
@@ -52,31 +50,29 @@ namespace RoninEngine::Runtime
         SDL_RenderGetScale(RoninEngine::renderer, &scale.x, &scale.y);
         scale *= pixelsPerPoint;
         // Horizontal position
-        worldPoint.x = (res.width / 2.f - (offset.x - worldPoint.x) * scale.x);
+        worldPoint.x = (active_resolution.width / 2.f - (offset.x - worldPoint.x) * scale.x);
         // Vertical position
-        worldPoint.y = (res.height / 2.f + (offset.y - worldPoint.y) * scale.y);
+        worldPoint.y = (active_resolution.height / 2.f + (offset.y - worldPoint.y) * scale.y);
         return worldPoint;
     }
 
     const Vec2 Camera::ViewportToWorldPoint(Vec2 viewportPoint)
     {
-        Resolution res = RoninSimulator::get_current_resolution();
         Vec2 scale, offset;
         if(main_camera())
             offset = main_camera()->transform()->position();
         SDL_RenderGetScale(RoninEngine::renderer, &scale.x, &scale.y);
         scale *= pixelsPerPoint;
         // Horizontal position
-        viewportPoint.x = (res.width / 2.f - res.width * viewportPoint.x) * -1 / scale.x;
+        viewportPoint.x = (active_resolution.width / 2.f - active_resolution.width * viewportPoint.x) * -1 / scale.x;
         // Vertical position
-        viewportPoint.y = (res.height / 2.f - res.height * viewportPoint.y) / scale.y;
+        viewportPoint.y = (active_resolution.height / 2.f - active_resolution.height * viewportPoint.y) / scale.y;
         viewportPoint += offset;
         return viewportPoint;
     }
 
     const Vec2 Camera::WorldToViewportPoint(Vec2 worldPoint)
     {
-        Resolution res = RoninSimulator::get_current_resolution();
         Vec2 scale;
         Vec2 offset;
         if(main_camera())
@@ -84,9 +80,9 @@ namespace RoninEngine::Runtime
         SDL_RenderGetScale(RoninEngine::renderer, &scale.x, &scale.y);
         scale *= pixelsPerPoint;
         // Horizontal position
-        worldPoint.x = (res.width / 2.0f - (offset.x - worldPoint.x) * scale.x) / res.width;
+        worldPoint.x = (active_resolution.width / 2.0f - (offset.x - worldPoint.x) * scale.x) / active_resolution.width;
         // Vertical position
-        worldPoint.y = (res.height / 2.0f + (offset.y - worldPoint.y) * scale.y) / res.height;
+        worldPoint.y = (active_resolution.height / 2.0f + (offset.y - worldPoint.y) * scale.y) / active_resolution.height;
         return worldPoint;
     }
 

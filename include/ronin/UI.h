@@ -60,10 +60,10 @@ namespace RoninEngine
             CI GUI(Runtime::World *);
             CI virtual ~GUI();
 
-            CI bool has_ui(uid id);
+            CI bool ElementContains(uid id);
 
-            CI uid push_group(const RoninEngine::Runtime::Rect &rect);
-            CI uid push_group();
+            CI uid PushGroup(const RoninEngine::Runtime::Rect &rect);
+            CI uid PushGroup();
 
             /**
              * After layment require end_layment() for end selection layer
@@ -72,41 +72,41 @@ namespace RoninEngine
              *
              * \see end_layment()
              */
-            CI uid begin_layment(const Runtime::Rect region);
-            CI void end_layment();
+            CI uid LayoutBegin(const Runtime::Rect region);
+            CI void LayoutBegin();
 
-            CI uid push_layment_label(const std::string &text);
-            CI uid push_layment_button(const std::string &text, ui_callback_void event_callback = nullptr);
-            CI uid push_layment_edit(const std::string &text, ui_callback_chars event_callback = nullptr);
-            CI uid push_layment_slider(float value, float min = 0.f, float max = 1.f, ui_callback_float value_changed = nullptr);
+            // CI uid push_layment_label(const std::string &text);
+            // CI uid push_layment_button(const std::string &text, ui_callback_void event_callback = nullptr);
+            // CI uid push_layment_edit(const std::string &text, ui_callback_chars event_callback = nullptr);
+            // CI uid push_layment_slider(float value, float min = 0.f, float max = 1.f, ui_callback_float value_changed = nullptr);
 
-            CI uid push_label(const std::string &text, const Runtime::Rect &rect, const int &fontWidth = 13, uid parent = NOPARENT);
-            CI uid push_label(const std::string &text, const Runtime::Vec2Int &point, const int &fontWidth = 13, uid parent = NOPARENT);
-            CI uid push_button(
+            CI uid PushLabel(const std::string &text, const Runtime::Rect &rect, const int &fontWidth = 13, uid parent = NOPARENT);
+            CI uid PushLabel(const std::string &text, const Runtime::Vec2Int &point, const int &fontWidth = 13, uid parent = NOPARENT);
+            CI uid PushButton(
                 const std::string &text, const Runtime::Vec2Int &point, ui_callback_void event_callback = nullptr, uid parent = NOPARENT);
-            CI uid push_button(
+            CI uid PushButton(
                 const std::string &text, const Runtime::Rect &point, ui_callback_void event_callback = nullptr, uid parent = NOPARENT);
-            CI uid push_edit(const std::string &text, const Runtime::Vec2Int &point, uid parent = NOPARENT);
-            CI uid push_edit(const std::string &text, const Runtime::Rect &rect, uid parent = NOPARENT);
-            CI uid push_picture(Runtime::Sprite *sprite, const Runtime::Rect &rect, uid parent = NOPARENT);
-            CI uid push_picture(Runtime::Sprite *sprite, const Runtime::Vec2Int &point, uid parent = NOPARENT);
+            CI uid PushTextEdit(const std::string &text, const Runtime::Vec2Int &point, uid parent = NOPARENT);
+            CI uid PushTextEdit(const std::string &text, const Runtime::Rect &rect, uid parent = NOPARENT);
+            CI uid PushPictureBox(Runtime::Sprite *sprite, const Runtime::Rect &rect, uid parent = NOPARENT);
+            CI uid PushPictureBox(Runtime::Sprite *sprite, const Runtime::Vec2Int &point, uid parent = NOPARENT);
 
-            CI uid push_drop_down(
+            CI uid PushDropDown(
                 const std::list<std::string> &elements, int index, const Runtime::Rect &rect, ui_callback_integer changed, uid parent);
 
             template <typename string_container>
-            CI uid push_drop_down(
+            CI uid PushDropDown(
                 const string_container &container,
                 int index,
                 const Runtime::Vec2Int &point,
                 ui_callback_integer changed = nullptr,
                 uid parent = NOPARENT)
             {
-                return push_drop_down(container, index, {point, defaultMakets.dropdownSize}, changed, parent);
+                return PushDropDown(container, index, {point, defaultMakets.dropdownSize}, changed, parent);
             }
 
             template <typename string_container>
-            CI uid push_drop_down(
+            CI uid PushDropDown(
                 const string_container &container,
                 int index,
                 const Runtime::Rect &rect,
@@ -127,15 +127,15 @@ namespace RoninEngine
                         __convert_string.emplace_back(std::to_string(*iter));
                 }
 
-                return push_drop_down(__convert_string, index, rect, changed, parent);
+                return PushDropDown(__convert_string, index, rect, changed, parent);
             }
 
-            CI uid push_slider(float value, const Runtime::Vec2Int &point, ui_callback_float changed = nullptr, uid parent = NOPARENT)
+            CI uid PushSlider(float value, const Runtime::Vec2Int &point, ui_callback_float changed = nullptr, uid parent = NOPARENT)
             {
-                return push_slider(value, 0.f, 1.f, point, changed, parent);
+                return PushSlider(value, 0.f, 1.f, point, changed, parent);
             }
 
-            CI uid push_slider(
+            CI uid PushSlider(
                 float value,
                 float min,
                 float max,
@@ -143,7 +143,7 @@ namespace RoninEngine
                 ui_callback_float changed = nullptr,
                 uid parent = NOPARENT)
             {
-                return push_slider(
+                return PushSlider(
                     value,
                     min,
                     max,
@@ -151,52 +151,46 @@ namespace RoninEngine
                     changed,
                     parent);
             }
-            CI uid push_slider(
+            CI uid PushSlider(
                 float value, float min, float max, const Runtime::Rect &rect, ui_callback_float changed = nullptr, uid parent = NOPARENT);
 
             // property-----------------------------------------------------------------------------------------------------------
 
-            CI void *get_resources(uid id);
-            CI void set_resources(uid id, void *data);
+            CI RoninEngine::Runtime::Rect GetElementRect(uid id);
+            CI void SetElementRect(uid id, const Runtime::Rect &rect);
 
-            CI RoninEngine::Runtime::Rect get_rect(uid id);
-            CI void set_rect(uid id, const Runtime::Rect &rect);
+            CI void SetElementText(uid id, const std::string &text);
+            CI std::string GetElementText(uid id);
 
-            CI std::string get_text(uid id);
-            CI void set_text(uid id, const std::string &text);
+            CI void SetElementVisible(uid id, bool state);
+            CI bool GetElementVisible(uid id);
 
-            CI void set_visible(uid id, bool state);
-            CI bool get_visible(uid id);
+            CI void SetElementEnable(uid id, bool state);
+            CI bool GetElementEnable(uid id);
 
-            CI void set_enable(uid id, bool state);
-            CI bool get_enable(uid id);
-
-            CI float get_slider_value(uid id);
-            CI void set_slider_value(uid id, float value);
+            CI void SliderSetValue(uid id, float value);
+            CI float SliderGetValue(uid id);
 
             // grouping-----------------------------------------------------------------------------------------------------------
 
-            CI bool is_group(uid id);
-            CI void show_group_unique(uid id) throw();
-            CI void show_group(uid id) throw();
-            CI bool close_group(uid id) throw();
+            CI bool IsGroup(uid id);
+            CI void GroupShowAsUnique(uid id) throw();
+            CI void GroupShow(uid id) throw();
+            CI bool GroupClose(uid id) throw();
 
             // other--------------------------------------------------------------------------------------------------------------
 
-            bool has_mouse_hover();
+            bool IsMouseOver();
 
-            CI void set_cast(bool state);
-            CI bool get_cast();
+            CI void SetInteractable(bool state);
+            CI bool GetInteractable();
 
-            CI void register_general_callback(ui_callback callback, void *userData);
+            CI void SetGeneralCallback(ui_callback callback, void *userData);
 
-            CI bool pop_element(uid id);
-            CI void remove_all();
+            CI bool PopElement(uid id);
+            CI void PopAllElements();
 
-            CI void set_color_rgb(std::uint32_t rgb);
-            CI void set_color_rgba(std::uint32_t argb);
-
-            CI bool has_focused_ui();
+            CI bool FocusedGUI();
         };
 #undef CI
     } // namespace UI

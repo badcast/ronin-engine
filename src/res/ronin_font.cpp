@@ -36,7 +36,7 @@ namespace RoninEngine::UI
         ttf_arial_font = TTF_OpenFontRW(raw, SDL_TRUE, 14);
 
         if(RoninMemory::alloc_self(pLegacyFont) == nullptr)
-            RoninSimulator::fail_oom_kill();
+            RoninSimulator::BreakSimulate();
 
         if((pLegacyFont->surfNormal = private_load_surface(font_arealike_png, font_arealike_png_len)) == nullptr)
             throw std::bad_alloc();
