@@ -16,6 +16,7 @@ namespace RoninEngine::Runtime
             if(mem == nullptr)
             {
                 RoninSimulator::Kill();
+                return nullptr;
             }
             // Set up controls memory pointer. Set zero.
             memset(mem, 0, size);

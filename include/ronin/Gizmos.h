@@ -28,6 +28,7 @@ namespace RoninEngine::Runtime
         static void DrawFillRectRounded(Vec2 origin, float width, float height, std::uint16_t radius);
         static void DrawFillSquare(Vec2 origin, float width);
         static void DrawFillSquareRounded(Vec2 origin, float width, std::uint16_t radius);
+        static void DrawFillCircle(Vec2 origin, float distance);
 
         static void DrawTextToScreen(Vec2Int screen_point, const std::string &text, int font_size = 11);
 

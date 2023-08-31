@@ -357,7 +357,6 @@ namespace RoninEngine
         SDL_Event event;
         float secPerFrame, game_time_score;
         SDL_DisplayMode displayMode;
-        SDL_WindowFlags flags;
 
         if(switched_world == nullptr)
         {
@@ -373,7 +372,7 @@ namespace RoninEngine
 
         Resolution current_resolution = RoninSimulator::GetCurrentResolution();
         queue_watcher = {};
-        flags = static_cast<SDL_WindowFlags>(SDL_GetWindowFlags(main_window));
+
         secPerFrame = 1000.f / current_resolution.hz; // refresh screen from Monitor Settings
         game_time_score = secPerFrame / 1000;
         while(!isQuiting)

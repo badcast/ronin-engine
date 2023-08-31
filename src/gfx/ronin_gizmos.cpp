@@ -351,6 +351,18 @@ namespace RoninEngine::Runtime
         DrawFillRectRounded(origin, width, width, radius);
     }
 
+    void Gizmos::DrawFillCircle(Vec2 origin, float distance)
+    {
+        origin = Camera::main_camera()->WorldToScreenPoint(origin);
+        std::uint16_t x, y, r;
+        x = Math::number(origin.x);
+        y = Math::number(origin.y);
+        r = static_cast<std::uint16_t>(distance * pixelsPerPoint);
+        Color m_color = GetColor();
+
+        filledCircleColor(RoninEngine::renderer, x, y, r, m_color);
+    }
+
     void Gizmos::DrawTextToScreen(Vec2Int screen_point, const std::string &text, int font_size)
     {
         RoninEngine::UI::draw_font_at(RoninEngine::renderer, text, font_size, screen_point, GetColor(), false);
