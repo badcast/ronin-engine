@@ -8,6 +8,8 @@
 
 using namespace RoninEngine::Exception;
 
+extern std::uint32_t internal_rand();
+
 namespace RoninEngine::AI
 {
     using namespace RoninEngine::Runtime;
@@ -19,6 +21,7 @@ namespace RoninEngine::AI
     public:
         Sheduller(int width, int height) : basic_brain_map(width, height)
         {
+            this->set_random_function(internal_rand);
         }
     };
 
@@ -76,8 +79,8 @@ namespace RoninEngine::AI
     Neuron *NavMesh::get(const Vec2 &worldPoint)
     {
         Vec2Int p {
-            Math::round(static_cast<float>(shedule->_xsize) / 2 + worldPoint.x / worldScale.x),
-            Math::round(static_cast<float>(shedule->_ysize) / 2 - worldPoint.y / worldScale.y)};
+            Math::number(static_cast<float>(shedule->_xsize) / 2 + worldPoint.x / worldScale.x),
+            Math::number(static_cast<float>(shedule->_ysize) / 2 - worldPoint.y / worldScale.y)};
 
         return get(p);
     }

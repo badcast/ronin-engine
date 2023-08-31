@@ -11,7 +11,7 @@ constexpr auto ronin_rand_max = std::numeric_limits<std::uint32_t>::max();
 static std::uint32_t __seed__ = 1;
 
 // get random value
-inline std::uint32_t internal_rand()
+std::uint32_t internal_rand()
 {
     __seed__ = (__seed__ * 73129u + 95121u) % ronin_rand_max;
     return __seed__;
