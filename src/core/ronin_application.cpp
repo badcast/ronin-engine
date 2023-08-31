@@ -1,5 +1,6 @@
 #include "ronin.h"
 #include "ronin_matrix.h"
+#include "ronin_audio.h"
 
 using namespace RoninEngine::Runtime;
 using namespace RoninEngine::Exception;
@@ -104,12 +105,8 @@ namespace RoninEngine
         // init Audio system
         if(flags & InitializeFlags::Audio)
         {
-            current_inits = MIX_InitFlags::MIX_INIT_OGG | MIX_InitFlags::MIX_INIT_MP3;
-            if(Mix_Init(current_inits) != current_inits)
+            if(Runtime::RoninAudio::Init() == -1)
                 ShowMessage("Fail init audio.");
-
-            if(Mix_OpenAudio(MIX_DEFAULT_FREQUENCY, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS, 1024))
-                ShowMessage("Fail open audio.");
         }
 
         // setup
@@ -329,11 +326,12 @@ namespace RoninEngine
         SDL_version linked;
         SDL_GetVersion(&linked);
 
-        version.Engine_Version = {}; // TODO: Get Current Linked version
+        version.Engine_Version = {0, 0, 0}; // TODO: Get Current Linked version
         SDL_memcpy(&version.SDL_Version, &linked, sizeof(Version));
         SDL_memcpy(&version.SDL_TTF_Version, TTF_Linked_Version(), sizeof(Version));
         SDL_memcpy(&version.SDL_IMG_Version, IMG_Linked_Version(), sizeof(Version));
         SDL_memcpy(&version.SDL_Mix_Version, Mix_Linked_Version(), sizeof(Version));
+        version.SDL_GFX_Version = {SDL2_GFXPRIMITIVES_MAJOR, SDL2_GFXPRIMITIVES_MINOR, SDL2_GFXPRIMITIVES_MICRO};
 
         return version;
     }

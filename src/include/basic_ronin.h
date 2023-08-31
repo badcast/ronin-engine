@@ -202,12 +202,11 @@ namespace RoninEngine
         {
             AudioClip *m_clip;
             int target_channel;
-            std::uint8_t m_volume;
         };
 
         struct MusicPlayerData
         {
-            MusicClip *m_clip = nullptr;
+            MusicClip *m_clip;
         };
 
         struct GidResources
@@ -227,7 +226,6 @@ namespace RoninEngine
 
             std::list<Sprite *> offload_sprites;
             std::list<SDL_Surface *> offload_surfaces;
-            std::list<AudioClip> offload_audioclips;
 
             int audio_channels;
             int audio_reserved_channels = MIX_CHANNELS;

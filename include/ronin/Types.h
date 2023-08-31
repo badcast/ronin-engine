@@ -14,6 +14,14 @@ namespace RoninEngine
             Center
         };
 
+        enum AudioState
+        {
+            Undefined = -1,
+            Play,
+            Pause,
+            Stop
+        };
+
         template <typename T>
         class RRect
         {

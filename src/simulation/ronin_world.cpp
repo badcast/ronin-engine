@@ -34,6 +34,9 @@ namespace RoninEngine
 
             if(world->internal_resources == nullptr)
             {
+                // reallocate channels
+                Mix_AllocateChannels(MIX_CHANNELS);
+
                 RoninMemory::alloc_self(world->internal_resources);
                 RoninMemory::alloc_self(world->internal_resources->gui, world);
             }
@@ -60,45 +63,7 @@ namespace RoninEngine
             // unloading owner
             world->OnUnloading();
 
-            if(world->internal_resources->_firstRunScripts)
-            {
-                RoninMemory::free(world->internal_resources->_firstRunScripts);
-                world->internal_resources->_firstRunScripts = nullptr;
-            }
-            if(world->internal_resources->_realtimeScripts)
-            {
-                RoninMemory::free(world->internal_resources->_realtimeScripts);
-                world->internal_resources->_realtimeScripts = nullptr;
-            }
-            if(world->internal_resources->_destructTasks)
-            {
-                RoninMemory::free(world->internal_resources->_destructTasks);
-                world->internal_resources->_destructTasks = nullptr;
-            }
-
-            // free GUI objects
-            if(world->internal_resources->gui)
-            {
-                RoninMemory::free(world->internal_resources->gui);
-                world->internal_resources->gui = nullptr;
-            }
-
-            // Halt all channels
-            Mix_HaltChannel(-1);
-
-            // reallocate channels
-            Mix_AllocateChannels(MIX_CHANNELS);
-
-            // free Audio objects
-            for(AudioClip &ac : world->internal_resources->offload_audioclips)
-            {
-                Mix_FreeChunk(ac.mix_chunk);
-            }
-
-            // NOTE: Free Local Resources
-            gid_resources_free(world->internal_resources->external_local_resources);
-            world->internal_resources->external_local_resources = nullptr;
-
+            //Free Game Objects
             target = world->internal_resources->main_object;
             std::list<GameObject *> stacks;
             // free objects
@@ -122,8 +87,40 @@ namespace RoninEngine
                     stacks.pop_front();
                 }
             }
-
             world->internal_resources->main_object = nullptr;
+
+            if(world->internal_resources->_firstRunScripts)
+            {
+                RoninMemory::free(world->internal_resources->_firstRunScripts);
+                world->internal_resources->_firstRunScripts = nullptr;
+            }
+            if(world->internal_resources->_realtimeScripts)
+            {
+                RoninMemory::free(world->internal_resources->_realtimeScripts);
+                world->internal_resources->_realtimeScripts = nullptr;
+            }
+            if(world->internal_resources->_destructTasks)
+            {
+                RoninMemory::free(world->internal_resources->_destructTasks);
+                world->internal_resources->_destructTasks = nullptr;
+            }
+
+            // free GUI objects
+            if(world->internal_resources->gui)
+            {
+                RoninMemory::free(world->internal_resources->gui);
+                world->internal_resources->gui = nullptr;
+            }
+
+            // NOTE: Free Local Resources
+            gid_resources_free(world->internal_resources->external_local_resources);
+            world->internal_resources->external_local_resources = nullptr;
+
+            // Halt all channels
+            Mix_HaltChannel(-1);
+
+            // reallocate channels
+            Mix_AllocateChannels(MIX_CHANNELS);
 
             if(!world->internal_resources->world_objects.empty())
             {
@@ -131,12 +128,12 @@ namespace RoninEngine
             }
 
             // free native resources
-            for(auto sprite : world->internal_resources->offload_sprites)
+            for(Sprite *sprite : world->internal_resources->offload_sprites)
             {
                 RoninMemory::free(sprite);
             }
 
-            for(auto surface : world->internal_resources->offload_surfaces)
+            for(SDL_Surface *surface : world->internal_resources->offload_surfaces)
             {
                 SDL_FreeSurface(surface);
             }

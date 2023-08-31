@@ -1,4 +1,5 @@
-#include <ronin.h>
+#include "ronin.h"
+#include "ronin_audio.h"
 
 namespace RoninEngine::Runtime
 {
@@ -11,9 +12,9 @@ namespace RoninEngine::Runtime
         return data.m_clip;
     }
 
-    void MusicPlayer::clip(MusicClip *clip)
+    void MusicPlayer::setClip(MusicClip *clip)
     {
-        stop();
+        Stop();
 #ifndef NDEBUG
         if(data.m_clip)
             data.m_clip->used--;
@@ -23,60 +24,64 @@ namespace RoninEngine::Runtime
         data.m_clip = clip;
     }
 
-    float MusicPlayer::volume()
+    float MusicPlayer::getVolume()
     {
-        return Math::map<int, float>(Mix_GetMusicVolume(data.m_clip->mix_music), 0, MIX_MAX_VOLUME, 0.f, 1.f);
+        return RoninAudio::getMusicVolume(data.m_clip);
     }
 
-    void MusicPlayer::volume(float value)
+    void MusicPlayer::setVolume(float value)
     {
-        // set volume (clamping)
-        Mix_VolumeMusic(Math::map<float, int>(value, 0.f, 1.f, 0, MIX_MAX_VOLUME));
+        RoninAudio::setMusicVolume(value);
     }
 
-    void MusicPlayer::rewind()
+    void MusicPlayer::Rewind()
     {
         Mix_RewindMusic();
     }
 
-    void MusicPlayer::play(bool loop)
+    void MusicPlayer::Play(bool loop)
     {
-        stop();
-        Mix_PlayMusic(data.m_clip->mix_music, loop == true ? std::numeric_limits<int>::max() : 0);
+        Stop();
+        RoninAudio::setMusicState(data.m_clip, AudioState::Play, loop);
     }
 
-    void MusicPlayer::pause()
+    void MusicPlayer::Pause()
     {
-        Mix_PauseMusic();
+        RoninAudio::setMusicState(data.m_clip, AudioState::Pause, false);
     }
 
-    void MusicPlayer::stop()
+    void MusicPlayer::Stop()
     {
-        Mix_HaltMusic();
+        RoninAudio::setMusicState(data.m_clip, AudioState::Stop, false);
     }
 
-    bool MusicPlayer::is_playing()
+    bool MusicPlayer::isPlaying()
     {
-        return Mix_PlayingMusic() == 1;
+        return RoninAudio::getMusicState() == AudioState::Play;
     }
 
-    bool MusicPlayer::is_paused()
+    bool MusicPlayer::isPaused()
     {
-        return Mix_PausedMusic() == 1;
+        return RoninAudio::getMusicState() == AudioState::Pause;
     }
 
-    double MusicPlayer::duration()
+    double MusicPlayer::getDuration()
     {
-        return Mix_MusicDuration(data.m_clip->mix_music);
+        return RoninAudio::getMusicDuration(data.m_clip);
     }
 
-    double MusicPlayer::get_position()
+    double MusicPlayer::getPosition()
     {
-        return Mix_GetMusicPosition(data.m_clip->mix_music);
+        return RoninAudio::getMusicPosition(data.m_clip);
     }
 
-    void MusicPlayer::set_position(double value)
+    AudioState MusicPlayer::getState()
     {
-        Mix_SetMusicPosition(value);
+        return RoninAudio::getMusicState();
+    }
+
+    void MusicPlayer::setPosition(double value)
+    {
+        RoninAudio::setMusicPosition(value);
     }
 } // namespace RoninEngine::Runtime

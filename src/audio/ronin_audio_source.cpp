@@ -1,4 +1,5 @@
-#include <ronin.h>
+#include "ronin.h"
+#include "ronin_audio.h"
 
 using namespace RoninEngine::Runtime;
 
@@ -9,29 +10,28 @@ AudioSource::AudioSource() : AudioSource(DESCRIBE_AS_MAIN_OFF(AudioSource))
 AudioSource::AudioSource(const std::string &name) : Component(DESCRIBE_AS_ONLY_NAME(AudioSource))
 {
     DESCRIBE_AS_MAIN(AudioSource);
-    WorldResources *__world_resources = World::self()->internal_resources;
 
     RoninMemory::alloc_self(data);
-    data->m_volume = MIX_MAX_VOLUME;
-    data->target_channel = __world_resources->audio_channels++;
-
-    if(data->target_channel + 1 > __world_resources->audio_reserved_channels)
-        Mix_AllocateChannels(__world_resources->audio_reserved_channels *= 2);
+    data->target_channel = RoninAudio::pushChannel();
 }
 
 AudioSource::~AudioSource()
 {
+    // TODO: Make Free Channel in
+    // World::self()->internal_resources->__world_resources->audio_channels--
+
+    setClip(nullptr);
     RoninMemory::free(data);
 }
 
-AudioClip *AudioSource::clip() const
+AudioClip *AudioSource::getClip() const
 {
     return data->m_clip;
 }
 
-void AudioSource::clip(AudioClip *clip)
+void AudioSource::setClip(AudioClip *clip)
 {
-    stop();
+    Stop();
 #ifndef NDEBUG
     if(data->m_clip)
         data->m_clip->used--;
@@ -41,53 +41,56 @@ void AudioSource::clip(AudioClip *clip)
     data->m_clip = clip;
 }
 
-float AudioSource::volume() const
+float AudioSource::getVolume() const
 {
-    return Math::map<std::uint8_t, float>(data->m_volume, 0, MIX_MAX_VOLUME, 0.0, 1.f);
+    return RoninAudio::getChannelVolume(data->target_channel);
 }
 
-void AudioSource::volume(float value)
+void AudioSource::setVolume(float value)
 {
-    // set volume (clamping)
-    Mix_Volume(data->target_channel, data->m_volume = Math::map<float, std::uint8_t>(value, 0.f, 1.f, 0, MIX_MAX_VOLUME));
+    RoninAudio::setChannelVolume(data->target_channel, value);
 }
 
-void AudioSource::rewind()
+bool AudioSource::Rewind()
 {
-    bool last_state = is_playing();
-    stop();
+    bool last_state = isPlaying();
+    Stop();
     if(last_state)
-        play();
+        last_state = Play();
+    return last_state;
 }
 
-void AudioSource::play(bool loop)
+bool AudioSource::Play(bool loop)
 {
-    if(is_paused())
-        Mix_Resume(data->target_channel);
+    bool result;
+    if(isPaused())
+    {
+        result = RoninAudio::resumeChannel(data->target_channel);
+    }
     else
     {
-        stop();
-        if(data->m_clip)
-            Mix_PlayChannel(data->target_channel, data->m_clip->mix_chunk, loop ? -1 : 0);
+        Stop();
+        result = RoninAudio::setChannelState(data->target_channel, data->m_clip, AudioState::Play, loop);
     }
+    return result;
 }
 
-void AudioSource::pause()
+void AudioSource::Pause()
 {
-    Mix_Pause(data->target_channel);
+    RoninAudio::setChannelState(data->target_channel, data->m_clip, AudioState::Pause, false);
 }
 
-void AudioSource::stop()
+void AudioSource::Stop()
 {
-    Mix_HaltChannel(data->target_channel);
+    RoninAudio::setChannelState(data->target_channel, data->m_clip, AudioState::Stop, false);
 }
 
-bool AudioSource::is_playing() const
+bool AudioSource::isPlaying() const
 {
-    return Mix_Playing(data->target_channel) == 1;
+    return RoninAudio::getChannelState(data->target_channel) == AudioState::Play;
 }
 
-bool AudioSource::is_paused() const
+bool AudioSource::isPaused() const
 {
-    return Mix_Paused(data->target_channel) == 1;
+    return RoninAudio::getChannelState(data->target_channel) == AudioState::Pause;
 }

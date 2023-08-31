@@ -12,28 +12,29 @@ namespace RoninEngine::Runtime
     public:
         AudioSource();
         AudioSource(const std::string &name);
+        AudioSource(const AudioSource &) = delete;
         ~AudioSource();
 
         // Get audio clip
-        AudioClip *clip() const;
+        AudioClip *getClip() const;
         // Set audio clip
-        void clip(AudioClip *clip);
+        void setClip(AudioClip *clip);
         // Get volume at range 0.0 ... 1.0
-        float volume() const;
+        float getVolume() const;
         // Set volume at range 0.0 ... 1.0
-        void volume(float value);
+        void setVolume(float value);
         // Set Clip position to begin
-        void rewind();
+        bool Rewind();
         // Set play audio source
-        void play(bool loop = false);
+        bool Play(bool loop = false);
         // Set pause state
-        void pause();
+        void Pause();
         // Set stoping state
-        void stop();
+        void Stop();
         // Is played now?
-        bool is_playing() const;
+        bool isPlaying() const;
         // Is paused now?
-        bool is_paused() const;
+        bool isPaused() const;
     };
 
 } // namespace RoninEngine::Runtime

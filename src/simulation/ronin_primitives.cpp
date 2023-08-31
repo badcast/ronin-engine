@@ -103,7 +103,7 @@ namespace RoninEngine::Runtime
         //        }
         //        SDL_UnlockSurface(surface);
         World::self()->internal_resources->offload_surfaces.push_back(surface);
-        RoninMemory::alloc_self(sprite, surface, Rect {0, 0, size.x, size.y});
+        RoninMemory::alloc_self(sprite, surface, Rect {0, 0, static_cast<int>(size.x), static_cast<int>(size.y)});
         World::self()->internal_resources->offload_sprites.push_back(sprite);
         return sprite;
     }
