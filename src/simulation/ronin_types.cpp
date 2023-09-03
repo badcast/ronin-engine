@@ -1,5 +1,7 @@
 #include "ronin.h"
+
 using namespace RoninEngine::Exception;
+
 namespace RoninEngine::Runtime
 {
     template <>

@@ -128,7 +128,7 @@ namespace RoninEngine::AI
         const Runtime::Vec2Int WorldPointToPoint(const Runtime::Vec2 &worldPoint);
         const Runtime::Vec2 PointToWorldPoint(const Runtime::Vec2Int &point);
         const Runtime::Vec2 PointToWorldPoint(int x, int y);
-        const Runtime::Vec2 neuron_to_world_position(Neuron *neuron);
+        const Runtime::Vec2 NeuronToWorldPoint(Neuron *neuron);
 
         void LoadFrom(const NavMeshData &navmeshData);
         void SaveTo(NavMeshData *navmeshData);

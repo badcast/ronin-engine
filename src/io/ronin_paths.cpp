@@ -2,7 +2,7 @@
 
 using namespace RoninEngine;
 
-#ifdef __WIN32__
+#ifdef WIN32
 static const char seperator = '\\';
 #elif __unix__ || __linux__
 static const char seperator = '/';

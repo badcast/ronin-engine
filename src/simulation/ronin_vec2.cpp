@@ -120,7 +120,7 @@ namespace RoninEngine::Runtime
         return {Math::nabs(value.x), Math::nabs(value.y)};
     }
 
-    Vec2 Vec2::Slerp(Vec2 lhs, Vec2 rhs, float t)
+    Vec2 Vec2::Slerp(const Vec2 &lhs, const Vec2 &rhs, float t)
     {
         t = Math::clamp01(t);
 
@@ -138,7 +138,7 @@ namespace RoninEngine::Runtime
         Vec2 p = lhs * t1 + rhs * t2;
         return p;
     }
-    Vec2 Vec2::SlerpUnclamped(const Vec2& lhs, const Vec2& rhs, float t)
+    Vec2 Vec2::SlerpUnclamped(const Vec2 &lhs, const Vec2 &rhs, float t)
     {
         // get cosine of angle between disposition (-1 -> 1)
         float CosAlpha = Dot(lhs, rhs);
@@ -245,7 +245,7 @@ namespace RoninEngine::Runtime
         return result;
     }
 
-    Vec2 Vec2::SmoothDamp(Vec2 current, Vec2 target, Vec2 &currentVelocity, float smoothTime, float maxSpeed, float deltaTime)
+    Vec2 Vec2::SmoothDamp(const Vec2 &current, Vec2 target, Vec2 &currentVelocity, float smoothTime, float maxSpeed, float deltaTime)
     {
         smoothTime = Math::max(0.f, Math::max(0001.f, smoothTime));
         float n0 = 2 / smoothTime;
@@ -304,7 +304,7 @@ namespace RoninEngine::Runtime
         return p.x >= r.x && p.x <= r.w && p.y >= r.h && p.y <= r.y;
     }
 
-    const Vec2 Vec2::Rotate(Vec2 vec, Vec2 normal, float angleRadian)
+    const Vec2 Vec2::Rotate(const Vec2 &vec, Vec2 normal, float angleRadian)
     {
         normal = Vec2::RotateClockwise(normal, angleRadian);
         normal.x *= vec.x;
@@ -339,7 +339,7 @@ namespace RoninEngine::Runtime
         return center;
     }
 
-    const Vec2 Vec2::Mirror(Vec2 position)
+    const Vec2 Vec2::Mirror(const Vec2 &position)
     {
         return Vec2::Rotate(position, Math::Pi);
     }
@@ -522,4 +522,5 @@ namespace RoninEngine::Runtime
     {
         return Vec2(std::move(rhs)) / d;
     }
+
 } // namespace RoninEngine::Runtime

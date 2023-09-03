@@ -99,7 +99,7 @@ namespace RoninEngine::Runtime
             Vec2 camera_position = camera2d->transform()->position();
             // RUN STORM CAST
 
-            std::vector<Transform *> storm_result = Physics2D::sphere_cast<std::vector<Transform *>>(
+            std::vector<Transform *> storm_result = Physics2D::GetCircleCast<std::vector<Transform *>>(
                 camera_position,
                 Math::number(Math::max(wpRightBottom.x - camera_position.x, wpRightBottom.y - camera_position.y)) + 1 +
                     camera2d->distanceEvcall);

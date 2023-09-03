@@ -151,7 +151,7 @@ namespace RoninEngine::AI
         return vec2 + worldOffset;
     }
 
-    const Vec2 NavMesh::neuron_to_world_position(Neuron *neuron)
+    const Vec2 NavMesh::NeuronToWorldPoint(Neuron *neuron)
     {
         return PointToWorldPoint(getPoint(neuron));
     }

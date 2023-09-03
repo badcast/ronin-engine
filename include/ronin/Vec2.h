@@ -93,7 +93,7 @@ namespace RoninEngine
 
             static const Vec2 Abs(const Vec2 &value);
             static const Vec2 NAbs(const Vec2 &value);
-            static Vec2 Slerp(Vec2 lhs, Vec2 rhs, float t);
+            static Vec2 Slerp(const Vec2 &lhs, const Vec2 &rhs, float t);
             static Vec2 SlerpUnclamped(const Vec2 &lhs, const Vec2 &rhs, float t);
             static Vec2 Lerp(const Vec2 &lhs, const Vec2 &rhs, float t);
             static Vec2 LerpUnclamped(const Vec2 &lhs, const Vec2 &rhs, float t);
@@ -107,7 +107,8 @@ namespace RoninEngine
             static float Angle(Vec2 from, Vec2 to);
             static float SignedAngle(Vec2 from, Vec2 to);
             static Vec2 ClampMagnitude(Vec2 vector, float maxLength);
-            static Vec2 SmoothDamp(Vec2 current, Vec2 target, Vec2 &currentVelocity, float smoothTime, float maxSpeed, float deltaTime);
+            static Vec2 SmoothDamp(
+                const Vec2 &current, Vec2 target, Vec2 &currentVelocity, float smoothTime, float maxSpeed, float deltaTime);
             static float Dot(const Vec2 &lhs, const Vec2 &rhs);
             static float SqrMagnitude(const Vec2 &lhs);
             static Vec2 Round(Vec2 lhs);
@@ -115,11 +116,11 @@ namespace RoninEngine
             static bool HasIntersection(const Vec2 &p, const Rectf &rhs);
             static bool HasIntersection(const Rectf &lhs, const Rectf &rhs);
             static bool InArea(const Vec2 &p, const Rectf &rhs);
-            static const Vec2 Rotate(Vec2 vec, Vec2 normal, float angleRadian);
+            static const Vec2 Rotate(const Vec2 &vec, Vec2 normal, float angleRadian);
             static const Vec2 Rotate(Vec2 position, float angleRadian);
             static const Vec2 RotateClockwise(Vec2 position, float angleRadian);
             static const Vec2 RotateAround(Vec2 center, Vec2 localPosition, float angleRadian);
-            static const Vec2 Mirror(Vec2 position);
+            static const Vec2 Mirror(const Vec2 &position);
             static const Vec2 Perpendicular(Vec2 inDirection);
         };
 

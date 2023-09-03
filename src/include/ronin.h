@@ -6,6 +6,7 @@
 #include <cstdio>
 #include <cstdint>
 #include <cstdlib>
+#include <cstring>
 #include <new>
 #include <typeindex>
 #include <typeinfo>
@@ -15,7 +16,6 @@
 #include <cassert>
 #include <algorithm>
 #include <functional>
-#include <cstring>
 #include <random>
 
 // standard listing include

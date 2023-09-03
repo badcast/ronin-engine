@@ -132,7 +132,7 @@ Color::operator native_color_t() const
 
 Color Color::HexToColor(const char *hex)
 {
-    int red = 0, green = 0, blue = 0, alpha = 255;
+    unsigned int red = 0, green = 0, blue = 0, alpha = 255;
     if(hex[0] == '#')
         hex++;
 
@@ -149,7 +149,7 @@ Color Color::HexToColor(const std::string &hex)
 std::string Color::ColorToHex(const Color &color)
 {
     char hex[9];
-    snprintf(hex, sizeof(hex), "#%02X%02X%02X", color.r, color.g, color.b, color.a);
+    snprintf(hex, sizeof(hex), "#%02X%02X%02X%02X", color.r, color.g, color.b, color.a);
     return hex;
 }
 

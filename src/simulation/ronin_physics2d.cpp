@@ -150,7 +150,7 @@ namespace RoninEngine::Runtime
     }
 
     template <typename container_result>
-    container_result Physics2D::rect_cast(Vec2 center, Vec2 size, int layer)
+    container_result Physics2D::GetRectangleCast(Vec2 center, Vec2 size, int layer)
     {
         container_result result;
         auto &mx = World::self()->internal_resources->matrix;
@@ -184,13 +184,13 @@ namespace RoninEngine::Runtime
         return result;
     }
     template <typename container_result>
-    container_result Physics2D::storm_cast(Vec2 origin, int edges, int layer)
+    container_result Physics2D::GetStormCast(Vec2 origin, int edges, int layer)
     {
         return storm_cast_eq<container_result>(origin, edges, layer, nullptr);
     }
 
     template <typename container_result>
-    container_result Physics2D::sphere_cast(Vec2 origin, float distance, int layer)
+    container_result Physics2D::GetCircleCast(Vec2 origin, float distance, int layer)
     {
         distance *= distance; // Sqr
         container_result result = storm_cast_eq<container_result>(
@@ -205,16 +205,16 @@ namespace RoninEngine::Runtime
         return result;
     }
 
-    template RONIN_API std::list<Transform *> Physics2D::storm_cast(Vec2, int, int);
-    template RONIN_API std::list<Transform *> Physics2D::rect_cast(Vec2, Vec2, int);
-    template RONIN_API std::list<Transform *> Physics2D::sphere_cast(Vec2, float, int);
+    template RONIN_API std::list<Transform *> Physics2D::GetStormCast(Vec2, int, int);
+    template RONIN_API std::list<Transform *> Physics2D::GetRectangleCast(Vec2, Vec2, int);
+    template RONIN_API std::list<Transform *> Physics2D::GetCircleCast(Vec2, float, int);
 
-    template RONIN_API std::vector<Transform *> Physics2D::storm_cast(Vec2, int, int);
-    template RONIN_API std::vector<Transform *> Physics2D::rect_cast(Vec2, Vec2, int);
-    template RONIN_API std::vector<Transform *> Physics2D::sphere_cast(Vec2, float, int);
+    template RONIN_API std::vector<Transform *> Physics2D::GetStormCast(Vec2, int, int);
+    template RONIN_API std::vector<Transform *> Physics2D::GetRectangleCast(Vec2, Vec2, int);
+    template RONIN_API std::vector<Transform *> Physics2D::GetCircleCast(Vec2, float, int);
 
-    template RONIN_API std::set<Transform *> Physics2D::storm_cast(Vec2, int, int);
-    template RONIN_API std::set<Transform *> Physics2D::rect_cast(Vec2, Vec2, int);
-    template RONIN_API std::set<Transform *> Physics2D::sphere_cast(Vec2, float, int);
+    template RONIN_API std::set<Transform *> Physics2D::GetStormCast(Vec2, int, int);
+    template RONIN_API std::set<Transform *> Physics2D::GetRectangleCast(Vec2, Vec2, int);
+    template RONIN_API std::set<Transform *> Physics2D::GetCircleCast(Vec2, float, int);
 
 } // namespace RoninEngine::Runtime

@@ -87,8 +87,9 @@ namespace RoninEngine
          *
          * @param world The world to load.
          * @param unloadPrevious Whether to unload the previous world.
+         * @return result of loaded
          */
-        static void LoadWorld(Runtime::World *world, bool unloadPrevious = true);
+        static bool LoadWorld(Runtime::World *world, bool unloadPrevious = true);
 
         /**
          * @brief Simulates the loaded world.
@@ -176,6 +177,12 @@ namespace RoninEngine
          * @param message The error message.
          */
         static void ShowMessageFail(const std::string &message);
+
+        /**
+         * @brief Write log
+         * @param str The message string
+         */
+        static void Log(const std::string &str);
 
         /**
          * @brief Handles an out-of-memory failure by terminating the application.

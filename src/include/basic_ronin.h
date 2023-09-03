@@ -46,24 +46,26 @@ extern void check_object(RoninEngine::Runtime::Object *obj);
 namespace std
 {
     // this for Hashtable function
+    // Used it matrix_key
+
+    using namespace RoninEngine::Runtime;
+    using fake_type = std::int64_t;
 
     template <>
-    struct hash<RoninEngine::Runtime::Vec2>
+    struct hash<Vec2>
     {
-        std::size_t operator()(const RoninEngine::Runtime::Vec2 &val) const noexcept
+        std::size_t operator()(const Vec2 &val) const noexcept
         {
-            std::int64_t fake = (*reinterpret_cast<std::int64_t *>(&const_cast<RoninEngine::Runtime::Vec2 &>(val)));
-            return std::hash<std::int64_t> {}(fake);
+            return std::hash<fake_type> {}(*reinterpret_cast<const fake_type *>(&val));
         }
     };
 
     template <>
-    struct hash<RoninEngine::Runtime::Vec2Int>
+    struct hash<Vec2Int>
     {
-        std::size_t operator()(const RoninEngine::Runtime::Vec2Int &val) const noexcept
+        std::size_t operator()(const Vec2Int &val) const noexcept
         {
-            std::int64_t fake = (*reinterpret_cast<std::int64_t *>(&const_cast<RoninEngine::Runtime::Vec2Int &>(val)));
-            return std::hash<std::int64_t> {}(fake);
+            return std::hash<fake_type> {}(*reinterpret_cast<const fake_type *>(&val));
         }
     };
 

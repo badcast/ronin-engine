@@ -5,6 +5,7 @@
 #ifndef RONIN_COMPILLING
 typedef struct SDL_Surface native_surface_t;
 typedef struct SDL_Texture native_texture_t;
+
 struct native_color_t
 {
     std::uint8_t r, g, b, a;
@@ -45,8 +46,6 @@ namespace RoninEngine
     namespace Runtime
     {
 
-        class World;
-
         struct Vec2;
 
         struct Vec2Int;
@@ -64,6 +63,7 @@ namespace RoninEngine
         typedef RRect<float> Rectf;
 
         // core
+        class World;
         class Resources;
         class TimeEngine;
 

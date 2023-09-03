@@ -185,7 +185,7 @@ namespace RoninEngine
         // get activated resolution
         active_resolution = GetCurrentResolution();
 
-        // Brightness - Яркость
+        // Brightness
         SDL_SetWindowBrightness(main_window, 1.f);
     }
 
@@ -195,21 +195,40 @@ namespace RoninEngine
             switched_world->RequestUnload();
     }
 
-    void RoninSimulator::LoadWorld(World *world, bool unloadPrevious)
+    bool RoninSimulator::LoadWorld(World *world, bool unloadPrevious)
     {
-        if(main_window == nullptr)
-            RoninSimulator::ShowMessageFail("Engine not inited");
+        const std::function<bool(void)> checks_queue[] {
+            [=]() -> bool const
+            {
+                bool hasError = main_window == nullptr;
+                if(hasError)
+                    RoninSimulator::Log("Engine not inited");
+                return hasError;
+            },
+            [=]() -> bool const
+            {
+                bool hasError = world == nullptr;
+                if(hasError)
+                    RoninSimulator::Log("World is not defined");
+                return hasError;
+            },
+            [=]() -> bool const
+            {
+                bool hasError = switched_world == world;
+                if(hasError)
+                    RoninSimulator::Log("Current world is reloading state. Failed.");
+                return hasError;
+            }};
 
-        if(world == nullptr)
+        // Run checks
+        for(const auto &err : checks_queue)
         {
-            RoninSimulator::ShowMessageFail("World is not inited");
+            if(err())
+            {
+                return false;
+            }
         }
 
-        if(switched_world == world)
-        {
-            RoninSimulator::ShowMessage("Current world is reloading state. Failed.");
-            return;
-        }
         if(unloadPrevious && switched_world)
         {
             destroyableLevel = switched_world;
@@ -236,6 +255,8 @@ namespace RoninEngine
         }
         world_can_start = false;
         internal_level_loaded = false;
+
+        return true;
     }
 
     Resolution RoninSimulator::GetCurrentResolution()
@@ -581,6 +602,11 @@ namespace RoninEngine
         SDL_LogMessage(SDL_LogCategory::SDL_LOG_CATEGORY_APPLICATION, SDL_LogPriority::SDL_LOG_PRIORITY_CRITICAL, "%s", _template.c_str());
         SDL_ShowSimpleMessageBox(SDL_MessageBoxFlags::SDL_MESSAGEBOX_ERROR, "Ronin Engine: failed", _template.c_str(), main_window);
         Kill();
+    }
+
+    void RoninSimulator::Log(const std::string &str)
+    {
+        SDL_Log("%s", str.c_str());
     }
 
     void RoninSimulator::BreakSimulate()
