@@ -37,6 +37,12 @@ namespace RoninEngine::AI
         NavOctile = 3
     };
 
+    enum class MazeAlgorithm
+    {
+        RecursiveBacktracer = 0,
+        RecursiveDivison = 1
+    };
+
     template <typename ResultList>
     struct NavResult
     {
@@ -86,10 +92,10 @@ namespace RoninEngine::AI
         void fillAll(bool fillLocks = false);
         void Shuffle(int flagFilter = 0xffffff);
 
-        void GenerateMaze();
+        void GenerateMaze(MazeAlgorithm algorithm = MazeAlgorithm::RecursiveBacktracer);
 
-        int getWidth() const;
-        int getHeight() const;
+        std::uint32_t getWidth() const;
+        std::uint32_t getHeight() const;
 
         Neuron *get(int x, int y);
         Neuron *get(const Runtime::Vec2Int &point);

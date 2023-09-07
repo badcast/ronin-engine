@@ -49,10 +49,10 @@ namespace maze_system
         int dy = map->random_number(t, b);
         map->set_lock(map->get(dx, dy), false);
 
-        recursive_division(map, l, vs - 1, t, hs - 1);
-        recursive_division(map, vs + 1, r, t, hs - 1);
-        recursive_division(map, l, vs - 1, hs + 1, b);
-        recursive_division(map, vs + 1, r, hs + 1, b);
+        maze_recursive_division(map, l, vs - 1, t, hs - 1);
+        maze_recursive_division(map, vs + 1, r, t, hs - 1);
+        maze_recursive_division(map, l, vs - 1, hs + 1, b);
+        maze_recursive_division(map, vs + 1, r, hs + 1, b);
     }
 
     BRAIN_TEMPLATE

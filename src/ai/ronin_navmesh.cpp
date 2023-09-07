@@ -41,17 +41,17 @@ namespace RoninEngine::AI
         shedule->randomize_hardware(flagFilter);
     }
 
-    void NavMesh::GenerateMaze()
+    void NavMesh::GenerateMaze(MazeAlgorithm algorithm)
     {
-        shedule->create_maze();
+        shedule->create_maze_ex(brain::MazeAlgorithm(algorithm), getPoint(shedule->front()), getPoint(shedule->back()));
     }
 
-    int NavMesh::getWidth() const
+    std::uint32_t NavMesh::getWidth() const
     {
         return shedule->_xsize;
     }
 
-    int NavMesh::getHeight() const
+    std::uint32_t NavMesh::getHeight() const
     {
         return shedule->_ysize;
     }
