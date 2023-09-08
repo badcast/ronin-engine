@@ -149,6 +149,37 @@ namespace RoninEngine::Runtime
         }
     }
 
+    //  + - - - - - - - - - +
+    //  ' → → → → → → → → ↓ `
+    //  ' ↑ → → → → → → ↓ ↓ `
+    //  ' ↑ ↑ → → → → ↓ ↓ ↓ `
+    //  ' ↑ ↑ ↑ → → ↓ ↓ ↓ ↓ `
+    //  ' ↑ ↑ ↑ ↑ ← ↓ ↓ ↓ ↓ `
+    //  ' ↑ ↑ ↑ ← ← ← ↓ ↓ ↓ `
+    //  ' ↑ ↑ ← ← ← ← ← ↓ ↓ `
+    //  ' ↑ ← ← ← ← ← ← ← ↓ `
+    //  ' ← ← ← ← ← ← ← ← ← `
+    //  + - - - - - - - - - +
+    template <typename container_result, typename Pred>
+    container_result storm_cast_vec_eq(Vec2 origin, int edges, layer, Pred predicate)
+    {
+        static constexpr char storm_vec[4][2] {
+            /*x+y*/
+            {-1, 0}, // ←
+            {-1, 1}, // ↑
+            {0, 1},  // →
+            {1, 0},  // ↓
+        };
+
+        int points = 1;
+        for(; edges > 0; --edges)
+        {
+            for(int x = 0; x < points; ++x)
+            {
+            }
+        }
+    }
+
     template <typename container_result>
     container_result Physics2D::GetRectangleCast(Vec2 center, Vec2 size, int layer)
     {

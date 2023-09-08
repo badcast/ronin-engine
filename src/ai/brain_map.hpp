@@ -18,6 +18,7 @@
 #include <cmath>
 #include <vector>
 #include <set>
+#include <limits>
 #include <stdexcept>
 #include <cstring>
 #include <algorithm>
@@ -55,7 +56,8 @@ namespace brain
     enum class MazeAlgorithm
     {
         RecursiveBacktracer = 0,
-        RecursiveDivison = 1
+        RecursiveDivison = 1,
+        SelectiveStormChaos = 2
     };
 
     typedef int weight_t;

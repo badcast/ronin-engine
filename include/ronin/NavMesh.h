@@ -40,7 +40,8 @@ namespace RoninEngine::AI
     enum class MazeAlgorithm
     {
         RecursiveBacktracer = 0,
-        RecursiveDivison = 1
+        RecursiveDivison = 1,
+        SelectiveStormChaos = 2
     };
 
     template <typename ResultList>
