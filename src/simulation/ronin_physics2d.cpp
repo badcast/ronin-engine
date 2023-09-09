@@ -161,7 +161,7 @@ namespace RoninEngine::Runtime
     //  ' ← ← ← ← ← ← ← ← ← `
     //  + - - - - - - - - - +
     template <typename container_result, typename Pred>
-    container_result storm_cast_vec_eq(Vec2 origin, int edges, layer, Pred predicate)
+    container_result storm_cast_vec_eq(Vec2 origin, int edges, int layer, Pred predicate)
     {
         static constexpr char storm_vec[4][2] {
             /*x+y*/
