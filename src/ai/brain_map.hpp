@@ -57,7 +57,8 @@ namespace brain
     {
         RecursiveBacktracer = 0,
         RecursiveDivison = 1,
-        SelectiveStormChaos = 2
+        SelectiveStormChaos = 2,
+        ForcedChaos = 3
     };
 
     typedef int weight_t;
@@ -145,6 +146,12 @@ namespace brain
         explicit basic_brain_map(std::uint32_t xlength, std::uint32_t ylength);
 
         ~basic_brain_map();
+
+        /**
+         * @brief get the raw brain data (with locks)
+         * @return raw data of the brain map (with locks)
+         */
+        inline void* data() const;
 
         /**
          * @brief clear neurons

@@ -185,7 +185,7 @@ void BRAIN_DEFINE::_internal_realloc()
         std::free(this->neurons);
     }
 
-    std::div_t lockedDiv = div(std::max<std::uint32_t>(ylength = (xlength * ylength), ByteSize), ByteSize); // add locked bits
+    auto lockedDiv = std::lldiv(std::max<std::uint32_t>(ylength = (xlength * ylength), ByteSize), ByteSize); // add locked bits
     this->_seg_off = xlength = lockedDiv.quot + lockedDiv.rem;
     xlength = ylength * sizeof(INeuron) + xlength;
     this->neurons = static_cast<INeuron *>(std::malloc(xlength));
@@ -322,6 +322,12 @@ std::uint32_t BRAIN_DEFINE::get_height()
 }
 
 BRAIN_TEMPLATE
+void *BRAIN_DEFINE::data() const
+{
+    return static_cast<void*>(neurons);
+}
+
+BRAIN_TEMPLATE
 void BRAIN_DEFINE::clear(bool clearLocks)
 {
     std::uint32_t length = _xsize * _ysize * sizeof(INeuron);
@@ -401,7 +407,7 @@ INeuron *BRAIN_DEFINE::back()
 BRAIN_TEMPLATE
 bool BRAIN_DEFINE::has_lock(const ISite &range)
 {
-    auto divide = std::div(range.x * std::size_t(_ysize) + range.y, ByteSize);
+    auto divide = std::lldiv(range.x * std::size_t(_ysize) + range.y, ByteSize);
     auto pointer = reinterpret_cast<std::uint8_t *>(neurons) + divide.quot;
     return (*pointer) & (1 << divide.rem);
 }

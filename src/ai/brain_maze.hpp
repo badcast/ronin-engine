@@ -297,6 +297,67 @@ namespace maze_system
             }
         }
     }
+
+    BRAIN_TEMPLATE
+    static void maze_forced_chaos(BRAIN_DEFINE *map, ISite startOf, ISite endOf)
+    {
+        int lbits, rbits, segbits;
+        std::uint32_t x, y, dx = map->get_width(), dy = map->get_height();
+        std::div_t locked_data;
+        decltype(map->get_neighbours(MatrixIdentity::PlusMethod, startOf)) neighbours;
+
+        map->fill_locks(false);
+
+        locked_data = std::div(std::max<std::uint32_t>(dx * dy, ByteSize), ByteSize);
+        rbits = segbits = locked_data.quot + locked_data.rem;
+
+        do
+        {
+            // get value from random function
+            lbits = static_cast<std::uint32_t>(map->random_number(0, std::numeric_limits<int>::max()));
+            memcpy(
+                reinterpret_cast<void *>(reinterpret_cast<std::size_t>(map->data()) + segbits - rbits),
+                &lbits,
+                std::min(rbits, static_cast<int>(sizeof(lbits))));
+            rbits -= std::min(rbits, static_cast<int>(sizeof(lbits)));
+        } while(rbits > 0);
+
+        // clear only one point (Wall only randomized)
+        dx /= 2;
+        dy /= 2;
+        for(x = 0; x < dx; ++x)
+        {
+            for(y = 0; y < dy; ++y)
+            {
+                ISite site {x + 1, y + 1};
+
+                if(!map->has_lock(site))
+                    continue;
+
+                neighbours = map->get_neighbours(MatrixIdentity::PlusMethod, site);
+                bool catched = false;
+                for(auto &p : neighbours)
+                {
+                    if(catched = map->has_lock(p))
+                    {
+                        break;
+                    }
+                }
+
+                if(!catched)
+                    map->set_lock(site, false);
+            }
+        }
+        // Start
+        neighbours = map->get_neighbours(MatrixIdentity::DiagonalMethod, startOf);
+        for(auto &p : neighbours)
+            map->set_lock(p, false);
+        // End
+        neighbours = map->get_neighbours(MatrixIdentity::DiagonalMethod, endOf);
+        for(auto &p : neighbours)
+            map->set_lock(p, false);
+    }
+
 } // namespace maze_system
 
 BRAIN_TEMPLATE
@@ -319,6 +380,8 @@ void BRAIN_DEFINE::create_maze_ex(brain::MazeAlgorithm mazeAlgoritm, ISite start
         case MazeAlgorithm::SelectiveStormChaos:
             maze_system::maze_storm_space(this, {_xsize / 2, _ysize / 2});
             break;
+        case MazeAlgorithm::ForcedChaos:
+            maze_system::maze_forced_chaos(this, startOf, endOf);
     }
 }
 

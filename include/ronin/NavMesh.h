@@ -41,7 +41,8 @@ namespace RoninEngine::AI
     {
         RecursiveBacktracer = 0,
         RecursiveDivison = 1,
-        SelectiveStormChaos = 2
+        SelectiveStormChaos = 2,
+        ForcedChaos = 3
     };
 
     template <typename ResultList>
