@@ -195,6 +195,7 @@ namespace maze_system
         std::uint64_t stormMember = 0;
         std::uint64_t stormFlags = 1;
         std::size_t edges = map->size();
+        std::uint32_t x, y, dx = map->get_width() / 2, dy = map->get_height() / 2;
 
         map->fill_locks(false);
 
@@ -268,6 +269,32 @@ namespace maze_system
             }
 
             ++(*reinterpret_cast<std::uint32_t *>(&stormMember));
+        }
+
+        // clear only one point (Wall only randomized)
+
+        for(x = 0; x < dx; ++x)
+        {
+            for(y = 0; y < dy; ++y)
+            {
+                ISite site {x + 1, y + 1};
+
+                if(!map->has_lock(site))
+                    continue;
+
+                auto neighbours = map->get_neighbours(MatrixIdentity::PlusMethod, site);
+                stormFlags = 0;
+                for(auto &p : neighbours)
+                {
+                    if(stormFlags = map->has_lock(p))
+                    {
+                        break;
+                    }
+                }
+
+                if(!stormFlags)
+                    map->set_lock(site, false);
+            }
         }
     }
 } // namespace maze_system
