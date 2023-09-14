@@ -15,11 +15,11 @@ namespace RoninEngine::Runtime
 
         static float value();
 
-        static Vec2 random_vector();
+        static Vec2 randomVector();
 
-        static float random_angle_deg();
+        static float angleDegress();
 
-        static float random_angle_rad();
+        static float angleRadian();
     };
 
     class RONIN_API Math

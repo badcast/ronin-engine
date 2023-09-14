@@ -4,11 +4,10 @@ using namespace RoninEngine;
 using namespace RoninEngine::Exception;
 using namespace RoninEngine::Runtime;
 
-constexpr auto periodic_fahren = 5.0 / 9;
-
-constexpr auto ronin_rand_max = std::numeric_limits<std::uint32_t>::max();
-
 static std::uint32_t __seed__ = 1;
+
+constexpr auto periodic_fahren = 5.0 / 9;
+constexpr auto ronin_rand_max = std::numeric_limits<decltype(__seed__)>::max();
 
 // get random value
 std::uint32_t internal_rand()
@@ -26,7 +25,7 @@ void Random::srand(std::uint32_t seed)
 
 int Random::range(int min, int max)
 {
-    return Math::map<std::uint32_t>(internal_rand(), 0, ronin_rand_max, min, max);
+    return Math::map<int>(static_cast<int>(internal_rand()), 0, ronin_rand_max, min, max);
 }
 
 float Random::range(float min, float max)
@@ -40,17 +39,17 @@ float Random::value()
     return internal_rand() / static_cast<float>(ronin_rand_max);
 }
 
-Vec2 Random::random_vector()
+Vec2 Random::randomVector()
 {
     return Vec2(Random::value() * 2 - 1, Random::value() * 2 - 1);
 }
 
-float Random::random_angle_deg()
+float Random::angleDegress()
 {
     return value() * 360;
 }
 
-float Random::random_angle_rad()
+float Random::angleRadian()
 {
     return value() * Math::Pi2;
 }

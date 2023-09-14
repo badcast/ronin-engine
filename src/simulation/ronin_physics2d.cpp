@@ -145,8 +145,8 @@ namespace RoninEngine::Runtime
 
                 ++(*reinterpret_cast<std::uint32_t *>(&stormMember));
             }
-            return result;
         }
+        return result;
     }
 
     //  + - - - - - - - - - +
