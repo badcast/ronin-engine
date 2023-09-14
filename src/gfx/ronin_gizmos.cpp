@@ -3,13 +3,6 @@
 namespace RoninEngine::Runtime
 {
 
-    extern std::uint32_t const_storm_dimensions;
-    extern std::uint32_t const_storm_steps_flag;
-    extern std::uint32_t const_storm_xDeterminant;
-    extern std::uint32_t const_storm_yDeterminant;
-    extern std::uint32_t const_storm_yDeterminant_start;
-    extern std::uint32_t const_storm_yDeterminant_inverse;
-
     void internal_drawLine(Vec2 a, Vec2 b)
     {
         if(!Camera::main_camera())
@@ -368,94 +361,20 @@ namespace RoninEngine::Runtime
         RoninEngine::UI::draw_font_at(RoninEngine::renderer, text, font_size, screen_point, GetColor(), false);
     }
 
-    void Gizmos::DrawStormCast(Vec2 ray, int edges, int delim)
+    void Gizmos::DrawStormCast(Vec2 origin, int edges, int delim)
     {
-        /*
-        Описание данных stormMember
-        Младшие 4 байта, это все для шаги
+        extern void storm_cast_vec_eq(Vec2 origin, float minStep, int edges, std::function<void(const Vec2 &)> predicate);
 
-        stormMember low bits == steps
-        stormMember high bits == maxSteps
-
-        stormFlags = int 8 байта (64 бита)
-        первые 3 байта (24 бита) = dimensions, от 0 до 0xFFFFFF значений
-        остаток 1 байт (8 бит) stormFlags >> 24 = determinants (определители
-        направлений луча) 0xF000000    xDeterminant = stormFlags >> 24 & 0xF -
-        горизонтальный детерминант x оси (абцис) 0xF0000000   yDeterminant =
-        stormFlags >> 28       - вертикальный детерминант y оси (ординат)
-        */
-
-        Vec2 last = ray;
-        std::uint64_t stormMember = 0;
-        std::uint64_t stormFlags = 1;
-
-        // draw current point
-
+        Vec2 last;
         Color lastColor = GetColor();
+
         SetColor(0xfff6f6f7);
-
-        if(edges > 0)
-            for(;;)
-            {
-
-                std::uint32_t steps = static_cast<std::uint32_t>(stormMember & const_storm_steps_flag);
-                std::uint32_t maxSteps = static_cast<std::uint32_t>(stormMember >> 32);
-                // Шаг заканчивается (step = turnSteps) происходит поворот
-                if(steps % std::max(1u, (maxSteps / 4)) == 0)
-                {
-                    // переход на новое измерение
-                    // при steps == maxsteps
-                    if(steps == maxSteps)
-                    {
-                        if(--edges <= -1)
-                            break;
-
-                        stormMember = (8ul * (stormFlags = stormFlags & const_storm_dimensions)) << 32;
-                        stormFlags = ((stormFlags & const_storm_dimensions) + 1) | const_storm_yDeterminant_start;
-                    }
-                    else
-                    {
-                        if(stormFlags >> 28)
-                        {
-                            stormFlags ^= stormFlags & const_storm_xDeterminant;                                     // clear x
-                            stormFlags |= ((stormFlags & const_storm_yDeterminant) >> 4) & const_storm_xDeterminant; // x = y
-                            stormFlags ^= stormFlags & const_storm_yDeterminant;                                     // clear y
-                        }
-                        else
-                        {
-                            stormFlags ^= stormFlags & const_storm_yDeterminant;                                     // clear y
-                            stormFlags |= ((stormFlags & const_storm_xDeterminant) << 4) & const_storm_yDeterminant; // y = x
-                            stormFlags ^= const_storm_yDeterminant_inverse;                                          // inverse
-                            stormFlags ^= stormFlags & const_storm_xDeterminant;                                     // clear x
-                        }
-                    }
-                }
-
-                char xDeter = static_cast<char>(stormFlags >> 24 & 0xf);
-                char yDeter = static_cast<char>(stormFlags >> 28);
-                ray.x += xDeter == 2 ? -1 : xDeter;
-                ray.y += yDeter == 2 ? -1 : yDeter;
-
-                DrawLine(last / delim, ray / delim);
-                last = ray;
-                if(!(stormMember & const_storm_steps_flag))
-                {
-                    if(yDeter)
-                    {
-                        stormFlags ^= stormFlags & const_storm_xDeterminant;                                     // clear x
-                        stormFlags |= ((stormFlags & const_storm_yDeterminant) >> 4) & const_storm_xDeterminant; // x = y
-                        stormFlags ^= stormFlags & const_storm_yDeterminant;                                     // clear y
-                    }
-                    else if(xDeter)
-                    {
-                        stormFlags ^= stormFlags & const_storm_yDeterminant;                                     // clear y
-                        stormFlags |= ((stormFlags & const_storm_xDeterminant) << 4) & const_storm_yDeterminant; // y = x
-                        stormFlags ^= stormFlags & const_storm_xDeterminant;                                     // clear x
-                    }
-                }
-
-                ++(*reinterpret_cast<std::uint32_t *>(&stormMember));
-            }
+        storm_cast_vec_eq(origin, 1, edges,
+        [&](const Vec2 &point)
+        {
+            DrawLine(last / delim, point / delim);
+            last = point;
+        });
 
         SetColor(lastColor);
     }

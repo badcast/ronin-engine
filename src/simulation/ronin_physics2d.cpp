@@ -3,6 +3,14 @@
 
 namespace RoninEngine::Runtime
 {
+    static const Vec2Int storm_vec[4] {
+        /*x + y*/
+        {-1, 0}, // ←
+        {0, 1},  // ↑
+        {1, 0},  // →
+        {0, -1}  // ↓
+    };
+
     std::uint32_t const_storm_dimensions = 0xFFFFFF
         /* =  = */,
                   const_storm_steps_flag = std::numeric_limits<std::uint32_t>::max()
@@ -160,23 +168,19 @@ namespace RoninEngine::Runtime
     //  ' ↑ ← ← ← ← ← ← ← ↓ `
     //  ' ← ← ← ← ← ← ← ← ← `
     //  + - - - - - - - - - +
-    template <typename container_result, typename Pred>
-    container_result storm_cast_vec_eq(Vec2 origin, int edges, int layer, Pred predicate)
+    void storm_cast_vec_eq(Vec2 origin, float minStep, int edges, std::function<void(const Vec2 &)> predicate)
     {
-        static constexpr char storm_vec[4][2] {
-            /*x+y*/
-            {-1, 0}, // ←
-            {-1, 1}, // ↑
-            {0, 1},  // →
-            {1, 0},  // ↓
-        };
+        int p, s, points;
 
-        int points = 1;
-        for(; edges > 0; --edges)
+        for(points = 1; points <= edges; ++points)
         {
-            for(int x = 0; x < points; ++x)
+            for(s = 0; s < sizeof(storm_vec) / sizeof(storm_vec[0]); ++s)
             {
-
+                for(p = 1; p <= points; ++p)
+                {
+                    Vec2 current = origin + minStep * storm_vec[s] * p;
+                    predicate(current);
+                }
             }
         }
     }
