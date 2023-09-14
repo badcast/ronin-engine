@@ -176,6 +176,7 @@ namespace RoninEngine::Runtime
         {
             for(int x = 0; x < points; ++x)
             {
+
             }
         }
     }
