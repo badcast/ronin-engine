@@ -3,13 +3,6 @@
 
 namespace RoninEngine::Runtime
 {
-    static const Vec2Int storm_vec[4] {
-        /*x + y*/
-        {-1, 0}, // ←
-        {0, 1},  // ↑
-        {1, 0},  // →
-        {0, -1}  // ↓
-    };
 
     std::uint32_t const_storm_dimensions = 0xFFFFFF
         /* =  = */,
@@ -168,19 +161,32 @@ namespace RoninEngine::Runtime
     //  ' ↑ ← ← ← ← ← ← ← ↓ `
     //  ' ← ← ← ← ← ← ← ← ← `
     //  + - - - - - - - - - +
-    void storm_cast_vec_eq(Vec2 origin, float minStep, int edges, std::function<void(const Vec2 &)> predicate)
+    void storm_cast_vec_eq(Vec2 origin, float minStep, int edges, std::function<void(const Vec2 &)> predicate, bool each)
     {
         int p, s, points;
+        Vec2 vector;
+        static const Vec2Int storm_vec[4] {
+            /*x + y*/
+            {-1, 0}, // ←
+            {0, 1},  // ↑
+            {1, 0},  // →
+            {0, -1}  // ↓
+        };
+
+        predicate(vector);
 
         for(points = 1; points <= edges; ++points)
         {
+            vector = origin;
             for(s = 0; s < sizeof(storm_vec) / sizeof(storm_vec[0]); ++s)
             {
-                for(p = 1; p <= points; ++p)
+                p = 1;
+                do
                 {
-                    Vec2 current = origin + minStep * storm_vec[s] * p;
-                    predicate(current);
-                }
+                    vector += minStep * storm_vec[s] * p;
+                    predicate(vector);
+                    Gizmos::DrawText(Vec2::up_left, std::to_string(points));
+                } while(each && p < points && ++p);
             }
         }
     }

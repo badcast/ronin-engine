@@ -137,8 +137,8 @@ namespace RoninEngine
         API_EXPORT inline const Vec2 Vec2::right(1.f, 0.f);
         API_EXPORT inline const Vec2 Vec2::up(0.f, 1.f);
         API_EXPORT inline const Vec2 Vec2::up_right(1.f, 1.f);
-        API_EXPORT inline const Vec2 Vec2::up_left(1.f, -1.f);
-        API_EXPORT inline const Vec2 Vec2::down_right(-1.f, 1.f);
+        API_EXPORT inline const Vec2 Vec2::up_left(-1.f, 1.f);
+        API_EXPORT inline const Vec2 Vec2::down_right(1.f, -1.f);
         API_EXPORT inline const Vec2 Vec2::down_left(-1.f, -1.f);
         API_EXPORT inline const Vec2 Vec2::infinity(std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity());
         API_EXPORT inline const Vec2 Vec2::negativeInfinity(

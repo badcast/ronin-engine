@@ -428,12 +428,14 @@ namespace RoninEngine::UI
         SDL_Renderer *renderer, const std::string &text, int fontSize, Runtime::Vec2Int screenPoint, const Color color, bool alignCenter)
     {
         SDL_Rect r;
+        SDL_Texture *texture;
+        SDL_Surface *surf;
 
         TTF_SetFontSize(ttf_arial_font, fontSize);
-        SDL_Surface *surf = TTF_RenderUTF8_Blended(ttf_arial_font, text.c_str(), color);
+        surf = TTF_RenderUTF8_Blended(ttf_arial_font, text.c_str(), color);
         if(surf)
         {
-            SDL_Texture *texture = SDL_CreateTextureFromSurface(renderer, surf);
+            texture = SDL_CreateTextureFromSurface(renderer, surf);
             r.w = surf->w;
             r.h = surf->h;
 
