@@ -168,26 +168,30 @@ namespace RoninEngine::Runtime
         static const Vec2Int storm_vec[4] {
             /*x + y*/
             {-1, 0}, // ←
+            {0, -1}, // ↓
             {0, 1},  // ↑
             {1, 0},  // →
-            {0, -1}  // ↓
         };
 
         predicate(vector);
 
+        // start of first
+        s = 3;
+
         for(points = 1; points <= edges; ++points)
         {
             vector = origin;
-            for(s = 0; s < sizeof(storm_vec) / sizeof(storm_vec[0]); ++s)
+            for(; s < sizeof(storm_vec) / sizeof(storm_vec[0]); ++s)
             {
                 p = 1;
                 do
                 {
                     vector += minStep * storm_vec[s] * p;
                     predicate(vector);
-                    Gizmos::DrawText(Vec2::up_left, std::to_string(points));
+                    Gizmos::DrawText(vector, std::to_string(points));
                 } while(each && p < points && ++p);
             }
+            s = 0; // reset loopback
         }
     }
 
