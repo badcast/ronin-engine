@@ -24,6 +24,20 @@ endif()
 
 message(STATUS "Architecture select ${ARCHITECTURE}")
 
+if(NOT
+   (RGIO
+    AND RGGRAPHICS
+    AND RGRESOURCES
+    AND RGSIMULATION
+    AND RGGUI
+    AND RGAI
+    AND RGAUDIO))
+  message(
+    FATAL_ERROR
+      "One or more components are turned off. This is an unstable state. Please enable ALL components for proper operation."
+  )
+endif()
+
 # ENVIRONMENT
 
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
