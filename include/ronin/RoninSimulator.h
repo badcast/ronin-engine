@@ -11,6 +11,41 @@ namespace RoninEngine
         Audio = 2
     };
 
+    enum RendererFlags
+    {
+        /** The renderer is a software fallback */
+        RendererSoftware = 0x1,
+        /** The renderer uses hardware acceleration */
+        RendererAccelerated = 0x2,
+        /** Present is synchronized with the refresh rate */
+        RendererPresentVSync = 0x4,
+    };
+
+    enum RendererType
+    {
+        Software,
+        Hardware
+    };
+
+    struct RenderDriverInfo
+    {
+        const std::string name;
+        RendererFlags rendererFlags;
+        RendererType renderType;
+        int maxTextureWidth;
+        int maxTextureHeight;
+
+        RenderDriverInfo(
+            const std::string &name, RendererFlags rendererFlags, RendererType renderType, int maxTextureWidth, int maxTextureHeight)
+            : name(name),
+              rendererFlags(rendererFlags),
+              renderType(renderType),
+              maxTextureWidth(maxTextureWidth),
+              maxTextureHeight(maxTextureHeight)
+        {
+        }
+    };
+
     struct Version
     {
         std::uint8_t major;
@@ -26,6 +61,14 @@ namespace RoninEngine
         Version SDL_IMG_Version;
         Version SDL_Mix_Version;
         Version SDL_GFX_Version;
+    };
+
+    struct RoninSettings
+    {
+        std::uint8_t selectBridthness;
+        std::uint8_t selectRenderDriver;
+        std::uint8_t selectVideoDriver;
+        RendererType accell;
     };
 
     struct Resolution
@@ -188,6 +231,34 @@ namespace RoninEngine
          * @brief Handles an out-of-memory failure by terminating the application.
          */
         static void Kill();
+
+        /**
+         * @brief Enumerate the active render drivers
+         * @return list active render drivers
+         * @see SetSettings, GetSettings
+         */
+        static std::vector<RenderDriverInfo> GetRenderDrivers();
+
+        /**
+         * @brief Enumerate the active video drivers
+         * @return List video drivers
+         */
+        static std::vector<std::string> GetVideoDrivers();
+
+        /**
+         * @brief Get installed settings
+         * @param settings
+         * @see SetSettings, GetRenderDrivers
+         */
+        static void GetSettings(RoninSettings *settings);
+
+        /**
+         * @brief Set the settings as new
+         * @param settings for set
+         * @return Result of the set
+         * @see GetSettings, GetRenderDrivers
+         */
+        static bool SetSettings(const RoninSettings *settings);
     };
 
 } // namespace RoninEngine

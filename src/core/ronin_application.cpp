@@ -51,12 +51,15 @@ namespace RoninEngine
     SDL_Renderer *renderer = nullptr;
     Runtime::World *destroyableLevel = nullptr;
     Resolution active_resolution {0, 0, 0};
-    TimingWatcher last_watcher = {};
-    TimingWatcher queue_watcher;
+    TimingWatcher last_watcher {};
+    TimingWatcher queue_watcher {};
+    RoninSettings active_settings {};
 
     bool ronin_debug_mode = false;
     bool internal_level_loaded = false;
     bool world_can_start = false;
+
+    bool internal_apply_settings();
 
     void internal_init_timer()
     {
@@ -617,6 +620,54 @@ namespace RoninEngine
     void RoninSimulator::Kill(void)
     {
         exit(EXIT_FAILURE);
+    }
+
+    std::vector<RenderDriverInfo> RoninSimulator::GetRenderDrivers()
+    {
+        SDL_RendererInfo rdi;
+
+        std::vector<RenderDriverInfo> drivers;
+        int num = SDL_GetNumRenderDrivers();
+
+        for(; num-- > 0;)
+        {
+            if(SDL_GetRenderDriverInfo(num, &rdi))
+                continue;
+
+            drivers.emplace_back(
+                rdi.name,
+                RendererFlags(rdi.flags),
+                (rdi.flags & SDL_RENDERER_SOFTWARE ? RendererType::Software : RendererType::Hardware),
+                rdi.max_texture_width,
+                rdi.max_texture_height);
+        }
+
+        return drivers;
+    }
+
+    std::vector<std::string> RoninSimulator::GetVideoDrivers()
+    {
+        std::vector<std::string> vids;
+        int num = SDL_GetNumVideoDrivers();
+        for(; num-- > 0;)
+            vids.emplace_back(SDL_GetVideoDriver(num));
+        return vids;
+    }
+
+    void RoninSimulator::GetSettings(RoninSettings *settings)
+    {
+        memcpy(settings, &active_settings, sizeof(active_settings));
+    }
+
+    bool RoninSimulator::SetSettings(const RoninSettings *settings)
+    {
+
+        return internal_apply_settings();
+    }
+
+    bool internal_apply_settings()
+    {
+        return false;
     }
 
 } // namespace RoninEngine
