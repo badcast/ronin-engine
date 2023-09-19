@@ -94,8 +94,12 @@ namespace RoninEngine
         if(flags & InitializeFlags::Graphics)
         {
             current_inits = SDL_INIT_VIDEO;
+
+            auto videos = GetVideoDrivers();
             if(SDL_InitSubSystem(current_inits) == -1)
                 ShowMessageFail("Fail ini Video system.");
+
+            auto a = SDL_GetCurrentVideoDriver();
 
             current_inits = IMG_InitFlags::IMG_INIT_PNG | IMG_InitFlags::IMG_INIT_JPG;
             if(IMG_Init(current_inits) != current_inits)
@@ -636,7 +640,7 @@ namespace RoninEngine
 
             drivers.emplace_back(
                 rdi.name,
-                RendererFlags(rdi.flags),
+                RendererFlags(rdi.flags ^ SDL_RENDERER_TARGETTEXTURE),
                 (rdi.flags & SDL_RENDERER_SOFTWARE ? RendererType::Software : RendererType::Hardware),
                 rdi.max_texture_width,
                 rdi.max_texture_height);
