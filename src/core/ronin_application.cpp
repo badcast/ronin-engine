@@ -48,18 +48,53 @@ namespace RoninEngine
     } // namespace Runtime
 
     SDL_Window *main_window = nullptr;
+    enum ConfigState : int
+    {
+        CONF_RENDER_NOCONF = 0,
+
+        CONF_RENDER_CHANGED = 1,
+        CONF_RESERVED1 = 2,
+        CONF_RESERVED2 = 4,
+        CONF_RENDER_SOFTWARE = CONF_RENDER_CHANGED | 8,
+        CONF_RENDER_HARDWARE = CONF_RENDER_CHANGED | 16
+    };
+    struct
+    {
+        // this is variable for apply settings
+        int conf;
+        SDL_Surface *software_surface = nullptr;
+        SDL_Renderer *renderer_hardware = nullptr;
+        SDL_Renderer *renderer_software = nullptr;
+    } simConfig;
+
     SDL_Renderer *renderer = nullptr;
+
     Runtime::World *destroyableLevel = nullptr;
     Resolution active_resolution {0, 0, 0};
     TimingWatcher last_watcher {};
     TimingWatcher queue_watcher {};
-    RoninSettings active_settings {};
 
     bool ronin_debug_mode = false;
     bool internal_level_loaded = false;
     bool world_can_start = false;
 
-    bool internal_apply_settings();
+    void internal_apply_settings()
+    {
+        if(simConfig.conf == CONF_RENDER_NOCONF)
+            return;
+
+        switch(simConfig.conf)
+        {
+            case CONF_RENDER_SOFTWARE:
+                renderer = simConfig.renderer_software;
+                break;
+            case CONF_RENDER_HARDWARE:
+                renderer = simConfig.renderer_hardware;
+                break;
+        }
+
+        simConfig.conf = CONF_RENDER_NOCONF;
+    }
 
     void internal_init_timer()
     {
@@ -95,11 +130,8 @@ namespace RoninEngine
         {
             current_inits = SDL_INIT_VIDEO;
 
-            auto videos = GetVideoDrivers();
             if(SDL_InitSubSystem(current_inits) == -1)
-                ShowMessageFail("Fail ini Video system.");
-
-            auto a = SDL_GetCurrentVideoDriver();
+                ShowMessageFail("Fail init Video system.");
 
             current_inits = IMG_InitFlags::IMG_INIT_PNG | IMG_InitFlags::IMG_INIT_JPG;
             if(IMG_Init(current_inits) != current_inits)
@@ -286,10 +318,10 @@ namespace RoninEngine
         std::list<Resolution> resolutions;
         SDL_DisplayMode mode;
 
-        int ndisplay_modes = SDL_GetNumDisplayModes(0);
-        for(int x = 0; x < ndisplay_modes; ++x)
+        int n, ndisplay_modes = SDL_GetNumDisplayModes(0);
+        for(n = 0; n < ndisplay_modes; ++n)
         {
-            if(SDL_GetDisplayMode(0, x, &mode) == -1)
+            if(SDL_GetDisplayMode(0, n, &mode) == -1)
             {
                 RoninSimulator::ShowMessageFail(SDL_GetError());
             }
@@ -378,7 +410,7 @@ namespace RoninEngine
     {
         bool isQuiting = false;
         char windowTitle[96];
-        float fps, fpsRound = 0;
+        float fps = 0;
         std::uint64_t delayed = 0;
         SDL_Event event;
         float secPerFrame, game_time_score;
@@ -433,24 +465,28 @@ namespace RoninEngine
 
             if(internal_level_loaded == false)
             {
+                SDL_DestroyRenderer(simConfig.renderer_hardware);
+
                 // Unload old World
                 if(destroyableLevel)
                 {
                     unload_world(destroyableLevel);
                     destroyableLevel = nullptr;
                 }
-                SDL_DestroyRenderer(renderer);
 
                 if(switched_world == nullptr)
                 {
                     renderer = nullptr;
+                    simConfig.renderer_hardware = nullptr;
+
                     queue_watcher.ms_wait_internal_instructions = TimeEngine::end_watch();
                     goto end_simulate;
                 }
                 else
                 {
                     // on first load level
-                    renderer = SDL_CreateRenderer(main_window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE);
+                    renderer = simConfig.renderer_hardware =
+                        SDL_CreateRenderer(main_window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE);
                     if(renderer == nullptr)
                         ShowMessageFail(SDL_GetError());
 
@@ -459,6 +495,9 @@ namespace RoninEngine
                     internal_level_loaded = true;
                 }
             }
+
+            // set changed settings
+            internal_apply_settings();
 
             // set default color
             SDL_SetRenderDrawColor(renderer, 0x11, 0x11, 0x11, SDL_ALPHA_OPAQUE); // back color for clear
@@ -544,7 +583,7 @@ namespace RoninEngine
             internal_delta_time = Math::min<float>(1.f, Math::max<float>(delayed / 1000.f, game_time_score));
             internal_game_time += internal_delta_time;
 
-            if(TimeEngine::startUpTime() > fpsRound)
+            if(TimeEngine::startUpTime() > fps)
             {
                 // SDL_METHOD:
                 // fps = internal_frames / (TimeEngine::startUpTime());
@@ -559,7 +598,7 @@ namespace RoninEngine
                     Math::num_beautify(SDL_GetNumAllocations()).c_str(),
                     Math::num_beautify(internal_frames).c_str());
                 SDL_SetWindowTitle(main_window, windowTitle);
-                fpsRound = TimeEngine::startUpTime() + .5f; // updater per 1 seconds
+                fps = TimeEngine::startUpTime() + .5f; // updater per 1 seconds
             }
 
             // delay elapsed
@@ -580,7 +619,20 @@ namespace RoninEngine
             switched_world = nullptr;
         }
         // unload level
-        SDL_DestroyRenderer(renderer);
+        if(simConfig.renderer_hardware)
+        {
+            SDL_DestroyRenderer(simConfig.renderer_hardware);
+            simConfig.renderer_hardware = nullptr;
+        }
+        if(simConfig.renderer_software)
+        {
+            SDL_DestroyRenderer(simConfig.renderer_software);
+            if(simConfig.software_surface)
+                SDL_FreeSurface(simConfig.software_surface);
+
+            simConfig.software_surface = nullptr;
+            simConfig.renderer_software = nullptr;
+        }
         renderer = nullptr;
     }
 
@@ -660,18 +712,99 @@ namespace RoninEngine
 
     void RoninSimulator::GetSettings(RoninSettings *settings)
     {
-        memcpy(settings, &active_settings, sizeof(active_settings));
+        if(main_window == nullptr)
+        {
+            ShowMessage("Engine not inited");
+            return;
+        }
+
+        SDL_RendererInfo info;
+        if(renderer != nullptr && SDL_GetRendererInfo(renderer, &info) == 0)
+        {
+            settings->selectRenderBackend = (info.flags & SDL_RENDERER_SOFTWARE) ? RendererType::Software : RendererType::Hardware;
+        }
+
+        settings->brightness = SDL_GetWindowBrightness(main_window);
+
+        SDL_GetWindowOpacity(main_window, &settings->windowOpacity);
     }
 
     bool RoninSimulator::SetSettings(const RoninSettings *settings)
     {
+        if(main_window == nullptr)
+        {
+            ShowMessage("Engine not inited");
+            return false;
+        }
 
-        return internal_apply_settings();
+        RoninSettings refSettings;
+        GetSettings(&refSettings);
+
+        std::function<bool(void)> applies[] {
+            // Apply Render Backend
+            [&]()
+            {
+                bool state = false;
+                if(refSettings.selectRenderBackend != settings->selectRenderBackend)
+                {
+                    switch(settings->selectRenderBackend)
+                    {
+                        case RendererType::Software:
+                            if(simConfig.renderer_software == nullptr)
+                            {
+                                if(simConfig.software_surface == nullptr ||
+                                   (simConfig.software_surface->w != active_resolution.width ||
+                                    simConfig.software_surface->h != active_resolution.height))
+                                {
+                                    // Free old
+                                    if(simConfig.software_surface != nullptr)
+                                        SDL_FreeSurface(simConfig.software_surface);
+
+                                    simConfig.software_surface = SDL_CreateRGBSurfaceWithFormat(
+                                        0, active_resolution.width, active_resolution.height, 32, sdl_default_pixelformat);
+                                }
+
+                                if(simConfig.renderer_software)
+                                    SDL_DestroyRenderer(simConfig.renderer_software);
+
+                                simConfig.renderer_software = SDL_CreateSoftwareRenderer(simConfig.software_surface);
+                            }
+                            simConfig.conf |= CONF_RENDER_SOFTWARE;
+                            break;
+                        case RendererType::Hardware:
+                            simConfig.conf |= CONF_RENDER_HARDWARE;
+                            break;
+                    }
+                    state = true;
+                }
+
+                return state;
+            },
+            // Apply Video Driver
+            [&]() { return false; },
+            // Apply Render Driver
+            [&]() { return false; },
+            // Apply Brightness
+            [&]()
+            { return (refSettings.brightness != settings->brightness && SDL_SetWindowBrightness(main_window, settings->brightness) == 0); },
+            // Apply Window Opacity
+            [&]() {
+                return (
+                    refSettings.windowOpacity != settings->windowOpacity &&
+                    SDL_SetWindowOpacity(main_window, settings->windowOpacity) == 0);
+            }};
+        bool apply_any = false;
+        for(auto &apply : applies)
+        {
+            if(apply() && !apply_any)
+                apply_any = true;
+        }
+
+        if(apply_any)
+        {
+            RoninSimulator::Log("Settings apply");
+        }
+
+        return apply_any;
     }
-
-    bool internal_apply_settings()
-    {
-        return false;
-    }
-
 } // namespace RoninEngine

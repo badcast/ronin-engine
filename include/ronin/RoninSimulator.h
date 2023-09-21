@@ -23,8 +23,8 @@ namespace RoninEngine
 
     enum RendererType
     {
-        Software,
-        Hardware
+        Hardware,
+        Software
     };
 
     struct RenderDriverInfo
@@ -65,10 +65,11 @@ namespace RoninEngine
 
     struct RoninSettings
     {
-        std::uint8_t selectBridthness;
+        RendererType selectRenderBackend;
         std::uint8_t selectRenderDriver;
         std::uint8_t selectVideoDriver;
-        RendererType accell;
+        float brightness;
+        float windowOpacity;
     };
 
     struct Resolution
