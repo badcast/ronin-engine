@@ -1,29 +1,48 @@
-# ronin-engine framework
+# ronin-engine
 
-```mermaid
-graph TB
+RoninEngine is a powerful game engine for developing games and user interfaces in the C++ programming language. It provides a wide range of features to create high-quality applications with ease and performance in mind.
 
-_platforms(GNU/Linux, Windows, MacOS, etc.)
-_ronin_engine(Ronin Engine)
-_libSDL2(libSDL2 components)
-_justparser(just-parser)
+## Key Features
 
-_platforms --> _libSDL2 --> _ronin_engine
-_platforms --> _ronin_engine
-_justparser --> _conf(Ronin Engine Configs)
-_ronin_engine --> _conf
-_ronin_engine --> _rgi(Init Game) --> _rgs(Game Input/Ouput) --> _rgw(World Load) --> _rgsi(Simulation) --> _rgc(Closing and unitializing) --> Ending[End]
-```
+- **Convenient resource and settings initialization**: RoninEngine offers intuitive tools to kickstart development without unnecessary complications.
 
-## [Ru]ssian Language
-> Цель проекта: Обеспечение минимальной потребности для рендеринга объектов на большинства платформах (GNU/Linux, Windows, MacOS).
-------------
-## Зависимости
-- **SDL2** - соопровождение движка визуализациями, так-же обеспечением движка ресурсами.
-- **([just-parser](https://github.com/badcast/just-parser "just-parser"))** - библиотека по управлению конфигурациями 
-- **([lib-across](https://github.com/badcast/lib-across "lib-across"))** - ИИ по поиску путей, с использованием кэша [API](https://github.com/badcast/ronin-engine/blob/main/include/ronin/NavMesh.h "Исходник")
-------------
-#### Как собрать движок?
+- **CamelCase for readability**: The code in RoninEngine follows the CamelCase style, making it understandable and easily readable for developers.
+
+- **Support for C++17 and higher**: We use modern C++ language features, starting with C++17, to make working with the engine a breeze.
+
+- **Static and dynamic compilation**: Choose the compilation approach that suits your project - static or dynamic.
+
+- **Effortless resource and memory management**: RoninEngine helps you avoid memory leaks and ensures efficient resource management.
+
+- **Dynamic loading and unloading of worlds**: Create complex games with multiple scenes and levels by loading and unloading them dynamically.
+
+- **Create your own games and GUI**: RoninEngine provides the capability to create not just games but also custom user interfaces (GUI).
+
+## Getting Started
+
+1. **Install Dependencies**: Before using RoninEngine, ensure you have all the necessary dependencies installed.
+
+2. **Initialize Your Project**: Create a new project and initialize RoninEngine following the documentation.
+
+3. **Development**: Start developing your game or application using RoninEngine's powerful capabilities.
+
+## Documentation
+
+Detailed information on using RoninEngine can be found in the [documentation](.).
+
+## Examples
+
+Code examples and projects created using RoninEngine are available in the [examples folder](.).
+
+## Contributions and Community
+
+If you have questions, suggestions, or just want to contribute to the development of RoninEngine, please visit our [forum](.) and [GitHub repository](https://github.com/badcast/ronin-engine).
+
+## License
+
+RoninEngine is distributed under the [LICENSE](LICENSE).
+
+## Build
 ```bash
 #cloning sources
 git clone "https://github.com/badcast/ronin-engine.git"
@@ -39,3 +58,6 @@ cmake -DCMAKE_BUILD_TYPE=Release ..
 cmake --build . -j $(nproc)
 ```
 
+---
+
+© [2023] RoninEngine. All rights reserved.
