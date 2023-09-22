@@ -7,19 +7,19 @@ namespace RoninEngine::Runtime
     class RONIN_API Random
     {
     public:
-        static void srand(std::uint32_t seed);
+        static void SRand(std::uint32_t seed);
 
-        static int range(int min, int max);
+        static int Range(int min, int max);
 
-        static float range(float min, float max);
+        static float Range(float min, float max);
 
-        static float value();
+        static float Value();
 
-        static Vec2 randomVector();
+        static Vec2 RandomVector();
 
-        static float angleDegress();
+        static float AngleDegress();
 
-        static float angleRadian();
+        static float AngleRadian();
     };
 
     class RONIN_API Math
@@ -33,34 +33,32 @@ namespace RoninEngine::Runtime
         static constexpr float deg2rad = 0.01745329;
         static constexpr float rad2deg = 180 / Pi;
 
-        static float cos(float x);
+        static float Cos(float x);
 
-        static float sin(float x);
+        static float Sin(float x);
 
-        static float tan(float x);
+        static float Tan(float x);
 
-        static float acos(float x);
+        static float Acos(float x);
 
-        static float atan(float x);
+        static float Atan(float x);
 
-        static float atan2(float y, float x);
-
-        static float clamp01(float val);
+        static float Atan2(float y, float x);
 
         template <typename InT, typename OutT>
-        static OutT map(const InT x, const InT in_min, const InT in_max, const OutT out_min, const OutT out_max)
+        static OutT Map(const InT x, const InT in_min, const InT in_max, const OutT out_min, const OutT out_max)
         {
             return static_cast<OutT>((x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min);
         }
 
         template <typename T>
-        static T map(const T x, const T in_min, const T in_max, const T out_min, const T out_max)
+        static T Map(const T x, const T in_min, const T in_max, const T out_min, const T out_max)
         {
-            return map<T, T>(x, in_min, in_max, out_min, out_max);
+            return Map<T, T>(x, in_min, in_max, out_min, out_max);
         }
 
         template <typename T>
-        static T outside(T x, T minRange, T maxRange)
+        static T Outside(T x, T minRange, T maxRange)
         {
             if(minRange > maxRange)
                 std::swap(minRange, maxRange);
@@ -72,111 +70,113 @@ namespace RoninEngine::Runtime
             return x;
         }
 
+        static float Clamp01(float val);
+
         template <typename T>
-        static T clamp(const T &val, const T &min, const T &max)
+        static T Clamp(const T &val, const T &min, const T &max)
         {
             return T(val > max ? max : val < min ? min : val);
         }
         template <typename T>
-        static const T &max(const T &x, const T &y)
+        static const T &Max(const T &x, const T &y)
         {
             return x > y ? x : y;
         }
 
         template <typename T>
-        static const T &min(const T &x, const T &y)
+        static const T &Min(const T &x, const T &y)
         {
             return x < y ? x : y;
         }
 
-        static float abs(float x);
+        static float Abs(float x);
 
-        static int abs(int x);
+        static int Abs(int x);
 
         // negative absolute value
-        static float nabs(float x);
+        static float NAbs(float x);
 
-        static int nabs(int x);
+        static int NAbs(int x);
 
-        static float signf(float x);
+        static float Signf(float x);
 
-        static int sign(int x);
+        static int Sign(int x);
 
-        static float round(float x);
+        static float Round(float x);
 
-        static float ceil(float x);
+        static float Ceil(float x);
 
-        static float floor(float x);
+        static float Floor(float x);
 
-        static float frac(float x);
+        static float Frac(float x);
 
-        static int number(float x);
+        static int Number(float x);
 
-        static float exp(float x);
+        static float Exp(float x);
 
-        static float pow2(float x);
+        static float Pow2(float x);
 
-        static int pow2(int x);
+        static int Pow2(int x);
 
-        static int pow(int x, int y);
+        static int Pow(int x, int y);
 
-        static float pow(float x, float y);
+        static float Pow(float x, float y);
 
-        static float sqrt(float x);
+        static float Sqrt(float x);
 
-        static float repeat(float t, float length);
+        static float Repeat(float t, float length);
 
-        static float delta_angle(float current, float target);
+        static float DeltaAngle(float current, float target);
 
-        static float gamma(float value, float absmax, float gamma);
+        static float Gamma(float value, float absmax, float gamma);
 
-        static float inverse_lerp(float a, float b, float value);
+        static float InverseLerp(float a, float b, float value);
 
-        static float lerp(float a, float b, float t);
+        static float Lerp(float a, float b, float t);
 
-        static float lerp_angle(float a, float b, float t);
+        static float LerpAngle(float a, float b, float t);
 
-        static float lerp_unclamped(float a, float b, float t);
+        static float LerpUnclamped(float a, float b, float t);
 
-        static bool line_intersection(Vec2 p1, Vec2 p2, Vec2 p3, Vec2 p4, Vec2 &result);
+        static bool LineIntersection(Vec2 p1, Vec2 p2, Vec2 p3, Vec2 p4, Vec2 &result);
 
-        static float move_towards(float current, float target, float maxDelta);
+        static float MoveTowards(float current, float target, float maxDelta);
 
-        static bool line_segment_intersection(Vec2 p1, Vec2 p2, Vec2 p3, Vec2 p4, Vec2 &result);
+        static bool LineSegmentIntersection(Vec2 p1, Vec2 p2, Vec2 p3, Vec2 p4, Vec2 &result);
 
-        static float smooth_damp(float current, float target, float &currentVelocity, float smoothTime, float maxSpeed);
+        static float SmoothDamp(float current, float target, float &currentVelocity, float smoothTime, float maxSpeed);
 
-        static float smooth_damp(float current, float target, float &currentVelocity, float smoothTime);
+        static float SmoothDamp(float current, float target, float &currentVelocity, float smoothTime);
 
-        static float smooth_damp(float current, float target, float &currentVelocity, float smoothTime, float maxSpeed, float deltaTime);
+        static float SmoothDamp(float current, float target, float &currentVelocity, float smoothTime, float maxSpeed, float deltaTime);
 
         // Celsius to Fahrenheit
-        static float cel2far(float celsius);
+        static float Cel2Far(float celsius);
         // Fahrenheit to Celsius
-        static float far2cel(float fahrenheit);
+        static float Far2Cel(float fahrenheit);
 
-        static float smooth_damp_angle(float current, float target, float &currentVelocity, float smoothTime, float maxSpeed);
+        static float SmoothDampAngle(float current, float target, float &currentVelocity, float smoothTime, float maxSpeed);
 
-        static float smooth_damp_angle(float current, float target, float &currentVelocity, float smoothTime);
+        static float SmoothDampAngle(float current, float target, float &currentVelocity, float smoothTime);
 
-        static float smooth_damp_angle(
+        static float SmoothDampAngle(
             float current, float target, float &currentVelocity, float smoothTime, float maxSpeed, float deltaTime);
 
-        static float smooth_step(float from, float to, float t);
+        static float SmoothStep(float from, float to, float t);
 
-        static std::uint64_t num_lastof(std::uint64_t number, int level);
+        static std::uint64_t NumLastOf(std::uint64_t number, int level);
 
-        static std::string num_beautify(std::uint64_t num, char seperate = ' ', int digits = 3);
+        static std::string NumBeautify(std::uint64_t num, char seperate = ' ', int digits = 3);
 
-        static std::uint16_t float_to_half(float value);
+        static std::uint16_t FloatToHalf(float value);
 
-        static float half_to_float(std::uint16_t value);
+        static float HalfToFloat(std::uint16_t value);
 
-        static float square(float x);
-        static float square_rectangle(float a, float b);
-        static float square_rectangle(Vec2 p1, Vec2 p2, Vec2 p3, Vec2 p4);
-        static float square_circle(float radius);
-        static float square_triangle(float base, float height);
-        static float square_triangle(Vec2 p1, Vec2 p2, Vec2 p3);
+        static float Square(float x);
+        static float SquareRectangle(float a, float b);
+        static float SquareRectangle(Vec2 p1, Vec2 p2, Vec2 p3, Vec2 p4);
+        static float SquareCircle(float radius);
+        static float SquareTriangle(float base, float height);
+        static float SquareTriangle(Vec2 p1, Vec2 p2, Vec2 p3);
     };
 } // namespace RoninEngine::Runtime

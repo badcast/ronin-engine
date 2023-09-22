@@ -67,7 +67,7 @@ namespace RoninEngine::Runtime
                 std::uint32_t maxSteps = static_cast<std::uint32_t>(stormMember >> 32);
 
                 // Шаг заканчивается (step = turnSteps) происходит поворот
-                if(steps % Math::max(1u, (maxSteps / 4)) == 0)
+                if(steps % Math::Max(1u, (maxSteps / 4)) == 0)
                 {
                     // переход на новое измерение
                     // при steps == maxsteps
@@ -241,7 +241,7 @@ namespace RoninEngine::Runtime
         distance *= distance; // Sqr
         container_result result = storm_cast_eq<container_result>(
             origin,
-            Math::number(Math::ceil(distance)),
+            Math::Number(Math::Ceil(distance)),
             layer,
             [distance](Vec2 lhs, Vec2 rhs)
             {

@@ -122,8 +122,8 @@ namespace RoninEngine::Runtime
                             break;
                             // render as cut
                         case SpriteRenderPresentMode::Place:
-                            rendering->src.w *= Math::abs(this->size.x);
-                            rendering->src.h *= Math::abs(this->size.y);
+                            rendering->src.w *= Math::Abs(this->size.x);
+                            rendering->src.h *= Math::Abs(this->size.y);
                             break;
                     }
                     break;

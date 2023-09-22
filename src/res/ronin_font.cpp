@@ -247,7 +247,7 @@ namespace RoninEngine::UI
                 }
 
                 // отрисовываем остаток входящую в область
-                dst.w = Math::max(0, Math::min(deltax - dst.x, dst.w));
+                dst.w = Math::Max(0, Math::Min(deltax - dst.x, dst.w));
                 // if (dst.x <= src.x + src.w && dst.y <= src.y + src.h)
                 SDL_RenderCopy(renderer, __fontTexture, (SDL_Rect *) src, &dst);
                 dst.x += src->w;

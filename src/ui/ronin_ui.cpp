@@ -197,7 +197,7 @@ namespace RoninEngine::UI
         if(!link->second.empty())
         {
             auto iter = link->second.begin();
-            std::advance(iter, Math::min(static_cast<int>(link->second.size() - 1), index));
+            std::advance(iter, Math::Min(static_cast<int>(link->second.size() - 1), index));
             element.text = *iter;
         }
 

@@ -16,174 +16,174 @@ std::uint32_t internal_rand()
     return __seed__;
 }
 
-void Random::srand(std::uint32_t seed)
+void Random::SRand(std::uint32_t seed)
 {
     if(seed == 0)
         seed = 1;
     __seed__ = seed;
 }
 
-int Random::range(int min, int max)
+int Random::Range(int min, int max)
 {
-    return Math::map<int>(static_cast<int>(internal_rand()), 0, ronin_rand_max, min, max);
+    return Math::Map<int>(static_cast<int>(internal_rand()), 0, ronin_rand_max, min, max);
 }
 
-float Random::range(float min, float max)
+float Random::Range(float min, float max)
 {
-    return value() * (max - min) + min;
+    return Value() * (max - min) + min;
 }
 
-float Random::value()
+float Random::Value()
 {
     // const for diaz. 0.0 - 1.0
     return internal_rand() / static_cast<float>(ronin_rand_max);
 }
 
-Vec2 Random::randomVector()
+Vec2 Random::RandomVector()
 {
-    return Vec2(Random::value() * 2 - 1, Random::value() * 2 - 1);
+    return Vec2(Random::Value() * 2 - 1, Random::Value() * 2 - 1);
 }
 
-float Random::angleDegress()
+float Random::AngleDegress()
 {
-    return value() * 360;
+    return Value() * 360;
 }
 
-float Random::angleRadian()
+float Random::AngleRadian()
 {
-    return value() * Math::Pi2;
+    return Value() * Math::Pi2;
 }
 
-float Math::cos(float x)
+float Math::Cos(float x)
 {
     return SDL_cosf(x);
 }
 
-float Math::sin(float x)
+float Math::Sin(float x)
 {
     return SDL_sinf(x);
 }
 
-float Math::tan(float x)
+float Math::Tan(float x)
 {
     return SDL_tanf(x);
 }
 
-float Math::acos(float x)
+float Math::Acos(float x)
 {
     return SDL_acosf(x);
 }
 
-float Math::atan(float x)
+float Math::Atan(float x)
 {
     return SDL_atanf(x);
 }
 
-float Math::atan2(float y, float x)
+float Math::Atan2(float y, float x)
 {
     return SDL_atan2f(y, x);
 }
 
-float Math::clamp01(float val)
+float Math::Clamp01(float val)
 {
-    return clamp(val, 0.f, 1.f);
+    return Clamp(val, 0.f, 1.f);
 }
 
-int Math::abs(int x)
+int Math::Abs(int x)
 {
     return std::abs(x);
 }
 
-float Math::abs(float x)
+float Math::Abs(float x)
 {
     return std::abs(x);
 }
 
 // negative absolute value
-float Math::nabs(float x)
+float Math::NAbs(float x)
 {
-    return abs(x) * ~0;
+    return Abs(x) * ~0;
 }
 
 // negative absolute value
-int Math::nabs(int x)
+int Math::NAbs(int x)
 {
-    return abs(x) * ~0;
+    return Abs(x) * ~0;
 }
 
-float Math::signf(float x)
+float Math::Signf(float x)
 {
     return x < 0.f ? -1.f : 1.f;
 }
 
-int Math::sign(int x)
+int Math::Sign(int x)
 {
     return x < 0 ? -1 : 1;
 }
 
-float Math::round(float x)
+float Math::Round(float x)
 {
     return SDL_roundf(x);
 }
 
-float Math::ceil(float x)
+float Math::Ceil(float x)
 {
     return SDL_ceilf(x);
 }
 
-float Math::floor(float x)
+float Math::Floor(float x)
 {
     return SDL_floorf(x);
 }
 
-float Math::frac(float x)
+float Math::Frac(float x)
 {
-    return x - number(x);
+    return x - Number(x);
 }
 
-int Math::number(float x)
+int Math::Number(float x)
 {
     return static_cast<int>(x);
 }
 
-float Math::exp(float x)
+float Math::Exp(float x)
 {
     return SDL_expf(x);
 }
 
-float Math::pow2(float x)
+float Math::Pow2(float x)
 {
     return SDL_powf(x, 2);
 }
 
-int Math::pow2(int x)
+int Math::Pow2(int x)
 {
     return SDL_pow(x, 2);
 }
 
-int Math::pow(int x, int y)
+int Math::Pow(int x, int y)
 {
     return SDL_pow(x, y);
 }
 
-float Math::pow(float x, float y)
+float Math::Pow(float x, float y)
 {
     return SDL_powf(x, y);
 }
 
-float Math::sqrt(float x)
+float Math::Sqrt(float x)
 {
     return SDL_sqrtf(x);
 }
 
-float Math::repeat(float t, float length)
+float Math::Repeat(float t, float length)
 {
-    return clamp(t - floor(t / length) * length, 0.f, length);
+    return Clamp(t - Floor(t / length) * length, 0.f, length);
 }
 
-float Math::delta_angle(float current, float target)
+float Math::DeltaAngle(float current, float target)
 {
-    float num = repeat(target - current, 360);
+    float num = Repeat(target - current, 360);
     if(num > 180)
     {
         num -= 360;
@@ -191,14 +191,14 @@ float Math::delta_angle(float current, float target)
     return num;
 }
 
-float Math::gamma(float value, float absmax, float gamma)
+float Math::Gamma(float value, float absmax, float gamma)
 {
     bool flag = false;
     if(value < 0)
     {
         flag = true;
     }
-    float num = abs(value);
+    float num = Abs(value);
     float result;
     if(num > absmax)
     {
@@ -206,18 +206,18 @@ float Math::gamma(float value, float absmax, float gamma)
     }
     else
     {
-        float num2 = pow(num / absmax, gamma) * absmax;
+        float num2 = Pow(num / absmax, gamma) * absmax;
         result = ((!flag) ? num2 : (-num2));
     }
     return result;
 }
 
-float Math::inverse_lerp(float a, float b, float value)
+float Math::InverseLerp(float a, float b, float value)
 {
     float result;
     if(a != b)
     {
-        result = clamp01((value - a) / (b - a));
+        result = Clamp01((value - a) / (b - a));
     }
     else
     {
@@ -226,27 +226,27 @@ float Math::inverse_lerp(float a, float b, float value)
     return result;
 }
 
-float Math::lerp(float a, float b, float t)
+float Math::Lerp(float a, float b, float t)
 {
-    return a + (b - a) * clamp01(t);
+    return a + (b - a) * Clamp01(t);
 }
 
-float Math::lerp_angle(float a, float b, float t)
+float Math::LerpAngle(float a, float b, float t)
 {
-    float num = repeat(b - a, 360);
+    float num = Repeat(b - a, 360);
     if(num > 180)
     {
         num -= 360;
     }
-    return a + num * clamp01(t);
+    return a + num * Clamp01(t);
 }
 
-float Math::lerp_unclamped(float a, float b, float t)
+float Math::LerpUnclamped(float a, float b, float t)
 {
     return a + (b - a) * t;
 }
 
-bool Math::line_intersection(Vec2 p1, Vec2 p2, Vec2 p3, Vec2 p4, Vec2 &result)
+bool Math::LineIntersection(Vec2 p1, Vec2 p2, Vec2 p3, Vec2 p4, Vec2 &result)
 {
     float num = p2.x - p1.x;
     float num2 = p2.y - p1.y;
@@ -269,21 +269,21 @@ bool Math::line_intersection(Vec2 p1, Vec2 p2, Vec2 p3, Vec2 p4, Vec2 &result)
     return result2;
 }
 
-float Math::move_towards(float current, float target, float maxDelta)
+float Math::MoveTowards(float current, float target, float maxDelta)
 {
     float result;
-    if(abs(target - current) <= maxDelta)
+    if(Abs(target - current) <= maxDelta)
     {
         result = target;
     }
     else
     {
-        result = current + sign(target - current) * maxDelta;
+        result = current + Sign(target - current) * maxDelta;
     }
     return result;
 }
 
-bool Math::line_segment_intersection(Vec2 p1, Vec2 p2, Vec2 p3, Vec2 p4, Vec2 &result)
+bool Math::LineSegmentIntersection(Vec2 p1, Vec2 p2, Vec2 p3, Vec2 p4, Vec2 &result)
 {
     float num = p2.x - p1.x;
     float num2 = p2.y - p1.y;
@@ -321,27 +321,27 @@ bool Math::line_segment_intersection(Vec2 p1, Vec2 p2, Vec2 p3, Vec2 p4, Vec2 &r
     return result2;
 }
 
-float Math::smooth_damp(float current, float target, float &currentVelocity, float smoothTime, float maxSpeed)
+float Math::SmoothDamp(float current, float target, float &currentVelocity, float smoothTime, float maxSpeed)
 {
-    return Math::smooth_damp(current, target, currentVelocity, smoothTime, maxSpeed, TimeEngine::deltaTime());
+    return Math::SmoothDamp(current, target, currentVelocity, smoothTime, maxSpeed, TimeEngine::deltaTime());
 }
 
-float Math::smooth_damp(float current, float target, float &currentVelocity, float smoothTime)
+float Math::SmoothDamp(float current, float target, float &currentVelocity, float smoothTime)
 {
     float maxSpeed = infinity;
-    return Math::smooth_damp(current, target, currentVelocity, smoothTime, maxSpeed, TimeEngine::deltaTime());
+    return Math::SmoothDamp(current, target, currentVelocity, smoothTime, maxSpeed, TimeEngine::deltaTime());
 }
 
-float Math::smooth_damp(float current, float target, float &currentVelocity, float smoothTime, float maxSpeed, float deltaTime)
+float Math::SmoothDamp(float current, float target, float &currentVelocity, float smoothTime, float maxSpeed, float deltaTime)
 {
-    smoothTime = max(0.f, max(1.f, smoothTime));
+    smoothTime = Max(0.f, Max(1.f, smoothTime));
     float num = 2 / smoothTime;
     float num2 = num * deltaTime;
     float num3 = 1 / (1 + num2 + 0, 48 * num2 * num2 + 0, 235 * num2 * num2 * num2);
     float num4 = current - target;
     float num5 = target;
     float num6 = maxSpeed * smoothTime;
-    num4 = clamp(num4, -num6, num6);
+    num4 = Clamp(num4, -num6, num6);
     target = current - num4;
     float num7 = (currentVelocity + num * num4) * deltaTime;
     currentVelocity = (currentVelocity - num * num7) * num3;
@@ -354,41 +354,41 @@ float Math::smooth_damp(float current, float target, float &currentVelocity, flo
     return num8;
 }
 
-float Math::cel2far(float celsius)
+float Math::Cel2Far(float celsius)
 {
     return celsius * 1.8f + 32;
 }
 
-float Math::far2cel(float fahrenheit)
+float Math::Far2Cel(float fahrenheit)
 {
     return (fahrenheit - 32) * periodic_fahren;
 }
 
-float Math::smooth_damp_angle(float current, float target, float &currentVelocity, float smoothTime, float maxSpeed)
+float Math::SmoothDampAngle(float current, float target, float &currentVelocity, float smoothTime, float maxSpeed)
 {
-    return smooth_damp_angle(current, target, currentVelocity, smoothTime, maxSpeed, TimeEngine::deltaTime());
+    return SmoothDampAngle(current, target, currentVelocity, smoothTime, maxSpeed, TimeEngine::deltaTime());
 }
 
-float Math::smooth_damp_angle(float current, float target, float &currentVelocity, float smoothTime)
+float Math::SmoothDampAngle(float current, float target, float &currentVelocity, float smoothTime)
 {
     float maxSpeed = infinity;
-    return smooth_damp_angle(current, target, currentVelocity, smoothTime, maxSpeed, TimeEngine::deltaTime());
+    return SmoothDampAngle(current, target, currentVelocity, smoothTime, maxSpeed, TimeEngine::deltaTime());
 }
 
-float Math::smooth_damp_angle(float current, float target, float &currentVelocity, float smoothTime, float maxSpeed, float deltaTime)
+float Math::SmoothDampAngle(float current, float target, float &currentVelocity, float smoothTime, float maxSpeed, float deltaTime)
 {
-    target = current + delta_angle(current, target);
-    return smooth_damp(current, target, currentVelocity, smoothTime, maxSpeed, deltaTime);
+    target = current + DeltaAngle(current, target);
+    return SmoothDamp(current, target, currentVelocity, smoothTime, maxSpeed, deltaTime);
 }
 
-float Math::smooth_step(float from, float to, float t)
+float Math::SmoothStep(float from, float to, float t)
 {
-    t = clamp01(t);
+    t = Clamp01(t);
     t = -2 * t * t * t + 3 * t * t;
     return to * t + from * (1 - t);
 }
 
-std::uint64_t Math::num_lastof(std::uint64_t number, int level)
+std::uint64_t Math::NumLastOf(std::uint64_t number, int level)
 {
     std::uint64_t x = std::pow(10, level);
     auto d = std::ldiv(number, x);
@@ -397,7 +397,7 @@ std::uint64_t Math::num_lastof(std::uint64_t number, int level)
     return d.rem;
 }
 
-std::string Math::num_beautify(std::uint64_t num, char seperate, int digits)
+std::string Math::NumBeautify(std::uint64_t num, char seperate, int digits)
 {
     constexpr int radix = 10;
     int level = 1;
@@ -416,7 +416,7 @@ std::string Math::num_beautify(std::uint64_t num, char seperate, int digits)
     return result;
 }
 
-uint16_t Math::float_to_half(float value)
+uint16_t Math::FloatToHalf(float value)
 {
     uint16_t sign = (std::copysign(1.0f, value) > 0.0f ? 0x0000 : 0x8000);
 
@@ -462,7 +462,7 @@ uint16_t Math::float_to_half(float value)
     return bits;
 }
 
-float Math::half_to_float(uint16_t value)
+float Math::HalfToFloat(uint16_t value)
 {
     int exponent = (value >> 10) & 0x001F;
     int mantissa = (value >> 0) & 0x03FF;
@@ -500,22 +500,22 @@ float Math::half_to_float(uint16_t value)
     return std::copysignf(result, sign);
 }
 
-float Math::square_triangle(float base, float height)
+float Math::SquareTriangle(float base, float height)
 {
     return base * height / 2;
 }
 
-float Math::square(float x)
+float Math::Square(float x)
 {
     return x * x;
 }
 
-float Math::square_rectangle(float a, float b)
+float Math::SquareRectangle(float a, float b)
 {
     return a * b;
 }
 
-float Math::square_circle(float radius)
+float Math::SquareCircle(float radius)
 {
     /*
      *      get the square circle
@@ -524,5 +524,5 @@ float Math::square_circle(float radius)
      *      S = (PI * d^2) / 4
      *
      */
-    return Math::Pi * Math::pow2(radius);
+    return Math::Pi * Math::Pow2(radius);
 }

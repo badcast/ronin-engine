@@ -21,25 +21,26 @@ namespace RoninEngine
         RendererPresentVSync = 0x4,
     };
 
-    enum RendererType
+    enum RendererBackend
     {
+        Unknown,
         Hardware,
         Software
     };
 
     struct RenderDriverInfo
     {
-        const std::string name;
+        std::string name;
         RendererFlags rendererFlags;
-        RendererType renderType;
+        RendererBackend rendererBackend;
         int maxTextureWidth;
         int maxTextureHeight;
 
         RenderDriverInfo(
-            const std::string &name, RendererFlags rendererFlags, RendererType renderType, int maxTextureWidth, int maxTextureHeight)
+            const std::string &name, RendererFlags rendererFlags, RendererBackend rendererBackend, int maxTextureWidth, int maxTextureHeight)
             : name(name),
               rendererFlags(rendererFlags),
-              renderType(renderType),
+              rendererBackend(rendererBackend),
               maxTextureWidth(maxTextureWidth),
               maxTextureHeight(maxTextureHeight)
         {
@@ -65,7 +66,7 @@ namespace RoninEngine
 
     struct RoninSettings
     {
-        RendererType selectRenderBackend;
+        RendererBackend selectRenderBackend;
         std::uint8_t selectRenderDriver;
         std::uint8_t selectVideoDriver;
         float brightness;
@@ -134,6 +135,14 @@ namespace RoninEngine
          * @return result of loaded
          */
         static bool LoadWorld(Runtime::World *world, bool unloadPrevious = true);
+
+        /**
+         * @brief Reload current world
+         * Unload and Load
+         *
+         * @return result of reloaded
+         */
+        static bool ReloadWorld();
 
         /**
          * @brief Simulates the loaded world.

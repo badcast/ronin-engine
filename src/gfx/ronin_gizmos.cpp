@@ -287,8 +287,8 @@ namespace RoninEngine::Runtime
     {
         origin = Camera::main_camera()->WorldToScreenPoint(origin);
         std::uint16_t x, y, r;
-        x = Math::number(origin.x);
-        y = Math::number(origin.y);
+        x = Math::Number(origin.x);
+        y = Math::Number(origin.y);
         r = static_cast<std::uint16_t>(distance * pixelsPerPoint);
         Color m_color = GetColor();
 
@@ -298,7 +298,7 @@ namespace RoninEngine::Runtime
     void Gizmos::DrawArrow(Vec2 origin, Vec2 dir, float tailLength)
     {
         // tail
-        tailLength = Math::abs(tailLength);
+        tailLength = Math::Abs(tailLength);
         Vec2 pos2 = origin + (dir - origin) * tailLength; // world to local and set point to dir
 
         internal_drawLine(origin, pos2);
@@ -348,8 +348,8 @@ namespace RoninEngine::Runtime
     {
         origin = Camera::main_camera()->WorldToScreenPoint(origin);
         std::uint16_t x, y, r;
-        x = Math::number(origin.x);
-        y = Math::number(origin.y);
+        x = Math::Number(origin.x);
+        y = Math::Number(origin.y);
         r = static_cast<std::uint16_t>(distance * pixelsPerPoint);
         Color m_color = GetColor();
 

@@ -43,8 +43,8 @@ namespace RoninEngine
         extern void input_movement_update();
         extern void internal_update_input(SDL_Event *e);
 
-        extern void load_world(World *world);
-        extern bool unload_world(World *world);
+        extern void internal_load_world(World *world);
+        extern bool internal_unload_world(World *world);
     } // namespace Runtime
 
     SDL_Window *main_window = nullptr;
@@ -53,10 +53,9 @@ namespace RoninEngine
         CONF_RENDER_NOCONF = 0,
 
         CONF_RENDER_CHANGED = 1,
-        CONF_RESERVED1 = 2,
+        CONF_RELOAD_WORLD = 2,
         CONF_RESERVED2 = 4,
         CONF_RENDER_SOFTWARE = CONF_RENDER_CHANGED | 8,
-        CONF_RENDER_HARDWARE = CONF_RENDER_CHANGED | 16
     };
     struct
     {
@@ -83,14 +82,22 @@ namespace RoninEngine
         if(simConfig.conf == CONF_RENDER_NOCONF)
             return;
 
-        switch(simConfig.conf)
+        if(simConfig.conf & CONF_RENDER_CHANGED)
         {
-            case CONF_RENDER_SOFTWARE:
+            if(simConfig.conf & CONF_RENDER_SOFTWARE == CONF_RENDER_SOFTWARE)
+            {
                 renderer = simConfig.renderer_software;
-                break;
-            case CONF_RENDER_HARDWARE:
+            }
+            else
+            {
                 renderer = simConfig.renderer_hardware;
-                break;
+            }
+        }
+
+        if(simConfig.conf & CONF_RELOAD_WORLD)
+        {
+            internal_unload_world(switched_world);
+            internal_load_world(switched_world);
         }
 
         simConfig.conf = CONF_RENDER_NOCONF;
@@ -278,7 +285,7 @@ namespace RoninEngine
         switched_world = world;
 
         // on swtiched and init resources, even require
-        Runtime::load_world(world);
+        Runtime::internal_load_world(world);
 
         // set state load
         world->internal_resources->request_unloading = false;
@@ -296,6 +303,18 @@ namespace RoninEngine
         internal_level_loaded = false;
 
         return true;
+    }
+
+    bool RoninSimulator::ReloadWorld()
+    {
+        if(switched_world == nullptr)
+        {
+            Log("Active world not loaded");
+            return false;
+        }
+
+        // set config for reload
+        simConfig.conf |= CONF_RELOAD_WORLD;
     }
 
     Resolution RoninSimulator::GetCurrentResolution()
@@ -470,7 +489,7 @@ namespace RoninEngine
                 // Unload old World
                 if(destroyableLevel)
                 {
-                    unload_world(destroyableLevel);
+                    internal_unload_world(destroyableLevel);
                     destroyableLevel = nullptr;
                 }
 
@@ -580,7 +599,7 @@ namespace RoninEngine
             if(!_watcher_time.empty())
                 throw ronin_watcher_error();
 
-            internal_delta_time = Math::min<float>(1.f, Math::max<float>(delayed / 1000.f, game_time_score));
+            internal_delta_time = Math::Min<float>(1.f, Math::Max<float>(delayed / 1000.f, game_time_score));
             internal_game_time += internal_delta_time;
 
             if(TimeEngine::startUpTime() > fps)
@@ -593,16 +612,16 @@ namespace RoninEngine
                     "FPS:%.1f Memory:%sMiB, "
                     "Ronin_Allocated:%s, SDL_Allocated:%s, Frames:%s",
                     fps,
-                    Math::num_beautify(get_process_sizeMemory() / 1024 / 1024).c_str(),
-                    Math::num_beautify(RoninMemory::total_allocated()).c_str(),
-                    Math::num_beautify(SDL_GetNumAllocations()).c_str(),
-                    Math::num_beautify(internal_frames).c_str());
+                    Math::NumBeautify(get_process_sizeMemory() / 1024 / 1024).c_str(),
+                    Math::NumBeautify(RoninMemory::total_allocated()).c_str(),
+                    Math::NumBeautify(SDL_GetNumAllocations()).c_str(),
+                    Math::NumBeautify(internal_frames).c_str());
                 SDL_SetWindowTitle(main_window, windowTitle);
                 fps = TimeEngine::startUpTime() + .5f; // updater per 1 seconds
             }
 
             // delay elapsed
-            delayed = Math::max(0, static_cast<int>(Math::ceil(secPerFrame) - delayed));
+            delayed = Math::Max(0, static_cast<int>(Math::Ceil(secPerFrame) - delayed));
 
             if(switched_world == nullptr || switched_world->internal_resources->request_unloading)
                 break; // break on unload state
@@ -615,7 +634,7 @@ namespace RoninEngine
         }
         if(switched_world)
         {
-            Runtime::unload_world(switched_world);
+            Runtime::internal_unload_world(switched_world);
             switched_world = nullptr;
         }
         // unload level
@@ -688,12 +707,15 @@ namespace RoninEngine
         for(; num-- > 0;)
         {
             if(SDL_GetRenderDriverInfo(num, &rdi))
+            {
+                Log(SDL_GetError());
                 continue;
+            }
 
             drivers.emplace_back(
                 rdi.name,
                 RendererFlags(rdi.flags ^ SDL_RENDERER_TARGETTEXTURE),
-                (rdi.flags & SDL_RENDERER_SOFTWARE ? RendererType::Software : RendererType::Hardware),
+                (rdi.flags & SDL_RENDERER_SOFTWARE ? RendererBackend::Software : RendererBackend::Hardware),
                 rdi.max_texture_width,
                 rdi.max_texture_height);
         }
@@ -705,8 +727,15 @@ namespace RoninEngine
     {
         std::vector<std::string> vids;
         int num = SDL_GetNumVideoDrivers();
+
+        SDL_ClearError();
+
+        if(num < 1)
+            Log(SDL_GetError());
+
         for(; num-- > 0;)
             vids.emplace_back(SDL_GetVideoDriver(num));
+
         return vids;
     }
 
@@ -721,7 +750,7 @@ namespace RoninEngine
         SDL_RendererInfo info;
         if(renderer != nullptr && SDL_GetRendererInfo(renderer, &info) == 0)
         {
-            settings->selectRenderBackend = (info.flags & SDL_RENDERER_SOFTWARE) ? RendererType::Software : RendererType::Hardware;
+            settings->selectRenderBackend = (info.flags & SDL_RENDERER_SOFTWARE) ? RendererBackend::Software : RendererBackend::Hardware;
         }
 
         settings->brightness = SDL_GetWindowBrightness(main_window);
@@ -749,7 +778,7 @@ namespace RoninEngine
                 {
                     switch(settings->selectRenderBackend)
                     {
-                        case RendererType::Software:
+                        case RendererBackend::Software:
                             if(simConfig.renderer_software == nullptr)
                             {
                                 if(simConfig.software_surface == nullptr ||
@@ -771,8 +800,8 @@ namespace RoninEngine
                             }
                             simConfig.conf |= CONF_RENDER_SOFTWARE;
                             break;
-                        case RendererType::Hardware:
-                            simConfig.conf |= CONF_RENDER_HARDWARE;
+                        case RendererBackend::Hardware:
+                            simConfig.conf |= CONF_RENDER_CHANGED; // set as HARDWARE
                             break;
                     }
                     state = true;
@@ -796,13 +825,12 @@ namespace RoninEngine
         bool apply_any = false;
         for(auto &apply : applies)
         {
-            if(apply() && !apply_any)
-                apply_any = true;
+            apply() && !apply_any && (apply_any = true);
         }
 
         if(apply_any)
         {
-            RoninSimulator::Log("Settings apply");
+            Log("Settings apply");
         }
 
         return apply_any;

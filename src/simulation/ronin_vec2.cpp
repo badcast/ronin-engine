@@ -82,7 +82,7 @@ namespace RoninEngine::Runtime
 
     float Vec2::magnitude() const
     {
-        return Math::sqrt(x * x + y * y);
+        return Math::Sqrt(x * x + y * y);
     }
 
     float Vec2::sqrMagnitude() const
@@ -112,27 +112,27 @@ namespace RoninEngine::Runtime
 
     const Vec2 Vec2::Abs(const Vec2 &value)
     {
-        return {Math::abs(value.x), Math::abs(value.y)};
+        return {Math::Abs(value.x), Math::Abs(value.y)};
     }
 
     const Vec2 Vec2::NAbs(const Vec2 &value)
     {
-        return {Math::nabs(value.x), Math::nabs(value.y)};
+        return {Math::NAbs(value.x), Math::NAbs(value.y)};
     }
 
     Vec2 Vec2::Slerp(const Vec2 &lhs, const Vec2 &rhs, float t)
     {
-        t = Math::clamp01(t);
+        t = Math::Clamp01(t);
 
         // get cosine of angle between disposition (-1 -> 1)
         float CosAlpha = Dot(lhs, rhs);
         // get angle (0 -> pi)
-        float Alpha = Math::acos(CosAlpha);
+        float Alpha = Math::Acos(CosAlpha);
         // get sine of angle between disposition (0 -> 1)
-        float SinAlpha = Math::sin(Alpha);
+        float SinAlpha = Math::Sin(Alpha);
         // this breaks down when SinAlpha = 0, i.e. Alpha = 0 or pi
-        float t1 = Math::sin(1.f - t * Alpha) / SinAlpha;
-        float t2 = Math::sin(t * Alpha) / SinAlpha;
+        float t1 = Math::Sin(1.f - t * Alpha) / SinAlpha;
+        float t2 = Math::Sin(t * Alpha) / SinAlpha;
 
         // interpolate src disposition
         Vec2 p = lhs * t1 + rhs * t2;
@@ -143,19 +143,19 @@ namespace RoninEngine::Runtime
         // get cosine of angle between disposition (-1 -> 1)
         float CosAlpha = Dot(lhs, rhs);
         // get angle (0 -> pi)
-        float Alpha = Math::acos(CosAlpha);
+        float Alpha = Math::Acos(CosAlpha);
         // get sine of angle between disposition (0 -> 1)
-        float SinAlpha = Math::sin(Alpha);
+        float SinAlpha = Math::Sin(Alpha);
         // this breaks down when SinAlpha = 0, i.e. Alpha = 0 or pi
-        float t1 = Math::sin(1.f - t * Alpha) / SinAlpha;
-        float t2 = Math::sin(t * Alpha) / SinAlpha;
+        float t1 = Math::Sin(1.f - t * Alpha) / SinAlpha;
+        float t2 = Math::Sin(t * Alpha) / SinAlpha;
 
         // interpolate src disposition
         return lhs * t1 + rhs * t2;
     }
     Vec2 Vec2::Lerp(const Vec2 &lhs, const Vec2 &rhs, float t)
     {
-        t = Math::clamp01(t);
+        t = Math::Clamp01(t);
         return Vec2(lhs.x + (rhs.x - lhs.x) * t, lhs.y + (rhs.y - lhs.y) * t);
     }
 
@@ -166,12 +166,12 @@ namespace RoninEngine::Runtime
 
     Vec2 Vec2::Max(const Vec2 &lhs, const Vec2 &rhs)
     {
-        return Vec2(Math::max(lhs.x, rhs.x), Math::max(lhs.y, rhs.y));
+        return Vec2(Math::Max(lhs.x, rhs.x), Math::Max(lhs.y, rhs.y));
     }
 
     Vec2 Vec2::Min(const Vec2 &lhs, const Vec2 &rhs)
     {
-        return Vec2(Math::min(lhs.x, rhs.x), Math::min(lhs.y, rhs.y));
+        return Vec2(Math::Min(lhs.x, rhs.x), Math::Min(lhs.y, rhs.y));
     }
 
     Vec2 Vec2::MoveTowards(const Vec2 &current, const Vec2 &target, float maxDistanceDelta)
@@ -204,7 +204,7 @@ namespace RoninEngine::Runtime
     {
         float num = lhs.x - rhs.x;
         float num2 = lhs.y - rhs.y;
-        return Math::sqrt(num * num + num2 * num2);
+        return Math::Sqrt(num * num + num2 * num2);
     }
 
     float Vec2::DistanceSqr(const Vec2 &lhs, const Vec2 &rhs)
@@ -218,7 +218,7 @@ namespace RoninEngine::Runtime
     {
         from.normalize();
         to.normalize();
-        return Math::acos(Math::clamp(Vec2::Dot(from, to), -1.f, 1.f));
+        return Math::Acos(Math::Clamp(Vec2::Dot(from, to), -1.f, 1.f));
     }
 
     float Vec2::SignedAngle(Vec2 from, Vec2 to)
@@ -226,7 +226,7 @@ namespace RoninEngine::Runtime
         float num = Angle(from, to);
         from.normalize();
         to.normalize();
-        float num2 = Math::sign(from.x * to.y - from.y * to.x);
+        float num2 = Math::Sign(from.x * to.y - from.y * to.x);
 
         return num * num2;
     }
@@ -247,7 +247,7 @@ namespace RoninEngine::Runtime
 
     Vec2 Vec2::SmoothDamp(const Vec2 &current, Vec2 target, Vec2 &currentVelocity, float smoothTime, float maxSpeed, float deltaTime)
     {
-        smoothTime = Math::max(0.f, Math::max(0001.f, smoothTime));
+        smoothTime = Math::Max(0.f, Math::Max(0001.f, smoothTime));
         float n0 = 2 / smoothTime;
         float n1 = n0 * deltaTime;
         float d = 1 / (1 + n1 + 0, 48 * n1 * n1 + 0, 235 * n1 * n1 * n1);
@@ -314,8 +314,8 @@ namespace RoninEngine::Runtime
 
     const Vec2 Vec2::Rotate(Vec2 position, float angleRadian)
     {
-        float Cos = Math::cos(angleRadian);
-        float Sin = Math::sin(angleRadian);
+        float Cos = Math::Cos(angleRadian);
+        float Sin = Math::Sin(angleRadian);
         position.x = position.x * Cos - position.y * Sin;
         position.y = position.x * Sin + position.y * Cos;
         return position;
@@ -323,8 +323,8 @@ namespace RoninEngine::Runtime
 
     const Vec2 Vec2::RotateClockwise(Vec2 position, float angleRadian)
     {
-        float Cos = Math::cos(angleRadian);
-        float Sin = Math::sin(angleRadian);
+        float Cos = Math::Cos(angleRadian);
+        float Sin = Math::Sin(angleRadian);
         position.x = position.x * Cos + position.y * Sin;
         position.y = -position.x * Sin + position.y * Cos;
         return position;
@@ -332,8 +332,8 @@ namespace RoninEngine::Runtime
 
     const Vec2 Vec2::RotateAround(Vec2 center, Vec2 localPosition, float angleRadian)
     {
-        float Cos = Math::cos(angleRadian);
-        float Sin = Math::sin(angleRadian);
+        float Cos = Math::Cos(angleRadian);
+        float Sin = Math::Sin(angleRadian);
         center.x += localPosition.x * Sin;
         center.y += localPosition.y * Cos;
         return center;

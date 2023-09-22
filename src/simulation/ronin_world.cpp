@@ -25,7 +25,7 @@ namespace RoninEngine
                     break;
             }
         }
-        void load_world(World *world)
+        void internal_load_world(World *world)
         {
             if(world == nullptr)
             {
@@ -42,7 +42,7 @@ namespace RoninEngine
             }
         }
 
-        bool unload_world(World *world)
+        bool internal_unload_world(World *world)
         {
             World *lastLevel;
             GameObject *target; // first;
@@ -158,7 +158,7 @@ namespace RoninEngine
     World::~World()
     {
         // unloading
-        unload_world(this);
+        internal_unload_world(this);
     }
 
     // NOTE: Check game hierarchy

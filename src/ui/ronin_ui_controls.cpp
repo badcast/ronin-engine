@@ -207,8 +207,8 @@ namespace RoninEngine::UI
                 float ratio;
                 SliderResource *resource = reinterpret_cast<SliderResource *>(element.resources);
                 // clamp mouse point an inside
-                ms.x = Math::clamp(ms.x, element.rect.x, element.rect.x + element.rect.w);
-                ms.y = Math::clamp(ms.y, element.rect.y, element.rect.y + element.rect.h);
+                ms.x = Math::Clamp(ms.x, element.rect.x, element.rect.x + element.rect.w);
+                ms.y = Math::Clamp(ms.y, element.rect.y, element.rect.y + element.rect.h);
                 // get rect
                 rect = *reinterpret_cast<SDL_Rect *>(&element.rect);
 
@@ -220,7 +220,7 @@ namespace RoninEngine::UI
                 if(ms_hover && Input::GetMouseWheel())
                 {
                     resource->value += Input::GetMouseWheel() / 10.f; // step wheel mouse = ±0.1
-                    resource->value = Math::clamp(resource->value, resource->min, resource->max);
+                    resource->value = Math::Clamp(resource->value, resource->min, resource->max);
                     result = true;
                 }
                 // focused state
@@ -229,13 +229,13 @@ namespace RoninEngine::UI
                     if(Input::GetMouseDown(MouseState::MouseLeft))
                     {
                         // get *x* component from mouse point for set cursor point
-                        resource->value = Math::map((float) ms.x, (float) rect.x, (float) rect.x + rect.w, resource->min, resource->max);
+                        resource->value = Math::Map((float) ms.x, (float) rect.x, (float) rect.x + rect.w, resource->min, resource->max);
                     }
                 }
                 else
-                    resource->value = Math::clamp(resource->value, resource->min, resource->max);
+                    resource->value = Math::Clamp(resource->value, resource->min, resource->max);
 
-                ratio = Math::map(resource->value, resource->min, resource->max, 0.f, 1.f);
+                ratio = Math::Map(resource->value, resource->min, resource->max, 0.f, 1.f);
 
                 rect.h = 4;
                 rect.y += (element.rect.h - rect.h) / 2;
@@ -271,7 +271,7 @@ namespace RoninEngine::UI
                 float *value = (float *) element.resources;
                 float *min = value + 1;
                 float *max = min + 1;
-                *value = Math::clamp(*value, *min, *max);
+                *value = Math::Clamp(*value, *min, *max);
 
                 break;
             }
@@ -337,7 +337,7 @@ namespace RoninEngine::UI
                     r = element.rect;
                     r.y += r.h;
 
-                    r.h = dropDownLinear = Math::ceil(Math::lerp(dropDownLinear, link->second.size() * sz, TimeEngine::deltaTime()));
+                    r.h = dropDownLinear = Math::Ceil(Math::Lerp(dropDownLinear, link->second.size() * sz, TimeEngine::deltaTime()));
 
                     Gizmos::SetColor(colorSpace.defaultInteraction.hoverState);
                     // draw background

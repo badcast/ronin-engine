@@ -101,7 +101,7 @@ namespace RoninEngine::Runtime
 
             std::vector<Transform *> storm_result = Physics2D::GetCircleCast<std::vector<Transform *>>(
                 camera_position,
-                Math::number(Math::max(wpRightBottom.x - camera_position.x, wpRightBottom.y - camera_position.y)) + 1 +
+                Math::Number(Math::Max(wpRightBottom.x - camera_position.x, wpRightBottom.y - camera_position.y)) + 1 +
                     camera2d->distanceEvcall);
             std::list<Renderer *> _removes;
             // собираем оставшиеся которые прикреплены к видимости

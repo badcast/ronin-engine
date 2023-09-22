@@ -108,7 +108,7 @@ namespace RoninEngine::Runtime
     void RoninAudio::setChannelVolume(int channel, float value)
     {
         // value = Math::clamp01(value); // Mix_Volume automatically clamp volume
-        (channel > -1) && HasInit() && Mix_Volume(channel, Math::map<float, std::uint8_t>(value, 0.f, 1.f, 0, MIX_MAX_VOLUME));
+        (channel > -1) && HasInit() && Mix_Volume(channel, Math::Map<float, std::uint8_t>(value, 0.f, 1.f, 0, MIX_MAX_VOLUME));
     }
 
     float RoninAudio::getChannelVolume(int channel)
@@ -116,7 +116,7 @@ namespace RoninEngine::Runtime
         float volume;
         Mix_Chunk *ch;
         if(HasInit() && (ch = Mix_GetChunk(channel)))
-            volume = Math::map<std::uint8_t, float>(ch->volume, 0, MIX_MAX_VOLUME, 0.0, 1.f);
+            volume = Math::Map<std::uint8_t, float>(ch->volume, 0, MIX_MAX_VOLUME, 0.0, 1.f);
         else
             volume = -1;
         return volume;
@@ -167,14 +167,14 @@ namespace RoninEngine::Runtime
     void RoninAudio::setMusicVolume(float value)
     {
         // set volume (clamp)
-        HasInit() && Mix_VolumeMusic(Math::map<float, int>(value, 0.f, 1.f, 0, MIX_MAX_VOLUME));
+        HasInit() && Mix_VolumeMusic(Math::Map<float, int>(value, 0.f, 1.f, 0, MIX_MAX_VOLUME));
     }
 
     float RoninAudio::getMusicVolume(MusicClip *clip)
     {
         float volume;
         if(HasInit() && clip && clip->mix_music)
-            volume = Math::map<int, float>(Mix_GetMusicVolume(clip->mix_music), 0, MIX_MAX_VOLUME, 0.f, 1.f);
+            volume = Math::Map<int, float>(Mix_GetMusicVolume(clip->mix_music), 0, MIX_MAX_VOLUME, 0.f, 1.f);
         else
             volume = -1;
         return volume;

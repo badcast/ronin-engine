@@ -95,19 +95,19 @@ Color Color::operator=(const native_color_t &rhs)
 Color Color::operator+(const Color &rhs)
 {
     return Color(
-        Math::min(static_cast<int>(r) + rhs.r, 0xFF),
-        Math::min(static_cast<int>(g) + rhs.g, 0xFF),
-        Math::min(static_cast<int>(b) + rhs.b, 0xFF),
-        Math::min(static_cast<int>(a) + rhs.a, 0xFF));
+        Math::Min(static_cast<int>(r) + rhs.r, 0xFF),
+        Math::Min(static_cast<int>(g) + rhs.g, 0xFF),
+        Math::Min(static_cast<int>(b) + rhs.b, 0xFF),
+        Math::Min(static_cast<int>(a) + rhs.a, 0xFF));
 }
 
 Color Color::operator-(const Color &rhs)
 {
     return Color(
-        Math::max(static_cast<int>(r) - rhs.r, 0),
-        Math::max(static_cast<int>(g) - rhs.g, 0),
-        Math::max(static_cast<int>(b) - rhs.b, 0),
-        Math::max(static_cast<int>(a) - rhs.a, 0));
+        Math::Max(static_cast<int>(r) - rhs.r, 0),
+        Math::Max(static_cast<int>(g) - rhs.g, 0),
+        Math::Max(static_cast<int>(b) - rhs.b, 0),
+        Math::Max(static_cast<int>(a) - rhs.a, 0));
 }
 
 bool Color::operator==(const Color &rhs)
@@ -155,9 +155,9 @@ std::string Color::ColorToHex(const Color &color)
 
 Color Color::HSVToRGB(float h, float s, float v)
 {
-    h = Math::max(0.0f, Math::min(360.0f, h));
-    s = Math::max(0.0f, Math::min(1.0f, s));
-    v = Math::max(0.0f, Math::min(1.0f, v));
+    h = Math::Max(0.0f, Math::Min(360.0f, h));
+    s = Math::Max(0.0f, Math::Min(1.0f, s));
+    v = Math::Max(0.0f, Math::Min(1.0f, v));
 
     float c = v * s;
     float x = c * (1 - std::abs(std::fmod(h / 60.0f, 2) - 1));
@@ -211,8 +211,8 @@ Color Color::RGBToHSV(std::uint8_t r, std::uint8_t g, std::uint8_t b)
     float gf = static_cast<float>(g) / 255.0f;
     float bf = static_cast<float>(b) / 255.0f;
 
-    float cmax = Math::max(Math::max(rf, gf), bf);
-    float cmin = Math::min(Math::min(rf, gf), bf);
+    float cmax = Math::Max(Math::Max(rf, gf), bf);
+    float cmin = Math::Min(Math::Min(rf, gf), bf);
     float delta = cmax - cmin;
 
     float h = 0.0f, s = 0.0f, v = 0.0f;

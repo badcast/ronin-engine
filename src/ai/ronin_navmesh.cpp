@@ -79,24 +79,24 @@ namespace RoninEngine::AI
     Neuron *NavMesh::get(const Vec2 &worldPoint)
     {
         Vec2Int p {
-            Math::number(static_cast<float>(shedule->_xsize) / 2 + worldPoint.x / worldScale.x),
-            Math::number(static_cast<float>(shedule->_ysize) / 2 - worldPoint.y / worldScale.y)};
+            Math::Number(static_cast<float>(shedule->_xsize) / 2 + worldPoint.x / worldScale.x),
+            Math::Number(static_cast<float>(shedule->_ysize) / 2 - worldPoint.y / worldScale.y)};
 
         return get(p);
     }
 
     Neuron *NavMesh::get(const Vec2 &worldPoint, Vec2Int &outPoint)
     {
-        outPoint.x = Math::round(shedule->_xsize / 2 + (worldPoint.x + worldOffset.x) / worldScale.x);
-        outPoint.y = Math::round(shedule->_ysize / 2 - (worldPoint.y + worldOffset.y) / worldScale.y);
+        outPoint.x = Math::Round(shedule->_xsize / 2 + (worldPoint.x + worldOffset.x) / worldScale.x);
+        outPoint.y = Math::Round(shedule->_ysize / 2 - (worldPoint.y + worldOffset.y) / worldScale.y);
         return get(outPoint);
     }
 
     const Vec2Int NavMesh::WorldPointToPoint(const Vec2 &worldPoint)
     {
         Vec2Int p;
-        p.x = Math::round(shedule->_xsize / 2 + (worldPoint.x + worldOffset.x) / worldScale.x);
-        p.y = Math::round(shedule->_ysize / 2 - (worldPoint.y + worldOffset.y) / worldScale.y);
+        p.x = Math::Round(shedule->_xsize / 2 + (worldPoint.x + worldOffset.x) / worldScale.x);
+        p.y = Math::Round(shedule->_ysize / 2 - (worldPoint.y + worldOffset.y) / worldScale.y);
         return p;
     }
 

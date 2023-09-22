@@ -171,7 +171,7 @@ namespace RoninEngine::Runtime
                 a = -a;
         }
 
-        localAngle(Math::lerp_angle(_angle_, a, t));
+        localAngle(Math::LerpAngle(_angle_, a, t));
     }
 
     void Transform::LookAtLerp(Transform *target, float t)

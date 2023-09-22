@@ -280,8 +280,8 @@ namespace RoninEngine
         template <typename T, typename std::enable_if<std::is_base_of<Object, T>::value, std::nullptr_t>::type = nullptr>
         void internal_destroy_object(T *obj);
 
-        void load_world(World *);
-        bool unload_world(World *);
+        void internal_load_world(World *);
+        bool internal_unload_world(World *);
 
         void hierarchy_parent_change(Transform *from, Transform *newParent);
         void hierarchy_remove(Transform *from, Transform *off);

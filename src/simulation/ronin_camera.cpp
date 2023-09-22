@@ -89,8 +89,8 @@ namespace RoninEngine::Runtime
     const Vec2 Camera::WorldToViewportPointClamp(Vec2 worldPoint)
     {
         worldPoint = WorldToViewportPoint(worldPoint);
-        worldPoint.x = Math::clamp01(worldPoint.x);
-        worldPoint.y = Math::clamp01(worldPoint.y);
+        worldPoint.x = Math::Clamp01(worldPoint.x);
+        worldPoint.y = Math::Clamp01(worldPoint.y);
         return worldPoint;
     }
     Camera *Camera::main_camera()
