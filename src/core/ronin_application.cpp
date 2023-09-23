@@ -602,7 +602,7 @@ namespace RoninEngine
             internal_delta_time = Math::Min<float>(1.f, Math::Max<float>(delayed / 1000.f, game_time_score));
             internal_game_time += internal_delta_time;
 
-            if(TimeEngine::startUpTime() > fps)
+            if(ronin_debug_mode && TimeEngine::startUpTime() > fps)
             {
                 // SDL_METHOD:
                 // fps = internal_frames / (TimeEngine::startUpTime());
@@ -617,7 +617,7 @@ namespace RoninEngine
                     Math::NumBeautify(SDL_GetNumAllocations()).c_str(),
                     Math::NumBeautify(internal_frames).c_str());
                 SDL_SetWindowTitle(main_window, windowTitle);
-                fps = TimeEngine::startUpTime() + .5f; // updater per 1 seconds
+                fps = TimeEngine::startUpTime() + .5f; // updater per N seconds
             }
 
             // delay elapsed
