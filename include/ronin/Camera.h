@@ -14,15 +14,15 @@ namespace RoninEngine::Runtime
 
         virtual ~Camera();
 
-        bool is_focused();
-        void focus();
+        bool isFocused();
+        void Focus();
 
         static const Vec2 ScreenToWorldPoint(Vec2 screenPoint);
         static const Vec2 WorldToScreenPoint(Vec2 worldPoint);
         static const Vec2 ViewportToWorldPoint(Vec2 viewportPoint);
         static const Vec2 WorldToViewportPoint(Vec2 worldPoint);
         static const Vec2 WorldToViewportPointClamp(Vec2 worldPoint);
-        static Camera *main_camera();
+        static Camera *mainCamera();
     };
 
 } // namespace RoninEngine::Runtime

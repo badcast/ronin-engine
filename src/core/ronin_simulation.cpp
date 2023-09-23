@@ -23,6 +23,7 @@ namespace RoninEngine
         }
 #endif
         World *switched_world;
+        Runtime::World *destroyableLevel = nullptr;
 
         GidResources *external_global_resources = nullptr;
 
@@ -47,7 +48,6 @@ namespace RoninEngine
         extern bool internal_unload_world(World *world);
     } // namespace Runtime
 
-    SDL_Window *main_window = nullptr;
     enum ConfigState : int
     {
         CONF_RENDER_NOCONF = 0,
@@ -68,7 +68,7 @@ namespace RoninEngine
 
     SDL_Renderer *renderer = nullptr;
 
-    Runtime::World *destroyableLevel = nullptr;
+    SDL_Window *active_window = nullptr;
     Resolution active_resolution {0, 0, 0};
     TimingWatcher last_watcher {};
     TimingWatcher queue_watcher {};
@@ -125,7 +125,7 @@ namespace RoninEngine
     {
         std::uint32_t current_inits;
 
-        if(main_window != nullptr)
+        if(active_window != nullptr)
             return;
 
         current_inits = SDL_INIT_EVENTS | SDL_INIT_TIMER;
@@ -164,10 +164,10 @@ namespace RoninEngine
 
     void RoninSimulator::Finalize()
     {
-        if(main_window == nullptr)
+        if(active_window == nullptr)
             return;
-        SDL_DestroyWindow(main_window);
-        main_window = nullptr;
+        SDL_DestroyWindow(active_window);
+        active_window = nullptr;
 
         UI::free_fonts();
 
@@ -208,7 +208,7 @@ namespace RoninEngine
 
     void RoninSimulator::Show(const RoninEngine::Resolution &resolution, bool fullscreen)
     {
-        if(main_window)
+        if(active_window)
             return;
 
         std::uint32_t __flags = SDL_WINDOW_HIDDEN | SDL_WINDOW_OPENGL;
@@ -216,23 +216,23 @@ namespace RoninEngine
         if(fullscreen)
             __flags |= SDL_WINDOW_FULLSCREEN;
 
-        main_window = SDL_CreateWindow("Ronin Engine", 0, 0, resolution.width, resolution.height, __flags);
+        active_window = SDL_CreateWindow("Ronin Engine", 0, 0, resolution.width, resolution.height, __flags);
 
         // Get valid resolution size
         SDL_DisplayMode mode;
-        SDL_GetWindowDisplayMode(main_window, &mode);
-        SDL_SetWindowSize(main_window, mode.w, mode.h);
-        SDL_SetWindowPosition(main_window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
+        SDL_GetWindowDisplayMode(active_window, &mode);
+        SDL_SetWindowSize(active_window, mode.w, mode.h);
+        SDL_SetWindowPosition(active_window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
 
-        SDL_ShowWindow(main_window);
-        if(!main_window)
+        SDL_ShowWindow(active_window);
+        if(!active_window)
             ShowMessageFail(SDL_GetError());
 
         // get activated resolution
         active_resolution = GetCurrentResolution();
 
         // Brightness
-        SDL_SetWindowBrightness(main_window, 1.f);
+        SDL_SetWindowBrightness(active_window, 1.f);
     }
 
     void RoninSimulator::RequestQuit()
@@ -246,7 +246,7 @@ namespace RoninEngine
         const std::function<bool(void)> checks_queue[] {
             [=]() -> bool const
             {
-                bool hasError = main_window == nullptr;
+                bool hasError = active_window == nullptr;
                 if(hasError)
                     RoninSimulator::Log("Engine not inited");
                 return hasError;
@@ -315,17 +315,18 @@ namespace RoninEngine
 
         // set config for reload
         simConfig.conf |= CONF_RELOAD_WORLD;
+        return true;
     }
 
     Resolution RoninSimulator::GetCurrentResolution()
     {
-        if(main_window == nullptr)
+        if(active_window == nullptr)
         {
             throw ronin_init_error();
         }
 
         SDL_DisplayMode display_mode;
-        if(SDL_GetWindowDisplayMode(main_window, &display_mode) == -1)
+        if(SDL_GetWindowDisplayMode(active_window, &display_mode) == -1)
         {
             RoninSimulator::ShowMessageFail(SDL_GetError());
         }
@@ -351,7 +352,7 @@ namespace RoninEngine
 
     bool RoninSimulator::SetDisplayResolution(const Resolution &new_resolution)
     {
-        if(main_window == nullptr)
+        if(active_window == nullptr)
         {
             throw ronin_init_error();
         }
@@ -361,7 +362,7 @@ namespace RoninEngine
         mode.w = new_resolution.width;
         mode.h = new_resolution.height;
         mode.refresh_rate = new_resolution.hz;
-        bool result = SDL_SetWindowDisplayMode(main_window, &mode) == 0;
+        bool result = SDL_SetWindowDisplayMode(active_window, &mode) == 0;
         if(result)
         {
             active_resolution = new_resolution;
@@ -371,12 +372,12 @@ namespace RoninEngine
 
     bool RoninSimulator::SetFullscreenMode(FullscreenMode mode)
     {
-        if(main_window == nullptr)
+        if(active_window == nullptr)
         {
             throw ronin_init_error();
         }
 
-        std::uint32_t flags = SDL_GetWindowFlags(main_window);
+        std::uint32_t flags = SDL_GetWindowFlags(active_window);
         flags &= ~(SDL_WINDOW_FULLSCREEN_DESKTOP | SDL_WINDOW_FULLSCREEN);
 
         switch(mode)
@@ -391,7 +392,7 @@ namespace RoninEngine
                 break;
         }
 
-        return SDL_SetWindowFullscreen(main_window, flags) == 0;
+        return SDL_SetWindowFullscreen(active_window, flags) == 0;
     }
 
     TimingWatcher RoninSimulator::GetTimingWatches()
@@ -441,7 +442,7 @@ namespace RoninEngine
             return;
         }
 
-        if(main_window == nullptr)
+        if(active_window == nullptr)
         {
             ShowMessage("Engine not inited");
             return;
@@ -505,7 +506,7 @@ namespace RoninEngine
                 {
                     // on first load level
                     renderer = simConfig.renderer_hardware =
-                        SDL_CreateRenderer(main_window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE);
+                        SDL_CreateRenderer(active_window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE);
                     if(renderer == nullptr)
                         ShowMessageFail(SDL_GetError());
 
@@ -616,7 +617,7 @@ namespace RoninEngine
                     Math::NumBeautify(RoninMemory::total_allocated()).c_str(),
                     Math::NumBeautify(SDL_GetNumAllocations()).c_str(),
                     Math::NumBeautify(internal_frames).c_str());
-                SDL_SetWindowTitle(main_window, windowTitle);
+                SDL_SetWindowTitle(active_window, windowTitle);
                 fps = TimeEngine::startUpTime() + .5f; // updater per N seconds
             }
 
@@ -659,7 +660,7 @@ namespace RoninEngine
     {
         SDL_LogMessage(SDL_LogCategory::SDL_LOG_CATEGORY_APPLICATION, SDL_LogPriority::SDL_LOG_PRIORITY_VERBOSE, "%s", message.c_str());
         printf("%s\n", message.c_str());
-        SDL_ShowSimpleMessageBox(SDL_MessageBoxFlags::SDL_MESSAGEBOX_INFORMATION, nullptr, message.c_str(), main_window);
+        SDL_ShowSimpleMessageBox(SDL_MessageBoxFlags::SDL_MESSAGEBOX_INFORMATION, nullptr, message.c_str(), active_window);
     }
 
     void RoninSimulator::ShowMessageFail(const std::string &message)
@@ -678,7 +679,7 @@ namespace RoninEngine
         fprintf(stderr, "%s", _template.data());
 
         SDL_LogMessage(SDL_LogCategory::SDL_LOG_CATEGORY_APPLICATION, SDL_LogPriority::SDL_LOG_PRIORITY_CRITICAL, "%s", _template.c_str());
-        SDL_ShowSimpleMessageBox(SDL_MessageBoxFlags::SDL_MESSAGEBOX_ERROR, "Ronin Engine: failed", _template.c_str(), main_window);
+        SDL_ShowSimpleMessageBox(SDL_MessageBoxFlags::SDL_MESSAGEBOX_ERROR, "Ronin Engine: failed", _template.c_str(), active_window);
         Kill();
     }
 
@@ -741,7 +742,7 @@ namespace RoninEngine
 
     void RoninSimulator::GetSettings(RoninSettings *settings)
     {
-        if(main_window == nullptr)
+        if(active_window == nullptr)
         {
             ShowMessage("Engine not inited");
             return;
@@ -753,14 +754,14 @@ namespace RoninEngine
             settings->selectRenderBackend = (info.flags & SDL_RENDERER_SOFTWARE) ? RendererBackend::Software : RendererBackend::Hardware;
         }
 
-        settings->brightness = SDL_GetWindowBrightness(main_window);
+        settings->brightness = SDL_GetWindowBrightness(active_window);
 
-        SDL_GetWindowOpacity(main_window, &settings->windowOpacity);
+        SDL_GetWindowOpacity(active_window, &settings->windowOpacity);
     }
 
     bool RoninSimulator::SetSettings(const RoninSettings *settings)
     {
-        if(main_window == nullptr)
+        if(active_window == nullptr)
         {
             ShowMessage("Engine not inited");
             return false;
@@ -815,12 +816,12 @@ namespace RoninEngine
             [&]() { return false; },
             // Apply Brightness
             [&]()
-            { return (refSettings.brightness != settings->brightness && SDL_SetWindowBrightness(main_window, settings->brightness) == 0); },
+            { return (refSettings.brightness != settings->brightness && SDL_SetWindowBrightness(active_window, settings->brightness) == 0); },
             // Apply Window Opacity
             [&]() {
                 return (
                     refSettings.windowOpacity != settings->windowOpacity &&
-                    SDL_SetWindowOpacity(main_window, settings->windowOpacity) == 0);
+                    SDL_SetWindowOpacity(active_window, settings->windowOpacity) == 0);
             }};
         bool apply_any = false;
         for(auto &apply : applies)

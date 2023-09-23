@@ -406,12 +406,13 @@ namespace RoninEngine::Runtime
 
     bool operator==(const Vec2Int &lhs, const Vec2 &rhs)
     {
-        return rhs.x == lhs.x && rhs.y == lhs.y;
+        // return rhs.x == lhs.x && rhs.y == lhs.y;
+        return memcmp(&lhs, &rhs, sizeof rhs) == 0;
     }
 
     bool operator!=(const Vec2Int &lhs, const Vec2 &rhs)
     {
-        return !operator==(lhs, rhs);
+        return memcmp(&lhs, &rhs, sizeof rhs) != 0;
     }
 
     Vec2 operator+(const Vec2 &lhs, const Vec2 &rhs)
@@ -428,12 +429,12 @@ namespace RoninEngine::Runtime
     {
         // Alternative equal compute version
         // >>> return (lhs - rhs).sqr_magnitude() < 9.999999E-11;
-        return SDL_memcmp(&lhs, &rhs, sizeof rhs) == 0;
+        return memcmp(&lhs, &rhs, sizeof rhs) == 0;
     }
 
     bool operator!=(const Vec2 &lhs, const Vec2 &rhs)
     {
-        return SDL_memcmp(&lhs, &rhs, sizeof rhs) != 0;
+        return memcmp(&lhs, &rhs, sizeof rhs) != 0;
     }
 
     Vec2 operator*(const float d, const Vec2 &rhs)
@@ -455,12 +456,12 @@ namespace RoninEngine::Runtime
 
     bool operator==(const Vec2Int &lhs, const Vec2Int &rhs)
     {
-        return SDL_memcmp(&lhs, &rhs, sizeof rhs) == 0;
+        return memcmp(&lhs, &rhs, sizeof rhs) == 0;
     }
 
     bool operator!=(const Vec2Int &lhs, const Vec2Int &rhs)
     {
-        return SDL_memcmp(&lhs, &rhs, sizeof rhs) != 0;
+        return memcmp(&lhs, &rhs, sizeof rhs) != 0;
     }
 
     Vec2Int operator+(const Vec2Int &lhs, const Vec2Int &rhs)

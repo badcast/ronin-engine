@@ -400,7 +400,7 @@ namespace RoninEngine
 
         TimeEngine::begin_watch();
         // Render on main camera
-        Camera *cam = Camera::main_camera(); // Draw level from active camera (main)
+        Camera *cam = Camera::mainCamera(); // Draw level from active camera (main)
         if(!switched_world->internal_resources->request_unloading && cam)
         {
             // FlushCache last result

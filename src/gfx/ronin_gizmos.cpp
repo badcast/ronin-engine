@@ -5,10 +5,10 @@ namespace RoninEngine::Runtime
 
     void internal_drawLine(Vec2 a, Vec2 b)
     {
-        if(!Camera::main_camera())
+        if(!Camera::mainCamera())
             return;
 
-        Vec2 p = Camera::main_camera()->transform()->position();
+        Vec2 p = Camera::mainCamera()->transform()->position();
         Vec2 dst;
 
         // dst.x = ((rect.w - dst.w) / 2.0f - (point->x + sourcePoint->x) *
@@ -112,7 +112,7 @@ namespace RoninEngine::Runtime
 
     void Gizmos::DrawRectangle(Vec2 origin, float width, float height)
     {
-        origin = Camera::main_camera()->WorldToScreenPoint(origin);
+        origin = Camera::mainCamera()->WorldToScreenPoint(origin);
         std::uint16_t x, y;
         width *= pixelsPerPoint;
         height *= pixelsPerPoint;
@@ -129,7 +129,7 @@ namespace RoninEngine::Runtime
 
     void Gizmos::DrawRectangleRounded(Vec2 origin, float width, float height, std::uint16_t radius)
     {
-        origin = Camera::main_camera()->WorldToScreenPoint(origin);
+        origin = Camera::mainCamera()->WorldToScreenPoint(origin);
         std::uint16_t x, y;
         width *= pixelsPerPoint;
         height *= pixelsPerPoint;
@@ -274,7 +274,7 @@ namespace RoninEngine::Runtime
     void Gizmos::DrawTextLegacy(Vec2 origin, const std::string &text)
     {
         Rect r;
-        auto cam = Camera::main_camera();
+        auto cam = Camera::mainCamera();
         // relative to
         origin = cam->WorldToScreenPoint(origin);
         r.x = static_cast<int>(origin.x);
@@ -285,7 +285,7 @@ namespace RoninEngine::Runtime
 
     void Gizmos::DrawCircle(Vec2 origin, float distance)
     {
-        origin = Camera::main_camera()->WorldToScreenPoint(origin);
+        origin = Camera::mainCamera()->WorldToScreenPoint(origin);
         std::uint16_t x, y, r;
         x = Math::Number(origin.x);
         y = Math::Number(origin.y);
@@ -321,7 +321,7 @@ namespace RoninEngine::Runtime
     void Gizmos::DrawFillRectRounded(Vec2 origin, float width, float height, uint16_t radius)
     {
         std::uint16_t x, y;
-        origin = Camera::main_camera()->WorldToScreenPoint(origin);
+        origin = Camera::mainCamera()->WorldToScreenPoint(origin);
         width *= pixelsPerPoint;
         height *= pixelsPerPoint;
         x = origin.x - width / 2;
@@ -346,7 +346,7 @@ namespace RoninEngine::Runtime
 
     void Gizmos::DrawFillCircle(Vec2 origin, float distance)
     {
-        origin = Camera::main_camera()->WorldToScreenPoint(origin);
+        origin = Camera::mainCamera()->WorldToScreenPoint(origin);
         std::uint16_t x, y, r;
         x = Math::Number(origin.x);
         y = Math::Number(origin.y);
