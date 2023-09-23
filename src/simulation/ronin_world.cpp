@@ -11,6 +11,8 @@ namespace RoninEngine
 {
     namespace Runtime
     {
+        extern std::set<World *> pinned_worlds;
+
         void WorldResources::event_camera_changed(Camera *target, CameraEvent state)
         {
             switch(state)
@@ -39,12 +41,17 @@ namespace RoninEngine
 
                 RoninMemory::alloc_self(world->internal_resources);
                 RoninMemory::alloc_self(world->internal_resources->gui, world);
+
+                // set state load
+                world->internal_resources->request_unloading = false;
+
+                pinned_worlds.insert(world);
             }
         }
 
         bool internal_unload_world(World *world)
         {
-            World *lastLevel;
+            World *lastWorld;
             GameObject *target; // first;
 
             if(world == nullptr)
@@ -55,7 +62,7 @@ namespace RoninEngine
             if(world->internal_resources == nullptr)
                 return false;
 
-            lastLevel = switched_world;
+            lastWorld = switched_world;
             switched_world = world;
 
             world->RequestUnload();
@@ -63,7 +70,7 @@ namespace RoninEngine
             // unloading owner
             world->OnUnloading();
 
-            //Free Game Objects
+            // Free Game Objects
             target = world->internal_resources->main_object;
             std::list<GameObject *> stacks;
             // free objects
@@ -146,7 +153,9 @@ namespace RoninEngine
             RoninMemory::free(world->internal_resources);
             world->internal_resources = nullptr;
 
-            switched_world = lastLevel;
+            pinned_worlds.erase(world);
+
+            switched_world = lastWorld;
             return true;
         }
     } // namespace Runtime

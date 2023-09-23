@@ -405,7 +405,7 @@ namespace RoninEngine::UI
         ms_click = Input::GetMouseUp(MouseState::MouseLeft);
 
         gui->_resources->mouse_hover = false;
-
+        //TODO: OPTIMIZE HERE
         while(ui_drains.empty() == false && !resources->owner->internal_resources->request_unloading)
         {
             id = ui_drains.front();

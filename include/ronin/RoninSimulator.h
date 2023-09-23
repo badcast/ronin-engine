@@ -37,7 +37,11 @@ namespace RoninEngine
         int maxTextureHeight;
 
         RenderDriverInfo(
-            const std::string &name, RendererFlags rendererFlags, RendererBackend rendererBackend, int maxTextureWidth, int maxTextureHeight)
+            const std::string &name,
+            RendererFlags rendererFlags,
+            RendererBackend rendererBackend,
+            int maxTextureWidth,
+            int maxTextureHeight)
             : name(name),
               rendererFlags(rendererFlags),
               rendererBackend(rendererBackend),
@@ -141,8 +145,17 @@ namespace RoninEngine
          * Unload and Load
          *
          * @return result of reloaded
+         * @see CancelReload
          */
         static bool ReloadWorld();
+
+        /**
+         * @brief Cancelation a reloading current world
+         *
+         * @return result of cancelled
+         * @see ReloadWorld
+         */
+        static bool CancelReload();
 
         /**
          * @brief Simulates the loaded world.
@@ -247,13 +260,13 @@ namespace RoninEngine
          * @return list active render drivers
          * @see SetSettings, GetSettings
          */
-        static std::vector<RenderDriverInfo> GetRenderDrivers();
+        static std::vector<RenderDriverInfo> EnumerateRenderDrivers();
 
         /**
          * @brief Enumerate the active video drivers
          * @return List video drivers
          */
-        static std::vector<std::string> GetVideoDrivers();
+        static std::vector<std::string> EnumerateVideoDrivers();
 
         /**
          * @brief Get installed settings

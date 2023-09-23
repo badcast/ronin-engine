@@ -23,7 +23,9 @@ namespace RoninEngine
         }
 #endif
         World *switched_world;
-        Runtime::World *destroyableLevel = nullptr;
+        World *preload_world;
+        World *last_switched_world;
+        std::set<World *> pinned_worlds;
 
         GidResources *external_global_resources = nullptr;
 
@@ -74,8 +76,8 @@ namespace RoninEngine
     TimingWatcher queue_watcher {};
 
     bool ronin_debug_mode = false;
-    bool internal_level_loaded = false;
-    bool world_can_start = false;
+    bool internal_world_loaded = false;
+    bool internal_world_can_start = false;
 
     void internal_apply_settings()
     {
@@ -96,8 +98,10 @@ namespace RoninEngine
 
         if(simConfig.conf & CONF_RELOAD_WORLD)
         {
-            internal_unload_world(switched_world);
-            internal_load_world(switched_world);
+            last_switched_world = switched_world; // Switched world first unload after load
+            preload_world = switched_world;       // Switched world as Newer is preload
+
+            internal_world_loaded = false;
         }
 
         simConfig.conf = CONF_RENDER_NOCONF;
@@ -166,6 +170,14 @@ namespace RoninEngine
     {
         if(active_window == nullptr)
             return;
+
+        for(auto &pinned : Runtime::pinned_worlds)
+        {
+            Runtime::internal_unload_world(pinned);
+        }
+
+        Runtime::pinned_worlds.clear();
+
         SDL_DestroyWindow(active_window);
         active_window = nullptr;
 
@@ -248,21 +260,21 @@ namespace RoninEngine
             {
                 bool hasError = active_window == nullptr;
                 if(hasError)
-                    RoninSimulator::Log("Engine not inited");
+                    Log("Engine not inited");
                 return hasError;
             },
             [=]() -> bool const
             {
                 bool hasError = world == nullptr;
                 if(hasError)
-                    RoninSimulator::Log("World is not defined");
+                    Log("World is not defined");
                 return hasError;
             },
             [=]() -> bool const
             {
-                bool hasError = switched_world == world;
+                bool hasError = switched_world == world || last_switched_world != nullptr || preload_world == world;
                 if(hasError)
-                    RoninSimulator::Log("Current world is reloading state. Failed.");
+                    Log("Current world is reloading state. Failed.");
                 return hasError;
             }};
 
@@ -277,37 +289,29 @@ namespace RoninEngine
 
         if(unloadPrevious && switched_world)
         {
-            destroyableLevel = switched_world;
-            destroyableLevel->RequestUnload();
+            last_switched_world = switched_world;
+            last_switched_world->RequestUnload();
         }
+
+        // cancelation of reload
+        CancelReload();
 
         // switching as main
-        switched_world = world;
+        if(switched_world == nullptr)
+            switched_world = world;
 
-        // on swtiched and init resources, even require
-        Runtime::internal_load_world(world);
+        // preload world
+        preload_world = world;
 
-        // set state load
-        world->internal_resources->request_unloading = false;
-
-        if(!world->isHierarchy())
-        {
-            // init main object
-            world->internal_resources->main_object = create_empty_gameobject();
-            world->internal_resources->main_object->name("Main Object");
-            world->internal_resources->main_object->transform()->name("Root");
-            // pickup from renders
-            Matrix::matrix_nature_pickup(world->internal_resources->main_object->transform());
-        }
-        world_can_start = false;
-        internal_level_loaded = false;
+        internal_world_can_start = false;
+        internal_world_loaded = false;
 
         return true;
     }
 
     bool RoninSimulator::ReloadWorld()
     {
-        if(switched_world == nullptr)
+        if(switched_world == nullptr || preload_world != nullptr)
         {
             Log("Active world not loaded");
             return false;
@@ -316,6 +320,14 @@ namespace RoninEngine
         // set config for reload
         simConfig.conf |= CONF_RELOAD_WORLD;
         return true;
+    }
+
+    bool RoninSimulator::CancelReload()
+    {
+        int last_flag = (simConfig.conf & CONF_RELOAD_WORLD);
+        // clear reload flag
+        simConfig.conf &= ~CONF_RELOAD_WORLD;
+        return last_flag != 0;
     }
 
     Resolution RoninSimulator::GetCurrentResolution()
@@ -428,13 +440,14 @@ namespace RoninEngine
 
     void RoninSimulator::Simulate()
     {
-        bool isQuiting = false;
-        char windowTitle[96];
-        float fps = 0;
-        std::uint64_t delayed = 0;
         SDL_Event event;
-        float secPerFrame, game_time_score;
         SDL_DisplayMode displayMode;
+
+        bool isQuiting = false;
+        char title[96];
+        float fps = 0;
+        float secPerFrame, game_time_score;
+        std::uint64_t delayed = 0;
 
         if(switched_world == nullptr)
         {
@@ -475,24 +488,29 @@ namespace RoninEngine
                     {
                         isQuiting = true;
                         switched_world->RequestUnload();
-                        destroyableLevel = switched_world;
+                        last_switched_world = switched_world;
+                        simConfig.conf = CONF_RENDER_NOCONF;
                         switched_world = nullptr;
-                        internal_level_loaded = false;
+                        internal_world_loaded = false;
                         break;
                     }
                 }
             }
 
-            if(internal_level_loaded == false)
-            {
-                SDL_DestroyRenderer(simConfig.renderer_hardware);
+            // Apply changed settings
+            internal_apply_settings();
 
+            if(!internal_world_loaded)
+            {
                 // Unload old World
-                if(destroyableLevel)
+                if(last_switched_world)
                 {
-                    internal_unload_world(destroyableLevel);
-                    destroyableLevel = nullptr;
+                    internal_unload_world(last_switched_world);
+                    last_switched_world = nullptr;
                 }
+
+                // Destroy last renderer
+                SDL_DestroyRenderer(simConfig.renderer_hardware);
 
                 if(switched_world == nullptr)
                 {
@@ -507,17 +525,35 @@ namespace RoninEngine
                     // on first load level
                     renderer = simConfig.renderer_hardware =
                         SDL_CreateRenderer(active_window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE);
+
                     if(renderer == nullptr)
                         ShowMessageFail(SDL_GetError());
 
+                    // on swtiched and init resources, even require
+                    Runtime::internal_load_world(preload_world);
+
+                    switched_world = preload_world;
+
+                    // Init Internal World Timer IIWT
                     internal_init_timer();
+
+                    if(!switched_world->isHierarchy())
+                    {
+                        // init main object
+                        switched_world->internal_resources->main_object = create_empty_gameobject();
+                        switched_world->internal_resources->main_object->name("Main Object");
+                        switched_world->internal_resources->main_object->transform()->name("Root");
+                        // pickup from renders
+                        Matrix::matrix_nature_pickup(switched_world->internal_resources->main_object->transform());
+                    }
+
+                    internal_world_can_start = false;
                     switched_world->OnAwake();
-                    internal_level_loaded = true;
+
+                    preload_world = nullptr;
+                    internal_world_loaded = true;
                 }
             }
-
-            // set changed settings
-            internal_apply_settings();
 
             // set default color
             SDL_SetRenderDrawColor(renderer, 0x11, 0x11, 0x11, SDL_ALPHA_OPAQUE); // back color for clear
@@ -536,11 +572,10 @@ namespace RoninEngine
                 // begin watcher
                 TimeEngine::begin_watch();
 
-                if(!world_can_start)
+                if(!internal_world_can_start)
                 {
-
                     switched_world->OnStart();
-                    world_can_start = true;
+                    internal_world_can_start = true;
                 }
 
                 if(!switched_world->internal_resources->request_unloading)
@@ -575,7 +610,7 @@ namespace RoninEngine
             if(switched_world->internal_resources->request_unloading)
                 goto end_simulate; // break on unload state
 
-            if(!destroyableLevel)
+            if(!last_switched_world)
             {
                 // begin watcher
                 TimeEngine::begin_watch();
@@ -609,7 +644,7 @@ namespace RoninEngine
                 // fps = internal_frames / (TimeEngine::startUpTime());
                 fps = 1 / internal_delta_time;
                 std::sprintf(
-                    windowTitle,
+                    title,
                     "FPS:%.1f Memory:%sMiB, "
                     "Ronin_Allocated:%s, SDL_Allocated:%s, Frames:%s",
                     fps,
@@ -617,14 +652,14 @@ namespace RoninEngine
                     Math::NumBeautify(RoninMemory::total_allocated()).c_str(),
                     Math::NumBeautify(SDL_GetNumAllocations()).c_str(),
                     Math::NumBeautify(internal_frames).c_str());
-                SDL_SetWindowTitle(active_window, windowTitle);
+                SDL_SetWindowTitle(active_window, title);
                 fps = TimeEngine::startUpTime() + .5f; // updater per N seconds
             }
 
             // delay elapsed
             delayed = Math::Max(0, static_cast<int>(Math::Ceil(secPerFrame) - delayed));
 
-            if(switched_world == nullptr || switched_world->internal_resources->request_unloading)
+            if(switched_world == nullptr)
                 break; // break on unload state
 
             // update events
@@ -633,17 +668,20 @@ namespace RoninEngine
             // delaying
             SDL_Delay(delayed);
         }
+
+        // unload world
         if(switched_world)
         {
             Runtime::internal_unload_world(switched_world);
             switched_world = nullptr;
         }
-        // unload level
+
         if(simConfig.renderer_hardware)
         {
             SDL_DestroyRenderer(simConfig.renderer_hardware);
             simConfig.renderer_hardware = nullptr;
         }
+
         if(simConfig.renderer_software)
         {
             SDL_DestroyRenderer(simConfig.renderer_software);
@@ -698,7 +736,7 @@ namespace RoninEngine
         exit(EXIT_FAILURE);
     }
 
-    std::vector<RenderDriverInfo> RoninSimulator::GetRenderDrivers()
+    std::vector<RenderDriverInfo> RoninSimulator::EnumerateRenderDrivers()
     {
         SDL_RendererInfo rdi;
 
@@ -724,7 +762,7 @@ namespace RoninEngine
         return drivers;
     }
 
-    std::vector<std::string> RoninSimulator::GetVideoDrivers()
+    std::vector<std::string> RoninSimulator::EnumerateVideoDrivers()
     {
         std::vector<std::string> vids;
         int num = SDL_GetNumVideoDrivers();
@@ -815,8 +853,10 @@ namespace RoninEngine
             // Apply Render Driver
             [&]() { return false; },
             // Apply Brightness
-            [&]()
-            { return (refSettings.brightness != settings->brightness && SDL_SetWindowBrightness(active_window, settings->brightness) == 0); },
+            [&]() {
+                return (
+                    refSettings.brightness != settings->brightness && SDL_SetWindowBrightness(active_window, settings->brightness) == 0);
+            },
             // Apply Window Opacity
             [&]() {
                 return (
