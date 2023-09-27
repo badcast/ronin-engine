@@ -112,7 +112,7 @@ namespace RoninEngine::Runtime
 
     void Gizmos::DrawRectangle(Vec2 origin, float width, float height)
     {
-        origin = Camera::mainCamera()->WorldToScreenPoint(origin);
+        origin = Camera::WorldToScreenPoint(origin);
         std::uint16_t x, y;
         width *= pixelsPerPoint;
         height *= pixelsPerPoint;
@@ -129,7 +129,7 @@ namespace RoninEngine::Runtime
 
     void Gizmos::DrawRectangleRounded(Vec2 origin, float width, float height, std::uint16_t radius)
     {
-        origin = Camera::mainCamera()->WorldToScreenPoint(origin);
+        origin = Camera::WorldToScreenPoint(origin);
         std::uint16_t x, y;
         width *= pixelsPerPoint;
         height *= pixelsPerPoint;
@@ -274,9 +274,8 @@ namespace RoninEngine::Runtime
     void Gizmos::DrawTextLegacy(Vec2 origin, const std::string &text)
     {
         Rect r;
-        auto cam = Camera::mainCamera();
         // relative to
-        origin = cam->WorldToScreenPoint(origin);
+        origin = Camera::WorldToScreenPoint(origin);
         r.x = static_cast<int>(origin.x);
         r.y = static_cast<int>(origin.y);
 
@@ -285,7 +284,7 @@ namespace RoninEngine::Runtime
 
     void Gizmos::DrawCircle(Vec2 origin, float distance)
     {
-        origin = Camera::mainCamera()->WorldToScreenPoint(origin);
+        origin = Camera::WorldToScreenPoint(origin);
         std::uint16_t x, y, r;
         x = Math::Number(origin.x);
         y = Math::Number(origin.y);
@@ -321,7 +320,7 @@ namespace RoninEngine::Runtime
     void Gizmos::DrawFillRectRounded(Vec2 origin, float width, float height, uint16_t radius)
     {
         std::uint16_t x, y;
-        origin = Camera::mainCamera()->WorldToScreenPoint(origin);
+        origin = Camera::WorldToScreenPoint(origin);
         width *= pixelsPerPoint;
         height *= pixelsPerPoint;
         x = origin.x - width / 2;
@@ -346,7 +345,7 @@ namespace RoninEngine::Runtime
 
     void Gizmos::DrawFillCircle(Vec2 origin, float distance)
     {
-        origin = Camera::mainCamera()->WorldToScreenPoint(origin);
+        origin = Camera::WorldToScreenPoint(origin);
         std::uint16_t x, y, r;
         x = Math::Number(origin.x);
         y = Math::Number(origin.y);
