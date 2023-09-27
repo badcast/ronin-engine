@@ -65,44 +65,29 @@ namespace RoninEngine::Runtime
     template <typename list_type_render = std::vector<Renderer *>, typename list_type_light = std::set<Light *>>
     inline std::tuple<std::map<int, list_type_render> *, list_type_light *> matrix_select(Camera2D *camera2d)
     {
-        // TODO: Fixing renderer object and selec matrix element own Set T List
-        /*       This is projection: Algorithm storm member used.
-                x-------------------
-                |                   |      = * - is Vector2 (point)
-                |  r * * * * * * *  |      = r - current point (ray)
-                |  * * * * * * * *  |      = x - wpLeftTop
-                |  * * * * * * * *  |      = y - wpRightBottom
-                |  * * * * * * * *  |
-                |  * * * * * * * *  |
-                |  * * * * * * * *  |
-                |  * * * * * * * *  |
-                |                   |
-                 -------------------y
-
-                Method finder: Storm                    see: Physics2D::storm_cast for details
-                 ' * * * * * * * * * '
-                 ' * * * * * * * * * '   n = 10
-                 ' * * * * * * * * * '   n0 (first input point) = 0
-                 ' * * * 2 3 4 * * * '   n10 (last input point) = 9
-                 ' * * 9 1 0 5 * * * '
-                 ' * * * 8 7 6 * * * '
-                 ' * * * * * * * * * '
-                 ' * * * * * * * * * '
-                 ' * * * * * * * * * '
-        */
-
         if(camera2d->camera_resources->renders.empty())
         {
             Resolution res = active_resolution;
             Vec2Int wpLeftTop = Vec2::RoundToInt(Camera::ScreenToWorldPoint(Vec2::zero));
             Vec2Int wpRightBottom = Vec2::RoundToInt(Camera::ScreenToWorldPoint(Vec2(res.width, res.height)));
             Vec2 camera_position = camera2d->transform()->position();
-            // RUN STORM CAST
+            int edges = Math::Number(Math::Max(wpRightBottom.x - camera_position.x, wpRightBottom.y - camera_position.y)) + 5 +
+                camera2d->distanceEvcall;
+            /* RUN STORM CAST
+               + - - - - - - - - - +    \
+               ' → → → → → → → → ↓ '        \
+               ' ↑ → → → → → → ↓ ↓ '            \
+               ' ↑ ↑ → → → → ↓ ↓ ↓ '                \
+               ' ↑ ↑ ↑ → → ↓ ↓ ↓ ↓ '                    \
+               ' ↑ ↑ ↑ ↑ ← ↓ ↓ ↓ ↓ '                      >    INSPECTION OBJECTS
+               ' ↑ ↑ ↑ ← ← ← ↓ ↓ ↓ '                    /
+               ' ↑ ↑ ← ← ← ← ← ↓ ↓ '                /
+               ' ↑ ← ← ← ← ← ← ← ↓ '            /
+               ' ← ← ← ← ← ← ← ← ← '        /
+               + - - - - - - - - - +    /
+            */
+            std::vector<Transform *> storm_result = Physics2D::GetStormCast<std::vector<Transform *>>(camera_position, edges);
 
-            std::vector<Transform *> storm_result = Physics2D::GetCircleCast<std::vector<Transform *>>(
-                camera_position,
-                Math::Number(Math::Max(wpRightBottom.x - camera_position.x, wpRightBottom.y - camera_position.y)) + 1 +
-                    camera2d->distanceEvcall);
             std::list<Renderer *> _removes;
             // собираем оставшиеся которые прикреплены к видимости
             for(auto x = std::begin(camera2d->camera_resources->prev); false && x != std::end(camera2d->camera_resources->prev); ++x)
@@ -150,11 +135,12 @@ namespace RoninEngine::Runtime
                 }
         }
 
-        if(camera2d->camera_resources->_lightsOutResults.empty())
-        {
-            camera2d->camera_resources->_lightsOutResults.insert(
-                World::self()->internal_resources->_assoc_lightings.begin(), World::self()->internal_resources->_assoc_lightings.end());
-        }
+        //        if(camera2d->camera_resources->_lightsOutResults.empty())
+        //        {
+        //            camera2d->camera_resources->_lightsOutResults.insert(
+        //                World::self()->internal_resources->_assoc_lightings.begin(),
+        //                World::self()->internal_resources->_assoc_lightings.end());
+        //        }
 
         return std::make_tuple(&(camera2d->camera_resources->renders), &(camera2d->camera_resources->_lightsOutResults));
     }

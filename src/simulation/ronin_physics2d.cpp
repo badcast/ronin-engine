@@ -1,6 +1,8 @@
 #include "ronin.h"
 #include "ronin_matrix.h"
 
+#define NEW_ALGORITHM_STORM 1
+
 namespace RoninEngine::Runtime
 {
 
@@ -53,8 +55,8 @@ namespace RoninEngine::Runtime
                 ' * * * * * * * * *'
 
         */
-        std::unordered_map<Vec2Int, std::set<Transform *>> &mx = World::self()->internal_resources->matrix;
-        Vec2Int ray = Matrix::matrix_get_key(origin);
+        std::unordered_map<Matrix::MatrixKey, std::set<Transform *>> &mx = World::self()->internal_resources->matrix;
+        Matrix::MatrixKey ray = Matrix::matrix_get_key(origin);
         std::uint64_t stormMember = 0;
         std::uint64_t stormFlags = 1;
         container_result result;
@@ -150,17 +152,42 @@ namespace RoninEngine::Runtime
         return result;
     }
 
-    //  + - - - - - - - - - +   --   It's storm cast view
-    //  ' → → → → → → → → ↓ '   --   It's storm cast view
-    //  ' ↑ → → → → → → ↓ ↓ '   --   It's storm cast view
-    //  ' ↑ ↑ → → → → ↓ ↓ ↓ '   --   It's storm cast view
-    //  ' ↑ ↑ ↑ → → ↓ ↓ ↓ ↓ '   --   It's storm cast view
-    //  ' ↑ ↑ ↑ ↑ ← ↓ ↓ ↓ ↓ '   --   It's storm cast view
-    //  ' ↑ ↑ ↑ ← ← ← ↓ ↓ ↓ '   --   It's storm cast view
-    //  ' ↑ ↑ ← ← ← ← ← ↓ ↓ '   --   It's storm cast view
-    //  ' ↑ ← ← ← ← ← ← ← ↓ '   --   It's storm cast view
-    //  ' ← ← ← ← ← ← ← ← ← '   --   It's storm cast view
-    //  + - - - - - - - - - +   --   It's storm cast view
+    /*       This is projection: Algorithm storm member used.
+            x-------------------
+            |                   |      = * - is Vector2 (point)
+            |  r * * * * * * *  |      = r - current point (ray)
+            |  * * * * * * * *  |      = x - wpLeftTop
+            |  * * * * * * * *  |      = y - wpRightBottom
+            |  * * * * * * * *  |
+            |  * * * * * * * *  |
+            |  * * * * * * * *  |
+            |  * * * * * * * *  |
+            |                   |
+             -------------------y
+
+            Method finder: Storm
+             ' * * * * * * * * * '
+             ' * * * * * * * * * '   n = 10
+             ' * * * * * * * * * '   n0 (first input point) = 0
+             ' * * * 2 3 4 * * * '   n10 (last input point) = 9
+             ' * * 9 1 0 5 * * * '
+             ' * * * 8 7 6 * * * '
+             ' * * * * * * * * * '
+             ' * * * * * * * * * '
+             ' * * * * * * * * * '
+
+             + - - - - - - - - - +
+             ' → → → → → → → → ↓ '
+             ' ↑ → → → → → → ↓ ↓ '
+             ' ↑ ↑ → → → → ↓ ↓ ↓ '
+             ' ↑ ↑ ↑ → → ↓ ↓ ↓ ↓ '
+             ' ↑ ↑ ↑ ↑ ← ↓ ↓ ↓ ↓ '
+             ' ↑ ↑ ↑ ← ← ← ↓ ↓ ↓ '
+             ' ↑ ↑ ← ← ← ← ← ↓ ↓ '
+             ' ↑ ← ← ← ← ← ← ← ↓ '
+             ' ← ← ← ← ← ← ← ← ← '
+             + - - - - - - - - - +
+    */
     void storm_cast_vec_eq(Vec2 origin, float minStep, int edges, bool each, std::function<void(const Vec2 &)> predicate)
     {
         constexpr int nvec = 4;
@@ -203,6 +230,44 @@ namespace RoninEngine::Runtime
         }
     }
 
+    template <typename container_result, typename Pred>
+    container_result storm_cast_vec_eq(Vec2 origin, int edges, int layer, Pred predicate)
+    {
+        container_result container;
+
+#define MX (switched_world->internal_resources->matrix)
+
+        storm_cast_vec_eq(
+            origin,
+            1.0,
+            edges,
+            true,
+            [&](const Vec2 &candiadate)
+            {
+                Gizmos::DrawPosition(candiadate, 0.1f);
+                auto iter = MX.find(Matrix::matrix_get_key(candiadate));
+                if(iter != std::end(MX))
+                {
+                    for(Transform *x : iter->second)
+                        if(x->layer & layer)
+                        {
+                            if constexpr(not std::is_same<Pred, std::nullptr_t>::value)
+                            {
+                                if(predicate(origin, x->position()) == false)
+                                    continue;
+                            }
+                            if constexpr(std::is_same<container_result, std::set<Transform *>>::value)
+                                container.insert(x);
+                            else
+                                container.emplace_back(x);
+                        }
+                }
+            });
+
+#undef MX
+        return container;
+    }
+
     template <typename container_result>
     container_result Physics2D::GetRectangleCast(Vec2 center, Vec2 size, int layer)
     {
@@ -237,17 +302,26 @@ namespace RoninEngine::Runtime
 
         return result;
     }
+
     template <typename container_result>
     container_result Physics2D::GetStormCast(Vec2 origin, int edges, int layer)
     {
+#if NEW_ALGORITHM_STORM
+        return storm_cast_vec_eq<container_result>(origin, edges, layer, nullptr);
+#else
         return storm_cast_eq<container_result>(origin, edges, layer, nullptr);
+#endif
     }
 
     template <typename container_result>
     container_result Physics2D::GetCircleCast(Vec2 origin, float distance, int layer)
     {
         distance *= distance; // Sqr
+#if NEW_ALGORITHM_STORM
+        container_result result = storm_cast_vec_eq<container_result>(
+#else
         container_result result = storm_cast_eq<container_result>(
+#endif
             origin,
             Math::Number(Math::Ceil(distance)),
             layer,
