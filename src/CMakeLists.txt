@@ -1,32 +1,44 @@
 function(find_ronin_packages)
   find_package(PkgConfig REQUIRED)
 
+  set(LINK_INCL)
+  set(LINK_LIBS)
+
   pkg_check_modules(SDL2 REQUIRED sdl2)
 
   if(RGAUDIO)
     pkg_check_modules(SDL2_mixer REQUIRED SDL2_mixer)
+
+    list(APPEND LINK_INCL ${SDL2_mixer_INCLUDE_DIRS})
+    list(APPEND LINK_LIBS ${SDL2_mixer_LIBRARIES})
   endif()
 
   if(RGGRAPHICS)
     pkg_check_modules(SDL2_image REQUIRED SDL2_image)
     pkg_check_modules(SDL2_ttf REQUIRED SDL2_ttf)
     pkg_check_modules(SDL2_gfx REQUIRED SDL2_gfx)
+
+    list(APPEND LINK_INCL ${SDL2_mixer_INCLUDE_DIRS} ${SDL2_image_INCLUDE_DIRS}
+         ${SDL2_ttf_INCLUDE_DIRS} ${SDL2_gfx_INCLUDE_DIRS})
+    list(APPEND LINK_LIBS ${SDL2_gfx_LIBRARIES} ${SDL2_image_LIBRARIES}
+         ${SDL2_ttf_LIBRARIES})
+  endif()
+
+  if(RGRESOURCES)
+    pkg_check_modules(json REQUIRED jsoncpp)
+
+    list(APPEND LINK_INCL ${json_INCLUDE_DIRS})
+    list(APPEND LINK_LIBS ${json_LIBRARIES})
   endif()
 
   pkg_check_modules(LibraryBrainMap brainmap)
 
   find_package(OpenMP)
 
-  target_link_libraries(
-    RoninEngine
-    PRIVATE ${SDL2_LIBRARIES} ${SDL2_image_LIBRARIES} ${SDL2_mixer_LIBRARIES}
-            ${SDL2_ttf_LIBRARIES} ${SDL2_gfx_LIBRARIES})
+  target_include_directories(RoninEngine PRIVATE ${SDL2_INCLUDE_DIRS}
+                                                 ${LINK_INCL})
 
-  target_include_directories(
-    RoninEngine
-    PRIVATE ${SDL2_INCLUDE_DIRS} ${SDL2_image_INCLUDE_DIRS}
-            ${SDL2_mixer_INCLUDE_DIRS} ${SDL2_ttf_INCLUDE_DIRS}
-            ${SDL2_gfx_INCLUDE_DIRS})
+  target_link_libraries(RoninEngine PRIVATE ${SDL2_LIBRARIES} ${LINK_LIBS})
 
   target_compile_definitions(RoninEngine PRIVATE RONIN_COMPILLING)
 
