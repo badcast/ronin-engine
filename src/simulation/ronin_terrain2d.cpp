@@ -3,7 +3,6 @@
 
 namespace RoninEngine::Runtime
 {
-
     Terrain2D::Terrain2D() : Terrain2D(100, 100)
     {
     }

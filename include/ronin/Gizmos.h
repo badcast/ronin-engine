@@ -35,6 +35,6 @@ namespace RoninEngine::Runtime
         //@origin offset point
         //@edges count edge
         //@delim delim > 1 = scale mode, for inverse use negative value
-        static void DrawStormCast(Vec2 origin, int edges, int delim = -1);
+        static void DrawStormCast(Vec2 origin, int edges, int delim = 1);
     };
 } // namespace RoninEngine::Runtime

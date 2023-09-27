@@ -25,10 +25,9 @@ function(find_ronin_packages)
   endif()
 
   if(RGRESOURCES)
-    pkg_check_modules(json REQUIRED jsoncpp)
-
-    list(APPEND LINK_INCL ${json_INCLUDE_DIRS})
-    list(APPEND LINK_LIBS ${json_LIBRARIES})
+    pkg_check_modules(jsoncpp REQUIRED jsoncpp)
+    list(APPEND LINK_INCL ${jsoncpp_INCLUDE_DIRS})
+    list(APPEND LINK_LIBS ${jsoncpp_LIBRARIES})
   endif()
 
   pkg_check_modules(LibraryBrainMap brainmap)

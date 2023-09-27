@@ -125,32 +125,32 @@ namespace RoninEngine::Runtime
         t = Math::Clamp01(t);
 
         // get cosine of angle between disposition (-1 -> 1)
-        float CosAlpha = Dot(lhs, rhs);
+        float cosalpha = Dot(lhs, rhs);
         // get angle (0 -> pi)
-        float Alpha = Math::Acos(CosAlpha);
+        float alpha = Math::Acos(cosalpha);
         // get sine of angle between disposition (0 -> 1)
-        float SinAlpha = Math::Sin(Alpha);
+        float sinalpha = Math::Sin(alpha);
         // this breaks down when SinAlpha = 0, i.e. Alpha = 0 or pi
-        float t1 = Math::Sin(1.f - t * Alpha) / SinAlpha;
-        float t2 = Math::Sin(t * Alpha) / SinAlpha;
+        float t1 = Math::Sin(1.f - t * alpha) / sinalpha;
+        float t2 = Math::Sin(t * alpha) / sinalpha;
 
-        // interpolate src disposition
+        // interpolate source at disposition
         Vec2 p = lhs * t1 + rhs * t2;
         return p;
     }
     Vec2 Vec2::SlerpUnclamped(const Vec2 &lhs, const Vec2 &rhs, float t)
     {
         // get cosine of angle between disposition (-1 -> 1)
-        float CosAlpha = Dot(lhs, rhs);
+        float cosalpha = Dot(lhs, rhs);
         // get angle (0 -> pi)
-        float Alpha = Math::Acos(CosAlpha);
+        float alpha = Math::Acos(cosalpha);
         // get sine of angle between disposition (0 -> 1)
-        float SinAlpha = Math::Sin(Alpha);
+        float sinalpha = Math::Sin(alpha);
         // this breaks down when SinAlpha = 0, i.e. Alpha = 0 or pi
-        float t1 = Math::Sin(1.f - t * Alpha) / SinAlpha;
-        float t2 = Math::Sin(t * Alpha) / SinAlpha;
+        float t1 = Math::Sin(1.f - t * alpha) / sinalpha;
+        float t2 = Math::Sin(t * alpha) / sinalpha;
 
-        // interpolate src disposition
+        // interpolate source disposition
         return lhs * t1 + rhs * t2;
     }
     Vec2 Vec2::Lerp(const Vec2 &lhs, const Vec2 &rhs, float t)

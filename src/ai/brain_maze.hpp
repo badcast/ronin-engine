@@ -151,124 +151,53 @@ namespace maze_system
     BRAIN_TEMPLATE
     static void maze_storm_space(BRAIN_DEFINE *map, ISite start)
     {
-        constexpr std::uint32_t const_storm_dimensions = 0xFFFFFF;
-        constexpr std::uint32_t const_storm_steps_flag = std::numeric_limits<std::uint32_t>::max();
-        constexpr std::uint32_t const_storm_xDeterminant = 0xF000000;
-        constexpr std::uint32_t const_storm_yDeterminant = 0xF0000000;
-        constexpr std::uint32_t const_storm_yDeterminant_start = 0x20000000;
-        constexpr std::uint32_t const_storm_yDeterminant_inverse = 0x30000000;
+        //  + - - - - - - - - - +   --   It's storm cast view
+        //  ' → → → → → → → → ↓ '   --   It's storm cast view
+        //  ' ↑ → → → → → → ↓ ↓ '   --   It's storm cast view
+        //  ' ↑ ↑ → → → → ↓ ↓ ↓ '   --   It's storm cast view
+        //  ' ↑ ↑ ↑ → → ↓ ↓ ↓ ↓ '   --   It's storm cast view
+        //  ' ↑ ↑ ↑ ↑ ← ↓ ↓ ↓ ↓ '   --   It's storm cast view
+        //  ' ↑ ↑ ↑ ← ← ← ↓ ↓ ↓ '   --   It's storm cast view
+        //  ' ↑ ↑ ← ← ← ← ← ↓ ↓ '   --   It's storm cast view
+        //  ' ↑ ← ← ← ← ← ← ← ↓ '   --   It's storm cast view
+        //  ' ← ← ← ← ← ← ← ← ← '   --   It's storm cast view
+        //  + - - - - - - - - - +   --   It's storm cast view
+        constexpr int nvec = 4;
+        static const ISite storm_vec[nvec] {
+            /*X  Y*/
+            {-1, 0}, // ←
+            {0, 1},  // ↑
+            {1, 0},  // →
+            {0, -1}  // ↓
+        };
 
-        /*
-        Описание данных stormMember
-        Младшие 4 байта, отвечают за шаги (steps) график использования приведена ниже
+        int section, s, iv, x, y, dx, dy, edges = static_cast<int>(map->size());
 
-        stormMember low bits == steps
-        stormMember high bits == maxSteps
-
-        stormFlags = int 4 байта (32 бита)
-        первые 3 байта (24 бита) = dimensions, от 0 до 0xFFFFFF значений
-        остаток 1 байт (8 бит) stormFlags >> 24 = determinants (определители направлений луча)
-        0xF000000    xDeterminant = stormFlags >> 24 & 0xF - горизонтальный детерминант x оси (абцис)
-        0xF0000000   yDeterminant = stormFlags >> 28       - вертикальный детерминант y оси (ординат)
-
-        VARIABLE    |   DATA   | bits | DESCRIPTION
-        ------------|------------------------------
-        stormMember | LOWBITS  |  32  | STEPS
-                    | HIGHBITS |  32  | MAXSTEPS
-        -------------------------------------------
-        stormFlags  | first    |  24  | DIMENSIONS
-                    | second   |  8   | DETERMINANTS
-
-
-               Method finder: Storm
-                ' * * * * * * * * *'
-                ' * * * * * * * * *'   n = 9
-                ' * * * * * * * * *'   n0 (first input point) = 0
-                ' * * * 4 5 6 * * *'   n10 (last input point) = 8
-                ' * * * 3 0 7 * * *'
-                ' * * * 2 1 8 * * *'
-                ' * * * * * * * * *'
-                ' * * * * * * * * *'
-                ' * * * * * * * * *'
-
-        */
-        std::uint64_t stormMember = 0;
-        std::uint64_t stormFlags = 1;
-        std::size_t edges = map->size();
-        std::uint32_t x, y, dx = map->get_width() / 2, dy = map->get_height() / 2;
-
-        map->fill_locks(false);
-
-        for(; edges > 0;)
+        if(map->contains(start))
         {
-            std::uint32_t steps = static_cast<std::uint32_t>(stormMember & const_storm_steps_flag);
-            std::uint32_t maxSteps = static_cast<std::uint32_t>(stormMember >> 32);
-
-            // Шаг заканчивается (step = turnSteps) происходит поворот
-            if(steps % std::max(1u, (maxSteps / 4)) == 0)
+            map->set_lock(start, map->random_number(0, 1000) < 250);
+        }
+        // Edge
+        for(section = 0; edges-- > 0;)
+        {
+            // Line
+            for(iv = 0; iv < nvec; ++iv)
             {
-                // переход на новое измерение
-                // при steps == maxsteps
-                if(steps == maxSteps)
+                // Section
+                if(!(iv & 1))
+                    ++section;
+
+                s = 0;
+                do
                 {
-                    stormMember = (8ul * (stormFlags = stormFlags & const_storm_dimensions)) << 32;
-                    stormFlags = ((stormFlags & const_storm_dimensions) + 1) | const_storm_yDeterminant_start;
-                }
-                else
-                {
-                    if(stormFlags >> 28)
+                    start += storm_vec[iv];
+
+                    if(map->contains(start))
                     {
-                        // stormFlags ^= stormFlags & const_storm_xDeterminant;
-                        stormFlags &= ~const_storm_xDeterminant;                                                   // clear x
-                        stormFlags |= ((stormFlags & const_storm_yDeterminant) >> 0x4) & const_storm_xDeterminant; // x = y
-                        stormFlags &= ~const_storm_yDeterminant;                                                   // clear y
-                        // stormFlags ^= stormFlags & const_storm_yDeterminant;
+                        map->set_lock(start, map->random_number(0, 1000) < 250);
                     }
-                    else
-                    {
-                        // stormFlags ^= stormFlags & const_storm_yDeterminant;
-                        stormFlags &= ~const_storm_yDeterminant;                                                   // clear y
-                        stormFlags |= ((stormFlags & const_storm_xDeterminant) << 0x4) & const_storm_yDeterminant; // y = x
-                        stormFlags ^= const_storm_yDeterminant_inverse;                                            // inverse
-                        stormFlags &= ~const_storm_xDeterminant;                                                   // clear x
-                        // stormFlags ^= stormFlags & const_storm_xDeterminant;
-                    }
-                }
+                } while(++s < section);
             }
-
-            char xDeter = static_cast<char>(stormFlags >> 24 & 0xf);
-            char yDeter = static_cast<char>(stormFlags >> 28);
-
-            if(map->contains(start))
-            {
-                map->set_lock(start, map->random_number(0, 1000) < 250);
-                --edges;
-            }
-
-            start.x += xDeter == 2 ? -1 : xDeter;
-            start.y += yDeter == 2 ? -1 : yDeter;
-
-            if(!(stormMember & const_storm_steps_flag))
-            {
-                if(yDeter)
-                {
-                    // stormFlags ^= stormFlags & const_storm_xDeterminant;
-                    stormFlags &= ~const_storm_xDeterminant;                                                 // clear x
-                    stormFlags |= ((stormFlags & const_storm_yDeterminant) >> 4) & const_storm_xDeterminant; // x = y
-                    stormFlags &= ~const_storm_yDeterminant;                                                 // clear y
-                    // stormFlags ^= stormFlags & const_storm_yDeterminant;
-                }
-                else if(xDeter)
-                {
-                    // stormFlags ^= stormFlags & const_storm_yDeterminant;
-                    stormFlags &= ~const_storm_yDeterminant;                                                 // clear y
-                    stormFlags |= ((stormFlags & const_storm_xDeterminant) << 4) & const_storm_yDeterminant; // y = x
-                    stormFlags &= ~const_storm_xDeterminant;                                                 // clear x
-                    // stormFlags ^= stormFlags & const_storm_xDeterminant;
-                }
-            }
-
-            ++(*reinterpret_cast<std::uint32_t *>(&stormMember));
         }
 
         // clear only one point (Wall only randomized)
@@ -283,16 +212,16 @@ namespace maze_system
                     continue;
 
                 auto neighbours = map->get_neighbours(MatrixIdentity::PlusMethod, site);
-                stormFlags = 0;
+                iv = 0;
                 for(auto &p : neighbours)
                 {
-                    if(stormFlags = map->has_lock(p))
+                    if(iv = map->has_lock(p))
                     {
                         break;
                     }
                 }
 
-                if(!stormFlags)
+                if(!iv)
                     map->set_lock(site, false);
             }
         }

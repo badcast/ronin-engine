@@ -150,48 +150,56 @@ namespace RoninEngine::Runtime
         return result;
     }
 
-    //  + - - - - - - - - - +
-    //  ' → → → → → → → → ↓ `
-    //  ' ↑ → → → → → → ↓ ↓ `
-    //  ' ↑ ↑ → → → → ↓ ↓ ↓ `
-    //  ' ↑ ↑ ↑ → → ↓ ↓ ↓ ↓ `
-    //  ' ↑ ↑ ↑ ↑ ← ↓ ↓ ↓ ↓ `
-    //  ' ↑ ↑ ↑ ← ← ← ↓ ↓ ↓ `
-    //  ' ↑ ↑ ← ← ← ← ← ↓ ↓ `
-    //  ' ↑ ← ← ← ← ← ← ← ↓ `
-    //  ' ← ← ← ← ← ← ← ← ← `
-    //  + - - - - - - - - - +
-    void storm_cast_vec_eq(Vec2 origin, float minStep, int edges, std::function<void(const Vec2 &)> predicate, bool each)
+    //  + - - - - - - - - - +   --   It's storm cast view
+    //  ' → → → → → → → → ↓ '   --   It's storm cast view
+    //  ' ↑ → → → → → → ↓ ↓ '   --   It's storm cast view
+    //  ' ↑ ↑ → → → → ↓ ↓ ↓ '   --   It's storm cast view
+    //  ' ↑ ↑ ↑ → → ↓ ↓ ↓ ↓ '   --   It's storm cast view
+    //  ' ↑ ↑ ↑ ↑ ← ↓ ↓ ↓ ↓ '   --   It's storm cast view
+    //  ' ↑ ↑ ↑ ← ← ← ↓ ↓ ↓ '   --   It's storm cast view
+    //  ' ↑ ↑ ← ← ← ← ← ↓ ↓ '   --   It's storm cast view
+    //  ' ↑ ← ← ← ← ← ← ← ↓ '   --   It's storm cast view
+    //  ' ← ← ← ← ← ← ← ← ← '   --   It's storm cast view
+    //  + - - - - - - - - - +   --   It's storm cast view
+    void storm_cast_vec_eq(Vec2 origin, float minStep, int edges, bool each, std::function<void(const Vec2 &)> predicate)
     {
-        int p, s, points;
-        Vec2 vector;
-        static const Vec2Int storm_vec[4] {
-            /*x + y*/
+        constexpr int nvec = 4;
+        static const Vec2Int storm_vec[nvec] {
+            /*X  Y*/
             {-1, 0}, // ←
-            {0, -1}, // ↓
             {0, 1},  // ↑
             {1, 0},  // →
+            {0, -1}  // ↓
         };
 
-        predicate(vector);
+        int section, s, iv;
 
-        // start of first
-        s = 3;
+        predicate(origin);
 
-        for(points = 1; points <= edges; ++points)
+        // Edge
+        for(section = 0; edges-- > 0;)
         {
-            vector = origin;
-            for(; s < sizeof(storm_vec) / sizeof(storm_vec[0]); ++s)
+            // Line
+            for(iv = 0; iv < nvec; ++iv)
             {
-                p = 1;
-                do
+                // Section
+                if(!(iv & 1))
+                    ++section;
+                if(each)
                 {
-                    vector += minStep * storm_vec[s] * p;
-                    predicate(vector);
-                    Gizmos::DrawText(vector, std::to_string(points));
-                } while(each && p < points && ++p);
+                    s = 0;
+                    do
+                    {
+                        origin += minStep * storm_vec[iv];
+                        predicate(origin);
+                    } while(++s < section);
+                }
+                else
+                {
+                    origin += minStep * storm_vec[iv] * section;
+                    predicate(origin);
+                }
             }
-            s = 0; // reset loopback
         }
     }
 

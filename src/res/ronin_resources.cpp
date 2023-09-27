@@ -1,24 +1,20 @@
-#include <filesystem>
+#include <json/json.h>
 
 #include "ronin.h"
 
 using namespace RoninEngine;
 using namespace RoninEngine::Exception;
 using namespace RoninEngine::Runtime;
-using namespace RoninEngine::Runtime::RoninMemory;
-using namespace RoninEngine::UI;
-using namespace RoninEngine::AI;
-using namespace jno;
-
-enum : resource_id
-{
-    RES_INVALID = 0xffffffff,
-    RES_LOCAL_FLAG = 0x80000000
-};
 
 namespace RoninEngine::Runtime
 {
     extern GidResources *external_global_resources;
+
+    enum : resource_id
+    {
+        RES_INVALID = 0xffffffff,
+        RES_LOCAL_FLAG = 0x80000000
+    };
 
     void gid_resources_free(GidResources *gid)
     {
@@ -100,16 +96,56 @@ namespace RoninEngine::Runtime
         return surf;
     }
 
-    resource_id Resources::LoadImage(const std::string &path, bool local)
+    inline std::vector<std::int8_t> stream_to_mem(std::istream &stream)
+    {
+        std::size_t delta;
+        std::vector<std::int8_t> memory;
+
+        stream.seekg(0, std::ios_base::end);
+        delta = stream.tellg();
+        stream.seekg(0, std::ios_base::beg);
+
+        if(delta > 0)
+        {
+            memory.resize(delta);
+            stream.read((char *) memory.data(), memory.size());
+        }
+        else
+        {
+            constexpr int block_size = 4096;
+            char *buffer = new char[block_size];
+
+            if(buffer == nullptr)
+                RoninSimulator::Kill();
+
+            delta = 0;
+            while(stream.peek() != std::ios_base::eofbit)
+            {
+                // read from
+                std::size_t pos = stream.readsome(buffer, block_size);
+                // resize
+                memory.resize(delta + pos);
+                // copy to
+                memcpy(memory.data() + delta, buffer, pos);
+                delta += pos;
+            }
+            delete[] buffer;
+        }
+        return memory;
+    }
+
+    resource_id Resources::LoadImageFromStream(std::istream &stream, bool local)
     {
         resource_id id;
         GidResources *gid;
 
-        SDL_Surface *surf = IMG_Load(path.c_str());
+        auto memory = stream_to_mem(stream);
+
+        SDL_Surface *surf = IMG_Load_RW(SDL_RWFromConstMem(memory.data(), memory.size()), SDL_TRUE);
 
         if(surf == nullptr)
         {
-            SDL_LogError(SDL_LOG_CATEGORY_ERROR, "Surface: \"%s\" can not load", path.data());
+            SDL_LogError(SDL_LOG_CATEGORY_ERROR, "Surface: can not load");
             return RES_INVALID;
         }
 
@@ -120,16 +156,18 @@ namespace RoninEngine::Runtime
         return id;
     }
 
-    resource_id Resources::LoadAudioClip(const std::string &path, bool local)
+    resource_id Resources::LoadAudioClipFromStream(std::istream &stream, bool local)
     {
         resource_id id;
         GidResources *gid;
 
-        Mix_Chunk *chunk = Mix_LoadWAV(path.c_str());
+        auto memory = stream_to_mem(stream);
+
+        Mix_Chunk *chunk = Mix_LoadWAV_RW(SDL_RWFromConstMem(memory.data(), memory.size()), SDL_TRUE);
 
         if(chunk == nullptr)
         {
-            SDL_LogError(SDL_LOG_CATEGORY_ERROR, "Sound: \"%s\" can not load", path.data());
+            SDL_LogError(SDL_LOG_CATEGORY_ERROR, "Sound: can not load");
             return RES_INVALID;
         }
 
@@ -140,16 +178,18 @@ namespace RoninEngine::Runtime
         return id;
     }
 
-    resource_id Resources::LoadMusicClip(const std::string &path, bool local)
+    resource_id Resources::LoadMusicClipFromStream(std::istream &stream, bool local)
     {
         resource_id id;
         GidResources *gid;
 
-        Mix_Music *music = Mix_LoadMUS(path.c_str());
+        auto memory = stream_to_mem(stream);
+
+        Mix_Music *music = Mix_LoadMUSType_RW(SDL_RWFromConstMem(memory.data(), memory.size()), MUS_OGG, SDL_TRUE);
 
         if(music == nullptr)
         {
-            SDL_LogError(SDL_LOG_CATEGORY_ERROR, "Music: \"%s\" can not load", path.c_str());
+            SDL_LogError(SDL_LOG_CATEGORY_ERROR, "Music: can not load");
             return RES_INVALID;
         }
 
@@ -158,6 +198,45 @@ namespace RoninEngine::Runtime
 
         gid->gid_music_clips.emplace_back(RoninMemory::alloc<MusicClip>(music));
         return id;
+    }
+
+    resource_id Resources::LoadImage(const std::string &path, bool local)
+    {
+        std::ifstream file(path);
+
+        if(!file)
+        {
+            SDL_LogError(SDL_LOG_CATEGORY_ERROR, "Music: \"%s\" can not load", path.c_str());
+            return RES_INVALID;
+        }
+
+        return LoadImageFromStream(file, local);
+    }
+
+    resource_id Resources::LoadAudioClip(const std::string &path, bool local)
+    {
+        std::ifstream file(path);
+
+        if(!file)
+        {
+            SDL_LogError(SDL_LOG_CATEGORY_ERROR, "Music: \"%s\" can not load", path.c_str());
+            return RES_INVALID;
+        }
+
+        return LoadAudioClipFromStream(file, local);
+    }
+
+    resource_id Resources::LoadMusicClip(const std::string &path, bool local)
+    {
+        std::ifstream file(path);
+
+        if(!file)
+        {
+            SDL_LogError(SDL_LOG_CATEGORY_ERROR, "Music: \"%s\" can not load", path.c_str());
+            return RES_INVALID;
+        }
+
+        return LoadMusicClipFromStream(file, local);
     }
 
     native_surface_t *Resources::GetImageSource(resource_id resource)

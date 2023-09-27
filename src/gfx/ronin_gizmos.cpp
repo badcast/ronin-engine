@@ -362,24 +362,20 @@ namespace RoninEngine::Runtime
 
     void Gizmos::DrawStormCast(Vec2 origin, int edges, int delim)
     {
-        extern void storm_cast_vec_eq(Vec2 origin, float minStep, int edges, std::function<void(const Vec2 &)> predicate, bool each);
+        extern void storm_cast_vec_eq(Vec2 origin, float minStep, int edges, bool each, std::function<void(const Vec2 &)> predicate);
 
         Vec2 last = origin;
-        Color lastColor = GetColor();
 
-        SetColor(0xfff6f6f7);
         storm_cast_vec_eq(
             origin,
-            1,
+            1.f / Math::Outside(delim, -1, 1),
             edges,
+            false,
             [&](const Vec2 &point)
             {
-                DrawLine(last / delim, point / delim);
+                internal_drawLine(last, point);
                 last = point;
-            },
-            true);
-
-        SetColor(lastColor);
+            });
     }
 
 } // namespace RoninEngine::Runtime
