@@ -31,10 +31,5 @@ namespace RoninEngine::Runtime
         static void DrawFillCircle(Vec2 origin, float distance);
 
         static void DrawTextToScreen(Vec2Int screen_point, const std::string &text, int font_size = 11);
-
-        //@origin offset point
-        //@edges count edge
-        //@delim delim > 1 = scale mode, for inverse use negative value
-        static void DrawStormCast(Vec2 origin, int edges, int delim = 1);
     };
 } // namespace RoninEngine::Runtime

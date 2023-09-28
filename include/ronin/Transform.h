@@ -26,7 +26,7 @@ namespace RoninEngine::Runtime
         Transform(const std::string &name);
 
         Transform *parent() const;
-        void set_parent(Transform *parent, bool worldPositionStays = true);
+        void setParent(Transform *parent, bool worldPositionStays = true);
 
         int ChildCount() const;
         Transform *ChildOf(int index);

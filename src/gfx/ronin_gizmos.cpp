@@ -359,23 +359,4 @@ namespace RoninEngine::Runtime
     {
         RoninEngine::UI::draw_font_at(RoninEngine::renderer, text, font_size, screen_point, GetColor(), false);
     }
-
-    void Gizmos::DrawStormCast(Vec2 origin, int edges, int delim)
-    {
-        extern void storm_cast_vec_eq(Vec2 origin, float minStep, int edges, bool each, std::function<void(const Vec2 &)> predicate);
-
-        Vec2 last = origin;
-
-        storm_cast_vec_eq(
-            origin,
-            1.f / Math::Outside(delim, -1, 1),
-            edges,
-            false,
-            [&](const Vec2 &point)
-            {
-                internal_drawLine(last, point);
-                last = point;
-            });
-    }
-
 } // namespace RoninEngine::Runtime

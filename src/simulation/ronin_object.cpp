@@ -255,7 +255,7 @@ namespace RoninEngine
                     for(Transform *y : t->hierarchy)
                     {
                         GameObject *yClone = Instantiate(y->gameObject());
-                        yClone->transform()->set_parent(existent);
+                        yClone->transform()->setParent(existent);
                         yClone->m_name = t->gameObject()->m_name; // put " (clone)" name
                         yClone->m_name.shrink_to_fit();
                     }
@@ -297,7 +297,7 @@ namespace RoninEngine
         {
             obj = Instantiate(obj);
             obj->transform()->position(position);
-            obj->transform()->set_parent(parent, worldPositionStay);
+            obj->transform()->setParent(parent, worldPositionStay);
             return obj;
         }
 
