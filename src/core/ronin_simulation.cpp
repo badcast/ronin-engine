@@ -659,7 +659,7 @@ namespace RoninEngine
             // delay elapsed
             delayed = Math::Max(0, static_cast<int>(Math::Ceil(secPerFrame) - delayed));
 
-            if(switched_world == nullptr)
+            if(switched_world == nullptr || switched_world->internal_resources->request_unloading && preload_world == nullptr)
                 break; // break on unload state
 
             // update events

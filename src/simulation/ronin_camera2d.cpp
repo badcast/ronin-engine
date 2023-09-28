@@ -98,6 +98,7 @@ namespace RoninEngine::Runtime
             Vec2Int wpRightBottom;
             int edges;
         } stack;
+        camera->camera_resources->culled = 0;
 
         stack.camera_position = camera->transform()->position();
         stack.root_transform = World::self()->internal_resources->main_object->transform();
@@ -197,6 +198,8 @@ namespace RoninEngine::Runtime
                                 continue;
                             }
 
+                            ++(camera->camera_resources->culled);
+
                             Transform *render_transform = render_iobject->transform();
                             memset(&(stack.wrapper), 0, sizeof(stack.wrapper));
 
@@ -204,7 +207,6 @@ namespace RoninEngine::Runtime
 
                             if(stack.wrapper.texture)
                             {
-
                                 Transform *render_parent = render_transform->m_parent;
                                 if(render_parent == stack.root_transform)
                                 {
