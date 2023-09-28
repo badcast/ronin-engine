@@ -5,7 +5,7 @@
 
 namespace RoninEngine::Runtime
 {
-
+#if NEW_ALGORITHM_STORM == 0
     std::uint32_t const_storm_dimensions = 0xFFFFFF
         /* =  = */,
                   const_storm_steps_flag = std::numeric_limits<std::uint32_t>::max()
@@ -152,6 +152,7 @@ namespace RoninEngine::Runtime
         return result;
     }
 
+#else
     /*       This is projection: Algorithm storm member used.
             x-------------------
             |                   |      = * - is Vector2 (point)
@@ -165,16 +166,6 @@ namespace RoninEngine::Runtime
             |                   |
              -------------------y
 
-            Method finder: Storm
-             ' * * * * * * * * * '
-             ' * * * * * * * * * '   n = 10
-             ' * * * * * * * * * '   n0 (first input point) = 0
-             ' * * * 2 3 4 * * * '   n10 (last input point) = 9
-             ' * * 9 1 0 5 * * * '
-             ' * * * 8 7 6 * * * '
-             ' * * * * * * * * * '
-             ' * * * * * * * * * '
-             ' * * * * * * * * * '
 
              + - - - - - - - - - +
              ' → → → → → → → → ↓ '
@@ -188,7 +179,8 @@ namespace RoninEngine::Runtime
              ' ← ← ← ← ← ← ← ← ← '
              + - - - - - - - - - +
     */
-    void storm_cast_vec_eq(Vec2 origin, float minStep, int edges, bool each, std::function<void(const Vec2 &)> predicate)
+    template <bool foreach = false>
+    inline void storm_cast_eq_t(Vec2Int origin, int edges, std::function<void(const Vec2Int &)> predicate)
     {
         constexpr int nvec = 4;
         static const Vec2Int storm_vec[nvec] {
@@ -199,7 +191,7 @@ namespace RoninEngine::Runtime
             {0, -1}  // ↓
         };
 
-        int section, s, iv;
+        int section, iv;
 
         predicate(origin);
 
@@ -212,22 +204,32 @@ namespace RoninEngine::Runtime
                 // Section
                 if(!(iv & 1))
                     ++section;
-                if(each)
+                if constexpr(foreach)
                 {
-                    s = 0;
+                    int s = 0;
                     do
                     {
-                        origin += minStep * storm_vec[iv];
+                        origin += storm_vec[iv];
                         predicate(origin);
                     } while(++s < section);
                 }
                 else
                 {
-                    origin += minStep * storm_vec[iv] * section;
+                    origin += storm_vec[iv] * section;
                     predicate(origin);
                 }
             }
         }
+    }
+
+    void storm_cast_eq_all(Vec2Int origin, int edges, std::function<void(const Vec2Int &)> predicate)
+    {
+        storm_cast_eq_t<true>(origin, edges, predicate);
+    }
+
+    void storm_cast_eq_edges(Vec2Int origin, int edges, std::function<void(const Vec2Int &)> predicate)
+    {
+        storm_cast_eq_t<false>(origin, edges, predicate);
     }
 
     template <typename container_result, typename Pred>
@@ -236,16 +238,12 @@ namespace RoninEngine::Runtime
         container_result container;
 
 #define MX (switched_world->internal_resources->matrix)
-
-        storm_cast_vec_eq(
-            origin,
-            1.0,
+        storm_cast_eq_t<true>(
+            Matrix::matrix_get_key(origin),
             edges,
-            true,
-            [&](const Vec2 &candiadate)
+            [&](const Vec2Int &candidate)
             {
-                Gizmos::DrawPosition(candiadate, 0.1f);
-                auto iter = MX.find(Matrix::matrix_get_key(candiadate));
+                auto iter = MX.find(candidate);
                 if(iter != std::end(MX))
                 {
                     for(Transform *x : iter->second)
@@ -267,6 +265,7 @@ namespace RoninEngine::Runtime
 #undef MX
         return container;
     }
+#endif
 
     template <typename container_result>
     container_result Physics2D::GetRectangleCast(Vec2 center, Vec2 size, int layer)

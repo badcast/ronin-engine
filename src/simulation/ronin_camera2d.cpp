@@ -1,4 +1,4 @@
-#define USE_OMP 0
+#define USE_OMP 1
 
 #include "ronin.h"
 
@@ -102,8 +102,8 @@ namespace RoninEngine::Runtime
                 }
             }
             /**
-                        for (Renderer* y : _removes)
-                            camera2d->camera_resources->prev.erase(y);
+                for (Renderer* y : _removes)
+                    camera2d->camera_resources->prev.erase(y);
             **/
 
             // order by layer component

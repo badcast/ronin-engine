@@ -350,7 +350,7 @@ namespace RoninEngine::Runtime
         return m_parent;
     }
 
-    void Transform::set_parent(Transform *parent, bool worldPositionStays)
+    void Transform::setParent(Transform *parent, bool worldPositionStays)
     {
         // TODO: make worldPositionStays
         if(this->m_parent == nullptr)

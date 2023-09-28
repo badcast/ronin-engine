@@ -164,8 +164,8 @@ namespace RoninEngine
         {
             bool targetClear;
             std::map<int, std::vector<Renderer *>> renders;
-            std::set<Renderer *> prev;
             std::set<Light *> _lightsOutResults;
+            std::set<Renderer *> prev;
         };
 
         struct AudioClip
@@ -291,5 +291,8 @@ namespace RoninEngine
 
         void gid_resources_free(GidResources *gid);
         SDL_Surface *private_load_surface(const void *memres, int length);
+
+        void storm_cast_eq_all(Vec2Int origin, int edges, std::function<void(const Vec2Int &)> predicate);
+        void storm_cast_eq_edgess(Vec2Int origin, int edges, std::function<void(const Vec2Int &)> predicate);
     } // namespace Runtime
 } // namespace RoninEngine
