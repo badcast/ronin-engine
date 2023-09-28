@@ -32,6 +32,8 @@ namespace RoninEngine
         class RONIN_API Object
         {
         protected:
+            // Extractor
+            void * __;
             // unique type (static)
             char *_type_;
             // unique id (realtime)

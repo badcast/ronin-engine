@@ -8,7 +8,7 @@ namespace RoninEngine::Runtime
         DESCRIBE_AS_MAIN(Camera);
 
         // using this camera as main
-        World::self()->internal_resources->camera_resources.emplace_front(RoninMemory::alloc_self(camera_resources));
+        World::self()->irs->camera_resources.emplace_front(RoninMemory::alloc_self(camera_resources));
         camera_resources->culled = 0;
         // set focusing
         Focus();
@@ -25,7 +25,7 @@ namespace RoninEngine::Runtime
     void Camera::Focus()
     {
         if(switched_world)
-            switched_world->internal_resources->event_camera_changed(this, CameraEvent::CAM_TARGET);
+            switched_world->irs->event_camera_changed(this, CameraEvent::CAM_TARGET);
     }
 
     const Vec2 Camera::ScreenToWorldPoint(Vec2 screenPoint)
@@ -106,7 +106,7 @@ namespace RoninEngine::Runtime
     Camera *Camera::mainCamera()
     {
         if(switched_world)
-            return switched_world->internal_resources->main_camera;
+            return switched_world->irs->main_camera;
         return nullptr;
     }
 

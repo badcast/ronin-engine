@@ -237,7 +237,7 @@ namespace RoninEngine::Runtime
     {
         container_result container;
 
-#define MX (switched_world->internal_resources->matrix)
+#define MX (switched_world->irs->matrix)
         storm_cast_eq_t<true>(
             Matrix::matrix_get_key(origin),
             edges,
@@ -247,7 +247,7 @@ namespace RoninEngine::Runtime
                 if(iter != std::end(MX))
                 {
                     for(Transform *x : iter->second)
-                        if(x->layer & layer)
+                        if(x->_layer_ & layer)
                         {
                             if constexpr(not std::is_same<Pred, std::nullptr_t>::value)
                             {
@@ -271,7 +271,7 @@ namespace RoninEngine::Runtime
     container_result Physics2D::GetRectangleCast(Vec2 center, Vec2 size, int layer)
     {
         container_result result;
-        auto &mx = World::self()->internal_resources->matrix;
+        auto &mx = World::self()->irs->matrix;
 
         size = Vec2::Abs(size) / 2.f;
         Vec2Int leftUpPoint {Matrix::matrix_get_key(center - size)};
@@ -288,7 +288,7 @@ namespace RoninEngine::Runtime
                     // filtering
                     for(auto lhs : findedIter->second)
                     {
-                        if((lhs->layer & layer) == 0x0000)
+                        if((lhs->_layer_ & layer) == 0x0000)
                             continue;
                         if constexpr(std::is_same<container_result, std::set<Transform *>>::value)
                             result.insert(lhs);

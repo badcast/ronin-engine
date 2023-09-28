@@ -406,7 +406,7 @@ namespace RoninEngine::UI
 
         gui->_resources->mouse_hover = false;
         //TODO: OPTIMIZE HERE
-        while(ui_drains.empty() == false && !resources->owner->internal_resources->request_unloading)
+        while(ui_drains.empty() == false && !resources->owner->irs->request_unloading)
         {
             id = ui_drains.front();
             ui_drains.pop_front();

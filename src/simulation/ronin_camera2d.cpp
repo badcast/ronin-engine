@@ -101,7 +101,7 @@ namespace RoninEngine::Runtime
         camera->camera_resources->culled = 0;
 
         stack.camera_position = camera->transform()->position();
-        stack.root_transform = World::self()->internal_resources->main_object->transform();
+        stack.root_transform = World::self()->irs->main_object->transform();
         stack.wpLeftTop = Vec2::RoundToInt(Camera::ScreenToWorldPoint(Vec2::zero));
         stack.wpRightBottom = Vec2::RoundToInt(Camera::ScreenToWorldPoint(Vec2(active_resolution.width, active_resolution.height)));
         stack.edges =
@@ -141,7 +141,7 @@ namespace RoninEngine::Runtime
             stack.edges,
             [&](const Vec2Int &candidate)
             {
-#define MX (switched_world->internal_resources->matrix)
+#define MX (switched_world->irs->matrix)
                 // собираем оставшиеся которые прикреплены к видимости
                 //                    for(auto x = std::begin(camera->camera_resources->prev); false && x !=
                 //                    std::end(camera->camera_resources->prev); ++x)
@@ -203,7 +203,8 @@ namespace RoninEngine::Runtime
                             Transform *render_transform = render_iobject->transform();
                             memset(&(stack.wrapper), 0, sizeof(stack.wrapper));
 
-                            render_iobject->render(&(stack.wrapper)); // draw
+                            // draw
+                            render_iobject->render(&(stack.wrapper));
 
                             if(stack.wrapper.texture)
                             {

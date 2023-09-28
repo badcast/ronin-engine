@@ -26,6 +26,7 @@ namespace RoninEngine
         World *preload_world;
         World *last_switched_world;
         std::set<World *> pinned_worlds;
+        std::vector<std::uint32_t> _watcher_time;
 
         GidResources *external_global_resources = nullptr;
 
@@ -33,8 +34,7 @@ namespace RoninEngine
 
         std::uint32_t internal_start_engine_time;
         std::uint32_t internal_frames; // framecounter
-        std::vector<std::uint32_t> _watcher_time;
-        int _matrix_threshold_ = 2;
+        int _matrix_pack_ = 1;
         RoninInput internal_input;
         bool text_inputState;
 
@@ -557,11 +557,11 @@ namespace RoninEngine
                     if(!switched_world->isHierarchy())
                     {
                         // init main object
-                        switched_world->internal_resources->main_object = create_empty_gameobject();
-                        switched_world->internal_resources->main_object->name("Main Object");
-                        switched_world->internal_resources->main_object->transform()->name("Root");
+                        switched_world->irs->main_object = create_empty_gameobject();
+                        switched_world->irs->main_object->name("Main Object");
+                        switched_world->irs->main_object->transform()->name("Root");
                         // pickup from renders
-                        Matrix::matrix_nature_pickup(switched_world->internal_resources->main_object->transform());
+                        Matrix::matrix_nature_pickup(switched_world->irs->main_object->transform());
                     }
 
                     internal_world_can_start = false;
@@ -584,7 +584,7 @@ namespace RoninEngine
             // end watcher
 
             // update level
-            if(!switched_world->internal_resources->request_unloading)
+            if(!switched_world->irs->request_unloading)
             {
                 // begin watcher
                 TimeEngine::begin_watch();
@@ -595,14 +595,14 @@ namespace RoninEngine
                     internal_world_can_start = true;
                 }
 
-                if(!switched_world->internal_resources->request_unloading)
+                if(!switched_world->irs->request_unloading)
                 {
                     switched_world->OnUpdate();
                 }
                 // end watcher
                 queue_watcher.ms_wait_exec_world = TimeEngine::end_watch();
 
-                if(switched_world->internal_resources->request_unloading)
+                if(switched_world->irs->request_unloading)
                 {
                     goto end_simulate; // break on unload state
                 }
@@ -610,9 +610,9 @@ namespace RoninEngine
             else
                 goto end_simulate; // break on unload state
 
-            switched_world->level_render_world();
+            level_render_world();
 
-            if(switched_world->internal_resources->request_unloading)
+            if(switched_world->irs->request_unloading)
                 goto end_simulate; // break on unload state
 
             // Set scale as default
@@ -620,11 +620,11 @@ namespace RoninEngine
 
             // begin watcher
             TimeEngine::begin_watch();
-            UI::native_draw_render(switched_world->internal_resources->gui);
+            UI::native_draw_render(switched_world->irs->gui);
             queue_watcher.ms_wait_render_gui = TimeEngine::end_watch();
             // end watcher
 
-            if(switched_world->internal_resources->request_unloading)
+            if(switched_world->irs->request_unloading)
                 goto end_simulate; // break on unload state
 
             if(!last_switched_world)
@@ -635,7 +635,7 @@ namespace RoninEngine
                 queue_watcher.ms_wait_render_world += TimeEngine::end_watch();
                 // end watcher
 
-                switched_world->level_render_world_late();
+                level_render_world_late();
             }
 
         end_simulate:
@@ -676,7 +676,7 @@ namespace RoninEngine
             // delay elapsed
             delayed = Math::Max(0, static_cast<int>(Math::Ceil(secPerFrame) - delayed));
 
-            if(switched_world == nullptr || switched_world->internal_resources->request_unloading && preload_world == nullptr)
+            if(switched_world == nullptr || switched_world->irs->request_unloading && preload_world == nullptr)
                 break; // break on unload state
 
             // update events
