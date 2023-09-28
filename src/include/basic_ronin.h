@@ -162,9 +162,7 @@ namespace RoninEngine
 
         struct CameraResource
         {
-            bool targetClear;
-            std::map<int, std::vector<Renderer *>> renders;
-            std::set<Light *> _lightsOutResults;
+            int culled;
             std::set<Renderer *> prev;
         };
 

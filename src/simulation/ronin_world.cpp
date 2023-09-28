@@ -228,7 +228,7 @@ namespace RoninEngine
         if(internal_resources == nullptr || internal_resources->main_camera == nullptr)
             return -1;
 
-        return internal_resources->main_camera->camera_resources->renders.size();
+        return internal_resources->main_camera->camera_resources->culled;
     }
 
     int World::matrix_count_cache()
@@ -412,10 +412,6 @@ namespace RoninEngine
         Camera *cam = Camera::mainCamera(); // Draw level from active camera (main)
         if(!switched_world->internal_resources->request_unloading && cam)
         {
-            // FlushCache last result
-            if(cam->camera_resources->targetClear)
-                cam->camera_resources->renders.clear();
-
             // draw world in world size
             RoninEngine::Runtime::native_render_2D(reinterpret_cast<Camera2D *>(cam));
         }
