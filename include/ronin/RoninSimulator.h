@@ -187,7 +187,7 @@ namespace RoninEngine
          * @param new_resolution The new resolution to set.
          * @return True if the resolution was set successfully, false otherwise.
          */
-        static bool SetDisplayResolution(const Resolution &new_resolution);
+        static bool SetWindowResolution(const Resolution &new_resolution);
 
         /**
          * @brief Sets the active window to fullscreen mode.

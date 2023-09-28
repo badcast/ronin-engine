@@ -350,19 +350,32 @@ namespace RoninEngine
         std::list<Resolution> resolutions;
         SDL_DisplayMode mode;
 
-        int n, ndisplay_modes = SDL_GetNumDisplayModes(0);
-        for(n = 0; n < ndisplay_modes; ++n)
+        if(active_window == nullptr)
         {
-            if(SDL_GetDisplayMode(0, n, &mode) == -1)
+            throw ronin_init_error();
+        }
+
+        int active_display = SDL_GetWindowDisplayIndex(active_window);
+        if(active_display < 0)
+        {
+            RoninSimulator::ShowMessage(SDL_GetError());
+        }
+        else
+        {
+            int n, ndisplay_modes = SDL_GetNumDisplayModes(active_display);
+            for(n = 0; n < ndisplay_modes; ++n)
             {
-                RoninSimulator::ShowMessageFail(SDL_GetError());
+                if(SDL_GetDisplayMode(active_display, n, &mode) == -1)
+                {
+                    RoninSimulator::ShowMessageFail(SDL_GetError());
+                }
+                resolutions.emplace_back(mode.w, mode.h, mode.refresh_rate);
             }
-            resolutions.emplace_back(mode.w, mode.h, mode.refresh_rate);
         }
         return resolutions;
     }
 
-    bool RoninSimulator::SetDisplayResolution(const Resolution &new_resolution)
+    bool RoninSimulator::SetWindowResolution(const Resolution &new_resolution)
     {
         if(active_window == nullptr)
         {
@@ -378,6 +391,10 @@ namespace RoninEngine
         if(result)
         {
             active_resolution = new_resolution;
+        }
+        else
+        {
+            RoninSimulator::ShowMessage(SDL_GetError());
         }
         return result;
     }
