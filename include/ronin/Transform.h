@@ -12,6 +12,7 @@ namespace RoninEngine::Runtime
         Transform *m_parent;
         Vec2 _position;
         float _angle_;
+        int _layer_;
 
     protected:
         std::list<Transform *> hierarchy;
@@ -20,8 +21,6 @@ namespace RoninEngine::Runtime
         void parent_notify_active_state(GameObject *from);
 
     public:
-        int layer;
-
         Transform();
         Transform(const std::string &name);
 
@@ -39,6 +38,7 @@ namespace RoninEngine::Runtime
         void LookAtLerp(Transform *target, float t);
 
         void AsFirstChild();
+        void AsLastChild();
 
         bool ChildContain(Transform *child);
         void ChildAdd(Transform *child);
@@ -95,6 +95,10 @@ namespace RoninEngine::Runtime
         void angle(float value);
         float localAngle() const;
         void localAngle(float value);
+
+        // Layer for order
+        int layer();
+        void layer(int value);
 
         static Transform *root();
     };

@@ -1,6 +1,8 @@
 #include "ronin.h"
 #include "ronin_matrix.h"
 
+using namespace RoninEngine::Exception;
+
 namespace RoninEngine::Runtime
 {
     static const Vec2 around_frwd {1, 1};
@@ -18,7 +20,7 @@ namespace RoninEngine::Runtime
         }
 
         if(!newParent)
-            hierarchy_append(World::self()->internal_resources->main_object->transform(), from); // nullptr as Root
+            hierarchy_append(World::self()->irs->main_object->transform(), from); // nullptr as Root
         else
         {
             from->m_parent = newParent;
@@ -54,10 +56,29 @@ namespace RoninEngine::Runtime
             from->hierarchy.emplace_back(off);
         }
     }
-    bool hierarchy_sibiling(Transform *from, int index)
+    void hierarchy_sibiling(Transform *from, Transform *off, int index)
     {
         // TODO: Set sibling for Transform component
-        return false;
+        decltype(from->hierarchy)::iterator __off_pos, __target, __end = std::end(from->hierarchy);
+        __off_pos = __target = __end;
+        for(auto iter = std::begin(from->hierarchy); (__off_pos == __end || __target == __end) && iter != __end; ++iter)
+        {
+            if(__off_pos != __end)
+            {
+                if(index == 0)
+                    __off_pos = iter;
+                --index;
+            }
+
+            if(__target != __end)
+            {
+                if((*iter) == off)
+                    __target = iter;
+            }
+        }
+
+        if(__target != __end && __off_pos != __end)
+            std::swap(__off_pos, __target);
     }
 
     Transform::Transform() : Transform(DESCRIBE_AS_MAIN_OFF(Transform))
@@ -69,7 +90,7 @@ namespace RoninEngine::Runtime
         DESCRIBE_AS_MAIN(Transform);
         m_parent = nullptr;
         _angle_ = 0;
-        layer = 1;
+        _layer_ = 0;
         // create matrix-slot for transform object
         Matrix::matrix_nature(this, Matrix::matrix_get_key(localPosition() + Vec2::one));
     }
@@ -99,7 +120,7 @@ namespace RoninEngine::Runtime
 
     Transform *Transform::root()
     {
-        return World::self()->internal_resources->main_object->transform();
+        return World::self()->irs->main_object->transform();
     }
 
     void Transform::LookAt(Transform *target)
@@ -183,7 +204,14 @@ namespace RoninEngine::Runtime
     {
         if(this->m_parent == nullptr)
             return;
-        hierarchy_sibiling(m_parent, 0); // 0 is first
+        hierarchy_sibiling(m_parent, this, 0); // 0 is first
+    }
+
+    void Transform::AsLastChild()
+    {
+        if(this->m_parent == nullptr)
+            return;
+        hierarchy_sibiling(m_parent, this, m_parent->hierarchy.size() - 1); // N-1 is last
     }
 
     bool Transform::ChildContain(Transform *child)
@@ -345,6 +373,21 @@ namespace RoninEngine::Runtime
         this->_angle_ = value;
     }
 
+    int Transform::layer()
+    {
+        return _layer_;
+    }
+
+    void Transform::layer(int value)
+    {
+        // TODO: Set the layer component, notify to matrix changed
+        // Delete from matrix, for is not active object
+        Matrix::matrix_nature_pickup(this);
+        _layer_ = value;
+        // Add to matrix, for active object
+        Matrix::matrix_nature(this, Matrix::matrix_get_key(Vec2::infinity));
+    }
+
     Transform *Transform::parent() const
     {
         return m_parent;
@@ -362,7 +405,7 @@ namespace RoninEngine::Runtime
         hierarchy_parent_change(this, parent);
         // change position child
         this->parent_notify(lastParentPoint);
-        this->layer = parent->layer << 1;
+        this->_layer_ = parent->_layer_ << 1;
     }
 
 } // namespace RoninEngine::Runtime

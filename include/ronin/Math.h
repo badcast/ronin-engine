@@ -70,6 +70,12 @@ namespace RoninEngine::Runtime
             return x;
         }
 
+        template <typename T>
+        static T OutsideNonZero(T x)
+        {
+            return Outside(x, static_cast<T>(1), static_cast<T>(-1));
+        }
+
         static float Clamp01(float val);
 
         template <typename T>

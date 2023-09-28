@@ -129,16 +129,16 @@ namespace RoninEngine::Runtime
 
             if(Behaviour *script = dynamic_cast<Behaviour *>(component))
             {
-                World::self()->internal_bind_script(script);
+                internal_bind_script(script);
                 script->OnAwake();
             }
             else if(Renderer *rend = dynamic_cast<Renderer *>(component))
             {
-                // awake on renderer
+                // TODO: awake on renderer
             }
             else if(Light *light = dynamic_cast<Light *>(component))
             {
-                World::self()->push_light_object(light);
+                // TODO: awake on Light
             }
         }
 

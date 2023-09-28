@@ -57,7 +57,7 @@ namespace RoninEngine::Runtime
         if(!HasInit())
             return -1;
 
-        WorldResources *__world_resources = World::self()->internal_resources;
+        WorldResources *__world_resources = World::self()->irs;
         int channel = __world_resources->audio_channels++;
 
         if(__world_resources->audio_channels > __world_resources->audio_reserved_channels)

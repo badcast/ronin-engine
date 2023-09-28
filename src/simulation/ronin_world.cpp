@@ -34,16 +34,16 @@ namespace RoninEngine
                 throw ronin_null_error();
             }
 
-            if(world->internal_resources == nullptr)
+            if(world->irs == nullptr)
             {
                 // reallocate channels
                 Mix_AllocateChannels(MIX_CHANNELS);
 
-                RoninMemory::alloc_self(world->internal_resources);
-                RoninMemory::alloc_self(world->internal_resources->gui, world);
+                RoninMemory::alloc_self(world->irs);
+                RoninMemory::alloc_self(world->irs->gui, world);
 
                 // set state load
-                world->internal_resources->request_unloading = false;
+                world->irs->request_unloading = false;
 
                 pinned_worlds.insert(world);
             }
@@ -59,7 +59,7 @@ namespace RoninEngine
                 throw ronin_null_error();
             }
 
-            if(world->internal_resources == nullptr)
+            if(world->irs == nullptr)
                 return false;
 
             lastWorld = switched_world;
@@ -71,7 +71,7 @@ namespace RoninEngine
             world->OnUnloading();
 
             // Free Game Objects
-            target = world->internal_resources->main_object;
+            target = world->irs->main_object;
             std::list<GameObject *> stacks;
             // free objects
             while(target)
@@ -94,34 +94,34 @@ namespace RoninEngine
                     stacks.pop_front();
                 }
             }
-            world->internal_resources->main_object = nullptr;
+            world->irs->main_object = nullptr;
 
-            if(world->internal_resources->_firstRunScripts)
+            if(world->irs->_firstRunScripts)
             {
-                RoninMemory::free(world->internal_resources->_firstRunScripts);
-                world->internal_resources->_firstRunScripts = nullptr;
+                RoninMemory::free(world->irs->_firstRunScripts);
+                world->irs->_firstRunScripts = nullptr;
             }
-            if(world->internal_resources->_realtimeScripts)
+            if(world->irs->_realtimeScripts)
             {
-                RoninMemory::free(world->internal_resources->_realtimeScripts);
-                world->internal_resources->_realtimeScripts = nullptr;
+                RoninMemory::free(world->irs->_realtimeScripts);
+                world->irs->_realtimeScripts = nullptr;
             }
-            if(world->internal_resources->_destructTasks)
+            if(world->irs->_destructTasks)
             {
-                RoninMemory::free(world->internal_resources->_destructTasks);
-                world->internal_resources->_destructTasks = nullptr;
+                RoninMemory::free(world->irs->_destructTasks);
+                world->irs->_destructTasks = nullptr;
             }
 
             // free GUI objects
-            if(world->internal_resources->gui)
+            if(world->irs->gui)
             {
-                RoninMemory::free(world->internal_resources->gui);
-                world->internal_resources->gui = nullptr;
+                RoninMemory::free(world->irs->gui);
+                world->irs->gui = nullptr;
             }
 
             // NOTE: Free Local Resources
-            gid_resources_free(world->internal_resources->external_local_resources);
-            world->internal_resources->external_local_resources = nullptr;
+            gid_resources_free(world->irs->external_local_resources);
+            world->irs->external_local_resources = nullptr;
 
             // Halt all channels
             Mix_HaltChannel(-1);
@@ -129,35 +129,267 @@ namespace RoninEngine
             // reallocate channels
             Mix_AllocateChannels(MIX_CHANNELS);
 
-            if(!world->internal_resources->world_objects.empty())
-            {
-                throw ronin_cant_release_error();
-            }
-
             // free native resources
-            for(Sprite *sprite : world->internal_resources->offload_sprites)
+            for(Sprite *sprite : world->irs->offload_sprites)
             {
                 RoninMemory::free(sprite);
             }
 
-            for(SDL_Surface *surface : world->internal_resources->offload_surfaces)
+            for(SDL_Surface *surface : world->irs->offload_surfaces)
             {
                 SDL_FreeSurface(surface);
             }
 
-            for(CameraResource *cam_res : world->internal_resources->camera_resources)
+            for(CameraResource *cam_res : world->irs->camera_resources)
             {
                 RoninMemory::free(cam_res);
             }
 
-            RoninMemory::free(world->internal_resources);
-            world->internal_resources = nullptr;
+            RoninMemory::free(world->irs);
+            world->irs = nullptr;
 
             pinned_worlds.erase(world);
 
             switched_world = lastWorld;
             return true;
         }
+
+        void internal_bind_script(Behaviour *script)
+        {
+            if(!switched_world->irs->_firstRunScripts)
+                RoninMemory::alloc_self(switched_world->irs->_firstRunScripts);
+
+            if(std::find_if(
+                   begin(*(switched_world->irs->_firstRunScripts)),
+                   end(*(switched_world->irs->_firstRunScripts)),
+                   std::bind2nd(std::equal_to<Behaviour *>(), script)) == end(*(switched_world->irs->_firstRunScripts)))
+            {
+                if(switched_world->irs->_realtimeScripts &&
+                   std::find_if(
+                       begin(*(switched_world->irs->_realtimeScripts)),
+                       end(*(switched_world->irs->_realtimeScripts)),
+                       std::bind2nd(std::equal_to<Behaviour *>(), script)) != end(*(switched_world->irs->_realtimeScripts)))
+                    return;
+
+                switched_world->irs->_firstRunScripts->emplace_back(script);
+            }
+        }
+
+        void runtime_destructs()
+        {
+            switched_world->irs->_destroyed = 0;
+            // Destroy queue objects
+            if(switched_world->irs->_destructTasks &&
+               switched_world->irs->_destroy_delay_time < TimeEngine::time())
+            {
+                float time = TimeEngine::time();
+                std::map<float, std::set<GameObject *>>::iterator xiter = std::end(*(switched_world->irs->_destructTasks)),
+                                                                  yiter = std::end(*(switched_world->irs->_destructTasks));
+                for(std::pair<const float, std::set<GameObject *>> &pair : *(switched_world->irs->_destructTasks))
+                {
+                    // The time for the destruction of the object has not yet come
+                    if(pair.first > time)
+                    {
+                        switched_world->irs->_destroy_delay_time = pair.first;
+                        break;
+                    }
+                    if(xiter == std::end(*(switched_world->irs->_destructTasks)))
+                        xiter = yiter = std::begin(*(switched_world->irs->_destructTasks));
+
+                    // destroy
+                    for(auto target : pair.second)
+                    {
+                        if(target->exists())
+                        {
+                            // run destructor
+                            destroy_immediate(target);
+                            ++(switched_world->irs->_destroyed);
+                        }
+                    }
+                    ++yiter;
+                }
+
+                if(xiter != yiter)
+                    switched_world->irs->_destructTasks->erase(xiter, yiter);
+
+                if(switched_world->irs->_destructTasks->empty())
+                {
+                    RoninMemory::free(switched_world->irs->_destructTasks);
+                    switched_world->irs->_destructTasks = nullptr;
+                }
+            }
+        }
+
+        void level_render_world()
+        {
+            // set default color
+            Gizmos::SetColor(Color::white);
+
+            TimeEngine::begin_watch();
+
+            if(switched_world->irs->_firstRunScripts)
+            {
+                if(!switched_world->irs->_realtimeScripts)
+                {
+                    RoninMemory::alloc_self(switched_world->irs->_realtimeScripts);
+                }
+
+                for(Behaviour *exec : *(switched_world->irs->_firstRunScripts))
+                {
+                    if(exec->gameObject()->m_active)
+                        exec->OnStart(); // go start (first draw)
+                    switched_world->irs->_realtimeScripts->emplace_back(exec);
+                }
+                RoninMemory::free(switched_world->irs->_firstRunScripts);
+                switched_world->irs->_firstRunScripts = nullptr;
+            }
+
+            if(switched_world->irs->_realtimeScripts)
+            {
+                for(Behaviour *exec : *(switched_world->irs->_realtimeScripts))
+                {
+                    if(exec->gameObject()->m_active)
+                        exec->OnUpdate();
+                };
+            }
+            queue_watcher.ms_wait_exec_scripts = TimeEngine::end_watch();
+            // end watcher
+
+            TimeEngine::begin_watch();
+            // Render on main camera
+            Camera *cam = Camera::mainCamera(); // Draw level from active camera (main)
+            if(!switched_world->irs->request_unloading && cam)
+            {
+                // draw world in world size
+                RoninEngine::Runtime::native_render_2D(reinterpret_cast<Camera2D *>(cam));
+            }
+            queue_watcher.ms_wait_render_world = TimeEngine::end_watch();
+
+            // begin watcher
+            TimeEngine::begin_watch();
+            if(!switched_world->irs->request_unloading && cam)
+            {
+                switched_world->OnGizmos(); // Draw gizmos
+
+                if(switched_world->irs->_realtimeScripts)
+                {
+                    for(auto exec : *(switched_world->irs->_realtimeScripts))
+                    {
+                        if(exec->gameObject()->m_active)
+                            exec->OnGizmos();
+                    };
+                }
+            }
+            if(ronin_debug_mode)
+            {
+                using Gizmos = RoninEngine::Runtime::Gizmos;
+                constexpr int font_height = 12;
+
+                static struct
+                {
+                    const char *label;
+
+                    std::uint32_t value;
+                    std::string format;
+                    Color format_color;
+                } elements[] = {{"Render Frame", 0}, {"GUI", 0}, {"Scripts", 0}, {"Render", 0}, {"Gizmos", 0}, {"Memory", 0}};
+
+                static std::uint32_t max_elements = sizeof(elements) / sizeof(elements[0]);
+                static std::uint32_t max;
+                static std::uint32_t averrage;
+
+                Vec2 g_size = Vec2 {138, static_cast<float>(font_height * (max_elements + 2))};
+                Vec2Int screen_point = Vec2::RoundToInt({g_size.x, static_cast<float>(active_resolution.height)});
+                Vec2 g_pos = Camera::ScreenToWorldPoint({screen_point.x / 2.f, screen_point.y - g_size.y / 2});
+                int x;
+
+                if(TimeEngine::frame() % 10 == 0)
+                {
+                    TimingWatcher stat = RoninSimulator::GetTimingWatches();
+                    // Update data
+                    elements[0].value = stat.ms_wait_frame;
+                    elements[1].value = stat.ms_wait_render_gui;
+                    elements[2].value = stat.ms_wait_exec_scripts + stat.ms_wait_exec_world;
+                    elements[3].value = stat.ms_wait_render_world;
+                    elements[4].value = stat.ms_wait_render_gizmos;
+                    elements[5].value = get_process_sizeMemory() / 1024 / 1024;
+
+                    // calculate averrage and max
+                    max = 0;
+                    averrage = 0;
+                    for(x = 1; x < max_elements - 1; ++x)
+                    {
+                        max = std::max(elements[x].value, max);
+                        averrage += elements[x].value;
+                    }
+                    averrage /= std::max(1, x);
+
+                    // format text
+                    for(x = 0; x < max_elements; ++x)
+                    {
+                        if(x != 0)
+                            elements[x].format = " > ";
+                        else
+                            elements[x].format.clear();
+                        elements[x].format += elements[x].label;
+                        elements[x].format += ": " + std::to_string(elements[x].value) + ' ';
+
+                        // format color
+                        if(max && elements[x].value == max)
+                            elements[x].format_color = Color::red;
+                        else if(averrage && elements[x].value >= averrage)
+                            elements[x].format_color = Color::yellow;
+                        else
+                            elements[x].format_color = Color::white;
+                    }
+
+                    // write ISO
+                    // ms
+                    for(x = 0; x < max_elements - 1; ++x)
+                        elements[x].format += "ms";
+                    elements[x].format += "MiB";
+                    elements[x].format_color = Color::white;
+                }
+
+                // Set background color
+                Gizmos::SetColor(Color(0, 0, 0, 100));
+
+                // Draw box
+                Gizmos::DrawFillRectRounded(g_pos, g_size.x / pixelsPerPoint, g_size.y / pixelsPerPoint, 8);
+
+                screen_point.x = 10;
+                screen_point.y -= static_cast<int>(g_size.y) - font_height / 2;
+                Gizmos::SetColor(Color::white);
+                Gizmos::DrawTextToScreen(screen_point, elements[0].format, font_height);
+                for(x = 1; x < max_elements; ++x)
+                {
+                    Gizmos::SetColor(elements[x].format_color);
+
+                    screen_point.y += font_height + 1;
+                    Gizmos::DrawTextToScreen(screen_point, elements[x].format, font_height);
+                }
+            }
+            queue_watcher.ms_wait_render_gizmos = TimeEngine::end_watch();
+            // end watcher
+
+            TimeEngine::begin_watch();
+            if(!switched_world->irs->request_unloading)
+                runtime_destructs();
+            queue_watcher.ms_wait_destructions = TimeEngine::end_watch();
+        }
+
+        void level_render_world_late()
+        {
+            if(switched_world->irs->_realtimeScripts)
+            {
+                for(auto exec : *(switched_world->irs->_realtimeScripts))
+                {
+                    if(exec->gameObject()->m_active)
+                        exec->OnLateUpdate();
+                }
+            }
+        }
+
     } // namespace Runtime
 
     World::World(const std::string &name) : m_name(name)
@@ -175,7 +407,7 @@ namespace RoninEngine
     {
         std::list<Transform *> damaged;
 
-        for(auto x = std::begin(switched_world->internal_resources->matrix); x != end(switched_world->internal_resources->matrix); ++x)
+        for(auto x = std::begin(switched_world->irs->matrix); x != end(switched_world->irs->matrix); ++x)
         {
             for(auto y = begin(x->second); y != end(x->second); ++y)
             {
@@ -202,9 +434,9 @@ namespace RoninEngine
         for(Transform *dam : damaged_content)
         {
             Vec2Int find = Matrix::matrix_get_key(dam->position());
-            auto vertList = switched_world->internal_resources->matrix.find(find);
+            auto vertList = switched_world->irs->matrix.find(find);
 
-            if(vertList == std::end(switched_world->internal_resources->matrix))
+            if(vertList == std::end(switched_world->irs->matrix))
                 continue;
 
             // FIXME: Hash function is collision
@@ -225,16 +457,16 @@ namespace RoninEngine
 
     int World::GetCulled()
     {
-        if(internal_resources == nullptr || internal_resources->main_camera == nullptr)
+        if(irs == nullptr || irs->main_camera == nullptr)
             return -1;
 
-        return internal_resources->main_camera->camera_resources->renders.size();
+        return irs->main_camera->camera_resources->culled;
     }
 
     int World::matrix_count_cache()
     {
         int cached = 0;
-        auto &matrix = this->internal_resources->matrix;
+        auto &matrix = this->irs->matrix;
         cached = static_cast<int>(std::count_if(
             matrix.begin(),
             matrix.end(),
@@ -248,9 +480,9 @@ namespace RoninEngine
 
     int World::matrix_clear_cache()
     {
-        std::list<typename decltype(this->internal_resources->matrix)::iterator> cached {};
-        auto matrix = &this->internal_resources->matrix;
-        for(auto iter = std::begin(internal_resources->matrix), _end = std::end(internal_resources->matrix); iter != _end; ++iter)
+        std::list<typename decltype(this->irs->matrix)::iterator> cached {};
+        auto matrix = &this->irs->matrix;
+        for(auto iter = std::begin(irs->matrix), _end = std::end(irs->matrix); iter != _end; ++iter)
         {
             if(iter->second.empty())
             {
@@ -260,7 +492,7 @@ namespace RoninEngine
 
         for(auto &iter_ref : cached)
         {
-            internal_resources->matrix.erase(iter_ref);
+            irs->matrix.erase(iter_ref);
         }
 
         return cached.size();
@@ -272,7 +504,7 @@ namespace RoninEngine
         std::string delims;
         std::string result;
         std::list<Runtime::Transform *> stack;
-        Transform *target = this->internal_resources->main_object->transform();
+        Transform *target = this->irs->main_object->transform();
 
         while(target)
         {
@@ -297,257 +529,9 @@ namespace RoninEngine
         return result;
     }
 
-    void World::push_light_object(Light *light)
-    {
-        internal_resources->_assoc_lightings.emplace_front(light);
-    }
-
-    void World::push_object(Object *obj)
-    {
-        internal_resources->world_objects.insert(obj);
-    }
-
-    void World::internal_bind_script(Behaviour *script)
-    {
-        if(!internal_resources->_firstRunScripts)
-            RoninMemory::alloc_self(internal_resources->_firstRunScripts);
-
-        if(std::find_if(
-               begin(*(this->internal_resources->_firstRunScripts)),
-               end(*(this->internal_resources->_firstRunScripts)),
-               std::bind2nd(std::equal_to<Behaviour *>(), script)) == end(*(internal_resources->_firstRunScripts)))
-        {
-            if(internal_resources->_realtimeScripts &&
-               std::find_if(
-                   begin(*(internal_resources->_realtimeScripts)),
-                   end(*(internal_resources->_realtimeScripts)),
-                   std::bind2nd(std::equal_to<Behaviour *>(), script)) != end(*(internal_resources->_realtimeScripts)))
-                return;
-
-            internal_resources->_firstRunScripts->emplace_back(script);
-        }
-    }
-
-    void World::runtime_destructs()
-    {
-        internal_resources->_destroyed = 0;
-        // Destroy queue objects
-        if(internal_resources->_destructTasks && internal_resources->_destroy_delay_time < TimeEngine::time())
-        {
-            float time = TimeEngine::time();
-            std::map<float, std::set<GameObject *>>::iterator xiter = std::end(*(internal_resources->_destructTasks)),
-                                                              yiter = std::end(*(internal_resources->_destructTasks));
-            for(std::pair<const float, std::set<GameObject *>> &pair : *(internal_resources->_destructTasks))
-            {
-                // The time for the destruction of the object has not yet come
-                if(pair.first > time)
-                {
-                    internal_resources->_destroy_delay_time = pair.first;
-                    break;
-                }
-                if(xiter == std::end(*(internal_resources->_destructTasks)))
-                    xiter = yiter = std::begin(*(internal_resources->_destructTasks));
-
-                // destroy
-                for(auto target : pair.second)
-                {
-                    if(target->exists())
-                    {
-                        // run destructor
-                        destroy_immediate(target);
-                        ++(internal_resources->_destroyed);
-                    }
-                }
-                ++yiter;
-            }
-
-            if(xiter != yiter)
-                internal_resources->_destructTasks->erase(xiter, yiter);
-
-            if(internal_resources->_destructTasks->empty())
-            {
-                RoninMemory::free(internal_resources->_destructTasks);
-                internal_resources->_destructTasks = nullptr;
-            }
-        }
-    }
-
-    void World::level_render_world()
-    {
-        // set default color
-        Gizmos::SetColor(Color::white);
-
-        TimeEngine::begin_watch();
-
-        if(internal_resources->_firstRunScripts)
-        {
-            if(!internal_resources->_realtimeScripts)
-            {
-                RoninMemory::alloc_self(internal_resources->_realtimeScripts);
-            }
-
-            for(Behaviour *exec : *(internal_resources->_firstRunScripts))
-            {
-                if(exec->gameObject()->m_active)
-                    exec->OnStart(); // go start (first draw)
-                internal_resources->_realtimeScripts->emplace_back(exec);
-            }
-            RoninMemory::free(internal_resources->_firstRunScripts);
-            internal_resources->_firstRunScripts = nullptr;
-        }
-
-        if(internal_resources->_realtimeScripts)
-        {
-            for(Behaviour *exec : *(internal_resources->_realtimeScripts))
-            {
-                if(exec->gameObject()->m_active)
-                    exec->OnUpdate();
-            };
-        }
-        queue_watcher.ms_wait_exec_scripts = TimeEngine::end_watch();
-        // end watcher
-
-        TimeEngine::begin_watch();
-        // Render on main camera
-        Camera *cam = Camera::mainCamera(); // Draw level from active camera (main)
-        if(!switched_world->internal_resources->request_unloading && cam)
-        {
-            // FlushCache last result
-            if(cam->camera_resources->targetClear)
-                cam->camera_resources->renders.clear();
-
-            // draw world in world size
-            RoninEngine::Runtime::native_render_2D(reinterpret_cast<Camera2D *>(cam));
-        }
-        queue_watcher.ms_wait_render_world = TimeEngine::end_watch();
-
-        // begin watcher
-        TimeEngine::begin_watch();
-        if(!switched_world->internal_resources->request_unloading && cam)
-        {
-            this->OnGizmos(); // Draw gizmos
-
-            if(internal_resources->_realtimeScripts)
-            {
-                for(auto exec : *(internal_resources->_realtimeScripts))
-                {
-                    if(exec->gameObject()->m_active)
-                        exec->OnGizmos();
-                };
-            }
-        }
-        if(ronin_debug_mode)
-        {
-            using Gizmos = RoninEngine::Runtime::Gizmos;
-            constexpr int font_height = 12;
-
-            static struct
-            {
-                const char *label;
-
-                std::uint32_t value;
-                std::string format;
-                Color format_color;
-            } elements[] = {{"Render Frame", 0}, {"GUI", 0}, {"Scripts", 0}, {"Render", 0}, {"Gizmos", 0}, {"Memory", 0}};
-
-            static std::uint32_t max_elements = sizeof(elements) / sizeof(elements[0]);
-            static std::uint32_t max;
-            static std::uint32_t averrage;
-
-            Vec2 g_size = Vec2 {138, static_cast<float>(font_height * (max_elements + 2))};
-            Vec2Int screen_point = Vec2::RoundToInt({g_size.x, static_cast<float>(active_resolution.height)});
-            Vec2 g_pos = Camera::ScreenToWorldPoint({screen_point.x / 2.f, screen_point.y - g_size.y / 2});
-            int x;
-
-            if(TimeEngine::frame() % 10 == 0)
-            {
-                TimingWatcher stat = RoninSimulator::GetTimingWatches();
-                // Update data
-                elements[0].value = stat.ms_wait_frame;
-                elements[1].value = stat.ms_wait_render_gui;
-                elements[2].value = stat.ms_wait_exec_scripts + stat.ms_wait_exec_world;
-                elements[3].value = stat.ms_wait_render_world;
-                elements[4].value = stat.ms_wait_render_gizmos;
-                elements[5].value = get_process_sizeMemory() / 1024 / 1024;
-
-                // calculate averrage and max
-                max = 0;
-                averrage = 0;
-                for(x = 1; x < max_elements - 1; ++x)
-                {
-                    max = std::max(elements[x].value, max);
-                    averrage += elements[x].value;
-                }
-                averrage /= std::max(1, x);
-
-                // format text
-                for(x = 0; x < max_elements; ++x)
-                {
-                    if(x != 0)
-                        elements[x].format = " > ";
-                    else
-                        elements[x].format.clear();
-                    elements[x].format += elements[x].label;
-                    elements[x].format += ": " + std::to_string(elements[x].value) + ' ';
-
-                    // format color
-                    if(max && elements[x].value == max)
-                        elements[x].format_color = Color::red;
-                    else if(averrage && elements[x].value >= averrage)
-                        elements[x].format_color = Color::yellow;
-                    else
-                        elements[x].format_color = Color::white;
-                }
-
-                // write ISO
-                // ms
-                for(x = 0; x < max_elements - 1; ++x)
-                    elements[x].format += "ms";
-                elements[x].format += "MiB";
-                elements[x].format_color = Color::white;
-            }
-
-            // Set background color
-            Gizmos::SetColor(Color(0, 0, 0, 100));
-
-            // Draw box
-            Gizmos::DrawFillRectRounded(g_pos, g_size.x / pixelsPerPoint, g_size.y / pixelsPerPoint, 8);
-
-            screen_point.x = 10;
-            screen_point.y -= static_cast<int>(g_size.y) - font_height / 2;
-            Gizmos::SetColor(Color::white);
-            Gizmos::DrawTextToScreen(screen_point, elements[0].format, font_height);
-            for(x = 1; x < max_elements; ++x)
-            {
-                Gizmos::SetColor(elements[x].format_color);
-
-                screen_point.y += font_height + 1;
-                Gizmos::DrawTextToScreen(screen_point, elements[x].format, font_height);
-            }
-        }
-        queue_watcher.ms_wait_render_gizmos = TimeEngine::end_watch();
-        // end watcher
-
-        TimeEngine::begin_watch();
-        if(!switched_world->internal_resources->request_unloading)
-            runtime_destructs();
-        queue_watcher.ms_wait_destructions = TimeEngine::end_watch();
-    }
-
-    void World::level_render_world_late()
-    {
-        if(internal_resources->_realtimeScripts)
-        {
-            for(auto exec : *(internal_resources->_realtimeScripts))
-            {
-                if(exec->gameObject()->m_active)
-                    exec->OnLateUpdate();
-            }
-        }
-    }
     bool World::isHierarchy()
     {
-        return this->internal_resources->main_object != nullptr;
+        return this->irs->main_object != nullptr;
     }
 
     std::string &World::name()
@@ -557,23 +541,23 @@ namespace RoninEngine
 
     UI::GUI *World::getGUI()
     {
-        return this->internal_resources->gui;
+        return this->irs->gui;
     }
 
     void World::RequestUnload()
     {
-        this->internal_resources->request_unloading = true;
+        this->irs->request_unloading = true;
     }
 
     int World::GetDestroyedFrames()
     {
-        return internal_resources->_destroyed;
+        return irs->_destroyed;
     }
 
     std::list<GameObject *> World::GetAllGameObjects()
     {
         std::list<GameObject *> all_gobjects;
-        GameObject *next = internal_resources->main_object;
+        GameObject *next = irs->main_object;
 
         while(next)
         {
@@ -610,9 +594,9 @@ namespace RoninEngine
         {
             RoninSimulator::BreakSimulate();
         }
-        else if(World::self()->internal_resources->_destructTasks)
+        else if(World::self()->irs->_destructTasks)
         {
-            for(std::pair<const float, std::set<GameObject *>> &mapIter : *World::self()->internal_resources->_destructTasks)
+            for(std::pair<const float, std::set<GameObject *>> &mapIter : *World::self()->irs->_destructTasks)
             {
                 auto iter = mapIter.second.find(obj);
                 if(iter != std::end(mapIter.second))
@@ -633,10 +617,10 @@ namespace RoninEngine
             RoninSimulator::BreakSimulate();
             return false;
         }
-        if(World::self()->internal_resources->_destructTasks)
+        if(World::self()->irs->_destructTasks)
         {
             x = 0;
-            for(std::pair<const float, std::set<GameObject *>> &mapIter : *World::self()->internal_resources->_destructTasks)
+            for(std::pair<const float, std::set<GameObject *>> &mapIter : *World::self()->irs->_destructTasks)
             {
                 if(mapIter.second.find(obj) != std::end(mapIter.second))
                 {
@@ -657,9 +641,9 @@ namespace RoninEngine
     const int World::CountObjectDestruction()
     {
         int x = 0;
-        if(World::self()->internal_resources->_destructTasks)
+        if(World::self()->irs->_destructTasks)
         {
-            for(std::pair<const float, std::set<GameObject *>> &mapIter : *World::self()->internal_resources->_destructTasks)
+            for(std::pair<const float, std::set<GameObject *>> &mapIter : *World::self()->irs->_destructTasks)
             {
                 x += mapIter.second.size();
             }

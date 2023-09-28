@@ -1,6 +1,8 @@
 #include "ronin.h"
 #include "ronin_matrix.h"
 
+using namespace RoninEngine::Exception;
+
 namespace RoninEngine
 {
     namespace Runtime
@@ -62,7 +64,7 @@ namespace RoninEngine
                     if(!World::self()->isHierarchy())
                         throw std::runtime_error(">mainObject is null");
 
-                    auto mainObj = World::self()->internal_resources->main_object;
+                    auto mainObj = World::self()->irs->main_object;
                     auto root = mainObj->transform();
                     Transform *tr = ((GameObject *) clone)->transform();
                     root->ChildAdd(tr);
@@ -111,7 +113,7 @@ namespace RoninEngine
             }
             else if constexpr(std::is_same<T, Behaviour>::value)
             {
-                WorldResources *wrs = World::self()->internal_resources;
+                WorldResources *wrs = World::self()->irs;
                 if(wrs->_firstRunScripts)
                     wrs->_firstRunScripts->remove(obj);
                 if(wrs->_realtimeScripts)
@@ -119,13 +121,15 @@ namespace RoninEngine
             }
             else if constexpr(std::is_same<T, Camera2D>::value)
             {
-                World::self()->internal_resources->event_camera_changed(obj, CameraEvent::CAM_DELETED);
+                World::self()->irs->event_camera_changed(obj, CameraEvent::CAM_DELETED);
 
                 // release main object
                 RoninMemory::free(obj->camera_resources);
             }
 
-            World::self()->internal_resources->world_objects.erase(obj);
+            // Extractor remove
+            obj->__ = nullptr;
+
             RoninMemory::free(obj);
         }
 
@@ -175,12 +179,12 @@ namespace RoninEngine
             if(!obj || !World::self() || t < 0)
                 throw std::bad_exception();
 
-            auto provider = World::self()->internal_resources->_destructTasks;
+            auto provider = World::self()->irs->_destructTasks;
 
             if(!provider)
             {
-                provider = World::self()->internal_resources->_destructTasks =
-                    RoninMemory::alloc<std::remove_pointer<decltype(World::self()->internal_resources->_destructTasks)>::type>();
+                provider = World::self()->irs->_destructTasks =
+                    RoninMemory::alloc<std::remove_pointer<decltype(World::self()->irs->_destructTasks)>::type>();
             }
             else
             {
@@ -221,7 +225,8 @@ namespace RoninEngine
 
             obj->m_components.clear();
 
-            World::self()->internal_resources->world_objects.erase(obj);
+            // remove extractor flag
+            obj->__ = nullptr;
 
             // START FREE OBJECT
             RoninMemory::free(obj);
@@ -231,10 +236,9 @@ namespace RoninEngine
         {
             if(!obj)
                 return false;
-            if(!World::self())
-                throw std::bad_exception();
-            auto iter = World::self()->internal_resources->world_objects.find(obj);
-            return iter != end(World::self()->internal_resources->world_objects);
+            if(!switched_world)
+                throw ronin_null_error();
+            return reinterpret_cast<std::size_t>(obj->__) == reinterpret_cast<std::size_t>(switched_world);
         }
 
         GameObject *Instantiate(GameObject *obj)
@@ -315,8 +319,9 @@ namespace RoninEngine
             if(World::self() == nullptr)
                 throw std::bad_exception();
 
-            id = World::self()->internal_resources->_level_ids_++;
-            World::self()->push_object(this);
+            id = World::self()->irs->_level_ids_++;
+            // set as instanced
+            __ = switched_world;
         }
 
         const bool Object::exists()

@@ -7,19 +7,10 @@ namespace RoninEngine::Runtime
     class RONIN_API World
     {
     private:
-        struct WorldResources *internal_resources = nullptr;
-
-        void internal_bind_script(Behaviour *);
-        void push_light_object(Light *);
-        void push_object(Object *);
+        struct WorldResources *irs;
+        std::string m_name;
 
     protected:
-        std::string m_name;
-        virtual void runtime_destructs();
-
-        virtual void level_render_world();
-        virtual void level_render_world_late();
-
         virtual void OnAwake();
         virtual void OnStart();
         virtual void OnUpdate();

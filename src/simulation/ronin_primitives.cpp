@@ -28,7 +28,7 @@ namespace RoninEngine::Runtime
     {
         Sprite *sprite;
         RoninMemory::alloc_self(sprite);
-        World::self()->internal_resources->offload_sprites.push_back(sprite);
+        World::self()->irs->offload_sprites.push_back(sprite);
         return sprite;
     }
 
@@ -45,9 +45,9 @@ namespace RoninEngine::Runtime
         SDL_LockSurface(surface);
         SDL_memset4(surface->pixels, fillColor, surface->w * surface->h);
         SDL_UnlockSurface(surface);
-        World::self()->internal_resources->offload_surfaces.push_back(surface);
+        World::self()->irs->offload_surfaces.push_back(surface);
         RoninMemory::alloc_self(sprite, surface, Rect(0, 0, size.x, size.y));
-        World::self()->internal_resources->offload_sprites.push_back(sprite);
+        World::self()->irs->offload_sprites.push_back(sprite);
         return sprite;
     }
 
@@ -67,9 +67,9 @@ namespace RoninEngine::Runtime
         filledCircleColor(renderer, size.x / 2, size.y / 2, static_cast<std::uint16_t>(radius * pixelsPerPoint / 2) - 1, fillColor);
 
         SDL_DestroyRenderer(renderer);
-        World::self()->internal_resources->offload_surfaces.push_back(surface);
+        World::self()->irs->offload_surfaces.push_back(surface);
         RoninMemory::alloc_self(sprite, surface, Rect(0, 0, size.x, size.y));
-        World::self()->internal_resources->offload_sprites.push_back(sprite);
+        World::self()->irs->offload_sprites.push_back(sprite);
         return sprite;
     }
 
@@ -102,9 +102,9 @@ namespace RoninEngine::Runtime
         //            }
         //        }
         //        SDL_UnlockSurface(surface);
-        World::self()->internal_resources->offload_surfaces.push_back(surface);
+        World::self()->irs->offload_surfaces.push_back(surface);
         RoninMemory::alloc_self(sprite, surface, Rect {0, 0, static_cast<int>(size.x), static_cast<int>(size.y)});
-        World::self()->internal_resources->offload_sprites.push_back(sprite);
+        World::self()->irs->offload_sprites.push_back(sprite);
         return sprite;
     }
 

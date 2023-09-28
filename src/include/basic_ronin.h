@@ -6,31 +6,6 @@
 
 #include "ronin.h"
 
-static std::unordered_map<std::type_index, const char *> main_ronin_types;
-
-// this method for replacing C++ dynamic_cast
-template <typename T>
-static std::enable_if_t<std::is_base_of<RoninEngine::Runtime::Object, T>::value, const char *> runtime_define_type(
-    const char *typestr, T *self, char **_type_, const char *name)
-{
-    // param @self not use
-    if(_type_ != nullptr && *_type_ == nullptr)
-    {
-        std::type_index index {typeid(T)};
-        if(main_ronin_types.find(index) == std::end(main_ronin_types))
-            main_ronin_types[index] = typestr;
-
-        // set unique type (for delete dynamic_cast)
-        *_type_ = (char *) typestr;
-    }
-    if(name == nullptr)
-        return typestr;
-    else
-        return name;
-}
-
-extern void check_object(RoninEngine::Runtime::Object *obj);
-
 #ifndef NDEBUG
 #define TEST_MALLOC 0
 #endif
@@ -70,6 +45,38 @@ namespace std
     };
 
 } // namespace std
+
+static std::unordered_map<std::type_index, const char *> main_ronin_types;
+
+// this method for replacing C++ dynamic_cast
+template <typename T>
+static std::enable_if_t<std::is_base_of<RoninEngine::Runtime::Object, T>::value, const char *> runtime_define_type(
+    const char *typestr, T *self, char **_type_, const char *name)
+{
+    // param @self not use
+    if(_type_ != nullptr && *_type_ == nullptr)
+    {
+        std::type_index index {typeid(T)};
+        if(main_ronin_types.find(index) == std::end(main_ronin_types))
+            main_ronin_types[index] = typestr;
+
+        // set unique type (for delete dynamic_cast)
+        *_type_ = (char *) typestr;
+    }
+    if(name == nullptr)
+        return typestr;
+    else
+        return name;
+}
+
+void check_object(RoninEngine::Runtime::Object *obj);
+
+bool matrix_compare_layer(RoninEngine::Runtime::Transform const *lhs, RoninEngine::Runtime::Transform const *rhs);
+
+using MatrixLayerComparer = std::integral_constant<decltype(&matrix_compare_layer), &matrix_compare_layer>;
+
+typedef RoninEngine::Runtime::Vec2Int MatrixKey;
+typedef std::unordered_map<RoninEngine::Runtime::Vec2Int, std::multiset<RoninEngine::Runtime::Transform *, MatrixLayerComparer>> matrix_map_t;
 
 namespace RoninEngine
 {
@@ -162,9 +169,7 @@ namespace RoninEngine
 
         struct CameraResource
         {
-            bool targetClear;
-            std::map<int, std::vector<Renderer *>> renders;
-            std::set<Light *> _lightsOutResults;
+            int culled;
             std::set<Renderer *> prev;
         };
 
@@ -245,17 +250,12 @@ namespace RoninEngine
             std::map<float, std::set<GameObject *>> *_destructTasks;
 
             // Matrix
-            std::unordered_map<Vec2Int, std::set<Transform *>> matrix;
-
-            std::list<Light *> _assoc_lightings;
+            matrix_map_t matrix;
 
             std::list<CameraResource *> camera_resources;
 
             // External resources
             GidResources *external_local_resources;
-
-            // World object (use)
-            std::set<Object *> world_objects;
 
             // Main UI Object
             UI::GUI *gui;
@@ -276,6 +276,11 @@ namespace RoninEngine
 
         void internal_destroy_object_dyn(Object *obj);
 
+        void runtime_destructs();
+        void level_render_world();
+        void level_render_world_late();
+        void internal_bind_script(Behaviour *);
+
         // TODO: Complete that function for types
         template <typename T, typename std::enable_if<std::is_base_of<Object, T>::value, std::nullptr_t>::type = nullptr>
         void internal_destroy_object(T *obj);
@@ -287,7 +292,7 @@ namespace RoninEngine
         void hierarchy_remove(Transform *from, Transform *off);
         void hierarchy_remove_all(Transform *from);
         void hierarchy_append(Transform *from, Transform *off);
-        bool hierarchy_sibiling(Transform *from, int index);
+        void hierarchy_sibiling(Transform *from, Transform *off, int index);
 
         void gid_resources_free(GidResources *gid);
         SDL_Surface *private_load_surface(const void *memres, int length);
