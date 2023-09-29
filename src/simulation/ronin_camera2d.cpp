@@ -133,11 +133,10 @@ namespace RoninEngine::Runtime
         */
 #define MX (switched_world->irs->matrix)
         MatrixKey camKey = Matrix::matrix_get_key(stack.camera_position);
-
         // unordered_map<int,... <Transform*>>
         for(auto layer : MX)
         {
-            storm_cast_eq_edgess(
+            storm_cast_eq_edges(
                 camKey,
                 stack.edges,
                 [&](const Vec2Int &candidate)
@@ -146,9 +145,9 @@ namespace RoninEngine::Runtime
                     auto layerObject = layer.second.find(candidate);
                     if(layerObject != std::end(layer.second))
                     {
-                        for(Transform *iter : layerObject->second)
-                        {
-                            for(Component *component : iter->_owner->m_components)
+                        for(Transform *transform_object : layerObject->second)
+                        {break;
+                            for(Component *component : transform_object->_owner->m_components)
                             {
                                 Renderer *render_iobject;
                                 // This object not render component, then continue and to next iterator
@@ -216,7 +215,6 @@ namespace RoninEngine::Runtime
                     }
                 });
         }
-
 #undef MX
 
         // TODO: Render light

@@ -302,6 +302,6 @@ namespace RoninEngine
         SDL_Surface *private_load_surface(const void *memres, int length);
 
         void storm_cast_eq_all(Vec2Int origin, int edges, std::function<void(const Vec2Int &)> predicate);
-        void storm_cast_eq_edgess(Vec2Int origin, int edges, std::function<void(const Vec2Int &)> predicate);
+        void storm_cast_eq_edges(Vec2Int origin, int edges, std::function<void(const Vec2Int &)> predicate);
     } // namespace Runtime
 } // namespace RoninEngine
