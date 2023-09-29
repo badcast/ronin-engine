@@ -67,7 +67,7 @@ namespace RoninEngine
                     auto mainObj = World::self()->irs->main_object;
                     auto root = mainObj->transform();
                     Transform *tr = ((GameObject *) clone)->transform();
-                    root->ChildAdd(tr);
+                    root->childAdd(tr);
                 }
             }
 
@@ -232,7 +232,7 @@ namespace RoninEngine
             RoninMemory::free(obj);
         }
 
-        bool instanced(Object *obj)
+        bool Instanced(Object *obj)
         {
             if(!obj)
                 return false;
@@ -351,7 +351,7 @@ namespace RoninEngine
 
         Object::operator bool()
         {
-            return instanced(this);
+            return Instanced(this);
         }
     } // namespace Runtime
 } // namespace RoninEngine

@@ -27,8 +27,8 @@ namespace RoninEngine::Runtime
         Transform *parent() const;
         void setParent(Transform *parent, bool worldPositionStays = true);
 
-        int ChildCount() const;
-        Transform *ChildOf(int index);
+        int childCount() const;
+        Transform *childOf(int index);
 
         void LookAt(Vec2 target, Vec2 axis);
         void LookAt(Vec2 target);
@@ -40,9 +40,9 @@ namespace RoninEngine::Runtime
         void AsFirstChild();
         void AsLastChild();
 
-        bool ChildContain(Transform *child);
-        void ChildAdd(Transform *child);
-        void ChildRemove(Transform *child);
+        bool childContain(Transform *child);
+        void childAdd(Transform *child);
+        void childRemove(Transform *child);
 
         // look forward axis from world coordinates
         const Vec2 forward() const;

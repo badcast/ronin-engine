@@ -2,6 +2,7 @@
 #include "ronin_matrix.h"
 
 #define NEW_ALGORITHM_STORM 1
+#define MX (switched_world->irs->matrix)
 
 namespace RoninEngine::Runtime
 {
@@ -179,7 +180,7 @@ namespace RoninEngine::Runtime
              ' ← ← ← ← ← ← ← ← ← '
              + - - - - - - - - - +
     */
-    template <bool foreach = false>
+    template <bool foreach>
     inline void storm_cast_eq_t(Vec2Int origin, int edges, std::function<void(const Vec2Int &)> predicate)
     {
         constexpr int nvec = 4;
@@ -237,41 +238,54 @@ namespace RoninEngine::Runtime
     {
         container_result container;
 
-#define MX (switched_world->irs->matrix)
         storm_cast_eq_t<true>(
             Matrix::matrix_get_key(origin),
             edges,
             [&](const Vec2Int &candidate)
             {
-                auto iter = MX.find(candidate);
-                if(iter != std::end(MX))
+                // unordered_map<Vec2Int,...>
+                auto findedIter = MX.find(candidate);
+                if(findedIter != std::end(MX))
                 {
-                    for(Transform *x : iter->second)
-                        if(x->_layer_ & layer)
-                        {
-                            if constexpr(not std::is_same<Pred, std::nullptr_t>::value)
+                    // unordered_map<int,... <Transform*>>
+                    for(auto layerObject : findedIter->second)
+                    {
+                        if(layerObject.first & layer || layerObject.first == layer)
+                            // set<Transform*>
+                            for(auto object : layerObject.second)
                             {
-                                if(predicate(origin, x->position()) == false)
-                                    continue;
+                                if constexpr(not std::is_same<Pred, std::nullptr_t>::value)
+                                {
+                                    if(predicate(object->_position) == false)
+                                        continue;
+                                }
+                                if constexpr(std::is_same<container_result, std::set<Transform *>>::value)
+                                    container.insert(object);
+                                else
+                                    container.emplace_back(object);
                             }
-                            if constexpr(std::is_same<container_result, std::set<Transform *>>::value)
-                                container.insert(x);
-                            else
-                                container.emplace_back(x);
-                        }
+                    }
                 }
             });
 
-#undef MX
         return container;
     }
 #endif
 
     template <typename container_result>
+    container_result Physics2D::GetStormCast(Vec2 origin, int edges, int layer)
+    {
+#if NEW_ALGORITHM_STORM
+        return storm_cast_vec_eq<container_result>(origin, edges, layer, nullptr);
+#else
+        return storm_cast_eq<container_result>(origin, edges, layer, nullptr);
+#endif
+    }
+
+    template <typename container_result>
     container_result Physics2D::GetRectangleCast(Vec2 center, Vec2 size, int layer)
     {
         container_result result;
-        auto &mx = World::self()->irs->matrix;
 
         size = Vec2::Abs(size) / 2.f;
         Vec2Int leftUpPoint {Matrix::matrix_get_key(center - size)};
@@ -282,34 +296,27 @@ namespace RoninEngine::Runtime
         {
             for(pointer.y = leftUpPoint.y; pointer.y <= rightDownPoint.y; ++pointer.y)
             {
-                auto findedIter = mx.find(pointer);
-                if(findedIter != std::end(mx))
+                auto findedIter = MX.find(pointer);
+                if(findedIter != std::end(MX))
                 {
-                    // filtering
-                    for(auto lhs : findedIter->second)
+                    // unordered_map<int,... <Transform*>>
+                    for(auto layerObject : findedIter->second)
                     {
-                        if((lhs->_layer_ & layer) == 0x0000)
-                            continue;
-                        if constexpr(std::is_same<container_result, std::set<Transform *>>::value)
-                            result.insert(lhs);
-                        else
-                            result.emplace_back(lhs);
+                        if(layerObject.first & layer || layerObject.first == layer)
+                            // set<Transform*>
+                            for(auto object : layerObject.second)
+                            {
+                                if constexpr(std::is_same<container_result, std::set<Transform *>>::value)
+                                    result.insert(object);
+                                else
+                                    result.emplace_back(object);
+                            }
                     }
                 }
             }
         }
 
         return result;
-    }
-
-    template <typename container_result>
-    container_result Physics2D::GetStormCast(Vec2 origin, int edges, int layer)
-    {
-#if NEW_ALGORITHM_STORM
-        return storm_cast_vec_eq<container_result>(origin, edges, layer, nullptr);
-#else
-        return storm_cast_eq<container_result>(origin, edges, layer, nullptr);
-#endif
     }
 
     template <typename container_result>
@@ -324,10 +331,10 @@ namespace RoninEngine::Runtime
             origin,
             Math::Number(Math::Ceil(distance)),
             layer,
-            [distance](Vec2 lhs, Vec2 rhs)
+            [distance, &origin](Vec2 rhs)
             {
                 // condition
-                return (lhs - rhs).sqrMagnitude() <= distance;
+                return (origin - rhs).sqrMagnitude() <= distance;
             });
         return result;
     }
@@ -345,3 +352,5 @@ namespace RoninEngine::Runtime
     template RONIN_API std::set<Transform *> Physics2D::GetCircleCast(Vec2, float, int);
 
 } // namespace RoninEngine::Runtime
+
+#undef MX

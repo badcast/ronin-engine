@@ -45,6 +45,9 @@ namespace RoninEngine
                 // set state load
                 world->irs->request_unloading = false;
 
+                // update internal loaded font
+                RoninEngine::UI::refresh_legacy_font(world);
+
                 pinned_worlds.insert(world);
             }
         }
@@ -179,8 +182,7 @@ namespace RoninEngine
         {
             switched_world->irs->_destroyed = 0;
             // Destroy queue objects
-            if(switched_world->irs->_destructTasks &&
-               switched_world->irs->_destroy_delay_time < TimeEngine::time())
+            if(switched_world->irs->_destructTasks && switched_world->irs->_destroy_delay_time < TimeEngine::time())
             {
                 float time = TimeEngine::time();
                 std::map<float, std::set<GameObject *>>::iterator xiter = std::end(*(switched_world->irs->_destructTasks)),
@@ -392,7 +394,7 @@ namespace RoninEngine
 
     } // namespace Runtime
 
-    World::World(const std::string &name) : m_name(name)
+    World::World(const std::string &name) : m_name(name), irs(nullptr)
     {
     }
 
@@ -409,14 +411,20 @@ namespace RoninEngine
 
         for(auto x = std::begin(switched_world->irs->matrix); x != end(switched_world->irs->matrix); ++x)
         {
-            for(auto y = begin(x->second); y != end(x->second); ++y)
+            // unordered_map<int,... <Transform*>>
+            for(auto layerObject : x->second)
             {
-                if(Matrix::matrix_get_key((*y)->position()) != x->first)
+                // set<Transform*>
+                for(auto y : layerObject.second)
                 {
-                    damaged.emplace_back(*y);
+                    if(Matrix::matrix_get_key(y->_position) != x->first || layerObject.first != y->_layer_)
+                    {
+                        damaged.emplace_back(y);
+                    }
                 }
             }
         }
+
         return damaged;
     }
 
@@ -430,26 +438,35 @@ namespace RoninEngine
     int World::matrix_restore(const std::list<Runtime::Transform *> &damaged_content)
     {
         int restored = 0;
-
         for(Transform *dam : damaged_content)
         {
-            Vec2Int find = Matrix::matrix_get_key(dam->position());
-            auto vertList = switched_world->irs->matrix.find(find);
-
-            if(vertList == std::end(switched_world->irs->matrix))
+            if(!Instanced(dam))
                 continue;
 
-            // FIXME: Hash function is collision
-            //  if (vertList->first != find)
+            MatrixKey key = Matrix::matrix_get_key(dam->_position);
+            // unordered_map<Vec2Int,...>
+            for(auto findIter : switched_world->irs->matrix)
+                // unordered_map<int, ...>
+                for(auto layer : findIter.second)
+                    // set<Transform*>
+                    for(auto set : layer.second)
+                    {
+                        if(set != dam)
+                            continue;
 
-            auto fl = vertList->second.find(dam);
+                        if(set->_layer_ != layer.first || key != findIter.first)
+                        {
+                            // Remove damaged transform
+                            layer.second.erase(dam);
 
-            if(fl == end(vertList->second))
-            {
-                // restore
-                vertList->second.emplace(dam);
-                ++restored;
-            }
+                            // Restore
+                            switched_world->irs->matrix[key][dam->_layer_].insert(dam);
+                            ++restored;
+                            goto next;
+                        }
+                    }
+
+        next:
         }
 
         return restored;

@@ -20,7 +20,7 @@ namespace RoninEngine
         extern RONIN_API void destroy_immediate(GameObject *obj);
 
         // Проверка на существование объекта
-        extern RONIN_API bool instanced(Object *obj);
+        extern RONIN_API bool Instanced(Object *obj);
 
         // Клонирует объект
         extern RONIN_API GameObject *Instantiate(GameObject *obj);

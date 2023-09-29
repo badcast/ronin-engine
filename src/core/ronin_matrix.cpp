@@ -3,18 +3,18 @@
 
 using namespace RoninEngine::Runtime;
 
-// MatrixLayerComparer - For compare of the layer from Transform component
-bool matrix_compare_layer(RoninEngine::Runtime::Transform const *lhs, RoninEngine::Runtime::Transform const *rhs)
-{
-    /*
-        std::int64_t l, r;
-        l = Math::Max(lhs->id, 1u) + Math::OutsideNonZero(lhs->_layer_);
-        r = Math::Max(rhs->id, 1u) + Math::OutsideNonZero(rhs->_layer_);
-        return (l) < (r);
-    */
+//// MatrixLayerComparer - For compare of the layer from Transform component
+// bool matrix_compare_layer(RoninEngine::Runtime::Transform const *lhs, RoninEngine::Runtime::Transform const *rhs)
+//{
+//     /*
+//         std::int64_t l, r;
+//         l = Math::Max(lhs->id, 1u) + Math::OutsideNonZero(lhs->_layer_);
+//         r = Math::Max(rhs->id, 1u) + Math::OutsideNonZero(rhs->_layer_);
+//         return (l) < (r);
+//     */
 
-    return (lhs->_layer_) < (rhs->_layer_);
-}
+//    return (lhs->_layer_) < (rhs->_layer_);
+//}
 
 namespace RoninEngine::Runtime
 {
@@ -39,34 +39,36 @@ namespace RoninEngine::Runtime
                 return;
 
             // Delete last point source
-            auto iter = switched_world->irs->matrix.find(lastPoint);
-            if(std::end(switched_world->irs->matrix) != iter)
+            auto findIter = switched_world->irs->matrix.find(lastPoint);
+            if(std::end(switched_world->irs->matrix) != findIter)
             {
-                auto equal_range = iter->second.equal_range(target);
-                auto eq = std::find(equal_range.first, equal_range.second, target);
-                if(eq != std::end(iter->second))
-                    iter->second.erase(eq);
-                else
+                auto layer = findIter->second.find(target->_layer_);
+                if(layer != std::end(findIter->second))
                 {
-                    int x = 0;
+                    auto eq = layer->second.find(target);
+                    if(eq != std::end(layer->second))
+                        layer->second.erase(eq);
                 }
             }
 
             // Add point to new source
-            switched_world->irs->matrix[newPoint].insert(target);
+            switched_world->irs->matrix[newPoint][target->_layer_].insert(target);
         }
 
         bool matrix_nature_pickup(Transform *target)
         {
-            bool result;
-            auto iter = switched_world->irs->matrix.find(matrix_get_key(target->position()));
+            bool result = false;
+            auto findIter = switched_world->irs->matrix.find(matrix_get_key(target->position()));
 
-            if(result = (std::end(switched_world->irs->matrix) != iter))
+            if(std::end(switched_world->irs->matrix) != findIter)
             {
-                auto equal_range = iter->second.equal_range(target);
-                auto eq = std::find(equal_range.first, equal_range.second, target);
-                if(eq != std::end(iter->second))
-                    iter->second.erase(eq);
+                auto layer = findIter->second.find(target->_layer_);
+                if(layer != std::end(findIter->second))
+                {
+                    auto eq = layer->second.find(target);
+                    if(result = (eq != std::end(layer->second)))
+                        layer->second.erase(eq);
+                }
             }
             return result;
         }

@@ -25,15 +25,22 @@ namespace RoninEngine::UI
 
     TTF_Font *ttf_arial_font = nullptr;
 
-    void init_fonts(bool optimizeDeffects)
+    void refresh_legacy_font(RoninEngine::Runtime::World *world)
     {
-        if(ttf_arial_font)
+        world->irs->legacy_font_normal = SDL_CreateTextureFromSurface(renderer, pLegacyFont->surfNormal);
+        world->irs->legacy_font_hover = SDL_CreateTextureFromSurface(renderer, pLegacyFont->surfHilight);
+    }
+
+    void init_legacy_font(bool optimizeDeffects)
+    {
+        if(!ttf_arial_font)
         {
-            return;
+            auto raw = SDL_RWFromConstMem(raw_arial_font, raw_arial_length);
+            ttf_arial_font = TTF_OpenFontRW(raw, SDL_TRUE, 14);
         }
 
-        auto raw = SDL_RWFromConstMem(raw_arial_font, raw_arial_length);
-        ttf_arial_font = TTF_OpenFontRW(raw, SDL_TRUE, 14);
+        if(pLegacyFont)
+            return;
 
         if(RoninMemory::alloc_self(pLegacyFont) == nullptr)
             RoninSimulator::BreakSimulate();
@@ -185,22 +192,12 @@ namespace RoninEngine::UI
         std::uint16_t pos;
         SDL_Rect dst = *(SDL_Rect *) &rect;
         Vec2Int fontSize = pLegacyFont->fontSize + Vec2Int::one * (fontWidth - font_arealike_width);
-        SDL_Texture *__fontTexture;
         int textWidth = Single_TextWidth_WithCyrilic(text, fontWidth);
 
         if(!rect.w)
             rect.w = textWidth;
         if(!rect.h)
             rect.h = pLegacyFont->fontSize.y; // todo: для мультий строк требуется вычислить h высоту
-
-        if(hilight)
-        {
-            __fontTexture = SDL_CreateTextureFromSurface(renderer, pLegacyFont->surfNormal);
-        }
-        else
-        {
-            __fontTexture = SDL_CreateTextureFromSurface(renderer, pLegacyFont->surfHilight);
-        }
 
         // x
         temp = (VH[textAlign] >> 4 & 15);
@@ -221,7 +218,7 @@ namespace RoninEngine::UI
                 dst.y += -textWidth / 2;
         }
 
-        Vec2Int begin = *(Vec2Int *) &dst;
+        Vec2Int begin = *reinterpret_cast<Vec2Int *>(&dst);
         int deltax;
         for(pos = 0; pos < len; ++pos)
         {
@@ -249,7 +246,11 @@ namespace RoninEngine::UI
                 // отрисовываем остаток входящую в область
                 dst.w = Math::Max(0, Math::Min(deltax - dst.x, dst.w));
                 // if (dst.x <= src.x + src.w && dst.y <= src.y + src.h)
-                SDL_RenderCopy(renderer, __fontTexture, (SDL_Rect *) src, &dst);
+                SDL_RenderCopy(
+                    renderer,
+                    (hilight ? switched_world->irs->legacy_font_hover : switched_world->irs->legacy_font_normal),
+                    (SDL_Rect *) src,
+                    &dst);
                 dst.x += src->w;
             }
             else
@@ -258,7 +259,5 @@ namespace RoninEngine::UI
                 dst.y += src->h;
             }
         }
-
-        SDL_DestroyTexture(__fontTexture);
     }
 } // namespace RoninEngine::UI

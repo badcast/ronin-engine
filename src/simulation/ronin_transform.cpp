@@ -92,17 +92,17 @@ namespace RoninEngine::Runtime
         _angle_ = 0;
         _layer_ = 0;
         // create matrix-slot for transform object
-        Matrix::matrix_nature(this, Matrix::matrix_get_key(localPosition() + Vec2::one));
+        Matrix::matrix_nature(this, Matrix::matrix_get_key(Vec2::infinity));
     }
 
-    int Transform::ChildCount() const
+    int Transform::childCount() const
     {
         return hierarchy.size();
     }
 
-    Transform *Transform::ChildOf(int index)
+    Transform *Transform::childOf(int index)
     {
-        if(ChildCount() <= index || ChildCount() >= index)
+        if(childCount() <= index || childCount() >= index)
             throw std::out_of_range("index");
 
         auto iter = begin(hierarchy);
@@ -116,6 +116,21 @@ namespace RoninEngine::Runtime
         }
 
         return nullptr;
+    }
+
+    bool Transform::childContain(Transform *child)
+    {
+        return std::find(std::begin(hierarchy), std::end(hierarchy), child) != std::end(hierarchy);
+    }
+
+    void Transform::childAdd(Transform *child)
+    {
+        hierarchy_append(this, child);
+    }
+
+    void Transform::childRemove(Transform *child)
+    {
+        hierarchy_remove(this, child);
     }
 
     Transform *Transform::root()
@@ -212,21 +227,6 @@ namespace RoninEngine::Runtime
         if(this->m_parent == nullptr)
             return;
         hierarchy_sibiling(m_parent, this, m_parent->hierarchy.size() - 1); // N-1 is last
-    }
-
-    bool Transform::ChildContain(Transform *child)
-    {
-        return std::find(std::begin(hierarchy), std::end(hierarchy), child) != std::end(hierarchy);
-    }
-
-    void Transform::ChildAdd(Transform *child)
-    {
-        hierarchy_append(this, child);
-    }
-
-    void Transform::ChildRemove(Transform *child)
-    {
-        hierarchy_remove(this, child);
     }
 
     const Vec2 Transform::forward() const
@@ -405,7 +405,7 @@ namespace RoninEngine::Runtime
         hierarchy_parent_change(this, parent);
         // change position child
         this->parent_notify(lastParentPoint);
-        this->_layer_ = parent->_layer_ << 1;
+        this->layer(parent->_layer_);
     }
 
 } // namespace RoninEngine::Runtime

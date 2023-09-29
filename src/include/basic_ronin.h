@@ -71,12 +71,13 @@ static std::enable_if_t<std::is_base_of<RoninEngine::Runtime::Object, T>::value,
 
 void check_object(RoninEngine::Runtime::Object *obj);
 
-bool matrix_compare_layer(RoninEngine::Runtime::Transform const *lhs, RoninEngine::Runtime::Transform const *rhs);
+// bool matrix_compare_layer(RoninEngine::Runtime::Transform const *lhs, RoninEngine::Runtime::Transform const *rhs);
 
-using MatrixLayerComparer = std::integral_constant<decltype(&matrix_compare_layer), &matrix_compare_layer>;
+// using MatrixLayerComparer = std::integral_constant<decltype(&matrix_compare_layer), &matrix_compare_layer>;
 
 typedef RoninEngine::Runtime::Vec2Int MatrixKey;
-typedef std::unordered_map<RoninEngine::Runtime::Vec2Int, std::multiset<RoninEngine::Runtime::Transform *, MatrixLayerComparer>> matrix_map_t;
+typedef std::unordered_map<RoninEngine::Runtime::Vec2Int, std::unordered_map<int, std::set<RoninEngine::Runtime::Transform *>>>
+    matrix_map_t;
 
 namespace RoninEngine
 {
@@ -233,6 +234,9 @@ namespace RoninEngine
 
             std::list<Sprite *> offload_sprites;
             std::list<SDL_Surface *> offload_surfaces;
+
+            SDL_Texture *legacy_font_normal;
+            SDL_Texture *legacy_font_hover;
 
             int audio_channels;
             int audio_reserved_channels = MIX_CHANNELS;

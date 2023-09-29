@@ -4,7 +4,8 @@
 
 namespace RoninEngine::UI
 {
-    void init_fonts(bool optimizeDeffects = true);
+    void init_legacy_font(bool optimizeDeffects = true);
+    void refresh_legacy_font(RoninEngine::Runtime::World *world);
     int getwidth_metric(const std::string &text, int fontSize);
 
     void render_string_legacy(

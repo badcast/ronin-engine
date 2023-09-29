@@ -163,7 +163,7 @@ namespace RoninEngine
         switched_world = nullptr;
 
         // inti fonts
-        UI::init_fonts(true);
+        UI::init_legacy_font(true);
     }
 
     void RoninSimulator::Finalize()
@@ -171,6 +171,7 @@ namespace RoninEngine
         if(active_window == nullptr)
             return;
 
+        // unload existence worlds
         for(auto &pinned : Runtime::pinned_worlds)
         {
             Runtime::internal_unload_world(pinned);
