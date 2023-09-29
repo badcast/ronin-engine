@@ -244,7 +244,7 @@ namespace RoninEngine::Runtime
             [&](const Vec2Int &candidate)
             {
                 // unordered_map<int,... <Transform*>>
-                for(auto findedIter : MX)
+                for(auto &findedIter : MX)
                 {
                     if(findedIter.first & layer || findedIter.first == layer)
                     {
@@ -253,7 +253,7 @@ namespace RoninEngine::Runtime
                         if(layerObject != std::end(findedIter.second))
                         {
                             // set<Transform*>
-                            for(auto object : layerObject->second)
+                            for(auto& object : layerObject->second)
                             {
                                 if constexpr(not std::is_same<Pred, std::nullptr_t>::value)
                                 {
@@ -298,7 +298,7 @@ namespace RoninEngine::Runtime
         {
             for(pointer.y = leftUpPoint.y; pointer.y <= rightDownPoint.y; ++pointer.y)
             {
-                for(auto findedIter : MX)
+                for(auto& findedIter : MX)
                 {
                     if(findedIter.first & layer || findedIter.first == layer)
                     {
@@ -307,7 +307,7 @@ namespace RoninEngine::Runtime
                         if(layerObject != std::end(findedIter.second))
                         {
                             // set<Transform*>
-                            for(auto object : layerObject->second)
+                            for(auto &object : layerObject->second)
                             {
                                 if constexpr(std::is_same<container_result, std::set<Transform *>>::value)
                                     result.insert(object);

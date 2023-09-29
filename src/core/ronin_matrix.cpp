@@ -59,7 +59,6 @@ namespace RoninEngine::Runtime
         {
             bool result = false;
             auto findIter = switched_world->irs->matrix.find(target->_layer_);
-
             if(std::end(switched_world->irs->matrix) != findIter)
             {
                 auto layer = findIter->second.find(matrix_get_key(target->position()));
