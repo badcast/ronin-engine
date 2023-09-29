@@ -411,13 +411,13 @@ namespace RoninEngine
 
         for(auto x = std::begin(switched_world->irs->matrix); x != end(switched_world->irs->matrix); ++x)
         {
-            // unordered_map<int,... <Transform*>>
+            // unordered_map<Vec2Int,... <Transform*>>
             for(auto layerObject : x->second)
             {
                 // set<Transform*>
                 for(auto y : layerObject.second)
                 {
-                    if(Matrix::matrix_get_key(y->_position) != x->first || layerObject.first != y->_layer_)
+                    if(Matrix::matrix_get_key(y->_position) != layerObject.first || x->first != y->_layer_)
                     {
                         damaged.emplace_back(y);
                     }
@@ -444,9 +444,9 @@ namespace RoninEngine
                 continue;
 
             MatrixKey key = Matrix::matrix_get_key(dam->_position);
-            // unordered_map<Vec2Int,...>
+            // unordered_map<int, ...>
             for(auto findIter : switched_world->irs->matrix)
-                // unordered_map<int, ...>
+                // unordered_map<Vec2Int,...>
                 for(auto layer : findIter.second)
                     // set<Transform*>
                     for(auto set : layer.second)
@@ -454,13 +454,13 @@ namespace RoninEngine
                         if(set != dam)
                             continue;
 
-                        if(set->_layer_ != layer.first || key != findIter.first)
+                        if(set->_layer_ != findIter.first || key != layer.first)
                         {
                             // Remove damaged transform
                             layer.second.erase(dam);
 
                             // Restore
-                            switched_world->irs->matrix[key][dam->_layer_].insert(dam);
+                            switched_world->irs->matrix[dam->_layer_][key].insert(dam);
                             ++restored;
                             goto next;
                         }
