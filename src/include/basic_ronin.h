@@ -76,7 +76,7 @@ void check_object(RoninEngine::Runtime::Object *obj);
 // using MatrixLayerComparer = std::integral_constant<decltype(&matrix_compare_layer), &matrix_compare_layer>;
 
 typedef RoninEngine::Runtime::Vec2Int MatrixKey;
-typedef std::unordered_map<int, std::unordered_map<MatrixKey, std::set<RoninEngine::Runtime::Transform *>>>
+typedef std::map<int, std::unordered_map<MatrixKey, std::set<RoninEngine::Runtime::Transform *>>>
     matrix_map_t;
 
 namespace RoninEngine
@@ -302,6 +302,6 @@ namespace RoninEngine
         SDL_Surface *private_load_surface(const void *memres, int length);
 
         void storm_cast_eq_all(Vec2Int origin, int edges, std::function<void(const Vec2Int &)> predicate);
-        void storm_cast_eq_edgess(Vec2Int origin, int edges, std::function<void(const Vec2Int &)> predicate);
+        void storm_cast_eq_edges(Vec2Int origin, int edges, std::function<void(const Vec2Int &)> predicate);
     } // namespace Runtime
 } // namespace RoninEngine

@@ -243,16 +243,17 @@ namespace RoninEngine::Runtime
             edges,
             [&](const Vec2Int &candidate)
             {
-                // unordered_map<Vec2Int,...>
-                auto findedIter = MX.find(candidate);
-                if(findedIter != std::end(MX))
+                // unordered_map<int,... <Transform*>>
+                for(auto &findedIter : MX)
                 {
-                    // unordered_map<int,... <Transform*>>
-                    for(auto layerObject : findedIter->second)
+                    if(findedIter.first & layer || findedIter.first == layer)
                     {
-                        if(layerObject.first & layer || layerObject.first == layer)
+                        // unordered_map<Vec2Int,...>
+                        auto layerObject = findedIter.second.find(candidate);
+                        if(layerObject != std::end(findedIter.second))
+                        {
                             // set<Transform*>
-                            for(auto object : layerObject.second)
+                            for(auto& object : layerObject->second)
                             {
                                 if constexpr(not std::is_same<Pred, std::nullptr_t>::value)
                                 {
@@ -264,6 +265,7 @@ namespace RoninEngine::Runtime
                                 else
                                     container.emplace_back(object);
                             }
+                        }
                     }
                 }
             });
@@ -296,21 +298,23 @@ namespace RoninEngine::Runtime
         {
             for(pointer.y = leftUpPoint.y; pointer.y <= rightDownPoint.y; ++pointer.y)
             {
-                auto findedIter = MX.find(pointer);
-                if(findedIter != std::end(MX))
+                for(auto& findedIter : MX)
                 {
-                    // unordered_map<int,... <Transform*>>
-                    for(auto layerObject : findedIter->second)
+                    if(findedIter.first & layer || findedIter.first == layer)
                     {
-                        if(layerObject.first & layer || layerObject.first == layer)
+                        // unordered_map<Vec2Int,...>
+                        auto layerObject = findedIter.second.find(pointer);
+                        if(layerObject != std::end(findedIter.second))
+                        {
                             // set<Transform*>
-                            for(auto object : layerObject.second)
+                            for(auto &object : layerObject->second)
                             {
                                 if constexpr(std::is_same<container_result, std::set<Transform *>>::value)
                                     result.insert(object);
                                 else
                                     result.emplace_back(object);
                             }
+                        }
                     }
                 }
             }

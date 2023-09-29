@@ -131,96 +131,133 @@ namespace RoninEngine::Runtime
            ' ← ← ← ← ← ← ← ← ← '        /
            + - - - - - - - - - +    /
         */
-        storm_cast_eq_all(
-            Matrix::matrix_get_key(stack.camera_position),
-            stack.edges,
-            [&](const Vec2Int &candidate)
-            {
-
 #define MX (switched_world->irs->matrix)
+        MatrixKey camKey = Matrix::matrix_get_key(stack.camera_position);
+        // unordered_map<int,... <Transform*>>
+        for(auto &layer : MX)
+        {
+            /*
+            // собираем оставшиеся которые прикреплены к видимости
+            //                    for(auto x = std::begin(camera->camera_resources->prev); false && x !=
+            //                    std::end(camera->camera_resources->prev); ++x)
+            //                    {
+            //                        if(area_cast(*x, stack.wpLeftTop, stack.wpRightBottom))
+            //                        {
+            //                            camera->camera_resources->renders[(*x)->transform()->layer].emplace_back((*x));
+            //                        }
+            //                    }
 
-                auto layer = MX.find(candidate);
-                if(layer != std::end(MX))
+            // order by layer component
+            //            if constexpr(std::is_same<list_type_render, std::vector<Renderer *>>::value)
+            //            {
+            //                Renderer *r;
+            //                const int size = storm_result.size();
+            //                for(int x = 0; x < size; ++x)
+            //                {
+            //                    for(auto iter = ++std::begin(storm_result[x]->_owner->m_components),
+            //                             yiter = std::end(storm_result[x]->_owner->m_components);
+            //                        iter != yiter;
+            //                        ++iter)
+            //                    {
+            //                        if(r = dynamic_cast<Renderer *>(*iter))
+            //                            camera2d->camera_resources->renders[r->transform()->layer].push_back(r);
+            //                    }
+            //                }
+            //            }
+            //            else
+            //            {
+            //                for(auto iter = std::begin(storm_result); iter != std::end(storm_result); ++iter)
+            //                {
+            //                    std::list<Renderer *> rends = (*iter)->gameObject()->GetComponents<Renderer>();
+            //                    for(Renderer *x : rends)
+            //                    {
+            //                        camera2d->camera_resources->renders[x->transform()->layer].emplace_back(x);
+            //                        // camera2d->camera_resources->prev.insert(x);
+            //                    }
+            //                }
+            //            }
+            */
+
+            // Render Objects
+            storm_cast_eq_all(
+                camKey,
+                stack.edges,
+                [&](const Vec2Int &candidate)
                 {
-                    if(layer != std::end(MX))
+                    // unordered_map<Vec2Int,... <Transform*>>
+                    auto layerObject = layer.second.find(candidate);
+                    if(layerObject != std::end(layer.second))
                     {
-                        // unordered_map<int,... <Transform*>>
-                        for(auto layerObject : layer->second)
+                        for(Transform *transform_object : layerObject->second)
                         {
-                            for(Transform *iter : layerObject.second)
+                            for(Component *component : transform_object->_owner->m_components)
                             {
-                                for(auto component = std::begin(iter->_owner->m_components);
-                                    component != std::end(iter->_owner->m_components);
-                                    ++component)
+                                Renderer *render_iobject;
+                                // This object not render component, then continue and to next iterator
+                                if((render_iobject = dynamic_cast<Renderer *>(component)) == nullptr)
                                 {
-                                    Renderer *render_iobject;
-                                    // This object not render component, then continue and to next iterator
-                                    if((render_iobject = dynamic_cast<Renderer *>(*component)) == nullptr)
+                                    continue;
+                                }
+
+                                ++(camera->camera_resources->culled);
+
+                                Transform *render_transform = render_iobject->transform();
+                                memset(&(stack.wrapper), 0, sizeof(stack.wrapper));
+
+                                // draw
+                                render_iobject->render(&(stack.wrapper));
+
+                                if(stack.wrapper.texture)
+                                {
+                                    Transform *render_parent = render_transform->m_parent;
+                                    if(render_parent == stack.root_transform)
                                     {
-                                        continue;
+                                        stack.sourcePoint = render_transform->_position;
+                                    }
+                                    else
+                                    {
+                                        // local position is direction
+                                        stack.sourcePoint = Vec2::RotateAround(
+                                            render_parent->_position,
+                                            render_transform->localPosition(),
+                                            render_parent->angle() * Math::deg2rad);
                                     }
 
-                                    ++(camera->camera_resources->culled);
+                                    stack.wrapper.dst.w *= pixelsPerPoint; //_scale.x;
+                                    stack.wrapper.dst.h *= pixelsPerPoint; //_scale.y;
 
-                                    Transform *render_transform = render_iobject->transform();
-                                    memset(&(stack.wrapper), 0, sizeof(stack.wrapper));
+                                    Vec2 arranged = stack.wrapper.dst.getXY();
+                                    if(arranged != Vec2::zero)
+                                        arranged =
+                                            Vec2::RotateAround(stack.sourcePoint, arranged, render_transform->angle() * Math::deg2rad);
 
-                                    // draw
-                                    render_iobject->render(&(stack.wrapper));
+                                    stack.sourcePoint += render_iobject->get_offset();
 
-                                    if(stack.wrapper.texture)
-                                    {
-                                        Transform *render_parent = render_transform->m_parent;
-                                        if(render_parent == stack.root_transform)
-                                        {
-                                            stack.sourcePoint = render_transform->_position;
-                                        }
-                                        else
-                                        {
-                                            // local position is direction
-                                            stack.sourcePoint = Vec2::RotateAround(
-                                                render_parent->_position,
-                                                render_transform->localPosition(),
-                                                render_parent->angle() * Math::deg2rad);
-                                        }
+                                    // convert world to screen
 
-                                        stack.wrapper.dst.w *= pixelsPerPoint; //_scale.x;
-                                        stack.wrapper.dst.h *= pixelsPerPoint; //_scale.y;
-
-                                        Vec2 arranged = stack.wrapper.dst.getXY();
-                                        if(arranged != Vec2::zero)
-                                            arranged =
-                                                Vec2::RotateAround(stack.sourcePoint, arranged, render_transform->angle() * Math::deg2rad);
-
-                                        stack.sourcePoint += render_iobject->get_offset();
-
-                                        // convert world to screen
-
-                                        // Положение по горизонтале
-                                        stack.wrapper.dst.x = arranged.x +
-                                            ((active_resolution.width - stack.wrapper.dst.w) / 2.0f -
-                                             (stack.camera_position.x - stack.sourcePoint.x) * pixelsPerPoint);
-                                        // Положение по вертикале
-                                        stack.wrapper.dst.y = arranged.y +
-                                            ((active_resolution.height - stack.wrapper.dst.h) / 2.0f +
-                                             (stack.camera_position.y - stack.sourcePoint.y) * pixelsPerPoint);
-                                        // draw to backbuffer
-                                        SDL_RenderCopyExF(
-                                            RoninEngine::renderer,
-                                            stack.wrapper.texture,
-                                            (SDL_Rect *) &(stack.wrapper.src),
-                                            reinterpret_cast<SDL_FRect *>(&(stack.wrapper.dst)),
-                                            render_transform->angle(),
-                                            nullptr,
-                                            SDL_RendererFlip::SDL_FLIP_NONE);
-                                    }
+                                    // Положение по горизонтале
+                                    stack.wrapper.dst.x = arranged.x +
+                                        ((active_resolution.width - stack.wrapper.dst.w) / 2.0f -
+                                         (stack.camera_position.x - stack.sourcePoint.x) * pixelsPerPoint);
+                                    // Положение по вертикале
+                                    stack.wrapper.dst.y = arranged.y +
+                                        ((active_resolution.height - stack.wrapper.dst.h) / 2.0f +
+                                         (stack.camera_position.y - stack.sourcePoint.y) * pixelsPerPoint);
+                                    // draw to backbuffer
+                                    SDL_RenderCopyExF(
+                                        RoninEngine::renderer,
+                                        stack.wrapper.texture,
+                                        (SDL_Rect *) &(stack.wrapper.src),
+                                        reinterpret_cast<SDL_FRect *>(&(stack.wrapper.dst)),
+                                        render_transform->angle(),
+                                        nullptr,
+                                        SDL_RendererFlip::SDL_FLIP_NONE);
                                 }
                             }
                         }
                     }
-                }
-            });
-
+                });
+        }
 #undef MX
 
         // TODO: Render light

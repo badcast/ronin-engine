@@ -411,13 +411,13 @@ namespace RoninEngine
 
         for(auto x = std::begin(switched_world->irs->matrix); x != end(switched_world->irs->matrix); ++x)
         {
-            // unordered_map<int,... <Transform*>>
-            for(auto layerObject : x->second)
+            // unordered_map<Vec2Int,... <Transform*>>
+            for(auto &layerObject : x->second)
             {
                 // set<Transform*>
-                for(auto y : layerObject.second)
+                for(auto &y : layerObject.second)
                 {
-                    if(Matrix::matrix_get_key(y->_position) != x->first || layerObject.first != y->_layer_)
+                    if(Matrix::matrix_get_key(y->_position) != layerObject.first || x->first != y->_layer_)
                     {
                         damaged.emplace_back(y);
                     }
@@ -444,23 +444,23 @@ namespace RoninEngine
                 continue;
 
             MatrixKey key = Matrix::matrix_get_key(dam->_position);
-            // unordered_map<Vec2Int,...>
-            for(auto findIter : switched_world->irs->matrix)
-                // unordered_map<int, ...>
-                for(auto layer : findIter.second)
+            // unordered_map<int, ...>
+            for(auto &findIter : switched_world->irs->matrix)
+                // unordered_map<Vec2Int,...>
+                for(auto &layer : findIter.second)
                     // set<Transform*>
-                    for(auto set : layer.second)
+                    for(auto &set : layer.second)
                     {
                         if(set != dam)
                             continue;
 
-                        if(set->_layer_ != layer.first || key != findIter.first)
+                        if(set->_layer_ != findIter.first || key != layer.first)
                         {
                             // Remove damaged transform
                             layer.second.erase(dam);
 
                             // Restore
-                            switched_world->irs->matrix[key][dam->_layer_].insert(dam);
+                            switched_world->irs->matrix[dam->_layer_][key].insert(dam);
                             ++restored;
                             goto next;
                         }
@@ -483,36 +483,40 @@ namespace RoninEngine
     int World::matrix_count_cache()
     {
         int cached = 0;
-        auto &matrix = this->irs->matrix;
-        cached = static_cast<int>(std::count_if(
-            matrix.begin(),
-            matrix.end(),
-            [](auto iobject)
-            {
-                // predicate return
-                return (bool) (iobject.second.empty());
-            }));
+        for(auto &matrix : this->irs->matrix)
+            cached += static_cast<int>(std::count_if(
+                matrix.second.begin(),
+                matrix.second.end(),
+                [](auto iobject)
+                {
+                    // predicate
+                    return iobject.second.empty();
+                }));
         return cached;
     }
 
     int World::matrix_clear_cache()
     {
-        std::list<typename decltype(this->irs->matrix)::iterator> cached {};
-        auto matrix = &this->irs->matrix;
-        for(auto iter = std::begin(irs->matrix), _end = std::end(irs->matrix); iter != _end; ++iter)
+        std::vector<typename std::unordered_map<Vec2Int, std::set<Transform *>>::iterator> cached;
+        int cleans = 0;
+        for(auto &matrix : this->irs->matrix)
         {
-            if(iter->second.empty())
+            for(auto iter = std::begin(matrix.second); iter != std::end(matrix.second); ++iter)
             {
-                cached.emplace_back(iter);
+                if(iter->second.empty())
+                {
+                    cached.emplace_back(iter);
+                }
             }
+            for(auto &iter_ref : cached)
+            {
+                matrix.second.erase(iter_ref);
+            }
+            cleans += static_cast<int>(cached.size());
+            cached.clear();
         }
 
-        for(auto &iter_ref : cached)
-        {
-            irs->matrix.erase(iter_ref);
-        }
-
-        return cached.size();
+        return cleans;
     }
 
     std::string World::get_hierarchy_as_tree() const
