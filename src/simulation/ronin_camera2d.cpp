@@ -136,47 +136,8 @@ namespace RoninEngine::Runtime
             stack.edges,
             [&](const Vec2Int &candidate)
             {
-#define MX (switched_world->irs->matrix)
-                // собираем оставшиеся которые прикреплены к видимости
-                //                    for(auto x = std::begin(camera->camera_resources->prev); false && x !=
-                //                    std::end(camera->camera_resources->prev); ++x)
-                //                    {
-                //                        if(area_cast(*x, stack.wpLeftTop, stack.wpRightBottom))
-                //                        {
-                //                            camera->camera_resources->renders[(*x)->transform()->layer].emplace_back((*x));
-                //                        }
-                //                    }
 
-                // order by layer component
-                //            if constexpr(std::is_same<list_type_render, std::vector<Renderer *>>::value)
-                //            {
-                //                Renderer *r;
-                //                const int size = storm_result.size();
-                //                for(int x = 0; x < size; ++x)
-                //                {
-                //                    for(auto iter = ++std::begin(storm_result[x]->_owner->m_components),
-                //                             yiter = std::end(storm_result[x]->_owner->m_components);
-                //                        iter != yiter;
-                //                        ++iter)
-                //                    {
-                //                        if(r = dynamic_cast<Renderer *>(*iter))
-                //                            camera2d->camera_resources->renders[r->transform()->layer].push_back(r);
-                //                    }
-                //                }
-                //            }
-                //            else
-                //            {
-                //                for(auto iter = std::begin(storm_result); iter != std::end(storm_result); ++iter)
-                //                {
-                //                    std::list<Renderer *> rends = (*iter)->gameObject()->GetComponents<Renderer>();
-                //                    for(Renderer *x : rends)
-                //                    {
-                //                        camera2d->camera_resources->renders[x->transform()->layer].emplace_back(x);
-                //                        // camera2d->camera_resources->prev.insert(x);
-                //                    }
-                //                }
-                //            }
-                // Render Objects
+#define MX (switched_world->irs->matrix)
 
                 auto layer = MX.find(candidate);
                 if(layer != std::end(MX))

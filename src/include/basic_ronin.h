@@ -76,7 +76,7 @@ void check_object(RoninEngine::Runtime::Object *obj);
 // using MatrixLayerComparer = std::integral_constant<decltype(&matrix_compare_layer), &matrix_compare_layer>;
 
 typedef RoninEngine::Runtime::Vec2Int MatrixKey;
-typedef std::unordered_map<RoninEngine::Runtime::Vec2Int, std::unordered_map<int, std::set<RoninEngine::Runtime::Transform *>>>
+typedef std::unordered_map<int, std::unordered_map<MatrixKey, std::set<RoninEngine::Runtime::Transform *>>>
     matrix_map_t;
 
 namespace RoninEngine
