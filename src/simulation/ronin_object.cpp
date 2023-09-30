@@ -102,10 +102,10 @@ namespace RoninEngine
 
             if constexpr(std::is_same<T, Transform>::value)
             {
-                if(obj->parent())
+                if(obj->m_parent)
                 {
                     // something.*(HackGet<int Something::*>::ptr);
-                    hierarchy_remove(obj->parent(), obj);
+                    hierarchy_remove(obj->m_parent, obj);
                 }
                 hierarchy_remove_all(obj);
                 // picking from matrix
@@ -169,12 +169,12 @@ namespace RoninEngine
             return internal_factory_base<GameObject>(true, nullptr, name.data());
         }
 
-        void destroy(GameObject *obj)
+        void Destroy(GameObject *obj)
         {
-            destroy(obj, 0);
+            Destroy(obj, 0);
         }
 
-        void destroy(GameObject *obj, float t)
+        void Destroy(GameObject *obj, float t)
         {
             if(!obj || !World::self() || t < 0)
                 throw std::bad_exception();

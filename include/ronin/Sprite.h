@@ -12,15 +12,15 @@ namespace RoninEngine::Runtime
     protected:
         Vec2 m_center;
         Rect m_rect;
-        native_surface_t *surface;
+        Image *surface;
 
     public:
         Sprite();
-        Sprite(native_surface_t *src, const Rect &rect);
+        Sprite(Image *src, const Rect &rect);
         Sprite(const Sprite &) = default;
 
-        void setSurface(native_surface_t *surface);
-        const native_surface_t *get_surface() const;
+        void setSurface(Image *surface);
+        const Image *get_surface() const;
 
         const Rect rect() const;
         void rect(const Rect &rect);

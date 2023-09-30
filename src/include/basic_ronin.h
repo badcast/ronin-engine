@@ -76,8 +76,7 @@ void check_object(RoninEngine::Runtime::Object *obj);
 // using MatrixLayerComparer = std::integral_constant<decltype(&matrix_compare_layer), &matrix_compare_layer>;
 
 typedef RoninEngine::Runtime::Vec2Int MatrixKey;
-typedef std::map<int, std::unordered_map<MatrixKey, std::set<RoninEngine::Runtime::Transform *>>>
-    matrix_map_t;
+typedef std::map<int, std::unordered_map<MatrixKey, std::set<RoninEngine::Runtime::Transform *>>> matrix_map_t;
 
 namespace RoninEngine
 {
@@ -145,6 +144,12 @@ namespace RoninEngine
         {
             CAM_DELETED,
             CAM_TARGET
+        };
+
+        enum : resource_id
+        {
+            RES_INVALID = 0xffffffff,
+            RES_LOCAL_FLAG = 0x80000000
         };
 
         enum MouseStateFlags
@@ -222,7 +227,14 @@ namespace RoninEngine
             std::vector<AudioClip *> gid_audio_clips;
             std::vector<MusicClip *> gid_music_clips;
             std::vector<SDL_Surface *> gid_surfaces;
-            std::vector<void*> gid_privates;
+            std::vector<void *> gid_privates;
+        };
+
+        struct AssetRef
+        {
+            std::unordered_map<std::size_t, resource_id> image_clips;
+            std::unordered_map<std::size_t, resource_id> audio_clips;
+            std::unordered_map<std::size_t, resource_id> music_clips;
         };
 
         struct WorldResources
@@ -276,6 +288,7 @@ namespace RoninEngine
 
         // Global variables
         extern World *switched_world;
+        extern std::list<Asset> loaded_assets;
 
         void native_render_2D(Camera2D *camera);
 
@@ -292,6 +305,7 @@ namespace RoninEngine
 
         void internal_load_world(World *);
         bool internal_unload_world(World *);
+        void internal_free_loaded_assets();
 
         void hierarchy_parent_change(Transform *from, Transform *newParent);
         void hierarchy_remove(Transform *from, Transform *off);

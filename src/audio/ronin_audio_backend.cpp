@@ -10,7 +10,7 @@ namespace RoninEngine::Runtime
         if((last_inited_result = (Mix_Init(current_inits))) < 1)
             return -1;
 
-        if(Mix_OpenAudio(MIX_DEFAULT_FREQUENCY, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS, 4096))
+        if(Mix_OpenAudio(MIX_DEFAULT_FREQUENCY, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS, 2048))
         {
             last_inited_result = 0;
             Mix_Quit();

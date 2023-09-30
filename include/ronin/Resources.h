@@ -7,7 +7,6 @@ namespace RoninEngine
     namespace Runtime
     {
         typedef std::uint32_t resource_id;
-        typedef std::pair<std::string, resource_id> resource_key;
         class RONIN_API Resources
         {
         public:
@@ -23,17 +22,26 @@ namespace RoninEngine
 
             static resource_id LoadMusicClipFromStream(std::istream &stream, bool local);
 
-            static native_surface_t *GetImageSource(resource_id resource);
+            static Image *GetImageSource(resource_id resource);
 
             static AudioClip *GetAudioClipSource(resource_id resource);
 
             static MusicClip *GetMusicClipSource(resource_id resource);
         };
 
-        class ResourceConverter
+        class RONIN_API Asset
+        {
+        private:
+            struct AssetRef *__ref;
+
+        public:
+            Image *GetImage(const std::string &key);
+        };
+
+        class RONIN_API AssetManager
         {
         public:
-            static std::vector<resource_key> ReadFromCollection(const std::string &jsonfile, bool allLocal);
+            static bool LoadAsset(const std::string &assetFile, Asset **asset);
         };
     } // namespace Runtime
 } // namespace RoninEngine

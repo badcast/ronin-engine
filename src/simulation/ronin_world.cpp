@@ -317,7 +317,7 @@ namespace RoninEngine
                     elements[5].value = get_process_sizeMemory() / 1024 / 1024;
 
                     // calculate averrage and max
-                    max = 0;
+                    max = 10;
                     averrage = 0;
                     for(x = 1; x < max_elements - 1; ++x)
                     {

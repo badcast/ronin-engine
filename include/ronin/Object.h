@@ -11,10 +11,10 @@ namespace RoninEngine
         extern RONIN_API GameObject *create_game_object(const std::string &name);
 
         // Уничтожает объект после рендера.
-        extern RONIN_API void destroy(GameObject *obj);
+        extern RONIN_API void Destroy(GameObject *obj);
 
         // Уничтожает объект после прошедшего времени.
-        extern RONIN_API void destroy(GameObject *obj, float t);
+        extern RONIN_API void Destroy(GameObject *obj, float t);
 
         // Уничтожает объект принудительно игнорируя все условия его существования.
         extern RONIN_API void destroy_immediate(GameObject *obj);
@@ -70,7 +70,7 @@ namespace RoninEngine
             static Sprite *create_sprite2D_box(Vec2 size = Vec2::one, Color fillColor = Color::white);
             static Sprite *create_sprite2D_circle(Vec2 size = Vec2::one, float radius = 1.f, Color fillColor = Color::white);
             static Sprite *create_sprite2D_triangle(Vec2 size = Vec2::one, float height = 1.f, Color fillColor = Color::white);
-            static Sprite *create_sprite2d_from(native_surface_t *surface);
+            static Sprite *create_sprite2d_from(Image *surface);
         };
     } // namespace Runtime
 } // namespace RoninEngine

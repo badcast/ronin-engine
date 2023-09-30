@@ -1,5 +1,3 @@
-#include <json/json.h>
-
 #include "ronin.h"
 
 using namespace RoninEngine;
@@ -9,12 +7,6 @@ using namespace RoninEngine::Runtime;
 namespace RoninEngine::Runtime
 {
     extern GidResources *external_global_resources;
-
-    enum : resource_id
-    {
-        RES_INVALID = 0xffffffff,
-        RES_LOCAL_FLAG = 0x80000000
-    };
 
     void gid_resources_free(GidResources *gid)
     {
@@ -282,7 +274,7 @@ namespace RoninEngine::Runtime
         return LoadMusicClipFromStream(file, local);
     }
 
-    native_surface_t *Resources::GetImageSource(resource_id resource)
+    Image *Resources::GetImageSource(resource_id resource)
     {
         if(resource == RES_INVALID)
             return nullptr;

@@ -217,9 +217,9 @@ namespace RoninEngine::Runtime
                                     else
                                     {
                                         // local position is direction
-                                        stack.sourcePoint = Vec2::RotateAround(
+                                        stack.sourcePoint += render_transform->_position+Vec2::RotateAround(
                                             render_parent->_position,
-                                            render_transform->localPosition(),
+                                            Vec2::one, // render_transform->localPosition()
                                             render_parent->angle() * Math::deg2rad);
                                     }
 

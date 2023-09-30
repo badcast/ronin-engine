@@ -28,6 +28,7 @@ namespace RoninEngine
         std::set<World *> pinned_worlds;
         std::vector<std::uint32_t> _watcher_time;
 
+        std::list<Asset> loaded_assets;
         GidResources *external_global_resources = nullptr;
 
         float internal_time_scale, internal_game_time, internal_delta_time;
@@ -187,6 +188,7 @@ namespace RoninEngine
         // NOTE: Free Global Resources
         gid_resources_free(external_global_resources);
         external_global_resources = nullptr;
+        Runtime::internal_free_loaded_assets();
 
         Mix_Quit();
         IMG_Quit();

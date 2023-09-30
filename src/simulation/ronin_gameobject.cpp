@@ -111,7 +111,7 @@ namespace RoninEngine::Runtime
 
     void GameObject::Destroy(float t)
     {
-        Runtime::destroy(this, t);
+        Runtime::Destroy(this, t);
     }
 
     Component *GameObject::AddComponent(Component *component)

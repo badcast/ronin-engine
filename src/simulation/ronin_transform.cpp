@@ -390,6 +390,9 @@ namespace RoninEngine::Runtime
 
     Transform *Transform::parent() const
     {
+        if(m_parent == nullptr || m_parent == switched_world->irs->main_object->transform())
+            return nullptr;
+
         return m_parent;
     }
 

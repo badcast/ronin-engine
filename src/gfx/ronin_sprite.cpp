@@ -6,11 +6,11 @@ namespace RoninEngine::Runtime
     {
     }
 
-    Sprite::Sprite(native_surface_t *src, const Rect &rect) : m_rect(rect), m_center(Vec2::half), surface(src)
+    Sprite::Sprite(Image *src, const Rect &rect) : m_rect(rect), m_center(Vec2::half), surface(src)
     {
     }
 
-    void Sprite::setSurface(native_surface_t *surface)
+    void Sprite::setSurface(Image *surface)
     {
         this->surface = surface;
 
@@ -20,7 +20,7 @@ namespace RoninEngine::Runtime
         }
     }
 
-    const native_surface_t *Sprite::get_surface() const
+    const Image *Sprite::get_surface() const
     {
         return surface;
     }

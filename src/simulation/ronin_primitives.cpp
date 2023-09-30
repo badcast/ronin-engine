@@ -108,7 +108,7 @@ namespace RoninEngine::Runtime
         return sprite;
     }
 
-    Sprite *Primitive::create_sprite2d_from(native_surface_t *surface)
+    Sprite *Primitive::create_sprite2d_from(Image *surface)
     {
         Sprite *sprite;
 

@@ -3,7 +3,7 @@
 #include "begin.h"
 
 #ifndef RONIN_COMPILLING
-typedef struct SDL_Surface native_surface_t;
+typedef struct SDL_Surface Image;
 typedef struct SDL_Texture native_texture_t;
 
 struct native_color_t
