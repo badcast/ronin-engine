@@ -222,6 +222,7 @@ namespace RoninEngine
             std::vector<AudioClip *> gid_audio_clips;
             std::vector<MusicClip *> gid_music_clips;
             std::vector<SDL_Surface *> gid_surfaces;
+            std::vector<void*> gid_privates;
         };
 
         struct WorldResources

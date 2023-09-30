@@ -46,6 +46,11 @@ namespace RoninEngine::Runtime
             SDL_FreeSurface(surf_res);
         }
 
+        for(void *mem : gid->gid_privates)
+        {
+            RoninMemory::ronin_memory_free(mem);
+        }
+
         RoninMemory::free(gid);
     }
 
@@ -54,7 +59,38 @@ namespace RoninEngine::Runtime
         return (id & RES_LOCAL_FLAG) ? World::self()->irs->external_local_resources : external_global_resources;
     }
 
-    inline GidResources *make_resource(resource_id *resultId, bool local)
+    void *make_private_resource(void *memory, bool local)
+    {
+        if(memory != nullptr)
+        {
+            GidResources **resources;
+            if(local)
+            {
+                if(World::self() == nullptr)
+                {
+                    throw ronin_null_error();
+                }
+                resources = &World::self()->irs->external_local_resources;
+            }
+            else
+            {
+                resources = &external_global_resources;
+            }
+
+            if((*resources) == nullptr)
+            {
+                RoninMemory::alloc_self((*resources));
+                (*resources)->gid_surfaces.reserve(16);
+                (*resources)->gid_audio_clips.reserve(16);
+                (*resources)->gid_music_clips.reserve(16);
+            }
+
+            (*resources)->gid_privates.emplace_back(memory);
+        }
+        return memory;
+    }
+
+    GidResources *make_resource(resource_id *resultId, bool local)
     {
         GidResources **resources;
 
@@ -96,42 +132,48 @@ namespace RoninEngine::Runtime
         return surf;
     }
 
-    inline std::vector<std::int8_t> stream_to_mem(std::istream &stream)
+    std::pair<std::size_t, void *> stream_to_mem(std::istream &stream)
     {
-        std::size_t delta;
-        std::vector<std::int8_t> memory;
+        std::size_t sz;
+        void *memory = nullptr;
 
         stream.seekg(0, std::ios_base::end);
-        delta = stream.tellg();
+        sz = stream.tellg();
         stream.seekg(0, std::ios_base::beg);
 
-        if(delta > 0)
+        if(false && sz > 0)
         {
-            memory.resize(delta);
-            stream.read((char *) memory.data(), memory.size());
+            memory = RoninMemory::ronin_memory_alloc(sz);
+            stream.read((char *) memory, sz);
         }
         else
         {
-            constexpr int block_size = 4096;
+            // 4 MB blocks/per
+            constexpr int block_size = 4096 * 1024;
             char *buffer = new char[block_size];
 
             if(buffer == nullptr)
                 RoninSimulator::Kill();
 
-            delta = 0;
-            while(stream.peek() != std::ios_base::eofbit)
+            sz = 0;
+            while(!stream.eof())
             {
                 // read from
-                std::size_t pos = stream.readsome(buffer, block_size);
+                std::size_t pos = stream.read(buffer, block_size).gcount();
                 // resize
-                memory.resize(delta + pos);
+                memory = RoninMemory::ronin_memory_realloc(memory, sz + pos);
+                if(memory == nullptr)
+                {
+                    sz = 0;
+                    break;
+                }
                 // copy to
-                memcpy(memory.data() + delta, buffer, pos);
-                delta += pos;
+                memcpy(static_cast<char *>(memory) + sz, buffer, pos);
+                sz += pos;
             }
             delete[] buffer;
         }
-        return memory;
+        return std::make_pair(sz, memory);
     }
 
     resource_id Resources::LoadImageFromStream(std::istream &stream, bool local)
@@ -140,9 +182,8 @@ namespace RoninEngine::Runtime
         GidResources *gid;
 
         auto memory = stream_to_mem(stream);
-
-        SDL_Surface *surf = IMG_Load_RW(SDL_RWFromConstMem(memory.data(), memory.size()), SDL_TRUE);
-
+        SDL_Surface *surf = IMG_Load_RW(SDL_RWFromMem(memory.second, memory.first), SDL_TRUE);
+        RoninMemory::ronin_memory_free(memory.second);
         if(surf == nullptr)
         {
             SDL_LogError(SDL_LOG_CATEGORY_ERROR, "Surface: can not load");
@@ -163,8 +204,8 @@ namespace RoninEngine::Runtime
 
         auto memory = stream_to_mem(stream);
 
-        Mix_Chunk *chunk = Mix_LoadWAV_RW(SDL_RWFromConstMem(memory.data(), memory.size()), SDL_TRUE);
-
+        Mix_Chunk *chunk = Mix_LoadWAV_RW(SDL_RWFromMem(memory.second, memory.first), SDL_TRUE);
+        RoninMemory::ronin_memory_free(memory.second);
         if(chunk == nullptr)
         {
             SDL_LogError(SDL_LOG_CATEGORY_ERROR, "Sound: can not load");
@@ -184,8 +225,10 @@ namespace RoninEngine::Runtime
         GidResources *gid;
 
         auto memory = stream_to_mem(stream);
+        Mix_Music *music = Mix_LoadMUS_RW(SDL_RWFromMem(memory.second, memory.first), SDL_TRUE);
 
-        Mix_Music *music = Mix_LoadMUSType_RW(SDL_RWFromConstMem(memory.data(), memory.size()), MUS_OGG, SDL_TRUE);
+        // register to src for free
+        make_private_resource(memory.second, local);
 
         if(music == nullptr)
         {
@@ -202,7 +245,7 @@ namespace RoninEngine::Runtime
 
     resource_id Resources::LoadImage(const std::string &path, bool local)
     {
-        std::ifstream file(path);
+        std::ifstream file(path, std::ios_base::binary);
 
         if(!file)
         {
@@ -215,7 +258,7 @@ namespace RoninEngine::Runtime
 
     resource_id Resources::LoadAudioClip(const std::string &path, bool local)
     {
-        std::ifstream file(path);
+        std::ifstream file(path, std::ios_base::binary);
 
         if(!file)
         {
@@ -228,7 +271,7 @@ namespace RoninEngine::Runtime
 
     resource_id Resources::LoadMusicClip(const std::string &path, bool local)
     {
-        std::ifstream file(path);
+        std::ifstream file(path, std::ios_base::binary);
 
         if(!file)
         {

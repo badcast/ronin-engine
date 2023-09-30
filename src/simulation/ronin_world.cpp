@@ -467,6 +467,7 @@ namespace RoninEngine
                     }
 
         next:
+            continue;
         }
 
         return restored;

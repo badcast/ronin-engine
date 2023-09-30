@@ -6,6 +6,7 @@ namespace RoninEngine::Runtime::RoninMemory
 {
     // main memory controller
     RONIN_API void *ronin_memory_alloc(std::size_t size);
+    RONIN_API void *ronin_memory_realloc(void *memory, std::size_t size);
     RONIN_API void ronin_memory_free(void *memory);
     RONIN_API std::uint64_t total_allocated();
 

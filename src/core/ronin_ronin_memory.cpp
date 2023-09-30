@@ -7,7 +7,7 @@ namespace RoninEngine::Runtime
         using namespace RoninEngine;
 
 #if TEST_MALLOC
-        std::list<void *> allocated_leaker;
+        std::set<void *> allocated_leaker;
 #endif
         std::uint64_t __ronin_allocated = 0;
         void *ronin_memory_alloc(std::size_t size)
@@ -15,16 +15,32 @@ namespace RoninEngine::Runtime
             void *mem = std::malloc(size);
             if(mem == nullptr)
             {
-                RoninSimulator::Kill();
                 return nullptr;
             }
+            ++__ronin_allocated;
             // Set up controls memory pointer. Set zero.
             memset(mem, 0, size);
-            ++__ronin_allocated;
 #if TEST_MALLOC
-            allocated_leaker.push_back(mem);
+            allocated_leaker.insert(mem);
 #endif
             return mem;
+        }
+
+        void *ronin_memory_realloc(void *memory, std::size_t size)
+        {
+#if TEST_MALLOC
+            allocated_leaker.erase(memory);
+#endif
+            void *prev = memory;
+            memory = std::realloc(memory, size);
+            if(prev == nullptr && memory != nullptr)
+                ++__ronin_allocated;
+            else if(prev != nullptr && size == 0)
+                --__ronin_allocated;
+#if TEST_MALLOC
+            allocated_leaker.insert(memory);
+#endif
+            return memory;
         }
 
         void ronin_memory_free(void *memory)
@@ -33,7 +49,7 @@ namespace RoninEngine::Runtime
             if(__ronin_allocated-- == 0)
                 RoninSimulator::ShowMessageFail("invalid ronin_memory_free()");
 #if TEST_MALLOC
-            allocated_leaker.remove(memory);
+            allocated_leaker.erase(memory);
 #endif
         }
 
