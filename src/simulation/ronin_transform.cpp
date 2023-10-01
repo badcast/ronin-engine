@@ -319,10 +319,10 @@ namespace RoninEngine::Runtime
         {
             Matrix::matrix_nature(this, Matrix::matrix_get_key(lastPosition));
 
-            Vec2 localPos = value - _position;
+            Vec2 localPos = value - lastPosition;
             for(Transform *child : hierarchy)
             {
-                child->position(_position + (child->_position - _position));
+                child->position(child->_position + localPos);
             }
         }
         return value;
