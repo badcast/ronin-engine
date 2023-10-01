@@ -209,19 +209,7 @@ namespace RoninEngine::Runtime
 
                                 if(stack.wrapper.texture)
                                 {
-                                    Transform *render_parent = render_transform->m_parent;
-                                    if(render_parent == stack.root_transform)
-                                    {
-                                        stack.sourcePoint = render_transform->_position;
-                                    }
-                                    else
-                                    {
-                                        // local position is direction
-                                        stack.sourcePoint += render_transform->_position+Vec2::RotateAround(
-                                            render_parent->_position,
-                                            Vec2::one, // render_transform->localPosition()
-                                            render_parent->angle() * Math::deg2rad);
-                                    }
+                                    stack.sourcePoint = render_transform->_position;
 
                                     stack.wrapper.dst.w *= pixelsPerPoint; //_scale.x;
                                     stack.wrapper.dst.h *= pixelsPerPoint; //_scale.y;
@@ -249,7 +237,7 @@ namespace RoninEngine::Runtime
                                         stack.wrapper.texture,
                                         (SDL_Rect *) &(stack.wrapper.src),
                                         reinterpret_cast<SDL_FRect *>(&(stack.wrapper.dst)),
-                                        render_transform->angle(),
+                                        render_transform->_angle_,
                                         nullptr,
                                         SDL_RendererFlip::SDL_FLIP_NONE);
                                 }

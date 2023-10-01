@@ -155,29 +155,31 @@ namespace RoninEngine::Runtime
 
     void Transform::LookAt(Vec2 target, Vec2 axis)
     {
-        _angle_ = Vec2::Angle(axis, target - _position) * Math::rad2deg;
-        // normalize horz
+        float a = Vec2::Angle(axis, target - _position) * Math::rad2deg;
+        // normalize
         if(axis.x == 1)
         {
             if(_position.y < target.y)
-                _angle_ = -_angle_;
+                a = -a;
         }
         else if(axis.x == -1)
         {
             if(_position.y > target.y)
-                _angle_ = -_angle_;
+                a = -a;
         }
-        // normalize vert
+
         if(axis.y == 1)
         {
             if(_position.x > target.x)
-                _angle_ = -_angle_;
+                a = -a;
         }
         else if(axis.y == -1)
         {
             if(_position.x < target.x)
-                _angle_ = -_angle_;
+                a = -a;
         }
+
+        angle(a);
     }
 
     void Transform::LookAtLerp(Vec2 target, float t)
@@ -207,7 +209,7 @@ namespace RoninEngine::Runtime
                 a = -a;
         }
 
-        localAngle(Math::LerpAngle(_angle_, a, t));
+        angle(Math::LerpAngle(_angle_, a, t));
     }
 
     void Transform::LookAtLerp(Transform *target, float t)
@@ -231,22 +233,22 @@ namespace RoninEngine::Runtime
 
     const Vec2 Transform::forward() const
     {
-        return Vec2::RotateAround(_position, around_frwd, _angle_ * Math::deg2rad);
+        return Vec2::RotateDir(_position, around_frwd, _angle_ * Math::deg2rad);
     }
 
     const Vec2 Transform::forward(float force) const
     {
-        return Vec2::RotateAround(_position, around_frwd * force, _angle_ * Math::deg2rad);
+        return Vec2::RotateDir(_position, around_frwd * force, _angle_ * Math::deg2rad);
     }
 
     const Vec2 Transform::back() const
     {
-        return Vec2::RotateAround(_position, around_frwd, (_angle_ - 180) * Math::deg2rad);
+        return Vec2::RotateDir(_position, around_frwd, (_angle_ - 180) * Math::deg2rad);
     }
 
     const Vec2 Transform::back(float force) const
     {
-        return Vec2::RotateAround(_position, around_frwd * force, (_angle_ - 180) * Math::deg2rad);
+        return Vec2::RotateDir(_position, around_frwd * force, (_angle_ - 180) * Math::deg2rad);
     }
 
     const Vec2 Transform::right()
@@ -295,11 +297,11 @@ namespace RoninEngine::Runtime
         return (this->m_parent ? _position - this->m_parent->_position : _position);
     }
 
-    const Vec2 &Transform::localPosition(const Vec2 &value)
+    const Vec2 Transform::localPosition(const Vec2 &value)
     {
         Vec2Int lastPoint = Matrix::matrix_get_key(_position);
         _position = (this->m_parent ? this->m_parent->_position + value : value);
-        if(gameObject()->isActive())
+        if(_owner->m_active)
             Matrix::matrix_nature(this, lastPoint);
         return value;
     }
@@ -309,7 +311,7 @@ namespace RoninEngine::Runtime
         return _position;
     }
 
-    const Vec2 &Transform::position(const Vec2 &value)
+    const Vec2 Transform::position(const Vec2 &value)
     {
         Vec2 lastPosition = _position;
         _position = value; // set the position
@@ -317,20 +319,54 @@ namespace RoninEngine::Runtime
         {
             Matrix::matrix_nature(this, Matrix::matrix_get_key(lastPosition));
 
-            for(Transform *chlid : hierarchy)
-                chlid->parent_notify(lastPosition);
+            Vec2 localPos = value - _position;
+            for(Transform *child : hierarchy)
+            {
+                child->position(_position + (child->_position - _position));
+            }
         }
         return value;
     }
 
-    void Transform::parent_notify(Vec2 lastParentPoint)
+    float Transform::localAngle() const
     {
-        Vec2 last_position = _position;
-        // calc new position, after parent change
-        _position = m_parent->_position - (lastParentPoint - _position);
-        Matrix::matrix_nature(this, Matrix::matrix_get_key(last_position));
-        for(Transform *chlid : hierarchy)
-            chlid->parent_notify(last_position);
+        return _angle_ - m_parent->_angle_;
+    }
+
+    void Transform::localAngle(float value)
+    {
+        // Lerp range at 0 .. 360
+        //        while(value > 360)
+        //            value -= 360;
+        angle(value + m_parent->_angle_);
+    }
+
+    float Transform::angle() const
+    {
+        return this->_angle_;
+    }
+
+    void Transform::angle(float value)
+    {
+        // Formulas:
+        // 1. For get local positoin  = child.position - parent.position
+        // 2. For get absolute position = parent.position + (child.position - parent.position)
+
+        float lastAngle = value;
+        _angle_ = value;
+
+        if(_owner->m_active)
+        {
+            value = value - lastAngle; // new diff angle from parent
+            // send in hierarchy
+            for(Transform *child : hierarchy)
+            {
+                // update child angle
+                child->angle(child->_angle_ + value);
+                // update child position
+                child->position(Vec2::RotateAround(_position, child->_position - _position, child->_angle_ * Math::deg2rad));
+            }
+        }
     }
 
     void Transform::parent_notify_active_state(GameObject *from)
@@ -351,29 +387,7 @@ namespace RoninEngine::Runtime
             chlid->parent_notify_active_state(from);
     }
 
-    float Transform::angle() const
-    {
-        return (this->m_parent) ? this->m_parent->_angle_ + this->_angle_ : this->_angle_;
-    }
-
-    void Transform::angle(float value)
-    {
-        this->_angle_ = (this->m_parent) ? this->m_parent->angle() - value : value;
-    }
-
-    float Transform::localAngle() const
-    {
-        return this->_angle_;
-    }
-
-    void Transform::localAngle(float value)
-    {
-        while(value > 360)
-            value -= 360;
-        this->_angle_ = value;
-    }
-
-    int Transform::layer()
+    int Transform::layer() const
     {
         return _layer_;
     }
@@ -381,16 +395,21 @@ namespace RoninEngine::Runtime
     void Transform::layer(int value)
     {
         // TODO: Set the layer component, notify to matrix changed
+
         // Delete from matrix, for is not active object
-        Matrix::matrix_nature_pickup(this);
+        if(_owner->m_active)
+            Matrix::matrix_nature_pickup(this);
+
         _layer_ = value;
+
         // Add to matrix, for active object
-        Matrix::matrix_nature(this, Matrix::matrix_get_key(Vec2::infinity));
+        if(_owner->m_active)
+            Matrix::matrix_nature(this, Matrix::matrix_get_key(Vec2::infinity));
     }
 
     Transform *Transform::parent() const
     {
-        if(m_parent == nullptr || m_parent == switched_world->irs->main_object->transform())
+        if(m_parent == switched_world->irs->main_object->transform())
             return nullptr;
 
         return m_parent;
@@ -401,14 +420,26 @@ namespace RoninEngine::Runtime
         // TODO: make worldPositionStays
         if(this->m_parent == nullptr)
         {
-            throw RoninEngine::Exception::ronin_transform_change_error();
+            parent = switched_world->irs->main_object->transform();
         }
-        Vec2 lastParentPoint = this->m_parent->position();
+        Vec2 lastParentPoint = this->m_parent->_position;
         // change children of the parent
         hierarchy_parent_change(this, parent);
         // change position child
-        this->parent_notify(lastParentPoint);
-        this->layer(parent->_layer_);
+        for(Transform *child : hierarchy)
+        {
+            // Пересчитайте глобальные координаты для дочернего объекта
+            Vec2 childGlobalPos = _position + child->_position;
+
+            // Установите новую глобальную позицию для дочернего объекта
+            child->position(childGlobalPos);
+        }
+        // this->layer(parent->_layer_ | _layer_);
+    }
+
+    void Transform::detach()
+    {
+        setParent(nullptr);
     }
 
 } // namespace RoninEngine::Runtime

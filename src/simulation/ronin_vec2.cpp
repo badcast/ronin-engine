@@ -332,6 +332,19 @@ namespace RoninEngine::Runtime
 
     const Vec2 Vec2::RotateAround(Vec2 center, Vec2 localPosition, float angleRadian)
     {
+        // float Cos = Math::Cos(angleRadian);
+        // float Sin = Math::Sin(angleRadian);
+        // center.x += localPosition.x * Sin;
+        // center.y += localPosition.y * Cos;
+        // return center;
+
+        float Sin = Math::Sin(angleRadian);
+        float Cos = Math::Cos(angleRadian);
+        return {localPosition.x * Cos - localPosition.y * Sin + center.x, localPosition.x * Sin + localPosition.y * Cos + center.y};
+    }
+
+    const Vec2 Vec2::RotateDir(Vec2 center, Vec2 localPosition, float angleRadian)
+    {
         float Cos = Math::Cos(angleRadian);
         float Sin = Math::Sin(angleRadian);
         center.x += localPosition.x * Sin;
