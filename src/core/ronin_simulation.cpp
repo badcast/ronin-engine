@@ -723,21 +723,9 @@ namespace RoninEngine
 
     void RoninSimulator::ShowMessageFail(const std::string &message)
     {
-        std::string _template = message;
-        char _temp[32] {0};
-        tm *ltime;
-        time_t tt;
-        time(&tt);
-
-        ltime = localtime(&tt);
-        strftime(_temp, sizeof(_temp), "%d.%m.%y %H:%M:%S", ltime);
-        _template += "\n\n\t";
-        _template += _temp;
-
-        fprintf(stderr, "%s", _template.data());
-
-        SDL_LogMessage(SDL_LogCategory::SDL_LOG_CATEGORY_APPLICATION, SDL_LogPriority::SDL_LOG_PRIORITY_CRITICAL, "%s", _template.c_str());
-        SDL_ShowSimpleMessageBox(SDL_MessageBoxFlags::SDL_MESSAGEBOX_ERROR, "Ronin Engine: failed", _template.c_str(), active_window);
+        fprintf(stderr, "%s", message.data());
+        SDL_LogMessage(SDL_LogCategory::SDL_LOG_CATEGORY_APPLICATION, SDL_LogPriority::SDL_LOG_PRIORITY_CRITICAL, "%s", message.c_str());
+        SDL_ShowSimpleMessageBox(SDL_MessageBoxFlags::SDL_MESSAGEBOX_ERROR, "Ronin Engine: failed", message.c_str(), active_window);
         Kill();
     }
 

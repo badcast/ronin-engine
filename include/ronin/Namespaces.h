@@ -5,6 +5,7 @@
 #ifndef RONIN_COMPILLING
 typedef struct SDL_Surface Image;
 typedef struct SDL_Texture native_texture_t;
+typedef struct SDL_Cursor Cursor;
 
 struct native_color_t
 {

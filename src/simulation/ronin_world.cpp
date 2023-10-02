@@ -571,6 +571,16 @@ namespace RoninEngine
         this->irs->request_unloading = true;
     }
 
+    bool World::SetCursor(Cursor *cursor)
+    {
+        if(cursor == nullptr)
+            return false;
+
+        SDL_SetCursor(cursor);
+        SDL_ShowCursor(SDL_ENABLE);
+        return true;
+    }
+
     int World::GetDestroyedFrames()
     {
         return irs->_destroyed;

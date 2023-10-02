@@ -9,9 +9,19 @@ namespace RoninEngine
         {
         }
 
-        Component::Component(const std::string &name) : _owner(nullptr), Object(DESCRIBE_AS_ONLY_NAME(Component))
+        Component::Component(const std::string &name) : _owner(nullptr), Object(DESCRIBE_AS_ONLY_NAME(Component)), _enable(true)
         {
             DESCRIBE_AS_MAIN(Component);
+        }
+
+        bool Component::enable() const
+        {
+            return _enable;
+        }
+
+        void Component::enable(bool value)
+        {
+            _enable = value;
         }
 
         const bool Component::is_binded()

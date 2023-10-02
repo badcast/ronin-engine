@@ -43,6 +43,7 @@ namespace RoninEngine
         {
         public:
             static bool LoadAsset(const std::string &assetFile, Asset **asset);
+            static Cursor *ConvertImageToCursor(Image *imageSrc, Vec2Int cursorHotspot);
         };
     } // namespace Runtime
 } // namespace RoninEngine

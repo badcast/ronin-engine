@@ -13,5 +13,8 @@ namespace RoninEngine
         static const std::string app_dir();
         // Get preference directory
         static const std::string pref_dir();
+        // Result on Linux "/"
+        // Result on Windows "\"
+        static char GetPathSeperatorOS();
     };
 } // namespace RoninEngine

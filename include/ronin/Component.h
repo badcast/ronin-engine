@@ -11,9 +11,12 @@ namespace RoninEngine
         {
         private:
             GameObject *_owner;
+            bool _enable;
 
         public:
-            bool enabled();
+            bool enable() const;
+            void enable(bool value);
+
             Component();
             explicit Component(const std::string &name);
             Component(const Component &) = delete;

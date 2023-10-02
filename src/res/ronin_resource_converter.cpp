@@ -126,6 +126,12 @@ bool AssetManager::LoadAsset(const std::string &assetFile, Asset **asset)
     return true;
 }
 
+Cursor *AssetManager::ConvertImageToCursor(Image *imageSrc, Vec2Int cursorHotspot)
+{
+    Cursor *cursor = SDL_CreateColorCursor(imageSrc, cursorHotspot.x, cursorHotspot.y);
+    return cursor;
+}
+
 Image *Asset::GetImage(const std::string &name)
 {
     auto f = __ref->image_clips.find(string_hasher(name));

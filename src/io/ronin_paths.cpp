@@ -47,3 +47,8 @@ const std::string Path::pref_dir()
 
     return str;
 }
+
+char Path::GetPathSeperatorOS()
+{
+    return seperator;
+}
