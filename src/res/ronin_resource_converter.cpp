@@ -10,8 +10,10 @@ constexpr int resources_types_n = 3;
 constexpr const char resource_types[resources_types_n][16] {"Sprite", "AudioClip", "MusicClip"};
 static std::hash<std::string> string_hasher;
 
-void RoninEngine::Runtime::internal_free_loaded_assets(){
-    for(Asset & asset : loaded_assets){
+void RoninEngine::Runtime::internal_free_loaded_assets()
+{
+    for(Asset &asset : loaded_assets)
+    {
         RoninMemory::free(asset.__ref); // free asset
     }
 
@@ -124,12 +126,20 @@ bool AssetManager::LoadAsset(const std::string &assetFile, Asset **asset)
     return true;
 }
 
-Image *Asset::GetImage(const std::string &key)
+Image *Asset::GetImage(const std::string &name)
 {
-    auto f = __ref->image_clips.find(string_hasher(key));
+    auto f = __ref->image_clips.find(string_hasher(name));
 
     if(f == std::end(__ref->image_clips))
         return nullptr;
 
     return Resources::GetImageSource(f->second);
+}
+
+AudioClip *Asset::GetAudioClip(const std::string &name)
+{
+    auto f = __ref->audio_clips.find(string_hasher(name));
+    if(f == std::end(__ref->audio_clips))
+        return nullptr;
+    return Resources::GetAudioClipSource(f->second);
 }

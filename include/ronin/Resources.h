@@ -35,7 +35,8 @@ namespace RoninEngine
             struct AssetRef *__ref;
 
         public:
-            Image *GetImage(const std::string &key);
+            Image *GetImage(const std::string &name);
+            AudioClip *GetAudioClip(const std::string &name);
         };
 
         class RONIN_API AssetManager

@@ -277,7 +277,7 @@ namespace RoninEngine
             {
                 bool hasError = switched_world == world || last_switched_world != nullptr || preload_world == world;
                 if(hasError)
-                    Log("Current world is reloading state. Failed.");
+                    Log("Current world is loading state. Failed.");
                 return hasError;
             }};
 
