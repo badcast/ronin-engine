@@ -31,7 +31,7 @@ namespace RoninEngine
 
         Transform *Component::transform()
         {
-            return _owner->transform();
+            return static_cast<Transform *>(_owner->m_components.front());
         }
 
         GameObject *Component::gameObject()
