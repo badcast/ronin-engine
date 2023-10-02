@@ -27,7 +27,11 @@ namespace RoninEngine::UI
 
     void refresh_legacy_font(RoninEngine::Runtime::World *world)
     {
+        if(world->irs->legacy_font_normal)
+            SDL_DestroyTexture(world->irs->legacy_font_normal);
         world->irs->legacy_font_normal = SDL_CreateTextureFromSurface(renderer, pLegacyFont->surfNormal);
+        if(world->irs->legacy_font_hover)
+            SDL_DestroyTexture(world->irs->legacy_font_hover);
         world->irs->legacy_font_hover = SDL_CreateTextureFromSurface(renderer, pLegacyFont->surfHilight);
     }
 

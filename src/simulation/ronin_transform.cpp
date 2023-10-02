@@ -341,34 +341,6 @@ namespace RoninEngine::Runtime
         angle(value + m_parent->_angle_);
     }
 
-    float Transform::angle() const
-    {
-        return this->_angle_;
-    }
-
-    void Transform::angle(float value)
-    {
-        // Formulas:
-        // 1. For get local positoin  = child.position - parent.position
-        // 2. For get absolute position = parent.position + (child.position - parent.position)
-
-        float lastAngle = value;
-        _angle_ = value;
-
-        if(_owner->m_active)
-        {
-            value = value - lastAngle; // new diff angle from parent
-            // send in hierarchy
-            for(Transform *child : hierarchy)
-            {
-                // update child angle
-                child->angle(child->_angle_ + value);
-                // update child position
-                child->position(Vec2::RotateAround(_position, child->_position - _position, child->_angle_ * Math::deg2rad));
-            }
-        }
-    }
-
     void Transform::parent_notify_active_state(GameObject *from)
     {
         Vec2Int pos = Matrix::matrix_get_key(this->_position);
@@ -418,7 +390,7 @@ namespace RoninEngine::Runtime
     void Transform::setParent(Transform *parent, bool worldPositionStays)
     {
         // TODO: make worldPositionStays
-        if(this->m_parent == nullptr)
+        if(parent == nullptr)
         {
             parent = switched_world->irs->main_object->transform();
         }
@@ -440,6 +412,34 @@ namespace RoninEngine::Runtime
     void Transform::detach()
     {
         setParent(nullptr);
+    }
+
+    float Transform::angle() const
+    {
+        return this->_angle_;
+    }
+
+    void Transform::angle(float value)
+    {
+        // Formulas:
+        // 1. For get local positoin  = child.position - parent.position
+        // 2. For get absolute position = parent.position + (child.position - parent.position)
+
+        float lastAngle = _angle_;
+        _angle_ = value;
+
+        if(_owner->m_active)
+        {
+            value = value - lastAngle; // new diff angle from parent
+            // send in hierarchy
+            for(Transform *child : hierarchy)
+            {
+                // update child angle
+                child->localAngle(value);
+                // update child position
+                child->position(Vec2::RotateAround(_position, child->_position - _position, -value * Math::deg2rad));
+            }
+        }
     }
 
 } // namespace RoninEngine::Runtime
