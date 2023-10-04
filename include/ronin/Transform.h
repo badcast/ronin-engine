@@ -47,24 +47,20 @@ namespace RoninEngine::Runtime
 
         // look forward axis from world coordinates
         const Vec2 forward() const;
-        // look forward axis from world coordinates with forces
-        const Vec2 forward(float force) const;
         // look backward axis from world coordinates
         const Vec2 back() const;
-        // look backward axis from world coordinates with forces
-        const Vec2 back(float force) const;
         // look right axis from world coordinates
-        const Vec2 right();
+        const Vec2 right() const;
         // look left axis from world coordinates
-        const Vec2 left();
+        const Vec2 left() const;
         // look up axis from world coordinates
-        const Vec2 up();
+        const Vec2 up() const;
         // look down axis from world coordinates
-        const Vec2 down();
+        const Vec2 down() const;
         // look axis from world coordinates
-        const Vec2 TransformDirection(Vec2 direction);
+        const Vec2 TransformDirection(Vec2 direction) const;
         // look axis from world coordinates
-        const Vec2 TransformDirection(float x, float y);
+        const Vec2 TransformDirection(float x, float y) const;
 
         /**
          * @brief Looks at the target

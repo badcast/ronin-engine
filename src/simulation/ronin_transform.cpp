@@ -233,50 +233,40 @@ namespace RoninEngine::Runtime
 
     const Vec2 Transform::forward() const
     {
-        return Vec2::RotateDir(_position, around_frwd, _angle_ * Math::deg2rad);
-    }
-
-    const Vec2 Transform::forward(float force) const
-    {
-        return Vec2::RotateDir(_position, around_frwd * force, _angle_ * Math::deg2rad);
+        return TransformDirection(Vec2::up);
     }
 
     const Vec2 Transform::back() const
     {
-        return Vec2::RotateDir(_position, around_frwd, (_angle_ - 180) * Math::deg2rad);
+        return TransformDirection(Vec2::down);
     }
 
-    const Vec2 Transform::back(float force) const
-    {
-        return Vec2::RotateDir(_position, around_frwd * force, (_angle_ - 180) * Math::deg2rad);
-    }
-
-    const Vec2 Transform::right()
+    const Vec2 Transform::right() const
     {
         return TransformDirection(Vec2::right);
     }
 
-    const Vec2 Transform::left()
+    const Vec2 Transform::left() const
     {
         return TransformDirection(Vec2::left);
     }
 
-    const Vec2 Transform::up()
+    const Vec2 Transform::up() const
     {
         return TransformDirection(Vec2::up);
     }
 
-    const Vec2 Transform::down()
+    const Vec2 Transform::down() const
     {
         return TransformDirection(Vec2::down);
     }
 
-    const Vec2 Transform::TransformDirection(Vec2 direction)
+    const Vec2 Transform::TransformDirection(Vec2 direction) const
     {
-        return Vec2::Rotate(_position + direction, _angle_);
+        return Vec2::RotateAround(_position, direction, -_angle_ * Math::deg2rad);
     }
 
-    const Vec2 Transform::TransformDirection(float x, float y)
+    const Vec2 Transform::TransformDirection(float x, float y) const
     {
         return TransformDirection({x, y});
     }
