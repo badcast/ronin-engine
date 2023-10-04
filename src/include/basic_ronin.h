@@ -301,7 +301,7 @@ namespace RoninEngine
 
         // TODO: Complete that function for types
         template <typename T, typename std::enable_if<std::is_base_of<Object, T>::value, std::nullptr_t>::type = nullptr>
-        void internal_destroy_object(T *obj);
+        inline void internal_destroy_object(T *obj);
 
         void internal_load_world(World *);
         bool internal_unload_world(World *);

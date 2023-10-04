@@ -6,7 +6,7 @@ namespace RoninEngine::Runtime
 
     int RoninAudio::Init()
     {
-        int current_inits = MIX_InitFlags::MIX_INIT_OGG | MIX_InitFlags::MIX_INIT_MP3;
+        int current_inits = MIX_InitFlags::MIX_INIT_OGG;
         if((last_inited_result = (Mix_Init(current_inits))) < 1)
             return -1;
 
@@ -16,6 +16,8 @@ namespace RoninEngine::Runtime
             Mix_Quit();
             return -1;
         }
+
+        last_inited_result = 1;
 
         return 0;
     }

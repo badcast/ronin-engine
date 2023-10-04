@@ -58,13 +58,13 @@ namespace RoninEngine
             {
                 if(initInHierarchy)
                 {
-                    if(World::self() == nullptr)
+                    if(switched_world == nullptr)
                         throw std::runtime_error("self is null");
 
-                    if(!World::self()->isHierarchy())
+                    if(!switched_world->isHierarchy())
                         throw std::runtime_error(">mainObject is null");
 
-                    auto mainObj = World::self()->irs->main_object;
+                    auto mainObj = switched_world->irs->main_object;
                     auto root = mainObj->transform();
                     Transform *tr = ((GameObject *) clone)->transform();
                     root->childAdd(tr);
@@ -82,21 +82,21 @@ namespace RoninEngine
                 Transform *transform;
                 Behaviour *script;
                 Camera *camera;
-            } candidate;
-            if((candidate.transform = dynamic_cast<Transform *>(obj)))
-                internal_destroy_object<Transform>(candidate.transform);
-            else if((candidate.script = dynamic_cast<Behaviour *>(obj)))
-                internal_destroy_object<Behaviour>(candidate.script);
-            else if((candidate.renderer = dynamic_cast<Renderer *>(obj)))
-                internal_destroy_object<Renderer>(candidate.renderer);
-            else if((candidate.camera = dynamic_cast<Camera *>(obj)))
-                internal_destroy_object<Camera>(candidate.camera);
+            } __uptr;
+            if((__uptr.transform = dynamic_cast<Transform *>(obj)))
+                internal_destroy_object<Transform>(__uptr.transform);
+            else if((__uptr.script = dynamic_cast<Behaviour *>(obj)))
+                internal_destroy_object<Behaviour>(__uptr.script);
+            else if((__uptr.renderer = dynamic_cast<Renderer *>(obj)))
+                internal_destroy_object<Renderer>(__uptr.renderer);
+            else if((__uptr.camera = dynamic_cast<Camera *>(obj)))
+                internal_destroy_object<Camera>(__uptr.camera);
             else
                 internal_destroy_object<Object>(obj);
         }
 
         template <typename T, typename std::enable_if<std::is_base_of<Object, T>::value, std::nullptr_t>::type>
-        void internal_destroy_object(T *obj)
+        inline void internal_destroy_object(T *obj)
         {
             static_assert(std::is_base_of<Object, T>::value && !std::is_same<GameObject, T>::value, "obj var not based of Object");
 
@@ -113,23 +113,26 @@ namespace RoninEngine
             }
             else if constexpr(std::is_same<T, Behaviour>::value)
             {
-                WorldResources *wrs = World::self()->irs;
-                if(wrs->_firstRunScripts)
-                    wrs->_firstRunScripts->remove(obj);
-                if(wrs->_realtimeScripts)
-                    wrs->_realtimeScripts->remove(obj);
+                // Run Script Destroy
+                obj->OnDestroy();
+                // Run last script object
+                if(switched_world->irs->_firstRunScripts)
+                    switched_world->irs->_firstRunScripts->remove(obj);
+                if(switched_world->irs->_realtimeScripts)
+                    switched_world->irs->_realtimeScripts->remove(obj);
             }
             else if constexpr(std::is_same<T, Camera2D>::value)
             {
-                World::self()->irs->event_camera_changed(obj, CameraEvent::CAM_DELETED);
+                switched_world->irs->event_camera_changed(obj, CameraEvent::CAM_DELETED);
 
-                // release main object
+                // Free Camera Resources
                 RoninMemory::free(obj->camera_resources);
             }
 
             // Extractor remove
             obj->__ = nullptr;
 
+            // Free object
             RoninMemory::free(obj);
         }
 
@@ -176,15 +179,15 @@ namespace RoninEngine
 
         void Destroy(GameObject *obj, float t)
         {
-            if(!obj || !World::self() || t < 0)
+            if(!obj || !switched_world || t < 0)
                 throw std::bad_exception();
 
-            auto provider = World::self()->irs->_destructTasks;
+            auto provider = switched_world->irs->_destructTasks;
 
             if(!provider)
             {
-                provider = World::self()->irs->_destructTasks =
-                    RoninMemory::alloc<std::remove_pointer<decltype(World::self()->irs->_destructTasks)>::type>();
+                provider = switched_world->irs->_destructTasks =
+                    RoninMemory::alloc<std::remove_pointer<decltype(switched_world->irs->_destructTasks)>::type>();
             }
             else
             {
@@ -316,10 +319,10 @@ namespace RoninEngine
         {
             DESCRIBE_AS_MAIN(Object);
             ::check_object(this);
-            if(World::self() == nullptr)
+            if(switched_world == nullptr)
                 throw std::bad_exception();
 
-            id = World::self()->irs->_level_ids_++;
+            id = switched_world->irs->_level_ids_++;
             // set as instanced
             __ = switched_world;
         }

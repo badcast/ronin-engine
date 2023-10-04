@@ -13,9 +13,6 @@ namespace RoninEngine::Runtime
         float speed;
 
         void OnAwake();
-        void OnStart();
         void OnUpdate();
-        void OnLateUpdate();
-        void OnDestroy();
     };
 } // namespace RoninEngine::Runtime

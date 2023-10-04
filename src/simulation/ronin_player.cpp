@@ -20,10 +20,6 @@ namespace RoninEngine::Runtime
     }
     Vec2 movementDir = Vec2::up;
 
-    void MoveController2D::OnStart()
-    {
-    }
-
     void MoveController2D::OnUpdate()
     {
 
@@ -48,12 +44,4 @@ namespace RoninEngine::Runtime
             transform()->position(Vec2::MoveTowards(point, point + movementDir, curSpeed));
         }
     }
-
-    void MoveController2D::OnLateUpdate()
-    {
-    }
-    void MoveController2D::OnDestroy()
-    {
-    }
-
 } // namespace RoninEngine::Runtime
