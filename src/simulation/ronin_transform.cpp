@@ -390,11 +390,9 @@ namespace RoninEngine::Runtime
         // change position child
         for(Transform *child : hierarchy)
         {
-            // Пересчитайте глобальные координаты для дочернего объекта
-            Vec2 childGlobalPos = _position + child->_position;
-
-            // Установите новую глобальную позицию для дочернего объекта
-            child->position(childGlobalPos);
+            // Пересчитаю глобальные координаты для дочернего объекта
+            // Установлю новую глобальную позицию для дочернего объекта
+            child->position(_position + child->_position);
         }
         // this->layer(parent->_layer_ | _layer_);
     }
