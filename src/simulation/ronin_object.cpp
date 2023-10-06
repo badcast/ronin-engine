@@ -226,8 +226,6 @@ namespace RoninEngine
                 internal_destroy_object_dyn(component);
             }
 
-            obj->m_components.clear();
-
             // remove extractor flag
             obj->__ = nullptr;
 

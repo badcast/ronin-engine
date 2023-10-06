@@ -490,11 +490,11 @@ namespace RoninEngine
         {
             // TODO: m_level->request_unloading use as WNILE block (list proc)
 
-            TimeEngine::begin_watch();
+            TimeEngine::BeginWatch();
 
-            delayed = TimeEngine::tick_millis();
+            delayed = TimeEngine::millis();
 
-            TimeEngine::begin_watch();
+            TimeEngine::BeginWatch();
 
             // update internal events
             SDL_PumpEvents();
@@ -537,7 +537,7 @@ namespace RoninEngine
                     renderer = nullptr;
                     simConfig.renderer_hardware = nullptr;
 
-                    queue_watcher.ms_wait_internal_instructions = TimeEngine::end_watch();
+                    queue_watcher.ms_wait_internal_instructions = TimeEngine::EndWatch();
                     goto end_simulate;
                 }
                 else
@@ -583,14 +583,14 @@ namespace RoninEngine
 
             input_movement_update();
 
-            queue_watcher.ms_wait_internal_instructions = TimeEngine::end_watch();
+            queue_watcher.ms_wait_internal_instructions = TimeEngine::EndWatch();
             // end watcher
 
             // update level
             if(!switched_world->irs->request_unloading)
             {
                 // begin watcher
-                TimeEngine::begin_watch();
+                TimeEngine::BeginWatch();
 
                 if(!internal_world_can_start)
                 {
@@ -603,7 +603,7 @@ namespace RoninEngine
                     switched_world->OnUpdate();
                 }
                 // end watcher
-                queue_watcher.ms_wait_exec_world = TimeEngine::end_watch();
+                queue_watcher.ms_wait_exec_world = TimeEngine::EndWatch();
 
                 if(switched_world->irs->request_unloading)
                 {
@@ -622,9 +622,9 @@ namespace RoninEngine
             SDL_RenderSetScale(renderer, 1.f, 1.f);
 
             // begin watcher
-            TimeEngine::begin_watch();
+            TimeEngine::BeginWatch();
             UI::native_draw_render(switched_world->irs->gui);
-            queue_watcher.ms_wait_render_gui = TimeEngine::end_watch();
+            queue_watcher.ms_wait_render_gui = TimeEngine::EndWatch();
             // end watcher
 
             if(switched_world->irs->request_unloading)
@@ -633,9 +633,9 @@ namespace RoninEngine
             if(!last_switched_world)
             {
                 // begin watcher
-                TimeEngine::begin_watch();
+                TimeEngine::BeginWatch();
                 SDL_RenderPresent(renderer);
-                queue_watcher.ms_wait_render_world += TimeEngine::end_watch();
+                queue_watcher.ms_wait_render_world += TimeEngine::EndWatch();
                 // end watcher
 
                 level_render_world_late();
@@ -643,9 +643,9 @@ namespace RoninEngine
 
         end_simulate:
 
-            delayed = TimeEngine::tick_millis() - delayed;
+            delayed = TimeEngine::millis() - delayed;
 
-            queue_watcher.ms_wait_frame = TimeEngine::end_watch();
+            queue_watcher.ms_wait_frame = TimeEngine::EndWatch();
 
             // update watcher
             last_watcher = queue_watcher;

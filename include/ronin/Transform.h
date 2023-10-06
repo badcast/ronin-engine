@@ -61,6 +61,8 @@ namespace RoninEngine::Runtime
         const Vec2 TransformDirection(Vec2 direction) const;
         // look axis from world coordinates
         const Vec2 TransformDirection(float x, float y) const;
+        // move the Transform by translation
+        void Translate(Vec2 translation);
 
         /**
          * @brief Looks at the target

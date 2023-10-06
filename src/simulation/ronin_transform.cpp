@@ -271,6 +271,11 @@ namespace RoninEngine::Runtime
         return TransformDirection({x, y});
     }
 
+    void Transform::Translate(Vec2 translation)
+    {
+        position(_position + translation);
+    }
+
     const bool Transform::LookOfAngle(Transform *target, float maxAngle) const
     {
         return LookOfAngle(target->_position, maxAngle);

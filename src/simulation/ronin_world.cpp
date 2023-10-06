@@ -5,7 +5,6 @@ using namespace RoninEngine;
 using namespace RoninEngine::Exception;
 using namespace RoninEngine::Runtime;
 
-// TODO: optimize MatrixSelection USE TRANSFORM::LAYER component for selection (as INDEX)
 
 namespace RoninEngine
 {
@@ -199,7 +198,7 @@ namespace RoninEngine
                         xiter = yiter = std::begin(*(switched_world->irs->_destructTasks));
 
                     // destroy
-                    for(auto target : pair.second)
+                    for(GameObject* target : pair.second)
                     {
                         if(target->exists())
                         {
@@ -227,7 +226,7 @@ namespace RoninEngine
             // set default color
             Gizmos::SetColor(Color::white);
 
-            TimeEngine::begin_watch();
+            TimeEngine::BeginWatch();
 
             if(switched_world->irs->_firstRunScripts)
             {
@@ -254,10 +253,10 @@ namespace RoninEngine
                         exec->OnUpdate();
                 };
             }
-            queue_watcher.ms_wait_exec_scripts = TimeEngine::end_watch();
+            queue_watcher.ms_wait_exec_scripts = TimeEngine::EndWatch();
             // end watcher
 
-            TimeEngine::begin_watch();
+            TimeEngine::BeginWatch();
             // Render on main camera
             Camera *cam = Camera::mainCamera(); // Draw level from active camera (main)
             if(!switched_world->irs->request_unloading && cam)
@@ -265,10 +264,10 @@ namespace RoninEngine
                 // draw world in world size
                 RoninEngine::Runtime::native_render_2D(reinterpret_cast<Camera2D *>(cam));
             }
-            queue_watcher.ms_wait_render_world = TimeEngine::end_watch();
+            queue_watcher.ms_wait_render_world = TimeEngine::EndWatch();
 
             // begin watcher
-            TimeEngine::begin_watch();
+            TimeEngine::BeginWatch();
             if(!switched_world->irs->request_unloading && cam)
             {
                 switched_world->OnGizmos(); // Draw gizmos
@@ -371,13 +370,13 @@ namespace RoninEngine
                     Gizmos::DrawTextToScreen(screen_point, elements[x].format, font_height);
                 }
             }
-            queue_watcher.ms_wait_render_gizmos = TimeEngine::end_watch();
+            queue_watcher.ms_wait_render_gizmos = TimeEngine::EndWatch();
             // end watcher
 
-            TimeEngine::begin_watch();
+            TimeEngine::BeginWatch();
             if(!switched_world->irs->request_unloading)
                 runtime_destructs();
-            queue_watcher.ms_wait_destructions = TimeEngine::end_watch();
+            queue_watcher.ms_wait_destructions = TimeEngine::EndWatch();
         }
 
         void level_render_world_late()

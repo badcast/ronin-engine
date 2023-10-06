@@ -15,7 +15,7 @@ namespace RoninEngine::Runtime
 
     float TimeEngine::startUpTime()
     {
-        return static_cast<float>(tick_millis()) / 1000;
+        return static_cast<float>(millis()) / 1000;
     }
 
     float TimeEngine::deltaTime()
@@ -23,22 +23,22 @@ namespace RoninEngine::Runtime
         return internal_delta_time;
     }
 
-    bool TimeEngine::is_paused()
+    bool TimeEngine::IsPaused()
     {
         return internal_time_scale == 0;
     }
 
-    bool TimeEngine::is_playing()
+    bool TimeEngine::IsPlaying()
     {
         return internal_time_scale != 0;
     }
 
-    float TimeEngine::get_time_scale()
+    float TimeEngine::GetTimeScale()
     {
         return internal_time_scale;
     }
 
-    void TimeEngine::set_time_scale(float scale)
+    void TimeEngine::SetTimeScale(float scale)
     {
         internal_time_scale = Math::Clamp01(scale);
     }
@@ -48,22 +48,22 @@ namespace RoninEngine::Runtime
         return internal_frames;
     }
 
-    std::uint64_t TimeEngine::tick_millis()
+    std::uint64_t TimeEngine::millis()
     {
         return SDL_GetTicks64();
     }
 
-    void TimeEngine::begin_watch()
+    void TimeEngine::BeginWatch()
     {
-        _watcher_time.push_back(tick_millis());
+        _watcher_time.push_back(millis());
     }
 
-    std::uint32_t TimeEngine::end_watch()
+    std::uint32_t TimeEngine::EndWatch()
     {
         std::uint32_t time;
         if(_watcher_time.empty())
             throw std::runtime_error("begin_watch() method is not runned");
-        time = tick_millis() - _watcher_time.back();
+        time = millis() - _watcher_time.back();
         _watcher_time.pop_back();
         return time;
     }

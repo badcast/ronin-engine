@@ -10,13 +10,13 @@ namespace RoninEngine::Runtime
         static float time();
         static float startUpTime();
         static float deltaTime();
-        static bool is_paused();
-        static bool is_playing();
-        static float get_time_scale();
-        static void set_time_scale(float scale);
+        static bool IsPaused();
+        static bool IsPlaying();
+        static float GetTimeScale();
+        static void SetTimeScale(float scale);
         static std::uint32_t frame();
-        static std::uint64_t tick_millis();
-        static void begin_watch();
-        static std::uint32_t end_watch();
+        static std::uint64_t millis();
+        static void BeginWatch();
+        static std::uint32_t EndWatch();
     };
 } // namespace RoninEngine::Runtime
