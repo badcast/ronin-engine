@@ -10,6 +10,7 @@ namespace RoninEngine
         {
         private:
             std::list<Component *> m_components;
+            int m_layer;
             bool m_active;
 
         public:
@@ -51,6 +52,18 @@ namespace RoninEngine
              * @param state The new active state.
              */
             void SetActive(bool state);
+
+            /**
+             * @brief Set the layer for draw order
+             * @param layer The layer order to set
+             */
+            void SetLayer(int layer);
+
+            /**
+             * @brief Get The Layer order of the render
+             * @return layer
+             */
+            int GetLayer() const;
 
             /**
              * @brief Set the active state recursively for the GameObject and its children.

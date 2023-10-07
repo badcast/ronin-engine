@@ -299,11 +299,6 @@ namespace RoninEngine::Runtime
         return SDL_HasIntersectionF(reinterpret_cast<const SDL_FRect *>(&lhs), reinterpret_cast<const SDL_FRect *>(&rhs));
     }
 
-    bool Vec2::InArea(const Vec2 &p, const Rectf &r)
-    {
-        return p.x >= r.x && p.x <= r.w && p.y >= r.h && p.y <= r.y;
-    }
-
     const Vec2 Vec2::Rotate(const Vec2 &vec, Vec2 normal, float angleRadian)
     {
         normal = Vec2::RotateClockwise(normal, angleRadian);
@@ -345,6 +340,12 @@ namespace RoninEngine::Runtime
     const Vec2 Vec2::Perpendicular(Vec2 inDirection)
     {
         return Vec2(0.f - inDirection.y, inDirection.x);
+    }
+
+    bool Vec2::LookRotation(Vec2 from, Transform* to, float angleRadian)
+    {
+        float angle = Vec2::Angle(to->_position - from, to->_position - to->forward());
+        return angle <= angleRadian;
     }
 
     Vec2 &Vec2::operator+=(const Vec2 &rhs)

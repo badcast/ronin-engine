@@ -115,13 +115,13 @@ namespace RoninEngine
             static Vec2Int RoundToInt(const Vec2 &lhs);
             static bool HasIntersection(const Vec2 &p, const Rectf &rhs);
             static bool HasIntersection(const Rectf &lhs, const Rectf &rhs);
-            static bool InArea(const Vec2 &p, const Rectf &rhs);
             static const Vec2 Rotate(const Vec2 &vec, Vec2 normal, float angleRadian);
             static const Vec2 Rotate(Vec2 position, float angleRadian);
             static const Vec2 RotateClockwise(Vec2 position, float angleRadian);
             static const Vec2 RotateAround(Vec2 center, Vec2 localPosition, float angleRadian);
             static const Vec2 Mirror(const Vec2 &position);
             static const Vec2 Perpendicular(Vec2 inDirection);
+            static bool LookRotation(Vec2 from, Transform *to, float angleRadian);
         };
 
         /*Vector 2 definition*/

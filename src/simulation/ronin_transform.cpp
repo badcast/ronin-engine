@@ -5,8 +5,6 @@ using namespace RoninEngine::Exception;
 
 namespace RoninEngine::Runtime
 {
-    static const Vec2 around_frwd {1, 1};
-
     void hierarchy_parent_change(Transform *from, Transform *newParent)
     {
         Transform *lastParent = from->m_parent;
@@ -27,6 +25,7 @@ namespace RoninEngine::Runtime
             hierarchy_append(newParent, from);
         }
     }
+
     void hierarchy_remove(Transform *from, Transform *off)
     {
         if(off->m_parent != from)
@@ -38,6 +37,7 @@ namespace RoninEngine::Runtime
         from->hierarchy.erase(iter);
         off->m_parent = nullptr; // not parent
     }
+
     void hierarchy_remove_all(Transform *from)
     {
         for(auto t : from->hierarchy)
@@ -47,6 +47,7 @@ namespace RoninEngine::Runtime
 
         from->hierarchy.clear();
     }
+
     void hierarchy_append(Transform *from, Transform *off)
     {
         auto iter = find_if(begin(from->hierarchy), end(from->hierarchy), std::bind2nd(std::equal_to<Transform *>(), off));
@@ -90,9 +91,6 @@ namespace RoninEngine::Runtime
         DESCRIBE_AS_MAIN(Transform);
         m_parent = nullptr;
         _angle_ = 0;
-        _layer_ = 0;
-        // create matrix-slot for transform object
-        Matrix::matrix_nature(this, Matrix::matrix_get_key(Vec2::infinity));
     }
 
     int Transform::childCount() const
@@ -263,7 +261,7 @@ namespace RoninEngine::Runtime
 
     const Vec2 Transform::TransformDirection(Vec2 direction) const
     {
-        return Vec2::RotateAround(_position, direction, -_angle_ * Math::deg2rad);
+        return Vec2::RotateAround(Vec2::zero, direction, -_angle_ * Math::deg2rad);
     }
 
     const Vec2 Transform::TransformDirection(float x, float y) const
@@ -273,18 +271,21 @@ namespace RoninEngine::Runtime
 
     void Transform::Translate(Vec2 translation)
     {
+        if(translation == Vec2::zero)
+            return;
+
         position(_position + translation);
     }
 
-    const bool Transform::LookOfAngle(Transform *target, float maxAngle) const
+    const bool Transform::LookOfAngle(Transform *target, float angle) const
     {
-        return LookOfAngle(target->_position, maxAngle);
+        return LookOfAngle(target->_position, angle);
     }
 
-    const bool Transform::LookOfAngle(Vec2 target, float maxAngle) const
+    const bool Transform::LookOfAngle(Vec2 target, float angle) const
     {
-        float angle = Vec2::Angle(this->_position - target, this->_position - this->forward());
-        return angle <= maxAngle * Math::deg2rad;
+        float _result = Vec2::Angle(this->_position - target, this->_position - this->forward());
+        return _result <= angle * Math::deg2rad;
     }
 
     Vec2 Transform::localPosition() const
@@ -356,7 +357,7 @@ namespace RoninEngine::Runtime
 
     int Transform::layer() const
     {
-        return _layer_;
+        return _owner->m_layer;
     }
 
     void Transform::layer(int value)
@@ -367,7 +368,7 @@ namespace RoninEngine::Runtime
         if(_owner->m_active)
             Matrix::matrix_nature_pickup(this);
 
-        _layer_ = value;
+        _owner->m_layer = value;
 
         // Add to matrix, for active object
         if(_owner->m_active)
@@ -386,20 +387,27 @@ namespace RoninEngine::Runtime
     {
         // TODO: make worldPositionStays
         if(parent == nullptr)
-        {
             parent = switched_world->irs->main_object->transform();
-        }
+
         Vec2 lastParentPoint = this->m_parent->_position;
+
         // change children of the parent
         hierarchy_parent_change(this, parent);
-        // change position child
-        for(Transform *child : hierarchy)
+
+        if(worldPositionStays)
         {
-            // Пересчитаю глобальные координаты для дочернего объекта
-            // Установлю новую глобальную позицию для дочернего объекта
-            child->position(_position + child->_position);
+            // change position child
+            for(Transform *child : hierarchy)
+            {
+                // Set the world position to childs
+                child->position(_position + child->_position);
+            }
         }
-        // this->layer(parent->_layer_ | _layer_);
+        else
+        {
+            // angle(localAngle());
+            position(_position + parent->_position);
+        }
     }
 
     void Transform::detach()

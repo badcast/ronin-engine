@@ -84,7 +84,7 @@ namespace RoninEngine
                 }
 
                 // destroy
-                destroy_immediate(target);
+                DestroyImmediate(target);
 
                 if(stacks.empty())
                 {
@@ -203,7 +203,7 @@ namespace RoninEngine
                         if(target->exists())
                         {
                             // run destructor
-                            destroy_immediate(target);
+                            DestroyImmediate(target);
                             ++(switched_world->irs->_destroyed);
                         }
                     }
@@ -416,7 +416,7 @@ namespace RoninEngine
                 // set<Transform*>
                 for(auto &y : layerObject.second)
                 {
-                    if(Matrix::matrix_get_key(y->_position) != layerObject.first || x->first != y->_layer_)
+                    if(Matrix::matrix_get_key(y->_position) != layerObject.first || x->first != y->_owner->m_layer)
                     {
                         damaged.emplace_back(y);
                     }
@@ -439,7 +439,7 @@ namespace RoninEngine
         int restored = 0;
         for(Transform *dam : damaged_content)
         {
-            if(!Instanced(dam))
+            if(!object_instanced(dam))
                 continue;
 
             MatrixKey key = Matrix::matrix_get_key(dam->_position);
@@ -453,13 +453,13 @@ namespace RoninEngine
                         if(set != dam)
                             continue;
 
-                        if(set->_layer_ != findIter.first || key != layer.first)
+                        if(set->_owner->m_layer != findIter.first || key != layer.first)
                         {
                             // Remove damaged transform
                             layer.second.erase(dam);
 
                             // Restore
-                            switched_world->irs->matrix[dam->_layer_][key].insert(dam);
+                            switched_world->irs->matrix[dam->_owner->m_layer][key].insert(dam);
                             ++restored;
                             goto next;
                         }

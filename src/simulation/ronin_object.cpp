@@ -203,7 +203,7 @@ namespace RoninEngine
                         if(t == 0)
                         {
                             // destroy now
-                            destroy_immediate(obj);
+                            DestroyImmediate(obj);
                             return;
                         }
                     }
@@ -213,14 +213,13 @@ namespace RoninEngine
             provider->operator[](t).emplace(obj);
         }
 
-        void destroy_immediate(GameObject *obj)
+        void DestroyImmediate(GameObject *obj)
         {
             if(!obj)
                 throw std::runtime_error("Object is null");
 
             // FIXME: destroy other types from gameobject->m_components (delete a list)
             // FIXME: Replace Recursive method to stack linear
-            // Recursive method
             for(Component *component : obj->m_components)
             {
                 internal_destroy_object_dyn(component);
@@ -233,13 +232,13 @@ namespace RoninEngine
             RoninMemory::free(obj);
         }
 
-        bool Instanced(Object *obj)
+        bool object_instanced(const Object *obj)
         {
             if(!obj)
                 return false;
             if(!switched_world)
-                throw ronin_null_error();
-            return reinterpret_cast<std::size_t>(obj->__) == reinterpret_cast<std::size_t>(switched_world);
+                throw ronin_init_error();
+            return reinterpret_cast<const std::size_t>(obj->__) == reinterpret_cast<const std::size_t>(switched_world);
         }
 
         GameObject *Instantiate(GameObject *obj)
@@ -307,9 +306,7 @@ namespace RoninEngine
         }
 
         // base class
-
         Object::Object() : Object(DESCRIBE_AS_MAIN_OFF(Object))
-
         {
         }
 
@@ -325,9 +322,9 @@ namespace RoninEngine
             __ = switched_world;
         }
 
-        const bool Object::exists()
+        bool Object::exists() const
         {
-            return (this->operator bool());
+            return object_instanced(this);
         }
 
         std::string &Object::name(const std::string &newName)
@@ -335,24 +332,24 @@ namespace RoninEngine
             return (m_name = newName);
         }
 
-        const std::string &Object::name()
+        std::string &Object::name()
         {
             return m_name;
         }
 
-        uint32_t Object::get_id()
+        uint32_t Object::getID() const
         {
             return id;
         }
 
-        const char *Object::get_type() const
+        const char *Object::getType() const
         {
             return _type_;
         }
 
         Object::operator bool()
         {
-            return Instanced(this);
+            return object_instanced(this);
         }
     } // namespace Runtime
 } // namespace RoninEngine

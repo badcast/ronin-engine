@@ -39,7 +39,7 @@ namespace RoninEngine::Runtime
                 return;
 
             // Delete last point source
-            auto findIter = switched_world->irs->matrix.find(target->_layer_);
+            auto findIter = switched_world->irs->matrix.find(target->_owner->m_layer);
             if(std::end(switched_world->irs->matrix) != findIter)
             {
                 auto layer = findIter->second.find(lastPoint);
@@ -52,13 +52,13 @@ namespace RoninEngine::Runtime
             }
 
             // Add point to new source
-            switched_world->irs->matrix[target->_layer_][newPoint].insert(target);
+            switched_world->irs->matrix[target->_owner->m_layer][newPoint].insert(target);
         }
 
         bool matrix_nature_pickup(Transform *target)
         {
             bool result = false;
-            auto findIter = switched_world->irs->matrix.find(target->_layer_);
+            auto findIter = switched_world->irs->matrix.find(target->_owner->m_layer);
             if(std::end(switched_world->irs->matrix) != findIter)
             {
                 auto layer = findIter->second.find(matrix_get_key(target->position()));

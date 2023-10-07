@@ -286,10 +286,10 @@ namespace RoninEngine
             void event_camera_changed(Camera *target, CameraEvent state);
         };
 
-        // Global variables
         extern World *switched_world;
         extern std::list<Asset> loaded_assets;
 
+        bool object_instanced(const Object *obj);
         void native_render_2D(Camera2D *camera);
 
         void internal_destroy_object_dyn(Object *obj);

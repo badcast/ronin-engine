@@ -12,7 +12,6 @@ namespace RoninEngine::Runtime
         Transform *m_parent;
         Vec2 _position;
         float _angle_;
-        int _layer_;
 
     protected:
         std::list<Transform *> hierarchy;
@@ -67,17 +66,17 @@ namespace RoninEngine::Runtime
         /**
          * @brief Looks at the target
          * @param target the target candidate for look
-         * @param maxAngle the angle, value from degress 0 ... 360
+         * @param angle the angle, value of degress 0 ... 360
          * @return result of viewed sector
          */
-        const bool LookOfAngle(Transform *target, float maxAngle) const;
+        const bool LookOfAngle(Transform *target, float angle) const;
         /**
          * @brief Looks at the target
          * @param target the target candidate for look
-         * @param maxAngle the angle, value from degress 0 ... 360
+         * @param angle the angle, value of degress 0 ... 360
          * @return result of viewed sector
          */
-        const bool LookOfAngle(Vec2 target, float maxAngle) const;
+        const bool LookOfAngle(Vec2 target, float angle) const;
 
         // get position in local space from parent
         Vec2 localPosition() const;

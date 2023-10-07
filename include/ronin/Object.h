@@ -17,10 +17,7 @@ namespace RoninEngine
         extern RONIN_API void Destroy(GameObject *obj, float t);
 
         // Уничтожает объект принудительно игнорируя все условия его существования.
-        extern RONIN_API void destroy_immediate(GameObject *obj);
-
-        // Проверка на существование объекта
-        extern RONIN_API bool Instanced(Object *obj);
+        extern RONIN_API void DestroyImmediate(GameObject *obj);
 
         // Клонирует объект
         extern RONIN_API GameObject *Instantiate(GameObject *obj);
@@ -33,7 +30,7 @@ namespace RoninEngine
         {
         protected:
             // Extractor
-            void * __;
+            void *__;
             // unique type (static)
             char *_type_;
             // unique id (realtime)
@@ -48,13 +45,13 @@ namespace RoninEngine
 
             std::string &name(const std::string &newName);
 
-            const std::string &name();
+            std::string &name();
 
-            std::uint32_t get_id();
+            std::uint32_t getID() const;
 
-            const char *get_type() const;
+            const char *getType() const;
 
-            const bool exists();
+            bool exists() const;
 
             /// Check a exist an object
             operator bool();
