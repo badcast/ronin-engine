@@ -326,7 +326,6 @@ namespace RoninEngine::Runtime
     template <typename container_result>
     container_result Physics2D::GetCircleCast(Vec2 origin, float distance, int layer)
     {
-        distance *= distance; // Sqr
 #if NEW_ALGORITHM_STORM
         container_result result = storm_cast_vec_eq<container_result>(
 #else
@@ -338,8 +337,9 @@ namespace RoninEngine::Runtime
             [distance, &origin](Vec2 rhs)
             {
                 // condition
-                return (origin - rhs).sqrMagnitude() <= distance;
+                return Vec2::Distance(origin, rhs) <= distance;
             });
+
         return result;
     }
 

@@ -329,7 +329,9 @@ namespace RoninEngine::Runtime
     {
         float Sin = Math::Sin(angleRadian);
         float Cos = Math::Cos(angleRadian);
-        return {localPosition.x * Cos - localPosition.y * Sin + center.x, localPosition.x * Sin + localPosition.y * Cos + center.y};
+        center.x = localPosition.x * Cos - localPosition.y * Sin + center.x;
+        center.y = localPosition.x * Sin + localPosition.y * Cos + center.y;
+        return center;
     }
 
     const Vec2 Vec2::Mirror(const Vec2 &position)
@@ -342,7 +344,7 @@ namespace RoninEngine::Runtime
         return Vec2(0.f - inDirection.y, inDirection.x);
     }
 
-    bool Vec2::LookRotation(Vec2 from, Transform* to, float angleRadian)
+    bool Vec2::LookRotation(Vec2 from, Transform *to, float angleRadian)
     {
         float angle = Vec2::Angle(to->_position - from, to->_position - to->forward());
         return angle <= angleRadian;

@@ -76,7 +76,7 @@ namespace RoninEngine::Runtime
         return rect;
     }
 
-    void SpriteRenderer::set_sprite(Sprite *sprite)
+    void SpriteRenderer::setSprite(Sprite *sprite)
     {
         if(this->sprite == nullptr && (!this->m_size.x || !this->m_size.y))
         {
@@ -88,7 +88,7 @@ namespace RoninEngine::Runtime
         free_render_cache();
     }
 
-    Sprite *SpriteRenderer::get_sprite()
+    Sprite *SpriteRenderer::getSprite()
     {
         return this->sprite;
     }

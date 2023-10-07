@@ -383,7 +383,6 @@ namespace RoninEngine::Runtime
 
     void Transform::setParent(Transform *parent, bool worldPositionStays)
     {
-        // TODO: make worldPositionStays
         if(parent == nullptr)
             parent = switched_world->irs->main_object->transform();
 

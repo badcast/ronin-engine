@@ -61,6 +61,7 @@ bool AssetManager::LoadAsset(const std::string &assetFile, Asset **asset)
     }
 
     std::vector<std::pair<std::size_t, std::string>> __files;
+
     Json::Value param1, param2;
     std::filesystem::path dir_of_asset {assetFile};
     dir_of_asset = dir_of_asset.parent_path();
@@ -73,8 +74,14 @@ bool AssetManager::LoadAsset(const std::string &assetFile, Asset **asset)
             RoninSimulator::Log("Invalid element on \"resources\". Incorrect file " + assetFile);
             continue;
         }
+        size_t hash_it = string_hasher(param1.asString());
+        if(std::end(__files) != std::find_if(std::begin(__files), std::end(__files), [&hash_it](auto &ref) { return hash_it == ref.first; }))
+        {
+            RoninSimulator::Log("Conflict resource name \"" + param1.asString() + "\"");
+            continue;
+        }
 
-        __files.emplace_back(std::make_pair(string_hasher(param1.asString()), (dir_of_asset / param2.asString()).string()));
+        __files.emplace_back(std::make_pair(hash_it, (dir_of_asset / param2.asString()).string()));
     }
 
     resource_id rcid;

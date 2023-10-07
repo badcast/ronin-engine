@@ -56,8 +56,8 @@ namespace RoninEngine::Runtime
         Vec2 get_offset();
         Rect get_relative_size();
 
-        void set_sprite(Sprite *sprite);
-        Sprite *get_sprite();
+        void setSprite(Sprite *sprite);
+        Sprite *getSprite();
 
         void free_render_cache();
         void render(Rendering *rendering);

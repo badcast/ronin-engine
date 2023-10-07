@@ -11,10 +11,10 @@ namespace RoninEngine::Runtime
         return obj;
     }
 
-    GameObject *Primitive::create_box2d(Vec2 position, float angle, RoninEngine::Runtime::Color fillColor)
+    GameObject *Primitive::create_box2d(Vec2 position, float angle, Color fillColor)
     {
         GameObject *obj = create_empty_game_object(position);
-        obj->AddComponent<SpriteRenderer>()->set_sprite(create_sprite2D_box(Vec2::one, fillColor));
+        obj->AddComponent<SpriteRenderer>()->setSprite(create_sprite2D_box(Vec2::one, fillColor));
         obj->transform()->angle(angle);
         return obj;
     }
