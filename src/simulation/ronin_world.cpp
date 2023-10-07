@@ -5,7 +5,6 @@ using namespace RoninEngine;
 using namespace RoninEngine::Exception;
 using namespace RoninEngine::Runtime;
 
-
 namespace RoninEngine
 {
     namespace Runtime
@@ -198,7 +197,7 @@ namespace RoninEngine
                         xiter = yiter = std::begin(*(switched_world->irs->_destructTasks));
 
                     // destroy
-                    for(GameObject* target : pair.second)
+                    for(GameObject *target : pair.second)
                     {
                         if(target->exists())
                         {
@@ -247,10 +246,11 @@ namespace RoninEngine
 
             if(switched_world->irs->_realtimeScripts)
             {
-                for(Behaviour *exec : *(switched_world->irs->_realtimeScripts))
+                for(auto exec = std::begin(*switched_world->irs->_realtimeScripts); exec != std::end(*switched_world->irs->_realtimeScripts);
+                    ++exec)
                 {
-                    if(exec->gameObject()->m_active)
-                        exec->OnUpdate();
+                    if((*exec)->exists() && (*exec)->gameObject()->m_active)
+                        (*exec)->OnUpdate();
                 };
             }
             queue_watcher.ms_wait_exec_scripts = TimeEngine::EndWatch();

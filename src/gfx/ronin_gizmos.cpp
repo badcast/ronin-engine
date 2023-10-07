@@ -122,6 +122,36 @@ namespace RoninEngine::Runtime
         rectangleColor(RoninEngine::renderer, x, y, x + width, y + height, GetColor());
     }
 
+    void Gizmos::DrawRectangleRotate(Vec2 origin, Vec2 size, float angleRadian)
+    {
+        float cos, sin;
+        int i, dx, dy;
+        SDL_Point vertices[4];
+
+        cos = Math::Cos(angleRadian);
+        sin = Math::Sin(angleRadian);
+
+        origin = Camera::WorldToScreenPoint(origin);
+        size *= pixelsPerPoint;
+        origin -= size / 2;
+        int cx = origin.x + size.x / 2;
+        int cy = origin.y + size.y / 2;
+
+        for(i = 0; i < 4; ++i)
+        {
+            dx = (i == 1 || i == 2) ? origin.x + size.x : origin.x;
+            dy = (i == 2 || i == 3) ? origin.y + size.y : origin.y;
+            vertices[i].x = cx + (dx - cx) * cos - (dy - cy) * sin;
+            vertices[i].y = cy + (dx - cx) * sin + (dy - cy) * cos;
+        }
+
+        for(i = 0; i < 4; ++i)
+        {
+            dx = (i + 1) % 4;
+            SDL_RenderDrawLine(renderer, vertices[i].x, vertices[i].y, vertices[dx].x, vertices[dx].y);
+        }
+    }
+
     void Gizmos::DrawSquareRounded(Vec2 origin, float width, std::uint16_t radius)
     {
         DrawRectangleRounded(origin, width, width, radius);

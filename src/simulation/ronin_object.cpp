@@ -10,49 +10,46 @@ namespace RoninEngine
         constexpr char _cloneStr[] = " (clone)";
 
         template <typename T>
-        T *internal_factory_base(bool initInHierarchy, T *clone, const char *name)
+        T *internal_factory_base(bool initInHierarchy, T *instance, const char *name)
         {
-            if(clone == nullptr)
+            if(instance == nullptr)
             {
                 if(name == nullptr)
-                    RoninMemory::alloc_self(clone);
+                    RoninMemory::alloc_self(instance);
                 else
-                    RoninMemory::alloc_self(clone, name);
+                    RoninMemory::alloc_self(instance, name);
             }
             else
             {
-                T *newTComponent;
+                T *cloneComponent;
                 if constexpr(std::is_same<T, GameObject>::value)
-                    newTComponent = Instantiate(clone);
+                    cloneComponent = Instantiate(instance);
                 else if constexpr(std::is_same<T, Transform>::value)
                 {
-                    RoninMemory::alloc_self(newTComponent);
+                    RoninMemory::alloc_self(cloneComponent);
                 }
                 else if constexpr(std::is_same<T, SpriteRenderer>::value)
                 {
-                    RoninMemory::alloc_self(newTComponent, *clone);
+                    RoninMemory::alloc_self(cloneComponent, *instance);
                 }
                 else if constexpr(std::is_same<T, Camera2D>::value)
                 {
-                    RoninMemory::alloc_self(newTComponent, *clone);
+                    RoninMemory::alloc_self(cloneComponent, *instance);
                 }
                 else if constexpr(std::is_same<T, Terrain2D>::value)
                 {
-                    RoninMemory::alloc_self(newTComponent, *clone);
+                    RoninMemory::alloc_self(cloneComponent, *instance);
                 }
                 else if constexpr(std::is_same<T, Behaviour>::value)
                 {
-                    RoninMemory::alloc_self(newTComponent, *clone);
+                    RoninMemory::alloc_self(cloneComponent, *instance);
                 }
                 else
                 {
-                    newTComponent = nullptr;
+                    cloneComponent = nullptr;
                 }
-                clone = newTComponent;
+                instance = cloneComponent;
             }
-
-            if(clone == nullptr)
-                RoninSimulator::Kill();
 
             if constexpr(std::is_same<T, GameObject>::value)
             {
@@ -66,12 +63,12 @@ namespace RoninEngine
 
                     auto mainObj = switched_world->irs->main_object;
                     auto root = mainObj->transform();
-                    Transform *tr = ((GameObject *) clone)->transform();
+                    Transform *tr = ((GameObject *) instance)->transform();
                     root->childAdd(tr);
                 }
             }
 
-            return clone;
+            return instance;
         }
 
         void internal_destroy_object_dyn(Object *obj)
@@ -203,8 +200,9 @@ namespace RoninEngine
                         if(t == 0)
                         {
                             // destroy now
-                            DestroyImmediate(obj);
-                            return;
+                            // DestroyImmediate(obj);
+                            // return;
+                            break;
                         }
                     }
                 }

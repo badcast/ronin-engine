@@ -47,6 +47,12 @@ namespace RoninEngine::Runtime
         return this->m_size;
     }
 
+    void SpriteRenderer::setRealSize()
+    {
+        if(sprite)
+            size() = sprite->size();
+    }
+
     Vec2 SpriteRenderer::get_offset()
     {
         Vec2 outOffset;

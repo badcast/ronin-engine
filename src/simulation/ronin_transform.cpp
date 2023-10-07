@@ -362,8 +362,6 @@ namespace RoninEngine::Runtime
 
     void Transform::layer(int value)
     {
-        // TODO: Set the layer component, notify to matrix changed
-
         // Delete from matrix, for is not active object
         if(_owner->m_active)
             Matrix::matrix_nature_pickup(this);

@@ -14,6 +14,7 @@ namespace RoninEngine::Runtime
         static void DrawPosition(const Vec2 &origin, float scalar);
         static void DrawSquare(Vec2 origin, float width);
         static void DrawRectangle(Vec2 origin, float width, float height);
+        static void DrawRectangleRotate(Vec2 origin, Vec2 size, float angleRadian);
         static void DrawSquareRounded(Vec2 origin, float width, std::uint16_t radius);
         static void DrawRectangleRounded(Vec2 origin, float width, float height, std::uint16_t radius);
         static void Draw2DWorldSpace(const Vec2 &origin = Vec2::zero, int depth = 32);

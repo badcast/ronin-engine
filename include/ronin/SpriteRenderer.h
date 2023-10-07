@@ -52,6 +52,7 @@ namespace RoninEngine::Runtime
         ~SpriteRenderer();
 
         Vec2& size();
+        void setRealSize();
         Vec2 get_offset();
         Rect get_relative_size();
 

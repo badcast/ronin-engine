@@ -253,7 +253,7 @@ namespace RoninEngine::Runtime
                         if(layerObject != std::end(findedIter.second))
                         {
                             // set<Transform*>
-                            for(auto& object : layerObject->second)
+                            for(auto &object : layerObject->second)
                             {
                                 if constexpr(not std::is_same<Pred, std::nullptr_t>::value)
                                 {
@@ -298,7 +298,7 @@ namespace RoninEngine::Runtime
         {
             for(pointer.y = leftUpPoint.y; pointer.y <= rightDownPoint.y; ++pointer.y)
             {
-                for(auto& findedIter : MX)
+                for(auto &findedIter : MX)
                 {
                     if(findedIter.first & layer || findedIter.first == layer)
                     {
