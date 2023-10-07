@@ -41,9 +41,10 @@ namespace RoninEngine::Runtime
         return n && navigation->hasLocked (navigation->getPoint (n));
     }
 
-    Vec2 Terrain2D::get_size()
+    Vec2 &Terrain2D::size()
     {
-        return {};
+        Vec2 sz;
+        return sz;
     }
     Vec2 Terrain2D::get_offset()
     {

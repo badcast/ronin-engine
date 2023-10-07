@@ -35,14 +35,14 @@ namespace RoninEngine::Runtime
         native_texture_t *save_texture;
         Rect save_src;
         Rectf save_dst;
+        Vec2 m_size;
+        Color color;
 
     public:
         SpriteRenderType renderType;
         SpriteRenderOut renderOut;
         SpriteRenderPresentMode renderPresentMode;
 
-        Color color;
-        Vec2 size;
         Vec2 flip;
         Vec2 offset;
 
@@ -51,7 +51,7 @@ namespace RoninEngine::Runtime
         SpriteRenderer(const SpriteRenderer &);
         ~SpriteRenderer();
 
-        Vec2 get_size();
+        Vec2& size();
         Vec2 get_offset();
         Rect get_relative_size();
 

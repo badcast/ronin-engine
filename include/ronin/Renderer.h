@@ -13,7 +13,7 @@ namespace RoninEngine::Runtime
         Renderer(const std::string &name);
         Renderer(const Renderer &) = delete;
 
-        virtual Vec2 get_size() = 0;
+        virtual Vec2 &size() = 0;
 
         virtual Vec2 get_offset() = 0;
 
