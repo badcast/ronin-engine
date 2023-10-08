@@ -16,9 +16,6 @@ namespace RoninEngine
         // Уничтожает объект после прошедшего времени.
         extern RONIN_API void Destroy(GameObject *obj, float t);
 
-        // Уничтожает объект принудительно игнорируя все условия его существования.
-        extern RONIN_API void DestroyImmediate(GameObject *obj);
-
         // Клонирует объект
         extern RONIN_API GameObject *Instantiate(GameObject *obj);
         // Клонирует объект

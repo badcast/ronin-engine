@@ -257,9 +257,6 @@ namespace RoninEngine
             // destroyed queue object
             int _destroyed;
 
-            // destroy last delaying for action
-            float _destroy_delay_time;
-
             std::list<Behaviour *> *_firstRunScripts;
             std::list<Behaviour *> *_realtimeScripts;
 
@@ -287,12 +284,15 @@ namespace RoninEngine
         };
 
         extern World *switched_world;
+        extern float internal_game_time;
         extern std::list<Asset> loaded_assets;
 
         bool object_instanced(const Object *obj);
         void native_render_2D(Camera2D *camera);
 
         void internal_destroy_object_dyn(Object *obj);
+
+        void destroy_now(GameObject *obj);
 
         void runtime_destructs();
         void level_render_world();

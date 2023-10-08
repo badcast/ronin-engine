@@ -83,7 +83,7 @@ namespace RoninEngine
                 }
 
                 // destroy
-                DestroyImmediate(target);
+                destroy_now(target);
 
                 if(stacks.empty())
                 {
@@ -163,13 +163,13 @@ namespace RoninEngine
             if(std::find_if(
                    begin(*(switched_world->irs->_firstRunScripts)),
                    end(*(switched_world->irs->_firstRunScripts)),
-                   std::bind2nd(std::equal_to<Behaviour *>(), script)) == end(*(switched_world->irs->_firstRunScripts)))
+                   std::bind(std::equal_to<Behaviour *>(), std::placeholders::_1, script)) == end(*(switched_world->irs->_firstRunScripts)))
             {
                 if(switched_world->irs->_realtimeScripts &&
                    std::find_if(
                        begin(*(switched_world->irs->_realtimeScripts)),
                        end(*(switched_world->irs->_realtimeScripts)),
-                       std::bind2nd(std::equal_to<Behaviour *>(), script)) != end(*(switched_world->irs->_realtimeScripts)))
+                       std::bind(std::equal_to<Behaviour *>(), std::placeholders::_1, script)) != end(*(switched_world->irs->_realtimeScripts)))
                     return;
 
                 switched_world->irs->_firstRunScripts->emplace_back(script);
@@ -180,17 +180,16 @@ namespace RoninEngine
         {
             switched_world->irs->_destroyed = 0;
             // Destroy queue objects
-            if(switched_world->irs->_destructTasks && switched_world->irs->_destroy_delay_time < TimeEngine::time())
+
+            if(switched_world->irs->_destructTasks)
             {
-                float time = TimeEngine::time();
                 std::map<float, std::set<GameObject *>>::iterator xiter = std::end(*(switched_world->irs->_destructTasks)),
                                                                   yiter = std::end(*(switched_world->irs->_destructTasks));
                 for(std::pair<const float, std::set<GameObject *>> &pair : *(switched_world->irs->_destructTasks))
                 {
                     // The time for the destruction of the object has not yet come
-                    if(pair.first > time)
+                    if(pair.first > internal_game_time)
                     {
-                        switched_world->irs->_destroy_delay_time = pair.first;
                         break;
                     }
                     if(xiter == std::end(*(switched_world->irs->_destructTasks)))
@@ -202,7 +201,7 @@ namespace RoninEngine
                         if(target->exists())
                         {
                             // run destructor
-                            DestroyImmediate(target);
+                            destroy_now(target);
                             ++(switched_world->irs->_destroyed);
                         }
                     }

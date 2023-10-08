@@ -33,6 +33,8 @@ namespace RoninEngine::Runtime
 
         Color(Color &&);
 
+        Color(const Color &from, const std::uint8_t a);
+
         Color(const int rgba);
 
         Color(const int rgb, const std::uint8_t a);

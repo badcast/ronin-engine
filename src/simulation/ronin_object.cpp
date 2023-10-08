@@ -211,7 +211,7 @@ namespace RoninEngine
             provider->operator[](t).emplace(obj);
         }
 
-        void DestroyImmediate(GameObject *obj)
+        void destroy_now(GameObject *obj)
         {
             if(!obj)
                 throw std::runtime_error("Object is null");

@@ -50,7 +50,7 @@ namespace RoninEngine::Runtime
 
     void hierarchy_append(Transform *from, Transform *off)
     {
-        auto iter = find_if(begin(from->hierarchy), end(from->hierarchy), std::bind2nd(std::equal_to<Transform *>(), off));
+        auto iter = find_if(begin(from->hierarchy), end(from->hierarchy), std::bind(std::equal_to<Transform *>(), std::placeholders::_1, off));
         if(iter == end(from->hierarchy))
         {
             off->m_parent = from;

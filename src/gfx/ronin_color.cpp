@@ -15,6 +15,10 @@ Color::Color(Color &&other) : r(other.r), g(other.g), b(other.b), a(other.a)
 {
 }
 
+Color::Color(const Color &from, const std::uint8_t a) : r(from.r), g(from.g), b(from.b), a(a)
+{
+}
+
 Color::Color(const int rgba) : a((rgba >> 24) & 0xFF), r((rgba >> 16) & 0xFF), g((rgba >> 8) & 0xFF), b(rgba & 0xFF)
 {
 }

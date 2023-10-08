@@ -125,7 +125,7 @@ namespace RoninEngine::Runtime
     void Gizmos::DrawRectangleRotate(Vec2 origin, Vec2 size, float angleRadian)
     {
         float cos, sin;
-        int i, dx, dy;
+        int i, dx, dy, cx, cy;
         SDL_Point vertices[4];
 
         cos = Math::Cos(angleRadian);
@@ -133,14 +133,14 @@ namespace RoninEngine::Runtime
 
         origin = Camera::WorldToScreenPoint(origin);
         size *= pixelsPerPoint;
+        cx = origin.x;
+        cy = origin.y;
         origin -= size / 2;
-        int cx = origin.x + size.x / 2;
-        int cy = origin.y + size.y / 2;
-
+        size += origin;
         for(i = 0; i < 4; ++i)
         {
-            dx = (i == 1 || i == 2) ? origin.x + size.x : origin.x;
-            dy = (i == 2 || i == 3) ? origin.y + size.y : origin.y;
+            dx = (i == 1 || i == 2) ? size.x : origin.x;
+            dy = (i == 2 || i == 3) ? size.y : origin.y;
             vertices[i].x = cx + (dx - cx) * cos - (dy - cy) * sin;
             vertices[i].y = cy + (dx - cx) * sin + (dy - cy) * cos;
         }

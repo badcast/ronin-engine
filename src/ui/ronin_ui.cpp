@@ -301,37 +301,43 @@ namespace RoninEngine::UI
         return (call_get_element(this, id).options & ElementGroupMask) == ElementGroupMask;
     }
 
-    void GUI::GroupShowAsUnique(uid id) throw()
+    bool GUI::GroupShowAsUnique(uid id) throw()
     {
         if(!IsGroup(id))
-            throw ronin_ui_cast_group_error();
+            return false;
 
         _resources->ui_layer.layers.remove_if([this](auto v) { return IsGroup(v); });
 
-        GroupShow(id);
+        return GroupShow(id);
     }
 
-    void GUI::GroupShow(uid id) throw()
+    bool GUI::GroupShow(uid id) throw()
     {
-        if(!IsGroup(id))
-            throw ronin_ui_cast_group_error();
-
-        auto iter =
-            std::find_if(begin(_resources->ui_layer.layers), end(_resources->ui_layer.layers), std::bind2nd(std::equal_to<uid>(), id));
-
-        if(iter == std::end(_resources->ui_layer.layers))
+        bool result = false;
+        if(IsGroup(id))
         {
-            _resources->ui_layer.layers.emplace_back(id);
-            SetElementVisible(id, true);
+            auto iter = std::find_if(
+                begin(_resources->ui_layer.layers),
+                end(_resources->ui_layer.layers),
+                std::bind(std::equal_to<uid>(), std::placeholders::_1, id));
+
+            if(iter == std::end(_resources->ui_layer.layers))
+            {
+                _resources->ui_layer.layers.emplace_back(id);
+                SetElementVisible(id, true);
+                result = true;
+            }
         }
+        return result;
     }
 
     bool GUI::GroupClose(uid id) throw()
     {
         if(!IsGroup(id))
-            throw ronin_ui_cast_group_error();
+            return false;
         _resources->ui_layer.layers.remove(id);
         SetElementVisible(id, false);
+        return true;
     }
 
     bool GUI::IsMouseOver()
@@ -405,7 +411,7 @@ namespace RoninEngine::UI
         ms_click = Input::GetMouseUp(MouseState::MouseLeft);
 
         gui->_resources->mouse_hover = false;
-        //TODO: OPTIMIZE HERE
+        // TODO: OPTIMIZE HERE
         while(ui_drains.empty() == false && !resources->owner->irs->request_unloading)
         {
             id = ui_drains.front();

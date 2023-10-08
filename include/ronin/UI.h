@@ -174,8 +174,8 @@ namespace RoninEngine
             // grouping-----------------------------------------------------------------------------------------------------------
 
             CI bool IsGroup(uid id);
-            CI void GroupShowAsUnique(uid id) throw();
-            CI void GroupShow(uid id) throw();
+            CI bool GroupShowAsUnique(uid id) throw();
+            CI bool GroupShow(uid id) throw();
             CI bool GroupClose(uid id) throw();
 
             // other--------------------------------------------------------------------------------------------------------------

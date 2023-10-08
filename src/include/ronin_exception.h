@@ -76,14 +76,6 @@ namespace RoninEngine::Exception
         }
     };
 
-    class ronin_ui_cast_group_error : public ronin_base_error
-    {
-    public:
-        ronin_ui_cast_group_error() : ronin_base_error("UI component is not group")
-        {
-        }
-    };
-
     class ronin_transform_change_error : public ronin_base_error
     {
     public:
