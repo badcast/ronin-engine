@@ -25,7 +25,7 @@ void Random::SRand(std::uint32_t seed)
 
 int Random::Range(int min, int max)
 {
-    return Math::Map<int>(static_cast<int>(internal_rand()), 0, ronin_rand_max, min, max);
+    return min + internal_rand() % (max - min + 1);
 }
 
 float Random::Range(float min, float max)
