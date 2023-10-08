@@ -40,17 +40,65 @@ namespace RoninEngine::Runtime
         free_render_cache();
     }
 
-    Vec2 &SpriteRenderer::size()
+    const SpriteRenderType SpriteRenderer::getRenderType() const
     {
-        // cache free from last sprite
+        return renderType;
+    }
+
+    void SpriteRenderer::setRenderType(SpriteRenderType value)
+    {
         free_render_cache();
+        renderType = value;
+    }
+
+    const SpriteRenderOut SpriteRenderer::getRenderOut() const
+    {
+        return renderOut;
+    }
+
+    void SpriteRenderer::setRenderOut(SpriteRenderOut value)
+    {
+        free_render_cache();
+        renderOut = value;
+    }
+
+    const SpriteRenderPresentMode SpriteRenderer::getPresentMode() const
+    {
+        return renderPresentMode;
+    }
+
+    void SpriteRenderer::setPresentMode(SpriteRenderPresentMode value)
+    {
+        free_render_cache();
+        renderPresentMode = value;
+    }
+
+    const Color SpriteRenderer::getColor() const
+    {
+        return color;
+    }
+
+    void SpriteRenderer::setColor(Color value)
+    {
+        free_render_cache();
+        color = value;
+    }
+
+    const Vec2 SpriteRenderer::getSize() const
+    {
         return this->m_size;
+    }
+
+    void SpriteRenderer::setSize(const Vec2 &newSize)
+    {
+        free_render_cache();
+        m_size = newSize;
     }
 
     void SpriteRenderer::setRealSize()
     {
         if(sprite)
-            size() = sprite->size();
+            setSize(sprite->size());
     }
 
     Vec2 SpriteRenderer::get_offset()
@@ -88,7 +136,7 @@ namespace RoninEngine::Runtime
         free_render_cache();
     }
 
-    Sprite *SpriteRenderer::getSprite()
+    const Sprite *SpriteRenderer::getSprite() const
     {
         return this->sprite;
     }

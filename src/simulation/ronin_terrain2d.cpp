@@ -1,5 +1,6 @@
 
 #include "ronin.h"
+#include "ronin_exception.h"
 
 namespace RoninEngine::Runtime
 {
@@ -38,13 +39,18 @@ namespace RoninEngine::Runtime
     const bool Terrain2D::is_collider(const Vec2 destination)
     {
         auto n = this->navigation->get(destination);
-        return n && navigation->hasLocked (navigation->getPoint (n));
+        return n && navigation->hasLocked(navigation->getPoint(n));
     }
 
-    Vec2 &Terrain2D::size()
+    const Vec2 Terrain2D::getSize() const
     {
         Vec2 sz;
         return sz;
+    }
+
+    void Terrain2D::setSize(const Vec2 &value)
+    {
+        throw Exception::ronin_implementation_error();
     }
     Vec2 Terrain2D::get_offset()
     {

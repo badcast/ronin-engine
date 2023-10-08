@@ -37,12 +37,14 @@ namespace RoninEngine::Runtime
         Rectf save_dst;
         Vec2 m_size;
         Color color;
-
-    public:
         SpriteRenderType renderType;
         SpriteRenderOut renderOut;
         SpriteRenderPresentMode renderPresentMode;
 
+        void free_render_cache();
+        void render(Rendering *rendering);
+
+    public:
         Vec2 flip;
         Vec2 offset;
 
@@ -51,16 +53,26 @@ namespace RoninEngine::Runtime
         SpriteRenderer(const SpriteRenderer &);
         ~SpriteRenderer();
 
-        Vec2& size();
+        const SpriteRenderType getRenderType() const;
+        void setRenderType(SpriteRenderType value);
+
+        const SpriteRenderOut getRenderOut() const;
+        void setRenderOut(SpriteRenderOut value);
+
+        const SpriteRenderPresentMode getPresentMode() const;
+        void setPresentMode(SpriteRenderPresentMode value);
+
+        void setSprite(Sprite *sprite);
+        const Sprite *getSprite() const;
+
+        const Color getColor() const;
+        void setColor(Color value);
+
+        const Vec2 getSize() const;
+        void setSize(const Vec2 &value);
+
         void setRealSize();
         Vec2 get_offset();
         Rect get_relative_size();
-
-        void setSprite(Sprite *sprite);
-        Sprite *getSprite();
-
-        void free_render_cache();
-        void render(Rendering *rendering);
     };
-
 } // namespace RoninEngine::Runtime

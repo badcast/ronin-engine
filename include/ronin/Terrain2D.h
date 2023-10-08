@@ -44,7 +44,8 @@ namespace RoninEngine::Runtime
 
         const bool is_collider(const Vec2 destination);
 
-        Vec2& size();
+        const Vec2 getSize() const;
+        void setSize(const Vec2 &value);
         Vec2 get_offset();
         Rect get_relative_size();
         void free_render_cache();

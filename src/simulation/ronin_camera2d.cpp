@@ -10,7 +10,7 @@ namespace RoninEngine::Runtime
 
     inline bool area_cast(Renderer *target, const Vec2Int &wpLeftTop, const Vec2Int &wpRightBottom)
     {
-        Vec2 rSz = target->size();
+        Vec2 rSz = target->getSize();
         Vec2 pos = target->transform()->position();
         return (pos.x + rSz.x >= wpLeftTop.x && pos.x - rSz.x <= wpRightBottom.x) &&
             (pos.y - rSz.y <= wpLeftTop.y && pos.y + rSz.y >= wpRightBottom.y);

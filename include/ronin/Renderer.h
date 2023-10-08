@@ -13,7 +13,9 @@ namespace RoninEngine::Runtime
         Renderer(const std::string &name);
         Renderer(const Renderer &) = delete;
 
-        virtual Vec2 &size() = 0;
+        virtual const Vec2 getSize() const = 0;
+
+        virtual void setSize(const Vec2 &value) = 0;
 
         virtual Vec2 get_offset() = 0;
 
