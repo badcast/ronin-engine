@@ -138,7 +138,7 @@ namespace RoninEngine::Runtime
 
     void Transform::LookAt(Transform *target)
     {
-        LookAt(target->_position, Vec2::up);
+        LookAt(target->_position, Vec2::down);
     }
 
     void Transform::LookAt(Transform *target, Vec2 axis)
@@ -148,7 +148,7 @@ namespace RoninEngine::Runtime
 
     void Transform::LookAt(Vec2 target)
     {
-        LookAt(target, Vec2::up);
+        LookAt(target, Vec2::down);
     }
 
     void Transform::LookAt(Vec2 target, Vec2 axis)

@@ -546,6 +546,9 @@ namespace RoninEngine
                     renderer = simConfig.renderer_hardware =
                         SDL_CreateRenderer(active_window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE);
 
+                    // Set blendmode
+                    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+
                     if(renderer == nullptr)
                         ShowMessageFail(SDL_GetError());
 
@@ -844,6 +847,7 @@ namespace RoninEngine
                                     SDL_DestroyRenderer(simConfig.renderer_software);
 
                                 simConfig.renderer_software = SDL_CreateSoftwareRenderer(simConfig.software_surface);
+                                SDL_SetRenderDrawBlendMode(simConfig.renderer_software, SDL_BLENDMODE_BLEND);
                             }
                             simConfig.conf |= CONF_RENDER_SOFTWARE;
                             break;

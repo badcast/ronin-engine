@@ -172,9 +172,8 @@ namespace RoninEngine::Runtime
                     {
                             // render as fixed (Resize mode)
                         case SpriteRenderPresentMode::Fixed:
-                            //                        rendering->dst.w = sprite->width() * abs(this->size.x) /
-                            //                        pixelsPerPoint; rendering->dst.h = sprite->height() *
-                            //                        abs(this->size.y) / pixelsPerPoint;
+                            //rendering->dst.w = sprite->width() * abs(this->m_size.x) / pixelsPerPoint;
+                            //rendering->dst.h = sprite->height() * abs(this->m_size.y) / pixelsPerPoint;
                             break;
                             // render as cut
                         case SpriteRenderPresentMode::Place:
@@ -268,6 +267,11 @@ namespace RoninEngine::Runtime
                     break;
                 }
             }
+
+            // set color for Texture
+            SDL_SetTextureColorMod(save_texture, color.r, color.g, color.b);
+            SDL_SetTextureAlphaMod(save_texture, color.a);
+
             save_src = rendering->src;
             save_dst = rendering->dst;
         }
