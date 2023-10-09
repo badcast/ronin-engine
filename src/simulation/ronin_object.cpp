@@ -68,69 +68,9 @@ namespace RoninEngine
                 }
             }
 
+            ++switched_world->irs->objects;
+
             return instance;
-        }
-
-        void internal_destroy_object_dyn(Object *obj)
-        {
-            union
-            {
-                Renderer *renderer;
-                Transform *transform;
-                Behaviour *script;
-                Camera *camera;
-            } __uptr;
-            if((__uptr.transform = dynamic_cast<Transform *>(obj)))
-                internal_destroy_object<Transform>(__uptr.transform);
-            else if((__uptr.script = dynamic_cast<Behaviour *>(obj)))
-                internal_destroy_object<Behaviour>(__uptr.script);
-            else if((__uptr.renderer = dynamic_cast<Renderer *>(obj)))
-                internal_destroy_object<Renderer>(__uptr.renderer);
-            else if((__uptr.camera = dynamic_cast<Camera *>(obj)))
-                internal_destroy_object<Camera>(__uptr.camera);
-            else
-                internal_destroy_object<Object>(obj);
-        }
-
-        template <typename T, typename std::enable_if<std::is_base_of<Object, T>::value, std::nullptr_t>::type>
-        inline void internal_destroy_object(T *obj)
-        {
-            static_assert(std::is_base_of<Object, T>::value && !std::is_same<GameObject, T>::value, "obj var not based of Object");
-
-            if constexpr(std::is_same<T, Transform>::value)
-            {
-                if(obj->m_parent)
-                {
-                    // something.*(HackGet<int Something::*>::ptr);
-                    hierarchy_remove(obj->m_parent, obj);
-                }
-                hierarchy_remove_all(obj);
-                // picking from matrix
-                Matrix::matrix_nature_pickup(obj);
-            }
-            else if constexpr(std::is_same<T, Behaviour>::value)
-            {
-                // Run Script Destroy
-                obj->OnDestroy();
-                // Run last script object
-                if(switched_world->irs->_firstRunScripts)
-                    switched_world->irs->_firstRunScripts->remove(obj);
-                if(switched_world->irs->_realtimeScripts)
-                    switched_world->irs->_realtimeScripts->remove(obj);
-            }
-            else if constexpr(std::is_same<T, Camera2D>::value)
-            {
-                switched_world->irs->event_camera_changed(obj, CameraEvent::CAM_DELETED);
-
-                // Free Camera Resources
-                RoninMemory::free(obj->camera_resources);
-            }
-
-            // Extractor remove
-            obj->__ = nullptr;
-
-            // Free object
-            RoninMemory::free(obj);
         }
 
         Transform *create_empty_transform()
@@ -179,12 +119,10 @@ namespace RoninEngine
             if(!obj || !switched_world || t < 0)
                 throw std::bad_exception();
 
-            auto provider = switched_world->irs->_destructTasks;
-
+#define provider (switched_world->irs->_destructTasks)
             if(!provider)
             {
-                provider = switched_world->irs->_destructTasks =
-                    RoninMemory::alloc<std::remove_pointer<decltype(switched_world->irs->_destructTasks)>::type>();
+                RoninMemory::alloc_self(provider);
             }
             else
             {
@@ -196,38 +134,132 @@ namespace RoninEngine
                     if(i != std::end(_set))
                     {
                         _set.erase(i);
-
-                        if(t == 0)
-                        {
-                            // destroy now
-                            // DestroyImmediate(obj);
-                            // return;
-                            break;
-                        }
+                        break;
                     }
                 }
             }
             t += TimeEngine::time();
-            provider->operator[](t).emplace(obj);
-        }
 
-        void destroy_now(GameObject *obj)
-        {
-            if(!obj)
-                throw std::runtime_error("Object is null");
-
-            // FIXME: destroy other types from gameobject->m_components (delete a list)
-            // FIXME: Replace Recursive method to stack linear
-            for(Component *component : obj->m_components)
+            // So, destroy childrens of the object
+            GameObject *target = obj;
+            std::list<GameObject *> __stacks;
+            while(target)
             {
-                internal_destroy_object_dyn(component);
+                provider->operator[](t).emplace(target);
+
+                for(Transform *t : target->transform()->hierarchy)
+                    __stacks.emplace_back(t->gameObject());
+
+                if(!__stacks.empty())
+                {
+                    target = __stacks.front();
+                    __stacks.pop_back();
+                }
+                else
+                    target = nullptr;
             }
 
+#undef provider
+        }
+
+        void harakiri_Component(Component *candidate)
+        {
+            union
+            {
+                Renderer *renderer;
+                Transform *transform;
+                Behaviour *script;
+                Camera *camera;
+            } _knife;
+
+#define self (_knife.transform)
+            if((self = dynamic_cast<Transform *>(candidate)))
+            {
+                // Is Unloding world
+                if(!switched_world->irs->request_unloading)
+                {
+                    if(self->m_parent)
+                    {
+                        // Parent is off for self Transform
+                        hierarchy_remove(self->m_parent, self);
+                    }
+                    //hierarchy_remove_all(self);
+
+                    // picking from matrix
+                    Matrix::matrix_nature_pickup(self);
+                }
+            }
+#undef self
+#define self (_knife.script)
+            else if((self = dynamic_cast<Behaviour *>(candidate)))
+            {
+                // Run Script Destroy
+                self->OnDestroy();
+
+                // Is Unloding world
+                if(!switched_world->irs->request_unloading)
+                {
+                    // Run last script object
+                    if(switched_world->irs->_firstRunScripts)
+                        switched_world->irs->_firstRunScripts->remove(self);
+                    if(switched_world->irs->_realtimeScripts)
+                        switched_world->irs->_realtimeScripts->remove(self);
+                }
+            }
+#undef self
+#define self (_knife.camera)
+            else if((self = dynamic_cast<Camera *>(candidate)))
+            {
+                // Free Camera Resources
+                switched_world->irs->event_camera_changed(self, CameraEvent::CAM_DELETED);
+            }
+#undef self
+#define self (_knife.renderer)
+            else if((self = dynamic_cast<Renderer *>(candidate)))
+            {
+            }
+#undef self
+#ifdef NDEBUG
+            // Is Unloding world
+            if(!switched_world->irs->request_unloading)
+            {
+#endif
+                // Extractor remove
+                candidate->__ = nullptr;
+                candidate->_type_ = nullptr;
+#ifdef NDEBUG
+            }
+#endif
+            // Free object
+            RoninMemory::free(candidate);
+            --switched_world->irs->objects;
+        }
+
+        void harakiri_GameObject(GameObject *obj)
+        {
+            if(!obj)
+                throw ronin_null_error();
+
+#ifndef NDEBUG
+            if(strcmp(obj->_type_, "GameObject"))
+            {
+                throw ronin_type_error();
+            }
+#endif
+
+            for(Component *component : obj->m_components)
+            {
+                harakiri_Component(component);
+            }
+
+#ifndef NDEBUG
             // remove extractor flag
             obj->__ = nullptr;
+#endif
 
             // START FREE OBJECT
             RoninMemory::free(obj);
+            --switched_world->irs->objects;
         }
 
         bool object_instanced(const Object *obj)
@@ -236,7 +268,7 @@ namespace RoninEngine
                 return false;
             if(!switched_world)
                 throw ronin_init_error();
-            return reinterpret_cast<const std::size_t>(obj->__) == reinterpret_cast<const std::size_t>(switched_world);
+            return obj->__ == switched_world;
         }
 
         GameObject *Instantiate(GameObject *obj)
@@ -308,14 +340,16 @@ namespace RoninEngine
         {
         }
 
-        Object::Object(const std::string &name) : m_name(name)
+        Object::Object(const std::string &name) : m_name(name), id(-1)
         {
-            DESCRIBE_AS_MAIN(Object);
-            ::check_object(this);
-            if(switched_world == nullptr)
-                throw std::bad_exception();
+            if(switched_world != nullptr)
+            {
+                DESCRIBE_AS_MAIN(Object);
+                ::check_object(this);
+                id = switched_world->irs->_level_ids_++;
+                switched_world->irs->objects++;
+            }
 
-            id = switched_world->irs->_level_ids_++;
             // set as instanced
             __ = switched_world;
         }

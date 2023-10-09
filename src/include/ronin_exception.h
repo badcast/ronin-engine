@@ -20,6 +20,14 @@ namespace RoninEngine::Exception
         }
     };
 
+    class ronin_type_error : public ronin_base_error
+    {
+    public:
+        ronin_type_error() : ronin_base_error("Type is invalid and not cast")
+        {
+        }
+    };
+
     class ronin_implementation_error : public ronin_base_error
     {
     public:

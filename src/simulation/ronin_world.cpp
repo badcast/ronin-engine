@@ -19,6 +19,8 @@ namespace RoninEngine
                     // TODO: find free Camera and set as Main
                     if(main_camera == target)
                         main_camera = nullptr;
+                    camera_resources.remove(target->camera_resource);
+                    RoninMemory::free(target->camera_resource);
                     break;
                 case CameraEvent::CAM_TARGET:
                     main_camera = target;
@@ -53,7 +55,7 @@ namespace RoninEngine
         bool internal_unload_world(World *world)
         {
             World *lastWorld;
-            GameObject *target; // first;
+            Transform *target; // first;
 
             if(world == nullptr)
             {
@@ -72,18 +74,16 @@ namespace RoninEngine
             world->OnUnloading();
 
             // Free Game Objects
-            target = world->irs->main_object;
-            std::list<GameObject *> stacks;
+            target = world->irs->main_object->transform();
+
+            std::list<Transform *> stacks;
             // free objects
             while(target)
             {
-                for(Transform *e : target->transform()->hierarchy)
-                {
-                    stacks.emplace_front(e->gameObject());
-                }
+                stacks.merge(target->hierarchy);
 
                 // destroy
-                destroy_now(target);
+                harakiri_GameObject(target->_owner);
 
                 if(stacks.empty())
                 {
@@ -96,6 +96,11 @@ namespace RoninEngine
                 }
             }
             world->irs->main_object = nullptr;
+
+            if(world->irs->objects != 0)
+            {
+                RoninSimulator::Log("World is have leak objects: " + std::to_string(world->irs->objects));
+            }
 
             if(world->irs->_firstRunScripts)
             {
@@ -169,14 +174,15 @@ namespace RoninEngine
                    std::find_if(
                        begin(*(switched_world->irs->_realtimeScripts)),
                        end(*(switched_world->irs->_realtimeScripts)),
-                       std::bind(std::equal_to<Behaviour *>(), std::placeholders::_1, script)) != end(*(switched_world->irs->_realtimeScripts)))
+                       std::bind(std::equal_to<Behaviour *>(), std::placeholders::_1, script)) !=
+                       end(*(switched_world->irs->_realtimeScripts)))
                     return;
 
                 switched_world->irs->_firstRunScripts->emplace_back(script);
             }
         }
 
-        void runtime_destructs()
+        void RuntimeCollector()
         {
             switched_world->irs->_destroyed = 0;
             // Destroy queue objects
@@ -198,12 +204,9 @@ namespace RoninEngine
                     // destroy
                     for(GameObject *target : pair.second)
                     {
-                        if(target->exists())
-                        {
-                            // run destructor
-                            destroy_now(target);
-                            ++(switched_world->irs->_destroyed);
-                        }
+                        // run destructor
+                        harakiri_GameObject(target);
+                        ++(switched_world->irs->_destroyed);
                     }
                     ++yiter;
                 }
@@ -245,7 +248,8 @@ namespace RoninEngine
 
             if(switched_world->irs->_realtimeScripts)
             {
-                for(auto exec = std::begin(*switched_world->irs->_realtimeScripts); exec != std::end(*switched_world->irs->_realtimeScripts);
+                for(auto exec = std::begin(*switched_world->irs->_realtimeScripts);
+                    exec != std::end(*switched_world->irs->_realtimeScripts);
                     ++exec)
                 {
                     if((*exec)->exists() && (*exec)->gameObject()->m_active)
@@ -280,9 +284,9 @@ namespace RoninEngine
                     };
                 }
             }
+
             if(ronin_debug_mode)
             {
-                using Gizmos = RoninEngine::Runtime::Gizmos;
                 constexpr int font_height = 12;
 
                 static struct
@@ -369,12 +373,14 @@ namespace RoninEngine
                     Gizmos::DrawTextToScreen(screen_point, elements[x].format, font_height);
                 }
             }
-            queue_watcher.ms_wait_render_gizmos = TimeEngine::EndWatch();
+
             // end watcher
+            queue_watcher.ms_wait_render_gizmos = TimeEngine::EndWatch();
 
             TimeEngine::BeginWatch();
             if(!switched_world->irs->request_unloading)
-                runtime_destructs();
+                RuntimeCollector();
+            // end watcher
             queue_watcher.ms_wait_destructions = TimeEngine::EndWatch();
         }
 
@@ -476,7 +482,7 @@ namespace RoninEngine
         if(irs == nullptr || irs->main_camera == nullptr)
             return -1;
 
-        return irs->main_camera->camera_resources->culled;
+        return irs->main_camera->camera_resource->culled;
     }
 
     int World::matrix_count_cache()

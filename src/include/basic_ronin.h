@@ -280,6 +280,8 @@ namespace RoninEngine
             // Main or Root object
             GameObject *main_object;
 
+            int objects;
+
             void event_camera_changed(Camera *target, CameraEvent state);
         };
 
@@ -290,18 +292,18 @@ namespace RoninEngine
         bool object_instanced(const Object *obj);
         void native_render_2D(Camera2D *camera);
 
-        void internal_destroy_object_dyn(Object *obj);
+        void harakiri_Component(Component *candidate);
 
-        void destroy_now(GameObject *obj);
+        void harakiri_GameObject(GameObject *obj);
 
-        void runtime_destructs();
+        void RuntimeCollector();
         void level_render_world();
         void level_render_world_late();
         void internal_bind_script(Behaviour *);
 
-        // TODO: Complete that function for types
-        template <typename T, typename std::enable_if<std::is_base_of<Object, T>::value, std::nullptr_t>::type = nullptr>
-        inline void internal_destroy_object(T *obj);
+//        // TODO: Complete that function for types
+//        template <typename T, typename std::enable_if<std::is_base_of<Object, T>::value, std::nullptr_t>::type = nullptr>
+//        inline void harakiri_component_typed(T *obj);
 
         void internal_load_world(World *);
         bool internal_unload_world(World *);

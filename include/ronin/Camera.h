@@ -7,7 +7,7 @@ namespace RoninEngine::Runtime
     class RONIN_API Camera : public Component
     {
     protected:
-        struct CameraResource *camera_resources;
+        struct CameraResource *camera_resource;
 
     public:
         Camera(const std::string &name);

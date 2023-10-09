@@ -24,6 +24,7 @@
 #include <memory>
 #include <numeric>
 #include <deque>
+#include <queue>
 #include <set>
 #include <stdexcept>
 #include <unordered_map>

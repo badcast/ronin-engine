@@ -93,7 +93,7 @@ namespace RoninEngine::Runtime
             Vec2Int wpRightBottom;
             int edges;
         } stack;
-        camera->camera_resources->culled = 0;
+        camera->camera_resource->culled = 0;
 
         stack.camera_position = camera->transform()->position();
         stack.root_transform = World::self()->irs->main_object->transform();
@@ -199,7 +199,7 @@ namespace RoninEngine::Runtime
                                     continue;
                                 }
 
-                                ++(camera->camera_resources->culled);
+                                ++(camera->camera_resource->culled);
 
                                 Transform *render_transform = render_iobject->transform();
                                 memset(&(stack.wrapper), 0, sizeof(stack.wrapper));

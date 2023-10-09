@@ -8,8 +8,8 @@ namespace RoninEngine::Runtime
         DESCRIBE_AS_MAIN(Camera);
 
         // using this camera as main
-        World::self()->irs->camera_resources.emplace_front(RoninMemory::alloc_self(camera_resources));
-        camera_resources->culled = 0;
+        World::self()->irs->camera_resources.emplace_front(RoninMemory::alloc_self(camera_resource));
+        camera_resource->culled = 0;
         // set focusing
         Focus();
     }

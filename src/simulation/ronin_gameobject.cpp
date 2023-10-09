@@ -177,6 +177,7 @@ namespace RoninEngine::Runtime
         // BUG: Destroying object canceled with signal SIGILL
         component->_owner = nullptr; // remove owner
         m_components.remove(component);
-        Runtime::internal_destroy_object_dyn(component);
+        Runtime::harakiri_Component(component);
+        return true;
     }
 } // namespace RoninEngine::Runtime
