@@ -54,9 +54,6 @@ namespace RoninEngine
 
         bool internal_unload_world(World *world)
         {
-            World *lastWorld;
-            Transform *target; // first;
-
             if(world == nullptr)
             {
                 throw ronin_null_error();
@@ -65,7 +62,7 @@ namespace RoninEngine
             if(world->irs == nullptr)
                 return false;
 
-            lastWorld = switched_world;
+            World *lastWorld = switched_world;
             switched_world = world;
 
             world->RequestUnload();
@@ -74,10 +71,8 @@ namespace RoninEngine
             world->OnUnloading();
 
             // Free Game Objects
-            target = world->irs->main_object->transform();
-
+            Transform *target = world->irs->main_object->transform();
             std::list<Transform *> stacks;
-            // free objects
             while(target)
             {
                 stacks.merge(target->hierarchy);
@@ -107,15 +102,15 @@ namespace RoninEngine
                 RoninMemory::free(world->irs->_firstRunScripts);
                 world->irs->_firstRunScripts = nullptr;
             }
-            if(world->irs->_realtimeScripts)
+            if(world->irs->runtimeScripts)
             {
-                RoninMemory::free(world->irs->_realtimeScripts);
-                world->irs->_realtimeScripts = nullptr;
+                RoninMemory::free(world->irs->runtimeScripts);
+                world->irs->runtimeScripts = nullptr;
             }
-            if(world->irs->_destructTasks)
+            if(world->irs->runtimeCollectors)
             {
-                RoninMemory::free(world->irs->_destructTasks);
-                world->irs->_destructTasks = nullptr;
+                RoninMemory::free(world->irs->runtimeCollectors);
+                world->irs->runtimeCollectors = nullptr;
             }
 
             // free GUI objects
@@ -170,12 +165,12 @@ namespace RoninEngine
                    end(*(switched_world->irs->_firstRunScripts)),
                    std::bind(std::equal_to<Behaviour *>(), std::placeholders::_1, script)) == end(*(switched_world->irs->_firstRunScripts)))
             {
-                if(switched_world->irs->_realtimeScripts &&
+                if(switched_world->irs->runtimeScripts &&
                    std::find_if(
-                       begin(*(switched_world->irs->_realtimeScripts)),
-                       end(*(switched_world->irs->_realtimeScripts)),
+                       begin(*(switched_world->irs->runtimeScripts)),
+                       end(*(switched_world->irs->runtimeScripts)),
                        std::bind(std::equal_to<Behaviour *>(), std::placeholders::_1, script)) !=
-                       end(*(switched_world->irs->_realtimeScripts)))
+                       end(*(switched_world->irs->runtimeScripts)))
                     return;
 
                 switched_world->irs->_firstRunScripts->emplace_back(script);
@@ -187,19 +182,19 @@ namespace RoninEngine
             switched_world->irs->_destroyed = 0;
             // Destroy queue objects
 
-            if(switched_world->irs->_destructTasks)
+            if(switched_world->irs->runtimeCollectors)
             {
-                std::map<float, std::set<GameObject *>>::iterator xiter = std::end(*(switched_world->irs->_destructTasks)),
-                                                                  yiter = std::end(*(switched_world->irs->_destructTasks));
-                for(std::pair<const float, std::set<GameObject *>> &pair : *(switched_world->irs->_destructTasks))
+                std::map<float, std::set<GameObject *>>::iterator xiter = std::end(*(switched_world->irs->runtimeCollectors)),
+                                                                  yiter = std::end(*(switched_world->irs->runtimeCollectors));
+                for(std::pair<const float, std::set<GameObject *>> &pair : *(switched_world->irs->runtimeCollectors))
                 {
                     // The time for the destruction of the object has not yet come
                     if(pair.first > internal_game_time)
                     {
                         break;
                     }
-                    if(xiter == std::end(*(switched_world->irs->_destructTasks)))
-                        xiter = yiter = std::begin(*(switched_world->irs->_destructTasks));
+                    if(xiter == std::end(*(switched_world->irs->runtimeCollectors)))
+                        xiter = yiter = std::begin(*(switched_world->irs->runtimeCollectors));
 
                     // destroy
                     for(GameObject *target : pair.second)
@@ -212,14 +207,22 @@ namespace RoninEngine
                 }
 
                 if(xiter != yiter)
-                    switched_world->irs->_destructTasks->erase(xiter, yiter);
+                    switched_world->irs->runtimeCollectors->erase(xiter, yiter);
 
-                if(switched_world->irs->_destructTasks->empty())
+                if(switched_world->irs->runtimeCollectors->empty())
                 {
-                    RoninMemory::free(switched_world->irs->_destructTasks);
-                    switched_world->irs->_destructTasks = nullptr;
+                    RoninMemory::free(switched_world->irs->runtimeCollectors);
+                    switched_world->irs->runtimeCollectors = nullptr;
                 }
             }
+
+            // Restore Damage
+            auto damaged = switched_world->MatrixCheckDamage();
+            if(damaged.size() > 0)
+            {
+            int a = 0;
+            }
+            switched_world->MatrixRestore(damaged);
         }
 
         void level_render_world()
@@ -231,25 +234,24 @@ namespace RoninEngine
 
             if(switched_world->irs->_firstRunScripts)
             {
-                if(!switched_world->irs->_realtimeScripts)
+                if(!switched_world->irs->runtimeScripts)
                 {
-                    RoninMemory::alloc_self(switched_world->irs->_realtimeScripts);
+                    RoninMemory::alloc_self(switched_world->irs->runtimeScripts);
                 }
 
                 for(Behaviour *exec : *(switched_world->irs->_firstRunScripts))
                 {
                     if(exec->gameObject()->m_active)
                         exec->OnStart(); // go start (first draw)
-                    switched_world->irs->_realtimeScripts->emplace_back(exec);
+                    switched_world->irs->runtimeScripts->emplace_back(exec);
                 }
                 RoninMemory::free(switched_world->irs->_firstRunScripts);
                 switched_world->irs->_firstRunScripts = nullptr;
             }
 
-            if(switched_world->irs->_realtimeScripts)
+            if(switched_world->irs->runtimeScripts)
             {
-                for(auto exec = std::begin(*switched_world->irs->_realtimeScripts);
-                    exec != std::end(*switched_world->irs->_realtimeScripts);
+                for(auto exec = std::begin(*switched_world->irs->runtimeScripts); exec != std::end(*switched_world->irs->runtimeScripts);
                     ++exec)
                 {
                     if((*exec)->exists() && (*exec)->gameObject()->m_active)
@@ -275,9 +277,9 @@ namespace RoninEngine
             {
                 switched_world->OnGizmos(); // Draw gizmos
 
-                if(switched_world->irs->_realtimeScripts)
+                if(switched_world->irs->runtimeScripts)
                 {
-                    for(auto exec : *(switched_world->irs->_realtimeScripts))
+                    for(auto exec : *(switched_world->irs->runtimeScripts))
                     {
                         if(exec->gameObject()->m_active)
                             exec->OnGizmos();
@@ -386,9 +388,9 @@ namespace RoninEngine
 
         void level_render_world_late()
         {
-            if(switched_world->irs->_realtimeScripts)
+            if(switched_world->irs->runtimeScripts)
             {
-                for(auto exec : *(switched_world->irs->_realtimeScripts))
+                for(auto exec : *(switched_world->irs->runtimeScripts))
                 {
                     if(exec->gameObject()->m_active)
                         exec->OnLateUpdate();
@@ -409,7 +411,7 @@ namespace RoninEngine
     }
 
     // NOTE: Check game hierarchy
-    std::list<Transform *> World::matrix_check_damaged()
+    std::list<Transform *> World::MatrixCheckDamage()
     {
         std::list<Transform *> damaged;
 
@@ -421,7 +423,7 @@ namespace RoninEngine
                 // set<Transform*>
                 for(auto &y : layerObject.second)
                 {
-                    if(Matrix::matrix_get_key(y->_position) != layerObject.first || x->first != y->_owner->m_layer)
+                    if(!object_instanced(y) || Matrix::matrix_get_key(y->_position) != layerObject.first || x->first != y->_owner->m_layer)
                     {
                         damaged.emplace_back(y);
                     }
@@ -432,21 +434,18 @@ namespace RoninEngine
         return damaged;
     }
 
-    int World::matrix_restore()
+    int World::MatrixRestore()
     {
-        auto damaged = matrix_check_damaged();
-        return matrix_restore(damaged);
+        auto damaged = MatrixCheckDamage();
+        return MatrixRestore(damaged);
     }
 
     // try restore damaged matrix element's
-    int World::matrix_restore(const std::list<Runtime::Transform *> &damaged_content)
+    int World::MatrixRestore(const std::list<Runtime::Transform *> &damaged_content)
     {
         int restored = 0;
         for(Transform *dam : damaged_content)
         {
-            if(!object_instanced(dam))
-                continue;
-
             MatrixKey key = Matrix::matrix_get_key(dam->_position);
             // unordered_map<int, ...>
             for(auto &findIter : switched_world->irs->matrix)
@@ -485,7 +484,7 @@ namespace RoninEngine
         return irs->main_camera->camera_resource->culled;
     }
 
-    int World::matrix_count_cache()
+    int World::MatrixCacheCount()
     {
         int cached = 0;
         for(auto &matrix : this->irs->matrix)
@@ -500,7 +499,7 @@ namespace RoninEngine
         return cached;
     }
 
-    int World::matrix_clear_cache()
+    int World::MatrixCacheClear()
     {
         std::vector<typename std::unordered_map<Vec2Int, std::set<Transform *>>::iterator> cached;
         int cleans = 0;
@@ -524,7 +523,7 @@ namespace RoninEngine
         return cleans;
     }
 
-    std::string World::get_hierarchy_as_tree() const
+    std::string World::GetTreeOfHierarchy() const
     {
         static char delim = 0x32;
         std::string delims;
@@ -630,9 +629,9 @@ namespace RoninEngine
         {
             RoninSimulator::BreakSimulate();
         }
-        else if(World::self()->irs->_destructTasks)
+        else if(World::self()->irs->runtimeCollectors)
         {
-            for(std::pair<const float, std::set<GameObject *>> &mapIter : *World::self()->irs->_destructTasks)
+            for(std::pair<const float, std::set<GameObject *>> &mapIter : *World::self()->irs->runtimeCollectors)
             {
                 auto iter = mapIter.second.find(obj);
                 if(iter != std::end(mapIter.second))
@@ -653,10 +652,10 @@ namespace RoninEngine
             RoninSimulator::BreakSimulate();
             return false;
         }
-        if(World::self()->irs->_destructTasks)
+        if(World::self()->irs->runtimeCollectors)
         {
             x = 0;
-            for(std::pair<const float, std::set<GameObject *>> &mapIter : *World::self()->irs->_destructTasks)
+            for(std::pair<const float, std::set<GameObject *>> &mapIter : *World::self()->irs->runtimeCollectors)
             {
                 if(mapIter.second.find(obj) != std::end(mapIter.second))
                 {
@@ -677,9 +676,9 @@ namespace RoninEngine
     const int World::CountObjectDestruction()
     {
         int x = 0;
-        if(World::self()->irs->_destructTasks)
+        if(World::self()->irs->runtimeCollectors)
         {
-            for(std::pair<const float, std::set<GameObject *>> &mapIter : *World::self()->irs->_destructTasks)
+            for(std::pair<const float, std::set<GameObject *>> &mapIter : *World::self()->irs->runtimeCollectors)
             {
                 x += mapIter.second.size();
             }

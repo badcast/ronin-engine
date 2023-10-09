@@ -39,7 +39,7 @@ namespace RoninEngine::Runtime
         m_components.push_back(create_empty_transform());
         m_components.front()->_owner = this;
         // create matrix-slot for transform object
-        Matrix::matrix_nature(transform(), Matrix::matrix_get_key(Vec2::infinity));
+        Matrix::matrix_update(transform(), Matrix::matrix_get_key(Vec2::infinity));
     }
 
     GameObject::~GameObject()
@@ -99,6 +99,7 @@ namespace RoninEngine::Runtime
     {
         // NOTE: transform всегда первый объект из контейнера m_components
         return static_cast<Transform *>(m_components.front());
+        //return GetComponent<Transform>();
     }
 
     SpriteRenderer *GameObject::spriteRenderer()

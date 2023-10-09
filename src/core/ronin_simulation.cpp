@@ -567,7 +567,7 @@ namespace RoninEngine
                         switched_world->irs->main_object->name("Main Object");
                         switched_world->irs->main_object->transform()->name("Root");
                         // pickup from renders
-                        Matrix::matrix_nature_pickup(switched_world->irs->main_object->transform());
+                        Matrix::matrix_remove(switched_world->irs->main_object->transform());
                     }
 
                     internal_world_can_start = false;

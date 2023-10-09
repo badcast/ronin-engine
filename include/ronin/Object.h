@@ -30,8 +30,6 @@ namespace RoninEngine
             void *__;
             // unique type (static)
             char *_type_;
-            // unique id (realtime)
-            std::uint32_t id;
             // object name (realtime)
             std::string m_name;
 
@@ -43,8 +41,6 @@ namespace RoninEngine
             std::string &name(const std::string &newName);
 
             std::string &name();
-
-            std::uint32_t getID() const;
 
             const char *getType() const;
 

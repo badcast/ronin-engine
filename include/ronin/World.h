@@ -47,13 +47,13 @@ namespace RoninEngine::Runtime
         const bool StateObjectDestruction(GameObject *obj);
         const int CountObjectDestruction();
 
-        std::list<Transform *> matrix_check_damaged();
-        int matrix_restore();
-        int matrix_restore(const std::list<Transform *> &damaged_content);
-        int matrix_count_cache();
-        int matrix_clear_cache();
+        std::list<Transform *> MatrixCheckDamage();
+        int MatrixRestore();
+        int MatrixRestore(const std::list<Transform *> &damaged_content);
+        int MatrixCacheCount();
+        int MatrixCacheClear();
 
-        std::string get_hierarchy_as_tree() const;
+        std::string GetTreeOfHierarchy() const;
 
         static World *self();
     };

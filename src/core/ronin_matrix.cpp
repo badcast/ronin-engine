@@ -26,13 +26,13 @@ namespace RoninEngine::Runtime
             return Vec2::RoundToInt(position * _matrix_pack_);
         }
 
-        void matrix_nature(Transform *target, MatrixKey lastPoint)
+        void matrix_update(Transform *target, MatrixKey lastPoint)
         {
-            matrix_nature(target, matrix_get_key(target->position()), lastPoint);
+            matrix_update(target, matrix_get_key(target->position()), lastPoint);
         }
 
         // THIS is matrix get from world space
-        void matrix_nature(Transform *target, const MatrixKey &newPoint, const MatrixKey &lastPoint)
+        void matrix_update(Transform *target, const MatrixKey &newPoint, const MatrixKey &lastPoint)
         {
             // Ignore are not changed
             if(newPoint == lastPoint)
@@ -55,7 +55,7 @@ namespace RoninEngine::Runtime
             switched_world->irs->matrix[target->_owner->m_layer][newPoint].insert(target);
         }
 
-        bool matrix_nature_pickup(Transform *target)
+        bool matrix_remove(Transform *target)
         {
             bool result = false;
             auto findIter = switched_world->irs->matrix.find(target->_owner->m_layer);
@@ -69,6 +69,8 @@ namespace RoninEngine::Runtime
                         layer->second.erase(eq);
                 }
             }
+            if(!result)
+                RoninSimulator::Log("Object matrix not the found");
             return result;
         }
     } // namespace Matrix

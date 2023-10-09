@@ -5,8 +5,21 @@ using namespace RoninEngine::Exception;
 
 namespace RoninEngine::Runtime
 {
+    void hierarchy_childs_move(Transform *oldParent, Transform *newParent)
+    {
+        if(!newParent || !oldParent || oldParent == newParent)
+            return;
+
+        for(Transform *child : oldParent->hierarchy)
+        {
+            child->m_parent = newParent;
+        }
+
+        newParent->hierarchy.merge(oldParent->hierarchy);
+    }
     void hierarchy_parent_change(Transform *from, Transform *newParent)
     {
+        // TODO: Fix it Hierarchy function
         Transform *lastParent = from->m_parent;
 
         if(newParent && lastParent == newParent)
@@ -14,7 +27,7 @@ namespace RoninEngine::Runtime
 
         if(lastParent)
         {
-            hierarchy_remove(lastParent, from);
+            hierarchy_child_remove(lastParent, from);
         }
 
         if(!newParent)
@@ -26,43 +39,44 @@ namespace RoninEngine::Runtime
         }
     }
 
-    void hierarchy_remove(Transform *from, Transform *off)
+    void hierarchy_child_remove(Transform *parent, Transform *who)
     {
-        if(off->m_parent != from)
+        if(who->m_parent != parent)
             return;
 
-        auto iter = std::find(from->hierarchy.begin(), from->hierarchy.end(), off);
-        if(iter == from->hierarchy.end())
+        auto iter = std::find(parent->hierarchy.begin(), parent->hierarchy.end(), who);
+        if(iter == parent->hierarchy.end())
             return;
-        from->hierarchy.erase(iter);
-        off->m_parent = nullptr; // not parent
+        parent->hierarchy.erase(iter);
+        who->m_parent = nullptr; // not parent
     }
 
-    void hierarchy_remove_all(Transform *from)
+    void hierarchy_parent_remove(Transform *parent)
     {
-        for(auto t : from->hierarchy)
+        for(Transform *child : parent->hierarchy)
         {
-            t->m_parent = nullptr;
+            child->m_parent = nullptr;
         }
 
-        from->hierarchy.clear();
+        parent->hierarchy.clear();
     }
 
-    void hierarchy_append(Transform *from, Transform *off)
+    void hierarchy_append(Transform *parent, Transform *who)
     {
-        auto iter = find_if(begin(from->hierarchy), end(from->hierarchy), std::bind(std::equal_to<Transform *>(), std::placeholders::_1, off));
-        if(iter == end(from->hierarchy))
+        auto iter =
+            find_if(begin(parent->hierarchy), end(parent->hierarchy), std::bind(std::equal_to<Transform *>(), std::placeholders::_1, who));
+        if(iter == end(parent->hierarchy))
         {
-            off->m_parent = from;
-            from->hierarchy.emplace_back(off);
+            who->m_parent = parent;
+            parent->hierarchy.emplace_back(who);
         }
     }
-    void hierarchy_sibiling(Transform *from, Transform *off, int index)
+    void hierarchy_sibiling(Transform *parent, Transform *who, int index)
     {
         // TODO: Set sibling for Transform component
-        decltype(from->hierarchy)::iterator __off_pos, __target, __end = std::end(from->hierarchy);
+        decltype(parent->hierarchy)::iterator __off_pos, __target, __end = std::end(parent->hierarchy);
         __off_pos = __target = __end;
-        for(auto iter = std::begin(from->hierarchy); (__off_pos == __end || __target == __end) && iter != __end; ++iter)
+        for(auto iter = std::begin(parent->hierarchy); (__off_pos == __end || __target == __end) && iter != __end; ++iter)
         {
             if(__off_pos != __end)
             {
@@ -73,13 +87,13 @@ namespace RoninEngine::Runtime
 
             if(__target != __end)
             {
-                if((*iter) == off)
+                if((*iter) == who)
                     __target = iter;
             }
         }
 
         if(__target != __end && __off_pos != __end)
-            std::swap(__off_pos, __target);
+            std::swap(__off_pos, __target); // set sibling
     }
 
     Transform::Transform() : Transform(DESCRIBE_AS_MAIN_OFF(Transform))
@@ -128,7 +142,7 @@ namespace RoninEngine::Runtime
 
     void Transform::childRemove(Transform *child)
     {
-        hierarchy_remove(this, child);
+        hierarchy_child_remove(this, child);
     }
 
     Transform *Transform::root()
@@ -298,7 +312,7 @@ namespace RoninEngine::Runtime
         Vec2Int lastPoint = Matrix::matrix_get_key(_position);
         _position = (this->m_parent ? this->m_parent->_position + value : value);
         if(_owner->m_active)
-            Matrix::matrix_nature(this, lastPoint);
+            Matrix::matrix_update(this, lastPoint);
         return value;
     }
 
@@ -313,7 +327,7 @@ namespace RoninEngine::Runtime
         _position = value; // set the position
         if(_owner->m_active)
         {
-            Matrix::matrix_nature(this, Matrix::matrix_get_key(lastPosition));
+            Matrix::matrix_update(this, Matrix::matrix_get_key(lastPosition));
 
             Vec2 localPos = value - lastPosition;
             for(Transform *child : hierarchy)
@@ -343,12 +357,12 @@ namespace RoninEngine::Runtime
         if(not from->m_active)
         {
             // Delete from matrix, for is not active object
-            Matrix::matrix_nature_pickup(this);
+            Matrix::matrix_remove(this);
         }
         else
         {
             // Add to matrix, for active object
-            Matrix::matrix_nature(this, Matrix::matrix_get_key(Vec2::infinity));
+            Matrix::matrix_update(this, Matrix::matrix_get_key(Vec2::infinity));
         }
         // send in hierarchy
         for(Transform *chlid : hierarchy)
@@ -364,13 +378,13 @@ namespace RoninEngine::Runtime
     {
         // Delete from matrix, for is not active object
         if(_owner->m_active)
-            Matrix::matrix_nature_pickup(this);
+            Matrix::matrix_remove(this);
 
         _owner->m_layer = value;
 
         // Add to matrix, for active object
         if(_owner->m_active)
-            Matrix::matrix_nature(this, Matrix::matrix_get_key(Vec2::infinity));
+            Matrix::matrix_update(this, Matrix::matrix_get_key(Vec2::infinity));
     }
 
     Transform *Transform::parent() const

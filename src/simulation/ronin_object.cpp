@@ -68,8 +68,6 @@ namespace RoninEngine
                 }
             }
 
-            ++switched_world->irs->objects;
-
             return instance;
         }
 
@@ -119,7 +117,7 @@ namespace RoninEngine
             if(!obj || !switched_world || t < 0)
                 throw std::bad_exception();
 
-#define provider (switched_world->irs->_destructTasks)
+#define provider (switched_world->irs->runtimeCollectors)
             if(!provider)
             {
                 RoninMemory::alloc_self(provider);
@@ -129,11 +127,10 @@ namespace RoninEngine
                 // get error an exists destructed @object
                 for(std::pair<const float, std::set<GameObject *>> &mapIter : *provider)
                 {
-                    auto &_set = mapIter.second;
-                    auto i = _set.find(obj);
-                    if(i != std::end(_set))
+                    auto i = mapIter.second.find(obj);
+                    if(i != std::end(mapIter.second))
                     {
-                        _set.erase(i);
+                        mapIter.second.erase(i);
                         break;
                     }
                 }
@@ -141,23 +138,7 @@ namespace RoninEngine
             t += TimeEngine::time();
 
             // So, destroy childrens of the object
-            GameObject *target = obj;
-            std::list<GameObject *> __stacks;
-            while(target)
-            {
-                provider->operator[](t).emplace(target);
-
-                for(Transform *t : target->transform()->hierarchy)
-                    __stacks.emplace_back(t->gameObject());
-
-                if(!__stacks.empty())
-                {
-                    target = __stacks.front();
-                    __stacks.pop_back();
-                }
-                else
-                    target = nullptr;
-            }
+            provider->operator[](t).emplace(obj);
 
 #undef provider
         }
@@ -171,7 +152,6 @@ namespace RoninEngine
                 Behaviour *script;
                 Camera *camera;
             } _knife;
-
 #define self (_knife.transform)
             if((self = dynamic_cast<Transform *>(candidate)))
             {
@@ -181,12 +161,12 @@ namespace RoninEngine
                     if(self->m_parent)
                     {
                         // Parent is off for self Transform
-                        hierarchy_remove(self->m_parent, self);
+                        hierarchy_child_remove(self->m_parent, self);
                     }
-                    //hierarchy_remove_all(self);
+                    //hierarchy_childs_move(self, switched_world->irs->main_object->transform());
 
                     // picking from matrix
-                    Matrix::matrix_nature_pickup(self);
+                    Matrix::matrix_remove(self);
                 }
             }
 #undef self
@@ -202,8 +182,8 @@ namespace RoninEngine
                     // Run last script object
                     if(switched_world->irs->_firstRunScripts)
                         switched_world->irs->_firstRunScripts->remove(self);
-                    if(switched_world->irs->_realtimeScripts)
-                        switched_world->irs->_realtimeScripts->remove(self);
+                    if(switched_world->irs->runtimeScripts)
+                        switched_world->irs->runtimeScripts->remove(self);
                 }
             }
 #undef self
@@ -219,17 +199,15 @@ namespace RoninEngine
             {
             }
 #undef self
-#ifdef NDEBUG
+
             // Is Unloding world
             if(!switched_world->irs->request_unloading)
             {
-#endif
                 // Extractor remove
                 candidate->__ = nullptr;
                 candidate->_type_ = nullptr;
-#ifdef NDEBUG
             }
-#endif
+
             // Free object
             RoninMemory::free(candidate);
             --switched_world->irs->objects;
@@ -247,15 +225,30 @@ namespace RoninEngine
             }
 #endif
 
-            for(Component *component : obj->m_components)
+            // destroy childs
+            GameObject *target = obj;
+            std::list<GameObject *> __stacks;
+            while(target)
             {
-                harakiri_Component(component);
+                for(Transform *t : target->transform()->hierarchy)
+                    __stacks.emplace_back(t->gameObject());
+
+                for(Component *component : target->m_components)
+                    harakiri_Component(component);
+
+                if(!__stacks.empty())
+                {
+                    target = __stacks.front();
+                    __stacks.pop_front();
+                    harakiri_GameObject(target);
+                }
+                else
+                    target = nullptr;
             }
 
-#ifndef NDEBUG
-            // remove extractor flag
-            obj->__ = nullptr;
-#endif
+            if(!switched_world->irs->request_unloading)
+                // remove extractor flag
+                obj->__ = nullptr;
 
             // START FREE OBJECT
             RoninMemory::free(obj);
@@ -340,14 +333,13 @@ namespace RoninEngine
         {
         }
 
-        Object::Object(const std::string &name) : m_name(name), id(-1)
+        Object::Object(const std::string &name) : m_name(name)
         {
             if(switched_world != nullptr)
             {
                 DESCRIBE_AS_MAIN(Object);
                 ::check_object(this);
-                id = switched_world->irs->_level_ids_++;
-                switched_world->irs->objects++;
+                ++switched_world->irs->objects;
             }
 
             // set as instanced
@@ -367,11 +359,6 @@ namespace RoninEngine
         std::string &Object::name()
         {
             return m_name;
-        }
-
-        uint32_t Object::getID() const
-        {
-            return id;
         }
 
         const char *Object::getType() const

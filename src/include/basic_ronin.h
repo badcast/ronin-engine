@@ -239,8 +239,8 @@ namespace RoninEngine
 
         struct WorldResources
         {
-            // unique ids for Object types in current world
-            std::uint32_t _level_ids_;
+            // object instanced
+            int objects;
 
             // state is unloading
             bool request_unloading;
@@ -258,10 +258,10 @@ namespace RoninEngine
             int _destroyed;
 
             std::list<Behaviour *> *_firstRunScripts;
-            std::list<Behaviour *> *_realtimeScripts;
+            std::list<Behaviour *> *runtimeScripts;
 
             // destruction task (queue object)
-            std::map<float, std::set<GameObject *>> *_destructTasks;
+            std::map<float, std::set<GameObject *>> *runtimeCollectors;
 
             // Matrix
             matrix_map_t matrix;
@@ -279,8 +279,6 @@ namespace RoninEngine
 
             // Main or Root object
             GameObject *main_object;
-
-            int objects;
 
             void event_camera_changed(Camera *target, CameraEvent state);
         };
@@ -301,19 +299,16 @@ namespace RoninEngine
         void level_render_world_late();
         void internal_bind_script(Behaviour *);
 
-//        // TODO: Complete that function for types
-//        template <typename T, typename std::enable_if<std::is_base_of<Object, T>::value, std::nullptr_t>::type = nullptr>
-//        inline void harakiri_component_typed(T *obj);
-
         void internal_load_world(World *);
         bool internal_unload_world(World *);
         void internal_free_loaded_assets();
 
+        void hierarchy_childs_move(Transform *oldParent, Transform *newParent);
         void hierarchy_parent_change(Transform *from, Transform *newParent);
-        void hierarchy_remove(Transform *from, Transform *off);
-        void hierarchy_remove_all(Transform *from);
-        void hierarchy_append(Transform *from, Transform *off);
-        void hierarchy_sibiling(Transform *from, Transform *off, int index);
+        void hierarchy_child_remove(Transform *parent, Transform *who);
+        void hierarchy_parent_remove(Transform *parent);
+        void hierarchy_append(Transform *parent, Transform *who);
+        void hierarchy_sibiling(Transform *parent, Transform *who, int index);
 
         void gid_resources_free(GidResources *gid);
         SDL_Surface *private_load_surface(const void *memres, int length);
