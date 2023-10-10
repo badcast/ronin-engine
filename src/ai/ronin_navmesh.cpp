@@ -43,7 +43,7 @@ namespace RoninEngine::AI
 
     void NavMesh::GenerateMaze(MazeAlgorithm algorithm)
     {
-        shedule->create_maze_ex(brain::MazeAlgorithm(algorithm), getPoint(shedule->front()), getPoint(shedule->back()));
+        shedule->create_maze_ex(static_cast<brain::MazeAlgorithm>(algorithm), getPoint(shedule->front()), getPoint(shedule->back()));
     }
 
     std::uint32_t NavMesh::getWidth() const

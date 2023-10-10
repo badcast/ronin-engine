@@ -177,54 +177,6 @@ namespace RoninEngine
             }
         }
 
-        void RuntimeCollector()
-        {
-            switched_world->irs->_destroyed = 0;
-            // Destroy queue objects
-
-            if(switched_world->irs->runtimeCollectors)
-            {
-                std::map<float, std::set<GameObject *>>::iterator xiter = std::end(*(switched_world->irs->runtimeCollectors)),
-                                                                  yiter = std::end(*(switched_world->irs->runtimeCollectors));
-                for(std::pair<const float, std::set<GameObject *>> &pair : *(switched_world->irs->runtimeCollectors))
-                {
-                    // The time for the destruction of the object has not yet come
-                    if(pair.first > internal_game_time)
-                    {
-                        break;
-                    }
-                    if(xiter == std::end(*(switched_world->irs->runtimeCollectors)))
-                        xiter = yiter = std::begin(*(switched_world->irs->runtimeCollectors));
-
-                    // destroy
-                    for(GameObject *target : pair.second)
-                    {
-                        // run destructor
-                        harakiri_GameObject(target);
-                        ++(switched_world->irs->_destroyed);
-                    }
-                    ++yiter;
-                }
-
-                if(xiter != yiter)
-                    switched_world->irs->runtimeCollectors->erase(xiter, yiter);
-
-                if(switched_world->irs->runtimeCollectors->empty())
-                {
-                    RoninMemory::free(switched_world->irs->runtimeCollectors);
-                    switched_world->irs->runtimeCollectors = nullptr;
-                }
-            }
-
-            // Restore Damage
-            auto damaged = switched_world->MatrixCheckDamage();
-            if(damaged.size() > 0)
-            {
-            int a = 0;
-            }
-            switched_world->MatrixRestore(damaged);
-        }
-
         void level_render_world()
         {
             // set default color
@@ -379,8 +331,9 @@ namespace RoninEngine
             // end watcher
             queue_watcher.ms_wait_render_gizmos = TimeEngine::EndWatch();
 
+            // Run Collector
             TimeEngine::BeginWatch();
-            if(!switched_world->irs->request_unloading)
+            if(false && !switched_world->irs->request_unloading)
                 RuntimeCollector();
             // end watcher
             queue_watcher.ms_wait_destructions = TimeEngine::EndWatch();
@@ -462,8 +415,11 @@ namespace RoninEngine
                             // Remove damaged transform
                             layer.second.erase(dam);
 
-                            // Restore
-                            switched_world->irs->matrix[dam->_owner->m_layer][key].insert(dam);
+                            if(object_instanced(dam))
+                            {
+                                // Restore
+                                switched_world->irs->matrix[dam->_owner->m_layer][key].insert(dam);
+                            }
                             ++restored;
                             goto next;
                         }

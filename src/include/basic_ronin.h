@@ -306,7 +306,7 @@ namespace RoninEngine
         void hierarchy_childs_move(Transform *oldParent, Transform *newParent);
         void hierarchy_parent_change(Transform *from, Transform *newParent);
         void hierarchy_child_remove(Transform *parent, Transform *who);
-        void hierarchy_parent_remove(Transform *parent);
+        void hierarchy_childs_remove(Transform *parent);
         void hierarchy_append(Transform *parent, Transform *who);
         void hierarchy_sibiling(Transform *parent, Transform *who, int index);
 

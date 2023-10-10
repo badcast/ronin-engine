@@ -257,5 +257,9 @@ Color Color::FromRGBA(int rgba)
 
 Color Color::FromARGB(int argb)
 {
-    return {/*r*/ (argb >> 8) & 0xFF, /*g*/ (argb >> 16) & 0xFF, /*b*/ (argb >> 24) & 0xFF, /*a*/ argb & 0xFF};
+    return {
+        /*r*/ static_cast<std::uint8_t>((argb >> 8) & 0xFF),
+        /*g*/ static_cast<std::uint8_t>((argb >> 16) & 0xFF),
+        /*b*/ static_cast<std::uint8_t>((argb >> 24) & 0xFF),
+        /*a*/ static_cast<std::uint8_t>(argb & 0xFF)};
 }

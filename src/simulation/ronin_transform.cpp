@@ -7,7 +7,7 @@ namespace RoninEngine::Runtime
 {
     void hierarchy_childs_move(Transform *oldParent, Transform *newParent)
     {
-        if(!newParent || !oldParent || oldParent == newParent)
+        if(oldParent == newParent)
             return;
 
         for(Transform *child : oldParent->hierarchy)
@@ -51,7 +51,7 @@ namespace RoninEngine::Runtime
         who->m_parent = nullptr; // not parent
     }
 
-    void hierarchy_parent_remove(Transform *parent)
+    void hierarchy_childs_remove(Transform *parent)
     {
         for(Transform *child : parent->hierarchy)
         {
@@ -353,7 +353,6 @@ namespace RoninEngine::Runtime
 
     void Transform::parent_notify_active_state(GameObject *from)
     {
-        Vec2Int pos = Matrix::matrix_get_key(this->_position);
         if(not from->m_active)
         {
             // Delete from matrix, for is not active object
@@ -399,8 +398,6 @@ namespace RoninEngine::Runtime
     {
         if(parent == nullptr)
             parent = switched_world->irs->main_object->transform();
-
-        Vec2 lastParentPoint = this->m_parent->_position;
 
         // change children of the parent
         hierarchy_parent_change(this, parent);

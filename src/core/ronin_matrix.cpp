@@ -69,8 +69,6 @@ namespace RoninEngine::Runtime
                         layer->second.erase(eq);
                 }
             }
-            if(!result)
-                RoninSimulator::Log("Object matrix not the found");
             return result;
         }
     } // namespace Matrix

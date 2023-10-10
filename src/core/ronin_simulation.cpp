@@ -60,7 +60,8 @@ namespace RoninEngine
         CONF_RESERVED2 = 4,
         CONF_RENDER_SOFTWARE = CONF_RENDER_CHANGED | 8,
     };
-    struct
+
+    static struct
     {
         // this is variable for apply settings
         int conf;

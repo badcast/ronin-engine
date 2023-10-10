@@ -98,6 +98,7 @@ namespace RoninEngine::UI
 
     uid GUI::LayoutBegin(const Runtime::Rect region)
     {
+        return 0;
     }
 
     uid GUI::PushLabel(const std::string &text, const Rect &rect, const int &fontWidth, uid parent)
@@ -219,8 +220,8 @@ namespace RoninEngine::UI
         element.resources = factory_resource(element.prototype);
 
         (*(float *) element.resources) = value;
-        (*(float *) (element.resources + sizeof(float))) = min;
-        (*(float *) (element.resources + sizeof(float) * 2)) = max;
+        (*(float *) (static_cast<char*>(element.resources) + sizeof(float))) = min;
+        (*(float *) (static_cast<char*>(element.resources) + sizeof(float) * 2)) = max;
 
         element.event = (void *) changed;
         return id;

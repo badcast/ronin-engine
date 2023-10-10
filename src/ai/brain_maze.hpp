@@ -258,7 +258,7 @@ namespace maze_system
         {
             for(y = 0; y < dy; ++y)
             {
-                ISite site {x + 1, y + 1};
+                ISite site {static_cast<int>(x) + 1, static_cast<int>(y) + 1};
 
                 if(!map->has_lock(site))
                     continue;
@@ -307,7 +307,7 @@ void BRAIN_DEFINE::create_maze_ex(brain::MazeAlgorithm mazeAlgoritm, ISite start
             maze_system::maze_recursive_division(this, startOf.x, startOf.y, endOf.x, endOf.y);
             break;
         case MazeAlgorithm::SelectiveStormChaos:
-            maze_system::maze_storm_space(this, {_xsize / 2, _ysize / 2});
+            maze_system::maze_storm_space(this, {static_cast<int>(_xsize / 2), static_cast<int>(_ysize / 2)});
             break;
         case MazeAlgorithm::ForcedChaos:
             maze_system::maze_forced_chaos(this, startOf, endOf);

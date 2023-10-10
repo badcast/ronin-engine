@@ -97,7 +97,7 @@ namespace RoninEngine::Runtime
 
     Transform *GameObject::transform()
     {
-        // NOTE: transform всегда первый объект из контейнера m_components
+        // NOTE: Transform всегда первый объект из контейнера m_components
         return static_cast<Transform *>(m_components.front());
         //return GetComponent<Transform>();
     }
