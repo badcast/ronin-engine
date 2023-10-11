@@ -529,8 +529,12 @@ namespace RoninEngine
             return false;
 
         SDL_SetCursor(cursor);
-        SDL_ShowCursor(SDL_ENABLE);
         return true;
+    }
+
+    void World::ShowCursor(bool value)
+    {
+        SDL_ShowCursor(static_cast<int>(value));
     }
 
     int World::GetDestroyedFrames()

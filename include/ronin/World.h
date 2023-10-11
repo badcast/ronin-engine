@@ -33,6 +33,8 @@ namespace RoninEngine::Runtime
 
         bool SetCursor(Cursor * cursor);
 
+        void ShowCursor(bool value);
+
         int GetCulled();
         int GetDestroyedFrames();
 

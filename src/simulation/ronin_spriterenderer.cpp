@@ -12,9 +12,9 @@ namespace RoninEngine::Runtime
         : Renderer(DESCRIBE_AS_ONLY_NAME(SpriteRenderer)),
           sprite(nullptr),
           save_texture(nullptr),
-          flip(Vec2::one),
           renderType(SpriteRenderType::Simple),
           renderOut(SpriteRenderOut::Centering),
+          flip(SpriteRenderFlip::FlipNone),
           renderPresentMode(SpriteRenderPresentMode::Fixed),
           color(Color::white)
     {
@@ -28,9 +28,9 @@ namespace RoninEngine::Runtime
           m_size(proto.m_size),
           renderType(proto.renderType),
           renderOut(proto.renderOut),
+          flip(proto.flip),
           renderPresentMode(proto.renderPresentMode),
           color(proto.color),
-          flip(proto.flip),
           offset(proto.offset)
     {
     }
@@ -80,7 +80,6 @@ namespace RoninEngine::Runtime
 
     void SpriteRenderer::setColor(Color value)
     {
-        free_render_cache();
         color = value;
     }
 
@@ -91,8 +90,7 @@ namespace RoninEngine::Runtime
 
     void SpriteRenderer::setSize(const Vec2 &newSize)
     {
-        free_render_cache();
-        m_size = newSize;
+        m_size = Vec2::Abs(newSize);
     }
 
     void SpriteRenderer::setRealSize()
@@ -155,30 +153,31 @@ namespace RoninEngine::Runtime
         if(sprite == nullptr)
             return;
 
-        std::uint16_t x, y;
-        SDL_Rect dest;
-
         if(save_texture == nullptr)
         {
+            std::uint16_t x, y;
+            SDL_Rect dest;
+
             switch(this->renderType)
             {
                 case SpriteRenderType::Simple:
                     save_texture = SDL_CreateTextureFromSurface(renderer, sprite->surface);
                     rendering->src.w = sprite->width();
                     rendering->src.h = sprite->height();
-                    rendering->dst.w = sprite->width() * abs(this->m_size.x) / pixelsPerPoint;
-                    rendering->dst.h = sprite->height() * abs(this->m_size.y) / pixelsPerPoint;
+                    rendering->dst.w = sprite->width();
+                    rendering->dst.h = sprite->height();
                     switch(renderPresentMode)
                     {
                             // render as fixed (Resize mode)
-                        case SpriteRenderPresentMode::Fixed:
-                            //rendering->dst.w = sprite->width() * abs(this->m_size.x) / pixelsPerPoint;
-                            //rendering->dst.h = sprite->height() * abs(this->m_size.y) / pixelsPerPoint;
-                            break;
+                            // case SpriteRenderPresentMode::Fixed:
+                            //      rendering->dst.w = sprite->width() * abs(this->m_size.x) / pixelsPerPoint;
+                            //      rendering->dst.h = sprite->height() * abs(this->m_size.y) / pixelsPerPoint;
+                            // break;
+
                             // render as cut
                         case SpriteRenderPresentMode::Place:
-                            rendering->src.w *= Math::Abs(this->m_size.x);
-                            rendering->src.h *= Math::Abs(this->m_size.y);
+                            rendering->src.w *= m_size.x;
+                            rendering->src.h *= m_size.y;
                             break;
                     }
                     break;
@@ -268,10 +267,6 @@ namespace RoninEngine::Runtime
                 }
             }
 
-            // set color for Texture
-            SDL_SetTextureColorMod(save_texture, color.r, color.g, color.b);
-            SDL_SetTextureAlphaMod(save_texture, color.a);
-
             save_src = rendering->src;
             save_dst = rendering->dst;
         }
@@ -280,11 +275,21 @@ namespace RoninEngine::Runtime
             rendering->src = save_src;
             rendering->dst = save_dst;
         }
-        rendering->dst.w *= flip.x;
-        rendering->dst.h *= flip.y;
 
-        rendering->dst.x -= offset.x;
-        rendering->dst.y -= offset.y;
+        if(save_texture)
+        {
+            // set color for Texture
+            SDL_SetTextureColorMod(save_texture, color.r, color.g, color.b);
+            SDL_SetTextureAlphaMod(save_texture, color.a);
+        }
+
+        rendering->dst.x += offset.x;
+        rendering->dst.y += offset.y;
+
+        rendering->dst.w = (rendering->dst.w * m_size.x / pixelsPerPoint) *
+            ((static_cast<int>(flip) & static_cast<int>(SpriteRenderFlip::FlipHorizontal)) ? -1 : 1);
+        rendering->dst.h = (rendering->dst.h * m_size.y / pixelsPerPoint) *
+            ((static_cast<int>(flip) & static_cast<int>(SpriteRenderFlip::FlipVertical)) ? -1 : 1);
 
         rendering->texture = save_texture;
     }

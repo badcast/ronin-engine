@@ -40,7 +40,7 @@ namespace RoninEngine::Runtime
 
     void TimeEngine::SetTimeScale(float scale)
     {
-        internal_time_scale = Math::Clamp01(scale);
+        internal_time_scale = Math::Clamp(scale, 0.f, 2.f);
     }
 
     std::uint32_t TimeEngine::frame()

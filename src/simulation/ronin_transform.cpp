@@ -168,6 +168,9 @@ namespace RoninEngine::Runtime
     void Transform::LookAt(Vec2 target, Vec2 axis)
     {
         float a = Vec2::Angle(axis, target - _position) * Math::rad2deg;
+
+        // FIXME: Using Atan2 for replaced than
+
         // normalize
         if(axis.x == 1)
         {
@@ -179,7 +182,6 @@ namespace RoninEngine::Runtime
             if(_position.y > target.y)
                 a = -a;
         }
-
         if(axis.y == 1)
         {
             if(_position.x > target.x)
@@ -190,38 +192,17 @@ namespace RoninEngine::Runtime
             if(_position.x < target.x)
                 a = -a;
         }
-
         angle(a);
     }
 
     void Transform::LookAtLerp(Vec2 target, float t)
     {
-        Vec2 axis = Vec2::up;
-        float a = Vec2::Angle(axis, target - _position) * Math::rad2deg;
-        // normalize
-        if(axis.x == 1)
-        {
-            if(_position.y < target.y)
-                a = -a;
-        }
-        else if(axis.x == -1)
-        {
-            if(_position.y > target.y)
-                a = -a;
-        }
+        target.x = _position.x - target.x;
+        target.y = _position.y - target.y;
 
-        if(axis.y == 1)
-        {
-            if(_position.x > target.x)
-                a = -a;
-        }
-        else if(axis.y == -1)
-        {
-            if(_position.x < target.x)
-                a = -a;
-        }
+        float newAngle = Math::Atan2(target.y, target.x);
 
-        angle(Math::LerpAngle(_angle_, a, t));
+        angle(Math::LerpAngle(_angle_, -newAngle * Math::rad2deg - 90, t));
     }
 
     void Transform::LookAtLerp(Transform *target, float t)
@@ -440,7 +421,7 @@ namespace RoninEngine::Runtime
 
         if(_owner->m_active)
         {
-            value = lastAngle-value; // new diff angle from parent
+            value = lastAngle - value; // new diff angle from parent
             // send in hierarchy
             for(Transform *child : hierarchy)
             {

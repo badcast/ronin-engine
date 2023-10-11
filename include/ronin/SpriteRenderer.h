@@ -28,6 +28,13 @@ namespace RoninEngine::Runtime
         Tile
     };
 
+    enum class SpriteRenderFlip : char
+    {
+        FlipNone = 0,
+        FlipHorizontal = 1,
+        FlipVertical = 2
+    };
+
     class RONIN_API SpriteRenderer : public Renderer
     {
     private:
@@ -45,8 +52,9 @@ namespace RoninEngine::Runtime
         void render(Rendering *rendering);
 
     public:
-        Vec2 flip;
         Vec2 offset;
+
+        SpriteRenderFlip flip;
 
         SpriteRenderer();
         SpriteRenderer(const std::string &name);
