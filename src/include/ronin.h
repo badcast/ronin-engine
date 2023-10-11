@@ -16,6 +16,7 @@
 #include <cassert>
 #include <algorithm>
 #include <functional>
+#include <fstream>
 #include <random>
 
 // standard listing include
@@ -34,8 +35,6 @@
 
 // base headers
 #include "begin.h"
-
-#include "just-parser.h"
 
 // PROTECTIVE PRIVATE MEMBERs UNLOCK
 #define private public

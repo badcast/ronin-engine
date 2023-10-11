@@ -41,11 +41,6 @@ namespace RoninEngine
             std::string &name();
 
             const char *getType() const;
-
-            bool exists() const;
-
-            /// Check a exist an object
-            operator bool();
         };
 
         class RONIN_API Primitive

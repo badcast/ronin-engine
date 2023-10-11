@@ -78,7 +78,7 @@ namespace RoninEngine
                 stacks.merge(target->hierarchy);
 
                 // destroy
-                harakiri_GameObject(target->_owner);
+                harakiri_GameObject(target->_owner, nullptr);
 
                 if(stacks.empty())
                 {
@@ -206,7 +206,7 @@ namespace RoninEngine
                 for(auto exec = std::begin(*switched_world->irs->runtimeScripts); exec != std::end(*switched_world->irs->runtimeScripts);
                     ++exec)
                 {
-                    if((*exec)->exists() && (*exec)->gameObject()->m_active)
+                    if((*exec)->gameObject()->m_active)
                         (*exec)->OnUpdate();
                 };
             }
@@ -330,13 +330,6 @@ namespace RoninEngine
 
             // end watcher
             queue_watcher.ms_wait_render_gizmos = TimeEngine::EndWatch();
-
-            // Run Collector
-            TimeEngine::BeginWatch();
-            if(false && !switched_world->irs->request_unloading)
-                RuntimeCollector();
-            // end watcher
-            queue_watcher.ms_wait_destructions = TimeEngine::EndWatch();
         }
 
         void level_render_world_late()
@@ -520,7 +513,7 @@ namespace RoninEngine
         return this->m_name;
     }
 
-    UI::GUI *World::getGUI()
+    UI::GUI *World::GetGUI()
     {
         return this->irs->gui;
     }
@@ -542,7 +535,7 @@ namespace RoninEngine
 
     int World::GetDestroyedFrames()
     {
-        return irs->_destroyed;
+        return irs->_destroyedGameObject;
     }
 
     std::list<GameObject *> World::GetAllGameObjects()
@@ -581,19 +574,18 @@ namespace RoninEngine
 
     const bool World::CancelObjectDestruction(GameObject *obj)
     {
-        if(!obj || !obj->exists())
+        if(obj && irs->runtimeCollectors)
         {
-            RoninSimulator::BreakSimulate();
-        }
-        else if(World::self()->irs->runtimeCollectors)
-        {
-            for(std::pair<const float, std::set<GameObject *>> &mapIter : *World::self()->irs->runtimeCollectors)
+            // std::pair<const float, std::set<GameObject *>>
+            for(auto mapIter = std::begin(*irs->runtimeCollectors); mapIter != std::end(*irs->runtimeCollectors); ++mapIter)
             {
-                auto iter = mapIter.second.find(obj);
-                if(iter != std::end(mapIter.second))
+                std::set<GameObject *>::iterator iter = mapIter->second.find(obj);
+                if(iter != std::end(mapIter->second))
                 {
-                    mapIter.second.erase(iter);
-                    return true; // canceled
+                    mapIter->second.erase(iter);
+                    if(mapIter->second.empty())
+                        irs->runtimeCollectors->erase(mapIter); // erase empty list
+                    return true;
                 }
             }
         }
@@ -603,15 +595,15 @@ namespace RoninEngine
     const int World::CostObjectDestruction(GameObject *obj)
     {
         int x;
-        if(!obj || !obj->exists())
+        if(!obj)
         {
             RoninSimulator::BreakSimulate();
             return false;
         }
-        if(World::self()->irs->runtimeCollectors)
+        if(irs->runtimeCollectors)
         {
             x = 0;
-            for(std::pair<const float, std::set<GameObject *>> &mapIter : *World::self()->irs->runtimeCollectors)
+            for(std::pair<const float, std::set<GameObject *>> &mapIter : *irs->runtimeCollectors)
             {
                 if(mapIter.second.find(obj) != std::end(mapIter.second))
                 {
@@ -632,9 +624,9 @@ namespace RoninEngine
     const int World::CountObjectDestruction()
     {
         int x = 0;
-        if(World::self()->irs->runtimeCollectors)
+        if(irs->runtimeCollectors)
         {
-            for(std::pair<const float, std::set<GameObject *>> &mapIter : *World::self()->irs->runtimeCollectors)
+            for(std::pair<const float, std::set<GameObject *>> &mapIter : *irs->runtimeCollectors)
             {
                 x += mapIter.second.size();
             }

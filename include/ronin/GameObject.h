@@ -6,10 +6,14 @@ namespace RoninEngine
 {
     namespace Runtime
     {
-        class RONIN_API GameObject final : public Object, public IComponents
+        class RONIN_API GameObject final : public Object, public IComponents, public IRoninBaseEvents<GameObject>
         {
+        public:
+            using Event = RoninBaseEvent<GameObject>;
+
         private:
             std::list<Component *> m_components;
+            std::list<Event> ev_destroy;
             int m_layer;
             bool m_active;
 
@@ -192,6 +196,17 @@ namespace RoninEngine
              */
             template <typename T>
             std::enable_if_t<std::is_base_of<Component, T>::value, std::list<T *>> GetComponents();
+
+            /**
+             * @brief Register a callback for the GameObject's "destroy" event.
+             *
+             * This function allows you to register a callback for a GameObject object,
+             * which will be invoked when the "destroy" event occurs.
+             *
+             * @param callback An Event object representing a function or functor that
+             *                will be called when the GameObject is destroyed.
+             */
+            void RegisterOnDestroy(Event callback);
         };
 
         template <typename T>

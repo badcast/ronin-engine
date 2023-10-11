@@ -99,7 +99,7 @@ namespace RoninEngine::Runtime
     {
         // NOTE: Transform всегда первый объект из контейнера m_components
         return static_cast<Transform *>(m_components.front());
-        //return GetComponent<Transform>();
+        // return GetComponent<Transform>();
     }
 
     SpriteRenderer *GameObject::spriteRenderer()
@@ -119,7 +119,7 @@ namespace RoninEngine::Runtime
 
     void GameObject::Destroy()
     {
-        this->Destroy(0);
+        Runtime::Destroy(this, 0);
     }
 
     void GameObject::Destroy(float t)
@@ -175,10 +175,17 @@ namespace RoninEngine::Runtime
 
         if(dynamic_cast<Transform *>(component) != nullptr)
             return false;
-        // BUG: Destroying object canceled with signal SIGILL
-        component->_owner = nullptr; // remove owner
-        m_components.remove(component);
+
+        for(Component::Event &event : component->ev_destroy)
+            event(component);
+
         Runtime::harakiri_Component(component);
+        m_components.remove(component);
         return true;
+    }
+
+    void GameObject::RegisterOnDestroy(Event callback)
+    {
+        ev_destroy.emplace_back(callback);
     }
 } // namespace RoninEngine::Runtime

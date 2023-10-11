@@ -619,6 +619,14 @@ namespace RoninEngine
 
             level_render_world();
 
+
+            // Run Collector
+            TimeEngine::BeginWatch();
+            if(!switched_world->irs->request_unloading)
+                RunCollector();
+            // end watcher
+            queue_watcher.ms_wait_destructions = TimeEngine::EndWatch();
+
             if(switched_world->irs->request_unloading)
                 goto end_simulate; // break on unload state
 

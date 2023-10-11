@@ -76,13 +76,17 @@ namespace RoninEngine::Runtime
             return Outside(x, static_cast<T>(1), static_cast<T>(-1));
         }
 
-        static float Clamp01(float val);
-
         template <typename T>
         static T Clamp(const T &val, const T &min, const T &max)
         {
             return T(val > max ? max : val < min ? min : val);
         }
+
+        static float Clamp01(float val)
+        {
+            return Clamp(val, 0.f, 1.f);
+        }
+
         template <typename T>
         static const T &Max(const T &x, const T &y)
         {

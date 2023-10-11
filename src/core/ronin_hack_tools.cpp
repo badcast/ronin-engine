@@ -18,7 +18,6 @@ using namespace RoninEngine::Runtime;
 
 template struct HackAccess<&Transform::m_name>;
 
-/*
 
 template struct HackAccess<&Something::topSecretValue>;
 template struct HackAccess<&Something::b>;

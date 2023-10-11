@@ -435,18 +435,19 @@ namespace RoninEngine::Runtime
         // 2. For get absolute position = parent.position + (child.position - parent.position)
 
         float lastAngle = _angle_;
+
         _angle_ = value;
 
         if(_owner->m_active)
         {
-            value = value - lastAngle; // new diff angle from parent
+            value = lastAngle-value; // new diff angle from parent
             // send in hierarchy
             for(Transform *child : hierarchy)
             {
                 // update child angle
                 child->localAngle(value);
                 // update child position
-                child->position(Vec2::RotateAround(_position, child->_position - _position, -value * Math::deg2rad));
+                child->position(Vec2::RotateAround(_position, child->_position - _position, value * Math::deg2rad));
             }
         }
     }

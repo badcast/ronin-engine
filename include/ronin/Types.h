@@ -144,6 +144,15 @@ namespace RoninEngine
             virtual Component *AddComponent(Component *component) = 0;
             virtual bool RemoveComponent(Component *component) = 0;
         };
+
+        template <typename T>
+        using RoninBaseEvent = std::function<void(T *)>;
+
+        template <typename T>
+        struct IRoninBaseEvents
+        {
+            void RegisterOnDestroy(RoninBaseEvent<T> callback);
+        };
     } // namespace Runtime
 
 } // namespace RoninEngine

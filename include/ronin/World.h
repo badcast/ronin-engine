@@ -25,7 +25,7 @@ namespace RoninEngine::Runtime
 
         std::string &name();
 
-        UI::GUI *getGUI();
+        UI::GUI *GetGUI();
 
         bool isHierarchy();
 

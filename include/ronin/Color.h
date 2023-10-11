@@ -149,6 +149,32 @@ namespace RoninEngine::Runtime
          */
         static Color FromARGB(int argb);
 
+        /**
+         * @brief Linearly interpolates between two Color objects.
+         *
+         * This function performs linear interpolation (Lerp) between two Color objects.
+         * It takes two Color objects, `start` and `end`, and a parameter `t` that
+         * determines how close the result is to `end`. The parameter `t` should be
+         * in the range [0, 1]. When `t` is 0, the result is equal to `start`, and
+         * when `t` is 1, the result is equal to `end`.
+         *
+         * @param start The starting Color.
+         * @param end The ending Color.
+         * @param t The interpolation parameter in the range [0, 1].
+         *
+         * @return The interpolated Color.
+         *
+         * Example usage:
+         * @code
+         * RoninEngine::Runtime::Color color1(255, 0, 0);  // Red color
+         * RoninEngine::Runtime::Color color2(0, 0, 255);  // Blue color
+         *
+         * float t = 0.5f;  // Interpolate halfway between color1 and color2
+         * RoninEngine::Runtime::Color lerpedColor = RoninEngine::Runtime::Color::Lerp(color1, color2, t);
+         * @endcode
+         */
+        static Color Lerp(Color start, Color end, float t);
+
         // Basic Colors
         COLOR_IMPL Color transparent;
         COLOR_IMPL Color black;

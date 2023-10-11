@@ -1,5 +1,4 @@
 #include <filesystem>
-
 #include <json/json.h>
 
 #include "ronin.h"

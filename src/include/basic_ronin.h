@@ -255,7 +255,7 @@ namespace RoninEngine
             int audio_reserved_channels = MIX_CHANNELS;
 
             // destroyed queue object
-            int _destroyed;
+            int _destroyedGameObject;
 
             std::list<Behaviour *> *_firstRunScripts;
             std::list<Behaviour *> *runtimeScripts;
@@ -292,9 +292,9 @@ namespace RoninEngine
 
         void harakiri_Component(Component *candidate);
 
-        void harakiri_GameObject(GameObject *obj);
+        void harakiri_GameObject(GameObject *obj, std::set<GameObject *> *input);
 
-        void RuntimeCollector();
+        void RunCollector();
         void level_render_world();
         void level_render_world_late();
         void internal_bind_script(Behaviour *);

@@ -19,11 +19,6 @@ namespace RoninEngine
             }
         }
 
-        bool Object::exists() const
-        {
-            return object_instanced(this);
-        }
-
         std::string &Object::name(const std::string &newName)
         {
             return (m_name = newName);
@@ -39,9 +34,5 @@ namespace RoninEngine
             return _type_;
         }
 
-        Object::operator bool()
-        {
-            return object_instanced(this);
-        }
     } // namespace Runtime
 } // namespace RoninEngine

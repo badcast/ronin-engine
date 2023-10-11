@@ -6,7 +6,7 @@ using namespace RoninEngine::Runtime;
 
 static std::uint32_t __seed__ = 1;
 
-constexpr auto periodic_fahren = 5.0 / 9;
+constexpr double periodic_fahren = 5.0 / 9;
 constexpr auto ronin_rand_max = std::numeric_limits<decltype(__seed__)>::max();
 
 // get random value
@@ -82,11 +82,6 @@ float Math::Atan(float x)
 float Math::Atan2(float y, float x)
 {
     return SDL_atan2f(y, x);
-}
-
-float Math::Clamp01(float val)
-{
-    return Clamp(val, 0.f, 1.f);
 }
 
 int Math::Abs(int x)

@@ -263,3 +263,13 @@ Color Color::FromARGB(int argb)
         /*b*/ static_cast<std::uint8_t>((argb >> 24) & 0xFF),
         /*a*/ static_cast<std::uint8_t>(argb & 0xFF)};
 }
+
+Color Color::Lerp(Color start, Color end, float t)
+{
+    t = Math::Clamp01(t);
+    start.r = (start.r + (end.r - start.r) * t);
+    start.g = (start.g + (end.g - start.g) * t);
+    start.b = (start.b + (end.b - start.b) * t);
+    start.a = (start.a + (end.a - start.a) * t);
+    return start;
+}

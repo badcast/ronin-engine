@@ -63,7 +63,7 @@ namespace RoninEngine
             }
 #undef self
 
-            // Is Unloding world
+            // Is Unloding World
             if(!switched_world->irs->request_unloading)
             {
                 candidate->_type_ = nullptr;
@@ -74,79 +74,112 @@ namespace RoninEngine
             --switched_world->irs->objects;
         }
 
-        void harakiri_GameObject(GameObject *target)
+        void harakiri_GameObject(GameObject *target, std::set<GameObject *> *input)
         {
-
 #ifndef NDEBUG
             if(strcmp(target->_type_, "GameObject"))
             {
                 throw ronin_type_error();
             }
 #endif
+            // COLLECT +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+            std::vector<GameObject *> collects {target};
+            int cursor = 0;
 
-            // destroy childs
-            std::list<GameObject *> __stacks;
             while(target)
             {
                 for(Transform *t : target->transform()->hierarchy)
-                    __stacks.emplace_back(t->_owner);
-
-                for(Component *component : target->m_components)
-                    harakiri_Component(component);
+                    collects.emplace_back(t->_owner);
 
                 if(!switched_world->irs->request_unloading)
-                    // remove extractor flag
-                    target->_type_ = nullptr;
-
-                // START FREE OBJECT
-                RoninMemory::free(target);
-                --switched_world->irs->objects;
-
-                if(!__stacks.empty())
                 {
-                    target = __stacks.front();
-                    __stacks.pop_front();
+                    if(input)
+                    {
+                        input->erase(target);
+                    }
+
+                    // Send event OnDestroy to GameObject pre Harakiri
+                    for(auto event = std::begin(target->ev_destroy); event != std::end(target->ev_destroy); ++event)
+                    {
+                        (*event)(target);
+                    }
+
+                    for(Component *component : target->m_components)
+                    {
+                        // Send event OnDestroy to Component object pre Harakiri
+                        for(auto event = std::begin(component->ev_destroy); event != std::end(component->ev_destroy); ++event)
+                        {
+                            (*event)(component);
+                        }
+                    }
+                }
+
+                if(++cursor < collects.size())
+                {
+                    target = collects[cursor];
                 }
                 else
                     target = nullptr;
             }
-        }
 
-        void RuntimeCollector()
-        {
-            switched_world->irs->_destroyed = 0;
-            // Destroy queue objects
-
-            if(switched_world->irs->runtimeCollectors)
+            // HARAKIRI --------------------------------------------------------------------------------------------------------------------
+            for(GameObject *next : collects)
             {
-                std::map<float, std::set<GameObject *>>::iterator xiter = std::end(*(switched_world->irs->runtimeCollectors)),
-                                                                  yiter = std::end(*(switched_world->irs->runtimeCollectors));
-                for(std::pair<const float, std::set<GameObject *>> &pair : *(switched_world->irs->runtimeCollectors))
+                for(Component *component : next->m_components)
                 {
-                    // The time for the destruction of the object has not yet come
-                    if(pair.first > internal_game_time)
-                        break;
-
-                    if(xiter == std::end(*(switched_world->irs->runtimeCollectors)))
-                        xiter = yiter = std::begin(*(switched_world->irs->runtimeCollectors));
-
-                    // destroy
-                    for(GameObject *target : pair.second)
-                    {
-                        // run destructor
-                        harakiri_GameObject(target);
-                        ++(switched_world->irs->_destroyed);
-                    }
-                    ++yiter;
+                    // HARAKIRI COMPONENT OBJECT
+                    harakiri_Component(component);
                 }
 
-                if(xiter != yiter)
-                    switched_world->irs->runtimeCollectors->erase(xiter, yiter);
-
-                if(switched_world->irs->runtimeCollectors->empty())
+                if(!switched_world->irs->request_unloading)
                 {
-                    RoninMemory::free(switched_world->irs->runtimeCollectors);
-                    switched_world->irs->runtimeCollectors = nullptr;
+                    next->CancelDestroy();
+                    next->_type_ = nullptr;
+                }
+
+                // HARAKIRI GAME OBJECT
+                RoninMemory::free(next);
+                --switched_world->irs->objects;
+                ++switched_world->irs->_destroyedGameObject;
+            }
+        }
+
+        void RunCollector()
+        {
+            switched_world->irs->_destroyedGameObject = 0;
+
+#define COLLECTOR (switched_world->irs->runtimeCollectors)
+
+            if(COLLECTOR)
+            {
+                std::map<float, std::set<GameObject *>>::iterator range_begin, range_end;
+                std::set<GameObject *> harakiri_candidates;
+
+                // std::pair<const float, std::set<GameObject *>> &pair
+                range_begin = range_end = std::begin(*COLLECTOR);
+                for(; range_end != std::end(*COLLECTOR);)
+                {
+                    // The time for the destruction of the object has not yet come
+                    if((*range_end).first > internal_game_time)
+                        break;
+
+                    harakiri_candidates.merge(range_end->second);
+                    ++range_end;
+                }
+
+                if(range_begin != range_end)
+                {
+                    COLLECTOR->erase(range_begin, range_end);
+                    do
+                    {
+                        harakiri_GameObject(*harakiri_candidates.begin(), &harakiri_candidates);
+                    } while(!harakiri_candidates.empty());
+                }
+
+                if(COLLECTOR->empty())
+                {
+                    RoninMemory::free(COLLECTOR);
+                    COLLECTOR = nullptr;
                 }
             }
         }
@@ -168,21 +201,12 @@ namespace RoninEngine
             }
             else
             {
-                // get error an exists destructed @object
-                for(std::pair<const float, std::set<GameObject *>> &mapIter : *provider)
-                {
-                    auto i = mapIter.second.find(obj);
-                    if(i != std::end(mapIter.second))
-                    {
-                        mapIter.second.erase(i);
-                        break;
-                    }
-                }
+                switched_world->CancelObjectDestruction(obj);
             }
             t += internal_game_time;
 
             // So, destroy childrens of the object
-            provider->operator[](t).emplace(obj);
+            provider->operator[](t).insert(obj);
 
 #undef provider
         }
