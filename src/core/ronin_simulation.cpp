@@ -678,7 +678,7 @@ namespace RoninEngine
                 std::sprintf(
                     title,
                     "FPS:%.1f Memory:%sMiB, "
-                    "Ronin_Allocated:%s, SDL_Allocated:%s, Frames:%s",
+                    "Ronin Objects:%s, Internal Objects:%s, Frames:%s",
                     fps,
                     Math::NumBeautify(get_process_sizeMemory() / 1024 / 1024).c_str(),
                     Math::NumBeautify(RoninMemory::total_allocated()).c_str(),
