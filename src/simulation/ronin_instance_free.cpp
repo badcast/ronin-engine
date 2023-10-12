@@ -194,6 +194,8 @@ namespace RoninEngine
             if(!obj || !switched_world || t < 0)
                 throw std::bad_exception();
 
+//#error FIXME ____ ADD DESTROY OBJECTS TO QUEUE
+
 #define provider (switched_world->irs->runtimeCollectors)
             if(!provider)
             {

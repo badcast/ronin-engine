@@ -94,3 +94,22 @@ bool AudioSource::isPaused() const
 {
     return RoninAudio::getChannelState(data->target_channel) == AudioState::Pause;
 }
+
+float AudioSource::getDuration()
+{
+    return static_cast<float>(RoninAudio::getAudioClipDuration(this->data->m_clip));
+}
+
+AudioSource *AudioSource::PlayClipAtPoint(AudioClip *clip, Vec2 position, float volume)
+{
+    if(clip == nullptr)
+        return nullptr;
+
+    AudioSource *audio = Primitive::create_empty_game_object(position)->AddComponent<AudioSource>();
+    audio->setClip(clip);
+    audio->Play(false);
+    audio->setVolume(volume);
+
+    audio->gameObject()->Destroy(audio->getDuration());
+    return audio;
+}

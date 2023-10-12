@@ -24,6 +24,7 @@ namespace RoninEngine::Runtime
         static bool setChannelState(int channel, AudioClip *clip, AudioState state, bool loop);
         static float getChannelVolume(int channel);
         static void setChannelVolume(int channel, float value);
+        static double getAudioClipDuration(AudioClip * clip);
 
         static AudioState getMusicState();
         static bool setMusicState(MusicClip *clip, AudioState state, bool loop);

@@ -4,13 +4,15 @@ namespace RoninEngine::Runtime
 {
     static int last_inited_result = 0;
 
+    constexpr int CHUNK_SIZE = 2048;
+
     int RoninAudio::Init()
     {
         int current_inits = MIX_InitFlags::MIX_INIT_OGG;
         if((last_inited_result = (Mix_Init(current_inits))) < 1)
             return -1;
 
-        if(Mix_OpenAudio(MIX_DEFAULT_FREQUENCY, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS, 2048))
+        if(Mix_OpenAudio(MIX_DEFAULT_FREQUENCY, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS, CHUNK_SIZE))
         {
             last_inited_result = 0;
             Mix_Quit();
@@ -111,6 +113,15 @@ namespace RoninEngine::Runtime
     {
         // value = Math::clamp01(value); // Mix_Volume automatically clamp volume
         (channel > -1) && HasInit() && Mix_Volume(channel, Math::Map<float, std::uint8_t>(value, 0.f, 1.f, 0, MIX_MAX_VOLUME));
+    }
+
+    double RoninAudio::getAudioClipDuration(AudioClip *clip)
+    {
+        if(clip == nullptr)
+            return -1;
+        double duration = static_cast<double>(clip->mix_chunk->alen) / (MIX_DEFAULT_FORMAT);
+
+        return duration;
     }
 
     float RoninAudio::getChannelVolume(int channel)
