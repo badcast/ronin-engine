@@ -119,9 +119,13 @@ namespace RoninEngine::Runtime
     {
         if(clip == nullptr)
             return -1;
-        double duration = static_cast<double>(clip->mix_chunk->alen) / (MIX_DEFAULT_FORMAT);
+        //        double duration = static_cast<double>(clip->mix_chunk->alen) / (MIX_DEFAULT_FORMAT);
 
-        return duration;
+        //        return duration;
+
+        throw RoninEngine::Exception::ronin_implementation_error();
+
+        return -1;
     }
 
     float RoninAudio::getChannelVolume(int channel)

@@ -3,6 +3,19 @@
 
 using namespace RoninEngine::Runtime;
 
+class AudioSourceAutoDestr : public Behaviour
+{
+public:
+    AudioSource *pinned;
+    void OnUpdate()
+    {
+        if(TimeEngine::frame() % 10 == 0 && !pinned->isPlaying())
+        {
+            Destroy(gameObject());
+        }
+    }
+};
+
 AudioSource::AudioSource() : AudioSource(DESCRIBE_AS_MAIN_OFF(AudioSource))
 {
 }
@@ -110,6 +123,7 @@ AudioSource *AudioSource::PlayClipAtPoint(AudioClip *clip, Vec2 position, float 
     audio->Play(false);
     audio->setVolume(volume);
 
-    audio->gameObject()->Destroy(audio->getDuration());
+    audio->gameObject()->AddComponent<AudioSourceAutoDestr>()->pinned = audio;
+
     return audio;
 }
