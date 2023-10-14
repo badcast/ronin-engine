@@ -26,7 +26,7 @@ namespace RoninEngine::Runtime
             return Vec2::RoundToInt(position * _matrix_pack_);
         }
 
-        void matrix_update(Transform *target, MatrixKey lastPoint)
+        void matrix_update(Transform *target, const MatrixKey &lastPoint)
         {
             matrix_update(target, matrix_get_key(target->position()), lastPoint);
         }

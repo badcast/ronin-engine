@@ -237,99 +237,101 @@ namespace RoninEngine
                             exec->OnGizmos();
                     };
                 }
-            }
-
-            if(ronin_debug_mode)
-            {
-                constexpr int font_height = 12;
-
-                static struct
+                if(ronin_debug_mode)
                 {
-                    const char *label;
+                    constexpr int font_height = 12;
 
-                    std::uint32_t value;
-                    std::string format;
-                    Color format_color;
-                } elements[] = {{"Render Frame", 0}, {"GUI", 0}, {"Scripts", 0}, {"Render", 0}, {"Gizmos", 0}, {"Memory", 0}};
-
-                static std::uint32_t max_elements = sizeof(elements) / sizeof(elements[0]);
-                static std::uint32_t max;
-                static std::uint32_t averrage;
-
-                Vec2 g_size = Vec2 {138, static_cast<float>(font_height * (max_elements + 2))};
-                Vec2Int screen_point = Vec2::RoundToInt({g_size.x, static_cast<float>(active_resolution.height)});
-                Vec2 g_pos = Camera::ScreenToWorldPoint({screen_point.x / 2.f, screen_point.y - g_size.y / 2});
-                int x;
-
-                if(TimeEngine::frame() % 10 == 0)
-                {
-                    TimingWatcher stat = RoninSimulator::GetTimingWatches();
-                    // Update data
-                    elements[0].value = stat.ms_wait_frame;
-                    elements[1].value = stat.ms_wait_render_gui;
-                    elements[2].value = stat.ms_wait_exec_scripts + stat.ms_wait_exec_world;
-                    elements[3].value = stat.ms_wait_render_world;
-                    elements[4].value = stat.ms_wait_render_gizmos;
-                    elements[5].value = get_process_sizeMemory() / 1024 / 1024;
-
-                    // calculate averrage and max
-                    max = 10;
-                    averrage = 0;
-                    for(x = 1; x < max_elements - 1; ++x)
+                    static struct
                     {
-                        max = std::max(elements[x].value, max);
-                        averrage += elements[x].value;
-                    }
-                    averrage /= std::max(1, x);
+                        const char *label;
 
-                    // format text
-                    for(x = 0; x < max_elements; ++x)
+                        std::uint32_t value;
+                        std::string format;
+                        Color format_color;
+                    } elements[] = {{"Render Frame", 0}, {"GUI", 0}, {"Scripts", 0}, {"Render", 0}, {"Gizmos", 0}, {"Memory", 0}};
+
+                    static std::uint32_t max_elements = sizeof(elements) / sizeof(elements[0]);
+                    static std::uint32_t max;
+                    static std::uint32_t averrage;
+
+                    Vec2 g_size {138, static_cast<float>(font_height * (max_elements + 2))};
+                    Vec2Int screen_point = Vec2::RoundToInt({g_size.x, static_cast<float>(active_resolution.height)});
+                    Vec2 g_pos = Camera::ScreenToWorldPoint({screen_point.x / 2.f, screen_point.y - g_size.y / 2});
+                    int x;
+
+                    if(TimeEngine::frame() % 10 == 0)
                     {
-                        if(x != 0)
-                            elements[x].format = " > ";
-                        else
-                            elements[x].format.clear();
-                        elements[x].format += elements[x].label;
-                        elements[x].format += ": " + std::to_string(elements[x].value) + ' ';
+                        TimingWatcher stat = RoninSimulator::GetTimingWatches();
+                        // Update data
+                        elements[0].value = stat.ms_wait_frame;
+                        elements[1].value = stat.ms_wait_render_gui;
+                        elements[2].value = stat.ms_wait_exec_scripts + stat.ms_wait_exec_world;
+                        elements[3].value = stat.ms_wait_render_world;
+                        elements[4].value = stat.ms_wait_render_gizmos;
+                        elements[5].value = get_process_sizeMemory() / 1024 / 1024;
 
-                        // format color
-                        if(max && elements[x].value == max)
-                            elements[x].format_color = Color::red;
-                        else if(averrage && elements[x].value >= averrage)
-                            elements[x].format_color = Color::yellow;
-                        else
-                            elements[x].format_color = Color::white;
+                        // calculate averrage and max
+                        max = 10;
+                        averrage = 0;
+                        for(x = 1; x < max_elements - 1; ++x)
+                        {
+                            max = std::max(elements[x].value, max);
+                            averrage += elements[x].value;
+                        }
+                        averrage /= std::max(1, x);
+
+                        // format text
+                        for(x = 0; x < max_elements; ++x)
+                        {
+                            if(x != 0)
+                                elements[x].format = " > ";
+                            else
+                                elements[x].format.clear();
+                            elements[x].format += elements[x].label;
+                            elements[x].format += ": ";
+                            elements[x].format += std::to_string(elements[x].value);
+                            elements[x].format += ' ';
+
+                            // format color
+                            if(max && elements[x].value == max)
+                                elements[x].format_color = Color::red;
+                            else if(averrage && elements[x].value >= averrage)
+                                elements[x].format_color = Color::yellow;
+                            else
+                                elements[x].format_color = Color::white;
+                        }
+
+                        // write ISO
+                        // ms
+                        for(x = 0; x < max_elements - 1; ++x)
+                            elements[x].format += "ms";
+                        elements[x].format += "MiB";
+                        elements[x].format_color = Color::white;
                     }
 
-                    // write ISO
-                    // ms
-                    for(x = 0; x < max_elements - 1; ++x)
-                        elements[x].format += "ms";
-                    elements[x].format += "MiB";
-                    elements[x].format_color = Color::white;
-                }
+                    // Set background color
+                    Gizmos::SetColor(Color(0, 0, 0, 100));
 
-                // Set background color
-                Gizmos::SetColor(Color(0, 0, 0, 100));
+                    // Draw box
+                    Gizmos::DrawFillRectRounded(g_pos, g_size.x / pixelsPerPoint, g_size.y / pixelsPerPoint, 8);
 
-                // Draw box
-                Gizmos::DrawFillRectRounded(g_pos, g_size.x / pixelsPerPoint, g_size.y / pixelsPerPoint, 8);
+                    screen_point.x = 10;
+                    screen_point.y -= static_cast<int>(g_size.y) - font_height / 2;
+                    Gizmos::SetColor(Color::white);
+                    Gizmos::DrawTextToScreen(screen_point, elements[0].format, font_height);
+                    for(x = 1; x < max_elements; ++x)
+                    {
+                        Gizmos::SetColor(elements[x].format_color);
 
-                screen_point.x = 10;
-                screen_point.y -= static_cast<int>(g_size.y) - font_height / 2;
-                Gizmos::SetColor(Color::white);
-                Gizmos::DrawTextToScreen(screen_point, elements[0].format, font_height);
-                for(x = 1; x < max_elements; ++x)
-                {
-                    Gizmos::SetColor(elements[x].format_color);
-
-                    screen_point.y += font_height + 1;
-                    Gizmos::DrawTextToScreen(screen_point, elements[x].format, font_height);
+                        screen_point.y += font_height + 1;
+                        Gizmos::DrawTextToScreen(screen_point, elements[x].format, font_height);
+                    }
                 }
             }
 
             // end watcher
             queue_watcher.ms_wait_render_gizmos = TimeEngine::EndWatch();
+            int aa = 0;
         }
 
         void level_render_world_late()

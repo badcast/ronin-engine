@@ -36,12 +36,12 @@ float Random::Range(float min, float max)
 float Random::Value()
 {
     // const for diaz. 0.0 - 1.0
-    return internal_rand() / static_cast<float>(ronin_rand_max);
+    return static_cast<float>(static_cast<double>(internal_rand()) / ronin_rand_max);
 }
 
 Vec2 Random::RandomVector()
 {
-    return Vec2(Random::Value() * 2 - 1, Random::Value() * 2 - 1);
+    return {Random::Value() * 2 - 1, Random::Value() * 2 - 1};
 }
 
 float Random::AngleDegress()

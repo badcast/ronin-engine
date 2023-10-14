@@ -46,6 +46,7 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
 set(RONIN_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 # RONIN ENGINE SOURCES
+
 add_subdirectory(src)
 
 add_library(RoninEngine ${ronin_targets} ${RONIN_ENGINE_HEADERS})
@@ -59,6 +60,16 @@ set_target_properties(RoninEngine PROPERTIES OUTPUT_NAME ${RUNTIME_OUTPUT_NAME})
 find_ronin_packages()
 
 # INSTALLS
+
+if(WIN32)
+  # generate rc files
+  configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config/RoninEngine.rc.in
+                 ${CMAKE_CURRENT_BINARY_DIR}/RoninEngine.rc @ONLY)
+
+  add_custom_target(ronin_rc SOURCES ${CMAKE_CURRENT_BINARY_DIR}/RoninEngine.rc)
+  add_dependencies(RoninEngine ronin_rc)
+  target_link_libraries(RoninEngine PRIVATE ronin_rc)
+endif()
 
 if(${RONIN_NO_CONFIG})
   target_include_directories(

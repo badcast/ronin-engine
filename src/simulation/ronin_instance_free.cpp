@@ -23,8 +23,9 @@ namespace RoninEngine
                 if(!switched_world->irs->request_unloading)
                 {
                     if(self->m_parent)
+                    {
                         hierarchy_child_remove(self->m_parent, self);
-
+                    }
                     // Parent is off for self Transform
                     hierarchy_childs_remove(self);
 
@@ -194,7 +195,7 @@ namespace RoninEngine
             if(!obj || !switched_world || t < 0)
                 throw std::bad_exception();
 
-//#error FIXME ____ ADD DESTROY OBJECTS TO QUEUE
+                // #error FIXME ____ ADD DESTROY OBJECTS TO QUEUE
 
 #define provider (switched_world->irs->runtimeCollectors)
             if(!provider)
