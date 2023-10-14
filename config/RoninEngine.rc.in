@@ -1,0 +1,30 @@
+#include <winver.h>
+
+VS_VERSION_INFO VERSIONINFO
+FILEVERSION 1,0,0,0
+PRODUCTVERSION 1,0,0,0
+FILEFLAGSMASK 0x3fL
+FILEFLAGS 0x0L
+FILEOS 0x40004L
+FILETYPE 0x1L
+FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904E4"
+        BEGIN
+            VALUE "CompanyName", "badcast for cast"
+            VALUE "FileDescription", "RoninEngine - The Ronin Engine Framework. For World simulation, UI intersection, Game Emulation, 2D game, etc."
+            VALUE "FileVersion", "@PROJECT_VERSION@"
+            VALUE "InternalName", "RoninEngine"
+            VALUE "LegalCopyright", "badcast © badcast for cast"
+            VALUE "OriginalFilename", "@RUNTIME_OUTPUT_NAME@.dll"
+            VALUE "ProductName", "Ronin Engine"
+            VALUE "ProductVersion", "@PROJECT_VERSION@"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x409, 1252
+    END
+END
