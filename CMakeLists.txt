@@ -68,7 +68,7 @@ if(WIN32)
 
   add_custom_target(ronin_rc SOURCES ${CMAKE_CURRENT_BINARY_DIR}/RoninEngine.rc)
   add_dependencies(RoninEngine ronin_rc)
-  target_link_libraries(RoninEngine PRIVATE ronin_rc)
+  target_sources(RoninEngine PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/RoninEngine.rc)
 endif()
 
 if(${RONIN_NO_CONFIG})
