@@ -18,6 +18,9 @@
 
 #define DESCRIBE_AS_MAIN(TYPE) (DESCRIBE_TYPE(TYPE, this, &_type_, name.c_str()))
 
+//#define BASE_VIRTUAL_OVERRIDED(BASE, POINTER, METHOD) \
+//    (reinterpret_cast<const void *>(&BASE::METHOD) == reinterpret_cast<const void *>(&((*POINTER).METHOD)))
+
 namespace std
 {
     // this for Hashtable function
@@ -130,13 +133,7 @@ namespace RoninEngine
             bool mouse_hover;
         };
 
-        extern void draw_font_at(
-            SDL_Renderer *renderer,
-            const std::string &text,
-            int fontSize,
-            Runtime::Vec2Int screenPoint,
-            const Runtime::Color color,
-            bool alignCenter = false);
+        extern void draw_font_at(const char *text, int fontSize, const Runtime::Vec2Int &screenPoint, bool alignCenter = false);
     } // namespace UI
     namespace Runtime
     {
@@ -257,8 +254,8 @@ namespace RoninEngine
             // destroyed queue object
             int _destroyedGameObject;
 
-            std::list<Behaviour *> *_firstRunScripts;
-            std::list<Behaviour *> *runtimeScripts;
+            // Script Behaviours
+            std::map<GameObject::BindType, std::set<Behaviour *>> runtimeScriptBinders;
 
             // destruction task (queue object)
             std::map<float, std::set<GameObject *>> *runtimeCollectors;
@@ -296,8 +293,6 @@ namespace RoninEngine
 
         void RunCollector();
         void level_render_world();
-        void level_render_world_late();
-        void internal_bind_script(Behaviour *);
 
         void internal_load_world(World *);
         bool internal_unload_world(World *);
@@ -309,6 +304,12 @@ namespace RoninEngine
         void hierarchy_childs_remove(Transform *parent);
         void hierarchy_append(Transform *parent, Transform *who);
         void hierarchy_sibiling(Transform *parent, Transform *who, int index);
+
+        void scripts_start();
+        void scripts_update();
+        void scripts_lateUpdate();
+        void scripts_gizmos();
+        void scripts_unbind(Behaviour *script);
 
         void gid_resources_free(GidResources *gid);
         SDL_Surface *private_load_surface(const void *memres, int length);

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "begin.h"
+#include "Behaviour.h"
 
 namespace RoninEngine
 {
@@ -16,6 +16,17 @@ namespace RoninEngine
             std::list<Event> ev_destroy;
             int m_layer;
             bool m_active;
+
+        protected:
+            enum BindType
+            {
+                Bind_Start = 1,
+                Bind_Update = 2,
+                Bind_LateUpdate = 4,
+                Bind_Gizmos = 8
+            };
+
+            void bind_script(BindType bindFlags, Behaviour *script);
 
         public:
             /**
@@ -210,7 +221,7 @@ namespace RoninEngine
         };
 
         template <typename T>
-        std::enable_if_t<std::is_base_of<Component, T>::value, T *> GameObject::AddComponent()
+        inline std::enable_if_t<std::is_base_of<Component, T>::value, T *> GameObject::AddComponent()
         {
             static_assert(
                 !(std::is_same<T, Transform>::value || std::is_base_of<Transform, T>::value), "Transform component can't be assigned");
@@ -219,11 +230,35 @@ namespace RoninEngine
             T *component = RoninMemory::alloc<T>();
             this->AddComponent(static_cast<Component *>(component));
 
+            if constexpr(std::is_base_of<Behaviour, T>::value)
+            {
+                int flags = 0;
+
+// TODO: Optimize here and find new method
+#ifdef __clang__ // it's work only Clang
+#define CHECK_BASE_OVERRIDDEN(BASE, BINDER, METHOD) \
+    if((&BASE::METHOD) != (&T::METHOD))             \
+        flags |= BINDER;
+#else // it's work on GCC
+#define CHECK_BASE_OVERRIDDEN(BASE, BINDER, METHOD)                           \
+    if(reinterpret_cast<void *>(&BASE::METHOD) != reinterpret_cast<void *>(&T::METHOD)) \
+        flags |= BINDER;
+#endif
+                CHECK_BASE_OVERRIDDEN(Behaviour, Bind_Start, OnStart);
+                CHECK_BASE_OVERRIDDEN(Behaviour, Bind_Update, OnUpdate);
+                CHECK_BASE_OVERRIDDEN(Behaviour, Bind_LateUpdate, OnLateUpdate);
+                CHECK_BASE_OVERRIDDEN(Behaviour, Bind_Gizmos, OnGizmos);
+
+                bind_script(static_cast<BindType>(flags), static_cast<Behaviour *>(component));
+
+#undef CHECK_BASE_OVERRIDDEN
+            }
+
             return component;
-        }
+        } // namespace Runtime
 
         template <typename T>
-        std::enable_if_t<std::is_base_of<Component, T>::value, bool> GameObject::RemoveComponent()
+        inline std::enable_if_t<std::is_base_of<Component, T>::value, bool> GameObject::RemoveComponent()
         {
             static_assert(
                 !(std::is_same<T, Transform>::value || std::is_base_of<Transform, T>::value),
@@ -236,7 +271,7 @@ namespace RoninEngine
         }
 
         template <typename T>
-        std::enable_if_t<std::is_base_of<Component, T>::value, std::list<T *>> GameObject::GetComponents()
+        inline std::enable_if_t<std::is_base_of<Component, T>::value, std::list<T *>> GameObject::GetComponents()
         {
             std::list<T *> types;
             T *cast;
@@ -252,7 +287,7 @@ namespace RoninEngine
         }
 
         template <typename T>
-        std::enable_if_t<std::is_base_of<Component, T>::value, T *> GameObject::GetComponent()
+        inline std::enable_if_t<std::is_base_of<Component, T>::value, T *> GameObject::GetComponent()
         {
             if constexpr(std::is_same<T, Transform>::value)
             {
@@ -269,5 +304,28 @@ namespace RoninEngine
             return nullptr;
         }
 
+        template <typename T>
+        std::enable_if_t<std::is_base_of<Component, T>::value, T *> Component::AddComponent()
+        {
+            return _owner->AddComponent<T>();
+        }
+
+        template <typename T>
+        std::enable_if_t<std::is_base_of<Component, T>::value, T *> Component::GetComponent()
+        {
+            return _owner->GetComponent<T>();
+        }
+
+        template <typename T>
+        std::enable_if_t<std::is_base_of<Component, T>::value, bool> Component::RemoveComponent()
+        {
+            return _owner->RemoveComponent<T>();
+        }
+
+        template <typename T>
+        std::enable_if_t<std::is_base_of<Component, T>::value, std::list<T *>> Component::GetComponents()
+        {
+            return _owner->GetComponents<T>();
+        }
     } // namespace Runtime
 } // namespace RoninEngine

@@ -109,7 +109,8 @@ namespace RoninEngine::UI
         {
             case RGUI_TEXT:
             {
-                draw_font_at(renderer, element.text, 15, element.rect.getXY(), Color::white);
+                Gizmos::SetColor(Color::white);
+                draw_font_at(element.text.data(), 15, element.rect.getXY(), Color::white);
                 // Render_String(render, element.rect, element.text.c_str(), element.text.size());
                 break;
             }
@@ -136,12 +137,11 @@ namespace RoninEngine::UI
                 // render text
                 // Render_String(render, element.rect, element.text.c_str(), element.text.size(), 13,
                 // TextAlign::MiddleCenter, true, uiHover);
+                Gizmos::SetColor(Color::gray);
                 draw_font_at(
-                    renderer,
-                    element.text,
+                    element.text.data(),
                     12,
                     rect.getXY() + (rect.getWH() - (show_down_side ? (Vec2Int::up * 4) : Vec2Int::zero)) / 2,
-                    Color::gray,
                     true);
                 result = ms_hover && ms_click;
                 break;
@@ -424,23 +424,18 @@ namespace RoninEngine::UI
         }
     }
 
-    void draw_font_at(
-        SDL_Renderer *renderer, const std::string &text, int fontSize, Runtime::Vec2Int screenPoint, const Color color, bool alignCenter)
+    void draw_font_at(const char *text, int fontSize, const Runtime::Vec2Int &screenPoint, bool alignCenter)
     {
-        SDL_Rect r;
         SDL_Texture *texture;
         SDL_Surface *surf;
 
         TTF_SetFontSize(ttf_arial_font, fontSize);
-        surf = TTF_RenderUTF8_Blended(ttf_arial_font, text.c_str(), color);
+        surf = TTF_RenderUTF8_Blended(ttf_arial_font, text, Gizmos::GetColor());
         if(surf)
         {
+            SDL_Rect r {screenPoint.x, screenPoint.y, surf->w, surf->h};
             texture = SDL_CreateTextureFromSurface(renderer, surf);
-            r.w = surf->w;
-            r.h = surf->h;
 
-            r.x = screenPoint.x;
-            r.y = screenPoint.y;
             if(alignCenter)
             {
                 r.x -= r.w / 2;

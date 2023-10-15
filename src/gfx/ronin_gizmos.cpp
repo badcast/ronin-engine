@@ -298,7 +298,7 @@ namespace RoninEngine::Runtime
     void Gizmos::DrawText(Vec2 origin, const std::string &text)
     {
         origin = Camera::WorldToScreenPoint(origin);
-        RoninEngine::UI::draw_font_at(RoninEngine::renderer, text, 11, Vec2::RoundToInt(origin), GetColor(), true);
+        RoninEngine::UI::draw_font_at(text.data(), 11, Vec2::RoundToInt(origin), true);
     }
 
     void Gizmos::DrawTextLegacy(Vec2 origin, const std::string &text)
@@ -387,6 +387,6 @@ namespace RoninEngine::Runtime
 
     void Gizmos::DrawTextToScreen(Vec2Int screen_point, const std::string &text, int font_size)
     {
-        RoninEngine::UI::draw_font_at(RoninEngine::renderer, text, font_size, screen_point, GetColor(), false);
+        RoninEngine::UI::draw_font_at(text.data(), font_size, screen_point, false);
     }
 } // namespace RoninEngine::Runtime

@@ -44,10 +44,7 @@ namespace RoninEngine
                 if(!switched_world->irs->request_unloading)
                 {
                     // Run last script object
-                    if(switched_world->irs->_firstRunScripts)
-                        switched_world->irs->_firstRunScripts->remove(self);
-                    if(switched_world->irs->runtimeScripts)
-                        switched_world->irs->runtimeScripts->remove(self);
+                    scripts_unbind(self);
                 }
             }
 #undef self

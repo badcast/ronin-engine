@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Object.h"
-#include "GameObject.h"
 
 namespace RoninEngine
 {
@@ -135,10 +134,7 @@ namespace RoninEngine
              * @return A pointer to the added component.
              */
             template <typename T>
-            std::enable_if_t<std::is_base_of<Component, T>::value, T *> AddComponent()
-            {
-                return _owner->AddComponent<T>();
-            }
+            std::enable_if_t<std::is_base_of<Component, T>::value, T *> AddComponent();
 
             /**
              * @brief Get a component of the specified type from the GameObject.
@@ -150,10 +146,7 @@ namespace RoninEngine
              * @return A pointer to the component if found, nullptr if not found.
              */
             template <typename T>
-            std::enable_if_t<std::is_base_of<Component, T>::value, T *> GetComponent()
-            {
-                return _owner->GetComponent<T>();
-            }
+            std::enable_if_t<std::is_base_of<Component, T>::value, T *> GetComponent();
 
             /**
              * @brief Remove a component of the specified type from the GameObject.
@@ -165,10 +158,7 @@ namespace RoninEngine
              * @return True if the component was successfully removed, false otherwise.
              */
             template <typename T>
-            std::enable_if_t<std::is_base_of<Component, T>::value, bool> RemoveComponent()
-            {
-                return _owner->RemoveComponent<T>();
-            }
+            std::enable_if_t<std::is_base_of<Component, T>::value, bool> RemoveComponent();
 
             /**
              * @brief Get a list of components of the specified type from the GameObject.
@@ -181,10 +171,8 @@ namespace RoninEngine
              * @return A list of pointers to the components of the specified type.
              */
             template <typename T>
-            std::enable_if_t<std::is_base_of<Component, T>::value, std::list<T *>> GetComponents()
-            {
-                return _owner->GetComponents<T>();
-            }
+            std::enable_if_t<std::is_base_of<Component, T>::value, std::list<T *>> GetComponents();
         };
+
     } // namespace Runtime
 } // namespace RoninEngine

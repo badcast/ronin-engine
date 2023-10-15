@@ -30,33 +30,33 @@ namespace RoninEngine::Runtime::RoninMemory
     }
 
     template <typename T, typename... Args>
-    T *alloc(Args &&...args)
+    constexpr inline T *alloc(Args &&...args)
     {
         void *mem = ronin_memory_alloc(sizeof(T));
         return _paste_oop_init<T>(static_cast<T *>(mem), std::forward<Args>(args)...);
     }
 
     template <typename T, typename... Args>
-    T *alloc()
+    constexpr inline T *alloc()
     {
         void *mem = ronin_memory_alloc(sizeof(T));
         return _paste_oop_init<T>(static_cast<T *>(mem));
     }
 
     template <typename T>
-    T *alloc_self(T *&self)
+    constexpr inline T *alloc_self(T *&self)
     {
         return self = alloc<T>();
     }
 
     template <typename T, typename... Args>
-    T *&alloc_self(T *&self, Args &&...args)
+    constexpr inline T *&alloc_self(T *&self, Args &&...args)
     {
         return self = alloc<T>(std::forward<Args>(args)...);
     }
 
     template <typename T>
-    void free(T *memory)
+    constexpr inline void free(T *memory)
     {
         ronin_memory_free(_cut_oop_from(memory));
     }

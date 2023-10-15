@@ -149,7 +149,6 @@ namespace RoninEngine::Runtime
 
             if(_utp.script = dynamic_cast<Behaviour *>(component))
             {
-                internal_bind_script(_utp.script);
                 _utp.script->OnAwake();
             }
             else if(_utp.render = dynamic_cast<Renderer *>(component))

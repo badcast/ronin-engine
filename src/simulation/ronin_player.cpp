@@ -22,11 +22,9 @@ namespace RoninEngine::Runtime
 
     void MoveController2D::OnUpdate()
     {
-
-        float curSpeed = Input::GetKeyDown(KB_LSHIFT) ? (speed * 2) : speed;
-
         if(playerCamera)
         {
+            float curSpeed = Input::GetKeyDown(KB_LSHIFT) ? (speed * 2) : speed;
             auto cameraPoint = playerCamera->transform()->position();
             auto point = cameraPoint;
             Vec2 axis = Input::GetAxis();
@@ -40,7 +38,6 @@ namespace RoninEngine::Runtime
             if(axis == Vec2::zero)
                 return;
             movementDir = axis;
-            // transform()->LookAtLerp(point + movementDir, .5f);
             transform()->position(Vec2::MoveTowards(point, point + movementDir, curSpeed));
         }
     }

@@ -97,16 +97,6 @@ namespace RoninEngine
                 RoninSimulator::Log("World is have leak objects: " + std::to_string(world->irs->objects));
             }
 
-            if(world->irs->_firstRunScripts)
-            {
-                RoninMemory::free(world->irs->_firstRunScripts);
-                world->irs->_firstRunScripts = nullptr;
-            }
-            if(world->irs->runtimeScripts)
-            {
-                RoninMemory::free(world->irs->runtimeScripts);
-                world->irs->runtimeScripts = nullptr;
-            }
             if(world->irs->runtimeCollectors)
             {
                 RoninMemory::free(world->irs->runtimeCollectors);
@@ -155,28 +145,6 @@ namespace RoninEngine
             return true;
         }
 
-        void internal_bind_script(Behaviour *script)
-        {
-            if(!switched_world->irs->_firstRunScripts)
-                RoninMemory::alloc_self(switched_world->irs->_firstRunScripts);
-
-            if(std::find_if(
-                   begin(*(switched_world->irs->_firstRunScripts)),
-                   end(*(switched_world->irs->_firstRunScripts)),
-                   std::bind(std::equal_to<Behaviour *>(), std::placeholders::_1, script)) == end(*(switched_world->irs->_firstRunScripts)))
-            {
-                if(switched_world->irs->runtimeScripts &&
-                   std::find_if(
-                       begin(*(switched_world->irs->runtimeScripts)),
-                       end(*(switched_world->irs->runtimeScripts)),
-                       std::bind(std::equal_to<Behaviour *>(), std::placeholders::_1, script)) !=
-                       end(*(switched_world->irs->runtimeScripts)))
-                    return;
-
-                switched_world->irs->_firstRunScripts->emplace_back(script);
-            }
-        }
-
         void level_render_world()
         {
             // set default color
@@ -184,34 +152,14 @@ namespace RoninEngine
 
             TimeEngine::BeginWatch();
 
-            if(switched_world->irs->_firstRunScripts)
-            {
-                if(!switched_world->irs->runtimeScripts)
-                {
-                    RoninMemory::alloc_self(switched_world->irs->runtimeScripts);
-                }
+            scripts_start();
 
-                for(Behaviour *exec : *(switched_world->irs->_firstRunScripts))
-                {
-                    if(exec->gameObject()->m_active)
-                        exec->OnStart(); // go start (first draw)
-                    switched_world->irs->runtimeScripts->emplace_back(exec);
-                }
-                RoninMemory::free(switched_world->irs->_firstRunScripts);
-                switched_world->irs->_firstRunScripts = nullptr;
-            }
+            scripts_update();
 
-            if(switched_world->irs->runtimeScripts)
-            {
-                for(auto exec = std::begin(*switched_world->irs->runtimeScripts); exec != std::end(*switched_world->irs->runtimeScripts);
-                    ++exec)
-                {
-                    if((*exec)->gameObject()->m_active)
-                        (*exec)->OnUpdate();
-                };
-            }
-            queue_watcher.ms_wait_exec_scripts = TimeEngine::EndWatch();
+            scripts_lateUpdate();
+
             // end watcher
+            queue_watcher.ms_wait_exec_scripts = TimeEngine::EndWatch();
 
             TimeEngine::BeginWatch();
             // Render on main camera
@@ -219,7 +167,7 @@ namespace RoninEngine
             if(!switched_world->irs->request_unloading && cam)
             {
                 // draw world in world size
-                RoninEngine::Runtime::native_render_2D(reinterpret_cast<Camera2D *>(cam));
+                native_render_2D(reinterpret_cast<Camera2D *>(cam));
             }
             queue_watcher.ms_wait_render_world = TimeEngine::EndWatch();
 
@@ -229,14 +177,8 @@ namespace RoninEngine
             {
                 switched_world->OnGizmos(); // Draw gizmos
 
-                if(switched_world->irs->runtimeScripts)
-                {
-                    for(auto exec : *(switched_world->irs->runtimeScripts))
-                    {
-                        if(exec->gameObject()->m_active)
-                            exec->OnGizmos();
-                    };
-                }
+                scripts_gizmos();
+
                 if(ronin_debug_mode)
                 {
                     constexpr int font_height = 12;
@@ -313,7 +255,7 @@ namespace RoninEngine
                     Gizmos::SetColor(Color(0, 0, 0, 100));
 
                     // Draw box
-                    Gizmos::DrawFillRectRounded(g_pos, g_size.x / pixelsPerPoint, g_size.y / pixelsPerPoint, 8);
+                    Gizmos::DrawFillRect(g_pos, g_size.x / pixelsPerPoint, g_size.y / pixelsPerPoint);
 
                     screen_point.x = 10;
                     screen_point.y -= static_cast<int>(g_size.y) - font_height / 2;
@@ -331,19 +273,6 @@ namespace RoninEngine
 
             // end watcher
             queue_watcher.ms_wait_render_gizmos = TimeEngine::EndWatch();
-            int aa = 0;
-        }
-
-        void level_render_world_late()
-        {
-            if(switched_world->irs->runtimeScripts)
-            {
-                for(auto exec : *(switched_world->irs->runtimeScripts))
-                {
-                    if(exec->gameObject()->m_active)
-                        exec->OnLateUpdate();
-                }
-            }
         }
 
     } // namespace Runtime

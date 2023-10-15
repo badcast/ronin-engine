@@ -215,19 +215,20 @@ namespace RoninEngine::Runtime
                                     stack.wrapper.dst.h *= pixelsPerPoint; //_scale.y;
 
                                     Vec2 arranged = stack.wrapper.dst.getXY();
-                                    if(arranged != Vec2::zero)
-                                        arranged =
-                                            Vec2::RotateAround(stack.sourcePoint, arranged, render_transform->angle() * Math::deg2rad);
+                                    //                                    if(arranged != Vec2::zero)
+                                    //                                        arranged =
+                                    //                                            Vec2::RotateAround(stack.sourcePoint, arranged,
+                                    //                                            render_transform->angle() * Math::deg2rad);
 
                                     stack.sourcePoint += render_iobject->get_offset();
 
                                     // convert world to screen
 
-                                    // Положение по горизонтале
+                                    // Horizontal
                                     stack.wrapper.dst.x = arranged.x +
                                         ((active_resolution.width - stack.wrapper.dst.w) / 2.0f -
                                          (stack.camera_position.x - stack.sourcePoint.x) * pixelsPerPoint);
-                                    // Положение по вертикале
+                                    // Vertical
                                     stack.wrapper.dst.y = arranged.y +
                                         ((active_resolution.height - stack.wrapper.dst.h) / 2.0f +
                                          (stack.camera_position.y - stack.sourcePoint.y) * pixelsPerPoint);
@@ -235,7 +236,7 @@ namespace RoninEngine::Runtime
                                     SDL_RenderCopyExF(
                                         RoninEngine::renderer,
                                         stack.wrapper.texture,
-                                        (SDL_Rect *) &(stack.wrapper.src),
+                                        reinterpret_cast<SDL_Rect *>(&(stack.wrapper.src)),
                                         reinterpret_cast<SDL_FRect *>(&(stack.wrapper.dst)),
                                         render_transform->_angle_,
                                         nullptr,

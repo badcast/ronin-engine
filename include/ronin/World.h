@@ -31,7 +31,7 @@ namespace RoninEngine::Runtime
 
         void RequestUnload();
 
-        bool SetCursor(Cursor * cursor);
+        bool SetCursor(Cursor *cursor);
 
         void ShowCursor(bool value);
 
@@ -65,9 +65,7 @@ namespace RoninEngine::Runtime
     {
         T *_target;
         std::list<T *> __classes;
-
         std::list<Component *> __compr = GetAllComponents();
-
         for(auto iter = __compr.begin(); iter != __compr.end(); ++iter)
         {
             if((_target = dynamic_cast<T *>(*iter)))

@@ -572,6 +572,7 @@ namespace RoninEngine
                     }
 
                     internal_world_can_start = false;
+
                     switched_world->OnAwake();
 
                     preload_world = nullptr;
@@ -619,7 +620,6 @@ namespace RoninEngine
 
             level_render_world();
 
-
             // Run Collector
             TimeEngine::BeginWatch();
             if(!switched_world->irs->request_unloading)
@@ -649,8 +649,6 @@ namespace RoninEngine
                 SDL_RenderPresent(renderer);
                 queue_watcher.ms_wait_render_world += TimeEngine::EndWatch();
                 // end watcher
-
-                level_render_world_late();
             }
 
         end_simulate:

@@ -40,7 +40,7 @@
 #define private public
 #define protected public
 
-// applications
+// Internal
 #include "Time.h"
 #include "RoninSimulator.h"
 #include "Resources.h"
@@ -52,7 +52,7 @@
 #include "Texture.h"
 #include "InputSystem.h"
 
-// objects
+// Runtime Objects
 #include "Object.h"
 #include "Behaviour.h"
 #include "Camera.h"
