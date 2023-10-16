@@ -70,15 +70,17 @@ namespace RoninEngine::Runtime
 
     Sprite *Sprite::CreateEmptySprite()
     {
-        return Primitive::create_empty_sprite2D();
+        return Primitive::CreateEmptySprite();
     }
+
     Sprite *Sprite::CreateBlackSprite()
     {
-        return Primitive::create_sprite2D_box(Vec2::one, Color::black);
+        return Primitive::CreateSpriteRectangle(Vec2::one, Color::black);
     }
+
     Sprite *Sprite::CreateWhiteSprite()
     {
-        return Primitive::create_sprite2D_box(Vec2::one, Color::white);
+        return Primitive::CreateSpriteRectangle(Vec2::one, Color::white);
     }
 
 } // namespace RoninEngine::Runtime

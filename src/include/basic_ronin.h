@@ -284,6 +284,9 @@ namespace RoninEngine
         extern float internal_game_time;
         extern std::list<Asset> loaded_assets;
 
+        GameObject *create_game_object();
+        GameObject *create_game_object(const std::string &name);
+
         bool object_instanced(const Object *obj);
         void native_render_2D(Camera2D *camera);
 

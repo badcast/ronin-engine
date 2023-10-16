@@ -118,7 +118,7 @@ AudioSource *AudioSource::PlayClipAtPoint(AudioClip *clip, Vec2 position, float 
     if(clip == nullptr)
         return nullptr;
 
-    AudioSource *audio = Primitive::create_empty_game_object(position)->AddComponent<AudioSource>();
+    AudioSource *audio = Primitive::CreateEmptyGameObject(position)->AddComponent<AudioSource>();
     audio->setClip(clip);
     audio->Play(false);
     audio->setVolume(volume);
