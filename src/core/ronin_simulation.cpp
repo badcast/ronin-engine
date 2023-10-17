@@ -666,7 +666,7 @@ namespace RoninEngine
                 throw ronin_watcher_error();
 
             internal_delta_time = Math::Min<float>(1.f, Math::Max<float>(delayed / 1000.f, game_time_score));
-            internal_game_time += internal_delta_time;
+            internal_game_time += game_time_score;
 
             if(ronin_debug_mode && TimeEngine::startUpTime() > fps)
             {

@@ -234,21 +234,28 @@ namespace RoninEngine
             {
                 int flags = 0;
 
-// TODO: Optimize here and find new method
+#if 1
 #ifdef __clang__ // it's work only Clang
 #define CHECK_BASE_OVERRIDDEN(BASE, BINDER, METHOD) \
     if((&BASE::METHOD) != (&T::METHOD))             \
         flags |= BINDER;
 #else // it's work on GCC
-#define CHECK_BASE_OVERRIDDEN(BASE, BINDER, METHOD)                           \
+#define CHECK_BASE_OVERRIDDEN(BASE, BINDER, METHOD)                                     \
     if(reinterpret_cast<void *>(&BASE::METHOD) != reinterpret_cast<void *>(&T::METHOD)) \
         flags |= BINDER;
+#endif
+
+#else
+#define CHECK_BASE_OVERRIDDEN(BASE, BINDER, METHOD) \
+    if((&T::METHOD) != (&BASE::METHOD))             \
+    {                                               \
+        flags |= BINDER;                            \
+    }
 #endif
                 CHECK_BASE_OVERRIDDEN(Behaviour, Bind_Start, OnStart);
                 CHECK_BASE_OVERRIDDEN(Behaviour, Bind_Update, OnUpdate);
                 CHECK_BASE_OVERRIDDEN(Behaviour, Bind_LateUpdate, OnLateUpdate);
                 CHECK_BASE_OVERRIDDEN(Behaviour, Bind_Gizmos, OnGizmos);
-
                 bind_script(static_cast<BindType>(flags), static_cast<Behaviour *>(component));
 
 #undef CHECK_BASE_OVERRIDDEN

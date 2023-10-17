@@ -6,6 +6,8 @@ namespace RoninEngine::Runtime
 {
     class RONIN_API Behaviour : public Component
     {
+        friend class GameObject;
+
     public:
         Behaviour();
 

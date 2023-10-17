@@ -94,7 +94,7 @@ target_sources(ronin PRIVATE ${SRC_INCLUDE})
 
 # simulation sources
 if(RGSIMULATION)
-  libdef(ronin_sim "simulation")
+  libdef(ronin_sim "sim")
 endif()
 # res sources
 if(RGRESOURCES)
