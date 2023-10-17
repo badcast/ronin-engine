@@ -237,28 +237,27 @@ namespace RoninEngine
 #if 1
 #ifdef __clang__ // it's work only Clang
 #define CHECK_BASE_OVERRIDDEN(BASE, BINDER, METHOD) \
-    if((&BASE::METHOD) != (&T::METHOD))             \
+    if constexpr((&BASE::METHOD) != (&T::METHOD))   \
         flags |= BINDER;
 #else // it's work on GCC
-#define CHECK_BASE_OVERRIDDEN(BASE, BINDER, METHOD)                                     \
-    if(reinterpret_cast<void *>(&BASE::METHOD) != reinterpret_cast<void *>(&T::METHOD)) \
+#define CHECK_BASE_OVERRIDDEN(BASE, BINDER, METHOD)                                               \
+    if constexpr(reinterpret_cast<void *>(&BASE::METHOD) != reinterpret_cast<void *>(&T::METHOD)) \
         flags |= BINDER;
 #endif
 
-#else
+#else // if the not 0
+
 #define CHECK_BASE_OVERRIDDEN(BASE, BINDER, METHOD) \
     if((&T::METHOD) != (&BASE::METHOD))             \
-    {                                               \
-        flags |= BINDER;                            \
-    }
+        flags |= BINDER;
 #endif
                 CHECK_BASE_OVERRIDDEN(Behaviour, Bind_Start, OnStart);
                 CHECK_BASE_OVERRIDDEN(Behaviour, Bind_Update, OnUpdate);
                 CHECK_BASE_OVERRIDDEN(Behaviour, Bind_LateUpdate, OnLateUpdate);
                 CHECK_BASE_OVERRIDDEN(Behaviour, Bind_Gizmos, OnGizmos);
-                bind_script(static_cast<BindType>(flags), static_cast<Behaviour *>(component));
-
 #undef CHECK_BASE_OVERRIDDEN
+
+                bind_script(static_cast<BindType>(flags), static_cast<Behaviour *>(component));
             }
 
             return component;

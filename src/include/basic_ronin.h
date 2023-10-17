@@ -224,6 +224,7 @@ namespace RoninEngine
             std::vector<AudioClip *> gid_audio_clips;
             std::vector<MusicClip *> gid_music_clips;
             std::vector<SDL_Surface *> gid_surfaces;
+            std::vector<Sprite *> gid_sprites;
             std::vector<void *> gid_privates;
         };
 
@@ -242,7 +243,6 @@ namespace RoninEngine
             // state is unloading
             bool request_unloading;
 
-            std::list<Sprite *> offload_sprites;
             std::list<SDL_Surface *> offload_surfaces;
 
             SDL_Texture *legacy_font_normal;
@@ -266,7 +266,7 @@ namespace RoninEngine
             std::list<CameraResource *> camera_resources;
 
             // External resources
-            GidResources *external_local_resources;
+            GidResources external_local_resources;
 
             // Main UI Object
             UI::GUI *gui;
@@ -315,6 +315,7 @@ namespace RoninEngine
         void scripts_unbind(Behaviour *script);
 
         void gid_resources_free(GidResources *gid);
+        GidResources * gid_get(bool local);
         SDL_Surface *private_load_surface(const void *memres, int length);
 
         void storm_cast_eq_all(Vec2Int origin, int edges, std::function<void(const Vec2Int &)> predicate);

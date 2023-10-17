@@ -187,8 +187,12 @@ namespace RoninEngine
         UI::free_fonts();
 
         // NOTE: Free Global Resources
-        gid_resources_free(external_global_resources);
-        external_global_resources = nullptr;
+        if(external_global_resources)
+        {
+            gid_resources_free(external_global_resources);
+            RoninMemory::free(external_global_resources);
+            external_global_resources = nullptr;
+        }
         Runtime::internal_free_loaded_assets();
 
         Mix_Quit();

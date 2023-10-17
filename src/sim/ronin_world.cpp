@@ -111,8 +111,8 @@ namespace RoninEngine
             }
 
             // NOTE: Free Local Resources
-            gid_resources_free(world->irs->external_local_resources);
-            world->irs->external_local_resources = nullptr;
+            gid_resources_free(&world->irs->external_local_resources);
+            //world->irs->external_local_resources = nullptr;
 
             // Halt all channels
             Mix_HaltChannel(-1);
@@ -121,11 +121,6 @@ namespace RoninEngine
             Mix_AllocateChannels(MIX_CHANNELS);
 
             // free native resources
-            for(Sprite *sprite : world->irs->offload_sprites)
-            {
-                RoninMemory::free(sprite);
-            }
-
             for(SDL_Surface *surface : world->irs->offload_surfaces)
             {
                 SDL_FreeSurface(surface);

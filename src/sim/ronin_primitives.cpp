@@ -14,7 +14,7 @@ namespace RoninEngine::Runtime
     GameObject *Primitive::CreateBox2D(Vec2 position, float angle, Color fillColor)
     {
         GameObject *obj = CreateEmptyGameObject(position);
-        obj->AddComponent<SpriteRenderer>()->setSprite(CreateSpriteRectangle(Vec2::one, fillColor));
+        obj->AddComponent<SpriteRenderer>()->setSprite(CreateSpriteRectangle(true, Vec2::one, fillColor));
         obj->transform()->angle(angle);
         return obj;
     }
@@ -24,15 +24,15 @@ namespace RoninEngine::Runtime
         return CreateEmptyGameObject(position)->AddComponent<Camera2D>();
     }
 
-    Sprite *Primitive::CreateEmptySprite()
+    Sprite *Primitive::CreateEmptySprite(bool localSprite)
     {
         Sprite *sprite;
         RoninMemory::alloc_self(sprite);
-        switched_world->irs->offload_sprites.push_back(sprite);
+        gid_get(localSprite)->gid_sprites.push_back(sprite);
         return sprite;
     }
 
-    Sprite *Primitive::CreateSpriteRectangle(Vec2 size, Color fillColor)
+    Sprite *Primitive::CreateSpriteRectangle(bool localSprite, Vec2 size, Color fillColor)
     {
         Sprite *sprite;
 
@@ -47,11 +47,11 @@ namespace RoninEngine::Runtime
         SDL_UnlockSurface(surface);
         switched_world->irs->offload_surfaces.push_back(surface);
         RoninMemory::alloc_self(sprite, surface, Rect(0, 0, size.x, size.y));
-        switched_world->irs->offload_sprites.push_back(sprite);
+        gid_get(localSprite)->gid_sprites.push_back(sprite);
         return sprite;
     }
 
-    Sprite *Primitive::CreateSpriteCircle(Vec2 size, float radius, Color fillColor)
+    Sprite *Primitive::CreateSpriteCircle(bool localSprite, Vec2 size, float radius, Color fillColor)
     {
         Sprite *sprite;
 
@@ -69,11 +69,11 @@ namespace RoninEngine::Runtime
         SDL_DestroyRenderer(renderer);
         switched_world->irs->offload_surfaces.push_back(surface);
         RoninMemory::alloc_self(sprite, surface, Rect(0, 0, size.x, size.y));
-        switched_world->irs->offload_sprites.push_back(sprite);
+        gid_get(localSprite)->gid_sprites.push_back(sprite);
         return sprite;
     }
 
-    Sprite *Primitive::CreateSpriteTriangle(Vec2 size, float height, Color fillColor)
+    Sprite *Primitive::CreateSpriteTriangle(bool localSprite, Vec2 size, float height, Color fillColor)
     {
         Sprite *sprite;
 
@@ -104,13 +104,13 @@ namespace RoninEngine::Runtime
         //        SDL_UnlockSurface(surface);
         switched_world->irs->offload_surfaces.push_back(surface);
         RoninMemory::alloc_self(sprite, surface, Rect {0, 0, static_cast<int>(size.x), static_cast<int>(size.y)});
-        switched_world->irs->offload_sprites.push_back(sprite);
+        gid_get(localSprite)->gid_sprites.push_back(sprite);
         return sprite;
     }
 
-    Sprite *Primitive::CreateSpriteFrom(Image *surface)
+    Sprite *Primitive::CreateSpriteFrom(Image *surface, bool localSprite)
     {
-        Sprite *sprite = CreateEmptySprite();
+        Sprite *sprite = CreateEmptySprite(localSprite);
         sprite->setSurface(surface);
         return sprite;
     }

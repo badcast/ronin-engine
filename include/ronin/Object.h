@@ -46,11 +46,12 @@ namespace RoninEngine
             static GameObject *CreateEmptyGameObject(Vec2 position = Vec2::zero, float angle = 0);
             static GameObject *CreateBox2D(Vec2 position = Vec2::zero, float angle = 0, Color fillColor = Color::white);
             static Camera2D *CreateCamera2D(Vec2 position = Vec2::zero);
-            static Sprite *CreateEmptySprite();
-            static Sprite *CreateSpriteRectangle(Vec2 size = Vec2::one, Color fillColor = Color::white);
-            static Sprite *CreateSpriteCircle(Vec2 size = Vec2::one, float radius = 1.f, Color fillColor = Color::white);
-            static Sprite *CreateSpriteTriangle(Vec2 size = Vec2::one, float height = 1.f, Color fillColor = Color::white);
-            static Sprite *CreateSpriteFrom(Image *surface);
+            static Sprite *CreateEmptySprite(bool localSprite = true);
+            static Sprite *CreateSpriteRectangle(bool localSprite = true, Vec2 size = Vec2::one, Color fillColor = Color::white);
+            static Sprite *CreateSpriteCircle(bool localSprite = true, Vec2 size = Vec2::one, float radius = 1.f, Color fillColor = Color::white);
+            static Sprite *CreateSpriteTriangle(
+                bool local = true, Vec2 size = Vec2::one, float height = 1.f, Color fillColor = Color::white);
+            static Sprite *CreateSpriteFrom(Image *surface, bool localSprite = true);
         };
     } // namespace Runtime
 } // namespace RoninEngine

@@ -38,78 +38,76 @@ namespace RoninEngine::Runtime
             SDL_FreeSurface(surf_res);
         }
 
+        for(Sprite *sprite : gid->gid_sprites)
+        {
+            RoninMemory::free(sprite);
+        }
+
         for(void *mem : gid->gid_privates)
         {
             RoninMemory::ronin_memory_free(mem);
         }
+    }
 
-        RoninMemory::free(gid);
+    GidResources *gid_get(bool local)
+    {
+        return (local ? &(switched_world->irs->external_local_resources) : external_global_resources);
     }
 
     inline GidResources *get_resource(resource_id id)
     {
-        return (id & RES_LOCAL_FLAG) ? World::self()->irs->external_local_resources : external_global_resources;
+        return (id & RES_LOCAL_FLAG) ? &(switched_world->irs->external_local_resources) : external_global_resources;
     }
 
     void *make_private_resource(void *memory, bool local)
     {
         if(memory != nullptr)
         {
-            GidResources **resources;
+            GidResources *resources;
             if(local)
             {
-                if(World::self() == nullptr)
+                if(switched_world == nullptr)
                 {
                     throw ronin_null_error();
                 }
-                resources = &World::self()->irs->external_local_resources;
+                resources = &(switched_world->irs->external_local_resources);
             }
             else
             {
-                resources = &external_global_resources;
+                if(external_global_resources == nullptr)
+                    RoninMemory::alloc_self(external_global_resources);
+
+                resources = external_global_resources;
             }
 
-            if((*resources) == nullptr)
-            {
-                RoninMemory::alloc_self((*resources));
-                (*resources)->gid_surfaces.reserve(16);
-                (*resources)->gid_audio_clips.reserve(16);
-                (*resources)->gid_music_clips.reserve(16);
-            }
-
-            (*resources)->gid_privates.emplace_back(memory);
+            (resources)->gid_privates.emplace_back(memory);
         }
         return memory;
     }
 
     GidResources *make_resource(resource_id *resultId, bool local)
     {
-        GidResources **resources;
+        GidResources *resources;
 
         if(local)
         {
-            if(World::self() == nullptr)
+            if(switched_world == nullptr)
             {
                 throw ronin_load_world_error();
             }
-            resources = &World::self()->irs->external_local_resources;
+            resources = &(switched_world->irs->external_local_resources);
             (*resultId) = RES_LOCAL_FLAG;
         }
         else
         {
-            resources = &external_global_resources;
+            if(external_global_resources == nullptr)
+                RoninMemory::alloc_self(external_global_resources);
+
+            resources = external_global_resources;
             (*resultId) = 0;
         }
 
-        if((*resources) == nullptr)
-        {
-            RoninMemory::alloc_self((*resources));
-            (*resources)->gid_surfaces.reserve(16);
-            (*resources)->gid_audio_clips.reserve(16);
-            (*resources)->gid_music_clips.reserve(16);
-        }
-
-        return *resources;
+        return resources;
     }
 
     SDL_Surface *private_load_surface(const void *memres, int length)
@@ -127,21 +125,25 @@ namespace RoninEngine::Runtime
     std::pair<std::size_t, void *> stream_to_mem(std::istream &stream)
     {
         std::size_t sz;
-        void *memory = nullptr;
+        char *memory = nullptr;
 
         stream.seekg(0, std::ios_base::end);
         sz = stream.tellg();
         stream.seekg(0, std::ios_base::beg);
 
-        if(false && sz > 0)
+        if(sz > 0)
         {
-            memory = RoninMemory::ronin_memory_alloc(sz);
+            memory = static_cast<char *>(RoninMemory::ronin_memory_alloc(sz));
+
+            if(memory == nullptr)
+                RoninSimulator::Kill();
+
             stream.read((char *) memory, sz);
         }
         else
         {
-            // 4 MB blocks/per
-            constexpr int block_size = 4096 * 1024;
+            // 1 MB block/per
+            constexpr int block_size = 1024 * 1024;
             char *buffer = new char[block_size];
 
             if(buffer == nullptr)
@@ -153,14 +155,14 @@ namespace RoninEngine::Runtime
                 // read from
                 std::size_t pos = stream.read(buffer, block_size).gcount();
                 // resize
-                memory = RoninMemory::ronin_memory_realloc(memory, sz + pos);
+                memory = static_cast<char *>(RoninMemory::ronin_memory_realloc(memory, sz + pos));
                 if(memory == nullptr)
                 {
                     sz = 0;
                     break;
                 }
                 // copy to
-                memcpy(static_cast<char *>(memory) + sz, buffer, pos);
+                memcpy(memory + sz, buffer, pos);
                 sz += pos;
             }
             delete[] buffer;
