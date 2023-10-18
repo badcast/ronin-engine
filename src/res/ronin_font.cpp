@@ -106,10 +106,6 @@ namespace RoninEngine::UI
                     deltay += pLegacyFont->fontSize.y;
             }
         }
-        // convert surface to texture
-        /*  TODO:: Resources::gc_alloc_sdl_texture(&pfontTexture, pLegacyFont->surfNormal);
-           Resources::gc_alloc_sdl_texture(&pfontTextureHilight, pLegacyFont->surfHilight);*/
-
         if(optimizeDeffects)
         {
             SDL_Surface *model = pLegacyFont->surfNormal;

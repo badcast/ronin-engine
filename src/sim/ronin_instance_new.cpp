@@ -111,7 +111,6 @@ namespace RoninEngine
                     Transform *existent = clone->transform();
                     existent->_angle_ = t->_angle_;
                     existent->position(t->position());
-                    // BUG: Hierarchy change is bug, fix now;
                     //  Clone childs recursive
                     for(Transform *y : t->hierarchy)
                     {
