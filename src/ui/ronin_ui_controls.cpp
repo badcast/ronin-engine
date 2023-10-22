@@ -110,7 +110,7 @@ namespace RoninEngine::UI
             case RGUI_TEXT:
             {
                 Gizmos::SetColor(Color::white);
-                draw_font_at(element.text.data(), 15, element.rect.getXY(), Color::white);
+                draw_font_at(element.text.data(), 15, element.rect.GetXY(), Color::white);
                 // Render_String(render, element.rect, element.text.c_str(), element.text.size());
                 break;
             }
@@ -141,7 +141,7 @@ namespace RoninEngine::UI
                 draw_font_at(
                     element.text.data(),
                     12,
-                    rect.getXY() + (rect.getWH() - (show_down_side ? (Vec2Int::up * 4) : Vec2Int::zero)) / 2,
+                    rect.GetXY() + (rect.GetWH() - (show_down_side ? (Vec2Int::up * 4) : Vec2Int::zero)) / 2,
                     true);
                 result = ms_hover && ms_click;
                 break;

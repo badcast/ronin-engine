@@ -1,5 +1,10 @@
 #pragma once
 
-#include "begin.h"
+#include "Defines.h"
 
-RONIN_API const std::size_t get_process_sizeMemory();
+namespace RoninEngine::Perfomances
+{
+    RONIN_API std::size_t GetMemorySize();
+    RONIN_API int GetCPUCount();
+    RONIN_API int GetCPUUsage();
+} // namespace RoninEngine::Perfomances

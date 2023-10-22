@@ -1,4 +1,6 @@
-#include "ronin.h"
+#include <SDL2/SDL.h>
+
+#include "SystemInformation.h"
 
 #ifdef __linux__
 
@@ -108,17 +110,25 @@ TODO: % CPU в настоящее время используется этим �
 
 */
 
-// get an bytes
-const size_t get_process_sizeMemory()
+namespace RoninEngine::Perfomances
 {
-    size_t total;
-
+    // get an bytes
+    RONIN_API size_t GetMemorySize()
+    {
+        size_t total;
 #ifdef WIN32
-    PROCESS_MEMORY_COUNTERS_EX pm;
-    K32GetProcessMemoryInfo(GetCurrentProcess(), &pm, sizeof(pm));
-    total = pm.WorkingSetSize;
+        PROCESS_MEMORY_COUNTERS_EX pm;
+        K32GetProcessMemoryInfo(GetCurrentProcess(), &pm, sizeof(pm));
+        total = pm.WorkingSetSize;
 #elif __unix__
-    total = get_memory_used();
+        total = get_memory_used();
 #endif
-    return total;
-}
+        return total;
+    }
+
+    RONIN_API int GetCPUCount()
+    {
+        // Get CPU Count from SDL API
+        return SDL_GetCPUCount();
+    }
+} // namespace RoninEngine::Perfomances

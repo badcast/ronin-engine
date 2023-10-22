@@ -214,7 +214,7 @@ namespace RoninEngine::Runtime
                                     stack.wrapper.dst.w *= pixelsPerPoint; //_scale.x;
                                     stack.wrapper.dst.h *= pixelsPerPoint; //_scale.y;
 
-                                    Vec2 arranged = stack.wrapper.dst.getXY();
+                                    Vec2 arranged = stack.wrapper.dst.GetXY();
                                     //                                    if(arranged != Vec2::zero)
                                     //                                        arranged =
                                     //                                            Vec2::RotateAround(stack.sourcePoint, arranged,

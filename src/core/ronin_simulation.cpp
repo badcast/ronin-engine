@@ -682,7 +682,7 @@ namespace RoninEngine
                     "FPS:%.1f Memory:%sMiB, "
                     "Ronin Objects:%s, Internal Objects:%s, Frames:%s",
                     fps,
-                    Math::NumBeautify(get_process_sizeMemory() / 1024 / 1024).c_str(),
+                    Math::NumBeautify(Perfomances::GetMemorySize() / 1024 / 1024).c_str(),
                     Math::NumBeautify(RoninMemory::total_allocated()).c_str(),
                     Math::NumBeautify(SDL_GetNumAllocations()).c_str(),
                     Math::NumBeautify(internal_frames).c_str());

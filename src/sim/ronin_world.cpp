@@ -112,7 +112,7 @@ namespace RoninEngine
 
             // NOTE: Free Local Resources
             gid_resources_free(&world->irs->external_local_resources);
-            //world->irs->external_local_resources = nullptr;
+            // world->irs->external_local_resources = nullptr;
 
             // Halt all channels
             Mix_HaltChannel(-1);
@@ -205,7 +205,7 @@ namespace RoninEngine
                         elements[2].value = stat.ms_wait_exec_scripts + stat.ms_wait_exec_world;
                         elements[3].value = stat.ms_wait_render_world;
                         elements[4].value = stat.ms_wait_render_gizmos;
-                        elements[5].value = get_process_sizeMemory() / 1024 / 1024;
+                        elements[5].value = Perfomances::GetMemorySize() / 1024 / 1024;
 
                         // calculate averrage and max
                         max = 10;

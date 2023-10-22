@@ -94,7 +94,7 @@ namespace RoninEngine
                 return *this;
             }
 
-            constexpr auto getXY() const
+            constexpr auto GetXY() const
             {
                 if constexpr(std::is_same<T, int>::value)
                 {
@@ -105,7 +105,7 @@ namespace RoninEngine
                     return Vec2(x, y);
                 }
             }
-            constexpr auto getWH() const
+            constexpr auto GetWH() const
             {
                 if constexpr(std::is_same<T, int>::value)
                 {

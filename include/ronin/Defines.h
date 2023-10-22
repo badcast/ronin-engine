@@ -6,13 +6,13 @@
 #elif __linux__ || __unix__
 // Linux/Unix GNU Compiller
 #if defined(__GNUC__) && __GNUC__ >= 4
-#define __GLIBAPI__ __attribute__((visibility("default")))
+#define __GCCAPI__ __attribute__((visibility("default")))
 #else
-#define __GLIBAPI__
+#define __GCCAPI__
 #endif
 
-#define API_EXPORT __GLIBAPI__
-#define API_IMPORT __GLIBAPI__
+#define API_EXPORT __GCCAPI__
+#define API_IMPORT __GCCAPI__
 
 #endif
 
