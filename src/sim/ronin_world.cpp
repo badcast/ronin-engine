@@ -285,6 +285,9 @@ namespace RoninEngine
     // NOTE: Check game hierarchy
     std::list<Transform *> World::MatrixCheckDamage()
     {
+        if(irs == nullptr)
+            throw ronin_world_notloaded_error();
+
         std::list<Transform *> damaged;
 
         for(auto x = std::begin(switched_world->irs->matrix); x != end(switched_world->irs->matrix); ++x)
@@ -315,6 +318,9 @@ namespace RoninEngine
     // try restore damaged matrix element's
     int World::MatrixRestore(const std::list<Runtime::Transform *> &damaged_content)
     {
+        if(irs == nullptr)
+            throw ronin_world_notloaded_error();
+
         int restored = 0;
         for(Transform *dam : damaged_content)
         {
@@ -361,6 +367,9 @@ namespace RoninEngine
 
     int World::MatrixCacheCount()
     {
+        if(irs == nullptr)
+            throw ronin_world_notloaded_error();
+
         int cached = 0;
         for(auto &matrix : this->irs->matrix)
             cached += static_cast<int>(std::count_if(
@@ -376,6 +385,9 @@ namespace RoninEngine
 
     int World::MatrixCacheClear()
     {
+        if(irs == nullptr)
+            throw ronin_world_notloaded_error();
+
         std::vector<typename std::unordered_map<Vec2Int, std::set<Transform *>>::iterator> cached;
         int cleans = 0;
         for(auto &matrix : this->irs->matrix)
@@ -400,6 +412,9 @@ namespace RoninEngine
 
     std::string World::GetTreeOfHierarchy() const
     {
+        if(irs == nullptr)
+            throw ronin_world_notloaded_error();
+
         static char delim = 0x32;
         std::string delims;
         std::string result;
@@ -431,6 +446,9 @@ namespace RoninEngine
 
     bool World::isHierarchy()
     {
+        if(irs == nullptr)
+            throw ronin_world_notloaded_error();
+
         return this->irs->main_object != nullptr;
     }
 
@@ -441,16 +459,25 @@ namespace RoninEngine
 
     UI::GUI *World::GetGUI()
     {
+        if(irs == nullptr)
+            throw ronin_world_notloaded_error();
+
         return this->irs->gui;
     }
 
     void World::RequestUnload()
     {
+        if(irs == nullptr)
+            throw ronin_world_notloaded_error();
+
         this->irs->request_unloading = true;
     }
 
     bool World::SetCursor(Cursor *cursor)
     {
+        if(irs == nullptr)
+            throw ronin_world_notloaded_error();
+
         if(cursor == nullptr)
             return false;
 
@@ -460,16 +487,25 @@ namespace RoninEngine
 
     void World::ShowCursor(bool value)
     {
+        if(irs == nullptr)
+            throw ronin_world_notloaded_error();
+
         SDL_ShowCursor(static_cast<int>(value));
     }
 
     int World::GetDestroyedFrames()
     {
+        if(irs == nullptr)
+            throw ronin_world_notloaded_error();
+
         return irs->_destroyedGameObject;
     }
 
     std::list<GameObject *> World::GetAllGameObjects()
     {
+        if(irs == nullptr)
+            throw ronin_world_notloaded_error();
+
         std::list<GameObject *> all_gobjects;
         GameObject *next = irs->main_object;
 
@@ -489,6 +525,9 @@ namespace RoninEngine
 
     std::list<Component *> World::GetAllComponents()
     {
+        if(irs == nullptr)
+            throw ronin_world_notloaded_error();
+
         std::list<Component *> components;
         std::list<GameObject *> all_objects = GetAllGameObjects();
 
@@ -504,6 +543,9 @@ namespace RoninEngine
 
     const bool World::CancelObjectDestruction(GameObject *obj)
     {
+        if(irs == nullptr)
+            throw ronin_world_notloaded_error();
+
         if(obj && irs->runtimeCollectors)
         {
             // std::pair<const float, std::set<GameObject *>>
@@ -524,6 +566,9 @@ namespace RoninEngine
 
     const int World::CostObjectDestruction(GameObject *obj)
     {
+        if(irs == nullptr)
+            throw ronin_world_notloaded_error();
+
         int x;
         if(!obj)
         {
@@ -548,11 +593,17 @@ namespace RoninEngine
 
     const bool World::StateObjectDestruction(GameObject *obj)
     {
+        if(irs == nullptr)
+            throw ronin_world_notloaded_error();
+
         return this->CostObjectDestruction(obj) > ~0;
     }
 
     const int World::CountObjectDestruction()
     {
+        if(irs == nullptr)
+            throw ronin_world_notloaded_error();
+
         int x = 0;
         if(irs->runtimeCollectors)
         {

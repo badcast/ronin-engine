@@ -44,6 +44,14 @@ namespace RoninEngine::Exception
         }
     };
 
+    class ronin_world_notloaded_error : public ronin_base_error
+    {
+    public:
+        ronin_world_notloaded_error() : ronin_base_error("World is not loaded")
+        {
+        }
+    };
+
     class ronin_watcher_error : public ronin_base_error
     {
     public:
