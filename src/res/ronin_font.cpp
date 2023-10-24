@@ -182,7 +182,7 @@ namespace RoninEngine::UI
     }
 
     void render_string_legacy(
-        Rect rect, const char *text, int len, int fontWidth, RoninEngine::UI::TextAlign textAlign, bool textWrap, bool hilight)
+        Rect rect, const char *text, int len, int fontWidth, TextAlign textAlign, bool textWrap, bool hilight)
     {
         if(text == nullptr || len <= 0)
             return;

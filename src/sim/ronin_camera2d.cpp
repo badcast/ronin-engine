@@ -103,8 +103,12 @@ namespace RoninEngine::Runtime
             Math::Number(Math::Max(stack.wpRightBottom.x - stack.camera_position.x, stack.wpRightBottom.y - stack.camera_position.y)) + 5 +
             camera->distanceEvcall;
 
-        Color prevColor = Gizmos::GetColor();
-        Gizmos::SetColor(0xffc4c4c4);
+        // Clearing
+        if(camera->backclear)
+        {
+            Gizmos::SetColor(camera->backcolor);
+            SDL_RenderClear(renderer);
+        }
 
         if(camera->visibleGrids)
         {
@@ -334,7 +338,5 @@ namespace RoninEngine::Runtime
                      }
                  }*/
         }
-
-        Gizmos::SetColor(prevColor);
     }
 } // namespace RoninEngine::Runtime

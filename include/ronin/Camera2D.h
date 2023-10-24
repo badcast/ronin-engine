@@ -7,7 +7,6 @@ namespace RoninEngine::Runtime
     {
     public:
         std::uint16_t distanceEvcall;
-
         bool visibleBorders;
         bool visibleGrids;
         bool visibleObjects;

@@ -584,12 +584,6 @@ namespace RoninEngine
                 }
             }
 
-            // set default color
-            SDL_SetRenderDrawColor(renderer, 0x11, 0x11, 0x11, SDL_ALPHA_OPAQUE); // back color for clear
-
-            // Clearing
-            SDL_RenderClear(renderer);
-
             input_movement_update();
 
             queue_watcher.ms_wait_internal_instructions = TimeEngine::EndWatch();

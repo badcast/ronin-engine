@@ -3,7 +3,7 @@
 namespace RoninEngine::Runtime
 {
 
-    Camera::Camera(const std::string &name) : Component(DESCRIBE_AS_ONLY_NAME(Camera))
+    Camera::Camera(const std::string &name) : backclear(true), backcolor(0x111111, 255), Component(DESCRIBE_AS_ONLY_NAME(Camera))
     {
         DESCRIBE_AS_MAIN(Camera);
 

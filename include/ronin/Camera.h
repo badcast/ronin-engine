@@ -10,6 +10,9 @@ namespace RoninEngine::Runtime
         struct CameraResource *camera_resource;
 
     public:
+        bool backclear;
+        Color backcolor;
+
         Camera(const std::string &name);
 
         virtual ~Camera();
