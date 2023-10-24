@@ -54,7 +54,7 @@ namespace RoninEngine::Runtime
         return (local ? &(switched_world->irs->external_local_resources) : external_global_resources);
     }
 
-    inline GidResources *get_resource(resource_id id)
+    inline GidResources *get_resource(ResId id)
     {
         return (id & RES_LOCAL_FLAG) ? &(switched_world->irs->external_local_resources) : external_global_resources;
     }
@@ -85,7 +85,7 @@ namespace RoninEngine::Runtime
         return memory;
     }
 
-    GidResources *make_resource(resource_id *resultId, bool local)
+    GidResources *make_resource(ResId *resultId, bool local)
     {
         GidResources *resources;
 
@@ -112,7 +112,7 @@ namespace RoninEngine::Runtime
 
     SDL_Surface *private_load_surface(const void *memres, int length)
     {
-        resource_id __result;
+        ResId __result;
         SDL_Surface *surf = IMG_Load_RW(SDL_RWFromConstMem(memres, length), SDL_TRUE);
         if(surf != nullptr)
         {
@@ -170,9 +170,9 @@ namespace RoninEngine::Runtime
         return std::make_pair(sz, memory);
     }
 
-    resource_id Resources::LoadImageFromStream(std::istream &stream, bool local)
+    ResId Resources::LoadImageFromStream(std::istream &stream, bool local)
     {
-        resource_id id;
+        ResId id;
         GidResources *gid;
 
         auto memory = stream_to_mem(stream);
@@ -191,9 +191,9 @@ namespace RoninEngine::Runtime
         return id;
     }
 
-    resource_id Resources::LoadAudioClipFromStream(std::istream &stream, bool local)
+    ResId Resources::LoadAudioClipFromStream(std::istream &stream, bool local)
     {
-        resource_id id;
+        ResId id;
         GidResources *gid;
 
         auto memory = stream_to_mem(stream);
@@ -213,9 +213,9 @@ namespace RoninEngine::Runtime
         return id;
     }
 
-    resource_id Resources::LoadMusicClipFromStream(std::istream &stream, bool local)
+    ResId Resources::LoadMusicClipFromStream(std::istream &stream, bool local)
     {
-        resource_id id;
+        ResId id;
         GidResources *gid;
 
         auto memory = stream_to_mem(stream);
@@ -237,7 +237,7 @@ namespace RoninEngine::Runtime
         return id;
     }
 
-    resource_id Resources::LoadImage(const std::string &path, bool local)
+    ResId Resources::LoadImage(const std::string &path, bool local)
     {
         std::ifstream file(path, std::ios_base::binary);
 
@@ -250,7 +250,7 @@ namespace RoninEngine::Runtime
         return LoadImageFromStream(file, local);
     }
 
-    resource_id Resources::LoadAudioClip(const std::string &path, bool local)
+    ResId Resources::LoadAudioClip(const std::string &path, bool local)
     {
         std::ifstream file(path, std::ios_base::binary);
 
@@ -263,7 +263,7 @@ namespace RoninEngine::Runtime
         return LoadAudioClipFromStream(file, local);
     }
 
-    resource_id Resources::LoadMusicClip(const std::string &path, bool local)
+    ResId Resources::LoadMusicClip(const std::string &path, bool local)
     {
         std::ifstream file(path, std::ios_base::binary);
 
@@ -276,7 +276,7 @@ namespace RoninEngine::Runtime
         return LoadMusicClipFromStream(file, local);
     }
 
-    Image *Resources::GetImageSource(resource_id resource)
+    Image *Resources::GetImageSource(ResId resource)
     {
         if(resource == RES_INVALID)
             return nullptr;
@@ -288,7 +288,7 @@ namespace RoninEngine::Runtime
         return gid->gid_surfaces[resource];
     }
 
-    AudioClip *Resources::GetAudioClipSource(resource_id resource)
+    AudioClip *Resources::GetAudioClipSource(ResId resource)
     {
         if(resource == RES_INVALID)
             return nullptr;
@@ -299,7 +299,7 @@ namespace RoninEngine::Runtime
         return gid->gid_audio_clips[resource];
     }
 
-    MusicClip *Resources::GetMusicClipSource(resource_id resource)
+    MusicClip *Resources::GetMusicClipSource(ResId resource)
     {
         if(resource == RES_INVALID)
             return nullptr;

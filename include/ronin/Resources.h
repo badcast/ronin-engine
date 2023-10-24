@@ -6,27 +6,27 @@ namespace RoninEngine
 {
     namespace Runtime
     {
-        typedef std::uint32_t resource_id;
+        typedef std::uint32_t ResId;
         class RONIN_API Resources
         {
         public:
-            static resource_id LoadImage(const std::string &path, bool local);
+            static ResId LoadImage(const std::string &path, bool local);
 
-            static resource_id LoadImageFromStream(std::istream &stream, bool local);
+            static ResId LoadImageFromStream(std::istream &stream, bool local);
 
-            static resource_id LoadAudioClip(const std::string &path, bool local);
+            static ResId LoadAudioClip(const std::string &path, bool local);
 
-            static resource_id LoadAudioClipFromStream(std::istream &stream, bool local);
+            static ResId LoadAudioClipFromStream(std::istream &stream, bool local);
 
-            static resource_id LoadMusicClip(const std::string &path, bool local);
+            static ResId LoadMusicClip(const std::string &path, bool local);
 
-            static resource_id LoadMusicClipFromStream(std::istream &stream, bool local);
+            static ResId LoadMusicClipFromStream(std::istream &stream, bool local);
 
-            static Image *GetImageSource(resource_id resource);
+            static Image *GetImageSource(ResId resource);
 
-            static AudioClip *GetAudioClipSource(resource_id resource);
+            static AudioClip *GetAudioClipSource(ResId resource);
 
-            static MusicClip *GetMusicClipSource(resource_id resource);
+            static MusicClip *GetMusicClipSource(ResId resource);
         };
 
         class RONIN_API Asset

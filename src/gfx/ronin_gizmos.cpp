@@ -298,7 +298,7 @@ namespace RoninEngine::Runtime
     void Gizmos::DrawText(Vec2 origin, const std::string &text)
     {
         origin = Camera::WorldToScreenPoint(origin);
-        RoninEngine::UI::draw_font_at(text.data(), 11, Vec2::RoundToInt(origin), true);
+        RoninEngine::UI::Render_String_ttf(text.data(), 11, Vec2::RoundToInt(origin), true);
     }
 
     void Gizmos::DrawTextLegacy(Vec2 origin, const std::string &text)
@@ -309,7 +309,7 @@ namespace RoninEngine::Runtime
         r.x = static_cast<int>(origin.x);
         r.y = static_cast<int>(origin.y);
 
-        UI::render_string_legacy(r, text.c_str(), text.length(), 2);
+        UI::Render_String_Legacy(r, text.c_str(), text.length(), 2);
     }
 
     void Gizmos::DrawCircle(Vec2 origin, float distance)
@@ -387,6 +387,6 @@ namespace RoninEngine::Runtime
 
     void Gizmos::DrawTextToScreen(Vec2Int screen_point, const std::string &text, int font_size)
     {
-        RoninEngine::UI::draw_font_at(text.data(), font_size, screen_point, false);
+        RoninEngine::UI::Render_String_ttf(text.data(), font_size, screen_point, false);
     }
 } // namespace RoninEngine::Runtime

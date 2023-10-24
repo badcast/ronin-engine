@@ -84,6 +84,14 @@ namespace RoninEngine::Exception
         }
     };
 
+    class ronin_ui_layout_error : public ronin_base_error
+    {
+    public:
+        ronin_ui_layout_error() : ronin_base_error("UI Layout not created")
+        {
+        }
+    };
+
     class ronin_ui_group_parent_error : public ronin_base_error
     {
     public:

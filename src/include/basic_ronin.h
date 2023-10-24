@@ -25,23 +25,21 @@ namespace std
 {
     // this for Hashtable function
     // Used it matrix_key
-
-    using namespace RoninEngine::Runtime;
     using fake_type = std::int64_t;
 
     template <>
-    struct hash<Vec2>
+    struct hash<RoninEngine::Runtime::Vec2>
     {
-        std::size_t operator()(const Vec2 &val) const noexcept
+        std::size_t operator()(const RoninEngine::Runtime::Vec2 &val) const noexcept
         {
             return std::hash<fake_type> {}(*reinterpret_cast<const fake_type *>(&val));
         }
     };
 
     template <>
-    struct hash<Vec2Int>
+    struct hash<RoninEngine::Runtime::Vec2Int>
     {
-        std::size_t operator()(const Vec2Int &val) const noexcept
+        std::size_t operator()(const RoninEngine::Runtime::Vec2Int &val) const noexcept
         {
             return std::hash<fake_type> {}(*reinterpret_cast<const fake_type *>(&val));
         }
@@ -90,50 +88,16 @@ namespace RoninEngine
 
     namespace UI
     {
-        enum GUIControlPresents : std::uint8_t
-        {
-            RGUI_TEXT,
-            RGUI_BUTTON,
-            RGUI_TEXT_EDIT,
-            RGUI_HSLIDER,
-            RGUI_VSLIDER,
-            RGUI_PICTURE_BOX,
-            RGUI_DROPDOWN
-        };
-        struct ui_resource;
-        struct UIElement
-        {
-            uid id;
-            uid parentId;
-            std::uint8_t options;
-            std::vector<uid> childs;
-            Runtime::Rect rect;
-            Runtime::Rect contextRect;
-            GUIControlPresents prototype;
-            std::string text;
-            void *resources;
-            void *event;
-        };
-        struct GUIResources
-        {
-            struct
-            {
-                // controls
-                std::vector<UIElement> elements;
-                std::list<uid> layers;
-                uid focusedID;
-            } ui_layer;
 
-            ui_callback callback;
-            void *callbackData;
-            Runtime::World *owner;
-            bool interactable;
-            bool _focusedUI;
-            bool visible;
-            bool mouse_hover;
+        struct LegacyFont_t
+        {
+            SDL_Surface *surfNormal;
+            SDL_Surface *surfHilight;
+            Runtime::Vec2Int fontSize;
+            Runtime::Rect data[255];
         };
 
-        extern void draw_font_at(const char *text, int fontSize, const Runtime::Vec2Int &screenPoint, bool alignCenter = false);
+        extern void Render_String_ttf(const char *text, int fontSize, const Runtime::Vec2Int &screenPoint, bool alignCenter = false);
     } // namespace UI
     namespace Runtime
     {
@@ -143,7 +107,7 @@ namespace RoninEngine
             CAM_TARGET
         };
 
-        enum : resource_id
+        enum
         {
             RES_INVALID = 0xffffffff,
             RES_LOCAL_FLAG = 0x80000000
@@ -230,9 +194,9 @@ namespace RoninEngine
 
         struct AssetRef
         {
-            std::unordered_map<std::size_t, resource_id> image_clips;
-            std::unordered_map<std::size_t, resource_id> audio_clips;
-            std::unordered_map<std::size_t, resource_id> music_clips;
+            std::unordered_map<std::size_t, ResId> image_clips;
+            std::unordered_map<std::size_t, ResId> audio_clips;
+            std::unordered_map<std::size_t, ResId> music_clips;
         };
 
         struct WorldResources
@@ -295,6 +259,7 @@ namespace RoninEngine
         void harakiri_GameObject(GameObject *obj, std::set<GameObject *> *input);
 
         void RunCollector();
+
         void level_render_world();
 
         void internal_load_world(World *);
@@ -315,7 +280,7 @@ namespace RoninEngine
         void scripts_unbind(Behaviour *script);
 
         void gid_resources_free(GidResources *gid);
-        GidResources * gid_get(bool local);
+        GidResources *gid_get(bool local);
         SDL_Surface *private_load_surface(const void *memres, int length);
 
         void storm_cast_eq_all(Vec2Int origin, int edges, std::function<void(const Vec2Int &)> predicate);

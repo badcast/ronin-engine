@@ -83,7 +83,7 @@ bool AssetManager::LoadAsset(const std::string &assetFile, Asset **asset)
         __files.emplace_back(std::make_pair(hash_it, (dir_of_asset / param2.asString()).string()));
     }
 
-    resource_id rcid;
+    ResId rcid;
     *asset = &loaded_assets.emplace_back();
     RoninMemory::alloc_self((*asset)->__ref);
     for(auto &pair : __files)

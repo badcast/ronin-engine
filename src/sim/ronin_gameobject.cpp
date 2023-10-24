@@ -183,7 +183,7 @@ namespace RoninEngine::Runtime
         return true;
     }
 
-    void GameObject::RegisterOnDestroy(Event callback)
+    void GameObject::AddOnDestroy(Event callback)
     {
         ev_destroy.emplace_back(callback);
     }

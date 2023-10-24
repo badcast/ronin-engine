@@ -64,7 +64,7 @@ namespace RoninEngine
             return gameObject()->RemoveComponent(component);
         }
 
-        void Component::RegisterOnDestroy(Event callback)
+        void Component::AddOnDestroy(Event callback)
         {
             ev_destroy.emplace_back(callback);
         }

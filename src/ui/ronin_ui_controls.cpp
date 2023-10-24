@@ -1,13 +1,5 @@
 #include "ronin.h"
-
-struct SliderResource
-{
-    float value;
-    float min;
-    float max;
-};
-
-typedef std::pair<int, std::list<std::string>> DropDownResource;
+#include "ronin_ui_resources.h"
 
 namespace RoninEngine::Runtime
 {
@@ -20,47 +12,31 @@ namespace RoninEngine::UI
 {
     using namespace RoninEngine::Runtime;
 
-    struct ElementInteraction
-    {
-        Color normalState;
-        Color hoverState;
-        Color pressState;
-        Color disabledState;
-    };
-
-    struct
-    {
-        ElementInteraction defaultInteraction = {Color::ghostwhite, Color::white, Color::gainsboro, Color::darkgray};
-
-        Color dropdownText = Color::black;
-        Color dropdownSelectedText = Color::lightslategrey;
-        Color editText = Color::black;
-        Color buttonText = Color::black;
-        Color buttonDownSide = Color::darkgray;
-    } colorSpace;
+    std::uint8_t legacyVH[] {0, 32, 16, 2, 34, 18, 1, 33, 17};
 
     uid _controlId;
     uid _focusedId;
 
     extern TTF_Font *ttf_arial_font;
+    extern LegacyFont_t *pLegacyFont;
 
     void ui_reset_controls()
     {
         _controlId = 0;
     }
 
-    ui_resource *factory_resource(GUIControlPresents type)
+    UIRes *factory_resource(GUIControlPresents type)
     {
-        ui_resource *resources;
+        UIRes *resources;
 
         switch(type)
         {
             case RGUI_DROPDOWN:
-                resources = reinterpret_cast<ui_resource *>(RoninMemory::alloc<DropDownResource>());
+                resources = reinterpret_cast<UIRes *>(RoninMemory::alloc<DropDownResource>());
                 break;
             case RGUI_HSLIDER:
                 // value, min, max members
-                resources = reinterpret_cast<ui_resource *>(RoninMemory::alloc<SliderResource>());
+                resources = reinterpret_cast<UIRes *>(RoninMemory::alloc<SliderResource>());
                 break;
             default:
                 resources = nullptr;
@@ -94,23 +70,20 @@ namespace RoninEngine::UI
         SDL_Surface *surface;
         Rect rect;
 
-        //        {
-        //            // TODO: general drawing
-
-        //            if (ms_hover) {
-        //                if (Input::get_key_down(SDL_SCANCODE_LCTRL)) {
-        //                    element.rect.x = ms.x - element.rect.w / 2;
-        //                    element.rect.y = ms.y - element.rect.h / 2;
-        //                }
-        //            }
-        //        }
+        // TODO: general drawing
+        // if (ms_hover) {
+        //     if (Input::get_key_down(SDL_SCANCODE_LCTRL)) {
+        //         element.rect.x = ms.x - element.rect.w / 2;
+        //         element.rect.y = ms.y - element.rect.h / 2;
+        //     }
+        // }
 
         switch(element.prototype)
         {
             case RGUI_TEXT:
             {
                 Gizmos::SetColor(Color::white);
-                draw_font_at(element.text.data(), 15, element.rect.GetXY(), Color::white);
+                Render_String_ttf(element.text.data(), 15, element.rect.GetXY(), Color::white);
                 // Render_String(render, element.rect, element.text.c_str(), element.text.size());
                 break;
             }
@@ -138,12 +111,13 @@ namespace RoninEngine::UI
                 // Render_String(render, element.rect, element.text.c_str(), element.text.size(), 13,
                 // TextAlign::MiddleCenter, true, uiHover);
                 Gizmos::SetColor(Color::gray);
-                draw_font_at(
+                Render_String_ttf(
                     element.text.data(),
                     12,
                     rect.GetXY() + (rect.GetWH() - (show_down_side ? (Vec2Int::up * 4) : Vec2Int::zero)) / 2,
                     true);
-                result = ms_hover && ms_click;
+                if(result = ms_hover && ms_click)
+                    gui->handle->ui_layer.button_clicked.insert(element.id);
                 break;
             }
 
@@ -292,6 +266,7 @@ namespace RoninEngine::UI
                 }
                 break;
             }
+
             case RGUI_DROPDOWN:
             {
                 static const int thickness = 2;
@@ -413,18 +388,18 @@ namespace RoninEngine::UI
         switch(element->prototype)
         {
             case RGUI_BUTTON:
-                ((ui_callback_void) (element->event))(element->id);
+                ((UIEventVoid) (element->event))(element->id);
                 break;
             case RGUI_DROPDOWN:
-                ((ui_callback_integer) (element->event))(element->id, (static_cast<DropDownResource *>(element->resources)->first));
+                ((UIEventInteger) (element->event))(element->id, (static_cast<DropDownResource *>(element->resources)->first));
                 break;
             case RGUI_HSLIDER:
             case RGUI_VSLIDER:
-                ((ui_callback_float) (element->event))(element->id, static_cast<SliderResource *>(element->resources)->value);
+                ((UIEventFloat) (element->event))(element->id, static_cast<SliderResource *>(element->resources)->value);
         }
     }
 
-    void draw_font_at(const char *text, int fontSize, const Runtime::Vec2Int &screenPoint, bool alignCenter)
+    void Render_String_ttf(const char *text, int fontSize, const Runtime::Vec2Int &screenPoint, bool alignCenter)
     {
         SDL_Texture *texture;
         SDL_Surface *surf;
@@ -444,6 +419,93 @@ namespace RoninEngine::UI
             SDL_RenderCopy(renderer, texture, nullptr, &r);
             SDL_DestroyTexture(texture);
             SDL_FreeSurface(surf);
+        }
+    }
+
+    int Single_TextWidth_WithCyrilic(const std::string &text, int fontSize)
+    {
+        int width = 0;
+        for(auto iter = begin(text); iter != end(text); ++iter)
+            // TODO: Учитывать размер шрифта (fontSize)
+            width += pLegacyFont->data[(unsigned char) *iter].w;
+        return width;
+    }
+
+    void Render_String_Legacy(Rect rect, const char *text, int len, int fontWidth, Align textAlign, bool textWrap, bool hilight)
+    {
+        if(text == nullptr || len <= 0)
+            return;
+
+        std::uint8_t temp;
+        Rect *src;
+        std::uint16_t pos;
+        SDL_Rect dst = *reinterpret_cast<SDL_Rect *>(&rect);
+
+        Vec2Int fontSize = pLegacyFont->fontSize + Vec2Int::one * (fontWidth - pLegacyFont->fontSize.x);
+        int textWidth = Single_TextWidth_WithCyrilic(text, fontWidth);
+
+        if(!rect.w)
+            rect.w = textWidth;
+        if(!rect.h)
+            rect.h = pLegacyFont->fontSize.y;
+
+        // x
+        temp = (legacyVH[textAlign] >> 4 & 15);
+        if(temp)
+        {
+            dst.x += rect.w / temp;
+            if(temp == 2)
+                dst.x += -textWidth / 2;
+            else if(temp == 1)
+                dst.x += -textWidth;
+        }
+        // y
+        temp = (legacyVH[textAlign] & 15);
+        if(temp)
+        {
+            dst.y += rect.h / temp - fontSize.y / 2;
+            if(temp == 1)
+                dst.y += -textWidth / 2;
+        }
+
+        Vec2Int begin = *reinterpret_cast<Vec2Int *>(&dst);
+        int deltax;
+        for(pos = 0; pos < len; ++pos)
+        {
+            memcpy(&temp, text + pos, 1);
+            src = (pLegacyFont->data + temp);
+            if(temp != '\n')
+            {
+                dst.w = src->w;
+                dst.h = src->h;
+                deltax = rect.x + rect.w;
+
+                if(dst.x >= deltax)
+                {
+                    for(++pos; pos < len;)
+                    {
+                        temp = *(text + pos);
+                        if(temp != '\n')
+                            ++pos;
+                        else
+                            break;
+                    }
+                    continue;
+                }
+
+                dst.w = Math::Max(0, Math::Min(deltax - dst.x, dst.w));
+                SDL_RenderCopy(
+                    renderer,
+                    (hilight ? switched_world->irs->legacy_font_hover : switched_world->irs->legacy_font_normal),
+                    reinterpret_cast<SDL_Rect *>(src),
+                    &dst);
+                dst.x += src->w;
+            }
+            else
+            {
+                dst.x = begin.x;
+                dst.y += src->h;
+            }
         }
     }
 

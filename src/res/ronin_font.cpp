@@ -12,16 +12,7 @@ namespace RoninEngine::UI
     constexpr int font_arealike_width = 13;
     constexpr int font_arealike_height = 18;
 
-    struct Font_t
-    {
-        SDL_Surface *surfNormal;
-        SDL_Surface *surfHilight;
-        Vec2Int fontSize;
-        Rect data[255];
-    };
-
-    Font_t *pLegacyFont = nullptr;
-    uint8_t VH[] {0, 32, 16, 2, 34, 18, 1, 33, 17};
+    LegacyFont_t *pLegacyFont = nullptr;
 
     TTF_Font *ttf_arial_font = nullptr;
 
@@ -170,94 +161,5 @@ namespace RoninEngine::UI
     {
         RoninMemory::free(pLegacyFont);
         TTF_CloseFont(ttf_arial_font);
-    }
-
-    int Single_TextWidth_WithCyrilic(const std::string &text, int fontSize)
-    {
-        int width = 0;
-        for(auto iter = begin(text); iter != end(text); ++iter)
-            // TODO: Учитывать размер шрифта (fontSize)
-            width += pLegacyFont->data[(unsigned char) *iter].w;
-        return width;
-    }
-
-    void render_string_legacy(
-        Rect rect, const char *text, int len, int fontWidth, TextAlign textAlign, bool textWrap, bool hilight)
-    {
-        if(text == nullptr || len <= 0)
-            return;
-
-        std::uint8_t temp;
-        Rect *src;
-        std::uint16_t pos;
-        SDL_Rect dst = *(SDL_Rect *) &rect;
-        Vec2Int fontSize = pLegacyFont->fontSize + Vec2Int::one * (fontWidth - font_arealike_width);
-        int textWidth = Single_TextWidth_WithCyrilic(text, fontWidth);
-
-        if(!rect.w)
-            rect.w = textWidth;
-        if(!rect.h)
-            rect.h = pLegacyFont->fontSize.y; // todo: для мультий строк требуется вычислить h высоту
-
-        // x
-        temp = (VH[textAlign] >> 4 & 15);
-        if(temp)
-        {
-            dst.x += rect.w / temp;
-            if(temp == 2)
-                dst.x += -textWidth / 2;
-            else if(temp == 1)
-                dst.x += -textWidth;
-        }
-        // y
-        temp = (VH[textAlign] & 15);
-        if(temp)
-        {
-            dst.y += rect.h / temp - fontSize.y / 2;
-            if(temp == 1)
-                dst.y += -textWidth / 2;
-        }
-
-        Vec2Int begin = *reinterpret_cast<Vec2Int *>(&dst);
-        int deltax;
-        for(pos = 0; pos < len; ++pos)
-        {
-            memcpy(&temp, text + pos, 1);
-            src = (pLegacyFont->data + temp);
-            if(temp != '\n')
-            {
-                dst.w = src->w;
-                dst.h = src->h;
-                deltax = rect.x + rect.w;
-
-                if(dst.x >= deltax)
-                {
-                    for(++pos; pos < len;)
-                    {
-                        temp = *(text + pos);
-                        if(temp != '\n')
-                            ++pos;
-                        else
-                            break;
-                    }
-                    continue;
-                }
-
-                // отрисовываем остаток входящую в область
-                dst.w = Math::Max(0, Math::Min(deltax - dst.x, dst.w));
-                // if (dst.x <= src.x + src.w && dst.y <= src.y + src.h)
-                SDL_RenderCopy(
-                    renderer,
-                    (hilight ? switched_world->irs->legacy_font_hover : switched_world->irs->legacy_font_normal),
-                    (SDL_Rect *) src,
-                    &dst);
-                dst.x += src->w;
-            }
-            else
-            {
-                dst.x = begin.x;
-                dst.y += src->h;
-            }
-        }
     }
 } // namespace RoninEngine::UI

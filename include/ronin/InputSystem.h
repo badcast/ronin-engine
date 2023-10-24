@@ -87,7 +87,7 @@ namespace RoninEngine::Runtime
     };
 
     /**
-     * @brief The Input class provides methods for handling user input within the RONIN game engine.
+     * @brief The Input class provides methods for handling user input within the RoninEngine.
      */
     class RONIN_API Input
     {
@@ -114,13 +114,13 @@ namespace RoninEngine::Runtime
 
         /**
          * @brief Get the current mouse pointer coordinates as integers.
-         * @return A Vec2Int containing the x and y coordinates of the mouse pointer.
+         * @return A Vec2Int containing the x and y coordinates of the mouse pointer from Screen.
          */
         static const Vec2Int GetMousePoint();
 
         /**
          * @brief Get the current mouse pointer coordinates as floating-point values.
-         * @return A Vec2 containing the x and y coordinates of the mouse pointer.
+         * @return A Vec2 containing the x and y coordinates of the mouse pointer from Screen.
          */
         static const Vec2 GetMousePointf();
 

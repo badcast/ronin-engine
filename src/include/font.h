@@ -8,12 +8,12 @@ namespace RoninEngine::UI
     void refresh_legacy_font(RoninEngine::Runtime::World *world);
     int getwidth_metric(const std::string &text, int fontSize);
 
-    void render_string_legacy(
+    void Render_String_Legacy(
         Runtime::Rect rect,
         const char *text,
         int len,
         int fontWidth = -1,
-        RoninEngine::UI::TextAlign textAlign = RoninEngine::UI::TextAlign::Left,
+        RoninEngine::UI::Align textAlign = RoninEngine::UI::Align::Left,
         bool textWrap = true,
         bool hilight = false);
 } // namespace RoninEngine::UI

@@ -77,7 +77,7 @@ namespace RoninEngine
              * @brief Register a callback function to be called when the component is destroyed.
              * @param callback The callback function to register.
              */
-            void RegisterOnDestroy(Event callback);
+            void AddOnDestroy(Event callback);
 
             /**
              * @brief Get the Transform component of the GameObject.

@@ -29,11 +29,10 @@ namespace RoninEngine
 
     namespace UI
     {
-        struct UIElement;
         class GUI;
 
         // This is control (GUI, UI) identifier type
-        typedef std::uint8_t uid;
+        typedef std::uint32_t uid;
 
     } // namespace UI
 

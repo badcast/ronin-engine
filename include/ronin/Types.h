@@ -151,7 +151,7 @@ namespace RoninEngine
         template <typename T>
         struct IRoninBaseEvents
         {
-            void RegisterOnDestroy(RoninBaseEvent<T> callback);
+            void AddOnDestroy(RoninBaseEvent<T> callback);
         };
     } // namespace Runtime
 

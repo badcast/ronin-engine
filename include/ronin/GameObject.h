@@ -217,7 +217,7 @@ namespace RoninEngine
              * @param callback An Event object representing a function or functor that
              *                will be called when the GameObject is destroyed.
              */
-            void RegisterOnDestroy(Event callback);
+            void AddOnDestroy(Event callback);
         };
 
         template <typename T>
