@@ -156,22 +156,22 @@ namespace RoninEngine::Runtime
     Vec2 Vec2::Lerp(const Vec2 &lhs, const Vec2 &rhs, float t)
     {
         t = Math::Clamp01(t);
-        return Vec2(lhs.x + (rhs.x - lhs.x) * t, lhs.y + (rhs.y - lhs.y) * t);
+        return {lhs.x + (rhs.x - lhs.x) * t, lhs.y + (rhs.y - lhs.y) * t};
     }
 
     Vec2 Vec2::LerpUnclamped(const Vec2 &lhs, const Vec2 &rhs, float t)
     {
-        return Vec2(lhs.x + (rhs.x - lhs.x) * t, lhs.y + (rhs.y - lhs.y) * t);
+        return {lhs.x + (rhs.x - lhs.x) * t, lhs.y + (rhs.y - lhs.y) * t};
     }
 
     Vec2 Vec2::Max(const Vec2 &lhs, const Vec2 &rhs)
     {
-        return Vec2(Math::Max(lhs.x, rhs.x), Math::Max(lhs.y, rhs.y));
+        return {Math::Max(lhs.x, rhs.x), Math::Max(lhs.y, rhs.y)};
     }
 
     Vec2 Vec2::Min(const Vec2 &lhs, const Vec2 &rhs)
     {
-        return Vec2(Math::Min(lhs.x, rhs.x), Math::Min(lhs.y, rhs.y));
+        return {Math::Min(lhs.x, rhs.x), Math::Min(lhs.y, rhs.y)};
     }
 
     Vec2 Vec2::MoveTowards(const Vec2 &current, const Vec2 &target, float maxDistanceDelta)
@@ -197,7 +197,7 @@ namespace RoninEngine::Runtime
 
     Vec2 Vec2::Scale(const Vec2 &lhs, const Vec2 &rhs)
     {
-        return Vec2(lhs.x * rhs.x, lhs.y * rhs.y);
+        return {lhs.x * rhs.x, lhs.y * rhs.y};
     }
 
     float Vec2::Distance(const Vec2 &lhs, const Vec2 &rhs)

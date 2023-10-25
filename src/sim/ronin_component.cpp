@@ -69,5 +69,10 @@ namespace RoninEngine
             ev_destroy.emplace_back(callback);
         }
 
+        void Component::ClearOnDestroy()
+        {
+            ev_destroy.clear();
+        }
+
     } // namespace Runtime
 } // namespace RoninEngine

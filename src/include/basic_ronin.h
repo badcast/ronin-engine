@@ -85,6 +85,7 @@ namespace RoninEngine
     extern Resolution active_resolution;
     extern bool ronin_debug_mode;
     extern TimingWatcher queue_watcher;
+    extern TimingWatcher last_watcher;
 
     namespace UI
     {

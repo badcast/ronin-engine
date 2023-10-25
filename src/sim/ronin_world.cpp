@@ -170,24 +170,33 @@ namespace RoninEngine
             TimeEngine::BeginWatch();
             if(!switched_world->irs->request_unloading && cam)
             {
+                // Reset Color
+                Gizmos::SetColor(Color::white);
                 switched_world->OnGizmos(); // Draw gizmos
 
                 scripts_gizmos();
 
                 if(ronin_debug_mode)
                 {
-                    constexpr int font_height = 12;
-
-                    static struct
+                    constexpr int font_height = 11;
+                    static char buffer[32];
+                    static struct __INFOLABEL__
                     {
-                        const char *label;
+                        int labelLen;
 
                         std::uint32_t value;
                         std::string format;
                         Color format_color;
-                    } elements[] = {{"Render Frame", 0}, {"GUI", 0}, {"Scripts", 0}, {"Render", 0}, {"Gizmos", 0}, {"Memory", 0}};
 
-                    static std::uint32_t max_elements = sizeof(elements) / sizeof(elements[0]);
+                        __INFOLABEL__(const char *label, std::uint32_t value) : format(label)
+                        {
+                            this->labelLen = this->format.length();
+                            this->value = value;
+                        }
+                    } labels[] = {
+                        {"FPS: ", 0}, {" > GUI: ", 0}, {" > Scripts: ", 0}, {" > Render: ", 0}, {" > Gizmos: ", 0}, {" > Memory: ", 0}};
+
+                    static std::uint32_t max_elements = sizeof(labels) / sizeof(labels[0]);
                     static std::uint32_t max;
                     static std::uint32_t averrage;
 
@@ -198,52 +207,49 @@ namespace RoninEngine
 
                     if(TimeEngine::frame() % 10 == 0)
                     {
-                        TimingWatcher stat = RoninSimulator::GetTimingWatches();
                         // Update data
-                        elements[0].value = stat.ms_wait_frame;
-                        elements[1].value = stat.ms_wait_render_gui;
-                        elements[2].value = stat.ms_wait_exec_scripts + stat.ms_wait_exec_world;
-                        elements[3].value = stat.ms_wait_render_world;
-                        elements[4].value = stat.ms_wait_render_gizmos;
-                        elements[5].value = Perfomances::GetMemorySize() / 1024 / 1024;
+                        labels[0].value = last_watcher.ms_wait_frame;
+                        labels[1].value = last_watcher.ms_wait_render_gui;
+                        labels[2].value = last_watcher.ms_wait_exec_scripts + last_watcher.ms_wait_exec_world;
+                        labels[3].value = last_watcher.ms_wait_render_world;
+                        labels[4].value = last_watcher.ms_wait_render_gizmos;
+                        labels[5].value = Perfomances::GetMemoryUsed() / 1024 / 1024; // convert bytes to MB
 
                         // calculate averrage and max
                         max = 10;
                         averrage = 0;
                         for(x = 1; x < max_elements - 1; ++x)
                         {
-                            max = std::max(elements[x].value, max);
-                            averrage += elements[x].value;
+                            max = std::max(labels[x].value, max);
+                            averrage += labels[x].value;
                         }
                         averrage /= std::max(1, x);
 
+                        // Calculate FPS and timing
+                        labels[0].format.resize(labels[0].labelLen);
+                        snprintf(buffer, sizeof(buffer), "%d (%d ms)", static_cast<int>(1 / TimeEngine::deltaTime()), labels[0].value);
+                        labels[0].format += buffer;
+
                         // format text
-                        for(x = 0; x < max_elements; ++x)
+                        for(x = 1; x < max_elements; ++x)
                         {
-                            if(x != 0)
-                                elements[x].format = " > ";
-                            else
-                                elements[x].format.clear();
-                            elements[x].format += elements[x].label;
-                            elements[x].format += ": ";
-                            elements[x].format += std::to_string(elements[x].value);
-                            elements[x].format += ' ';
+                            labels[x].format.resize(labels[x].labelLen);
+                            snprintf(buffer, sizeof(buffer), "%d ", labels[x].value);
+                            labels[x].format += buffer;
 
                             // format color
-                            if(max && elements[x].value == max)
-                                elements[x].format_color = Color::red;
-                            else if(averrage && elements[x].value >= averrage)
-                                elements[x].format_color = Color::yellow;
+                            if(max && labels[x].value == max)
+                                labels[x].format_color = Color::red;
+                            else if(averrage && labels[x].value >= averrage)
+                                labels[x].format_color = Color::yellow;
                             else
-                                elements[x].format_color = Color::white;
+                                labels[x].format_color = Color::white;
                         }
 
-                        // write ISO
-                        // ms
-                        for(x = 0; x < max_elements - 1; ++x)
-                            elements[x].format += "ms";
-                        elements[x].format += "MiB";
-                        elements[x].format_color = Color::white;
+                        for(x = 1; x < max_elements - 1; ++x)
+                            labels[x].format += "ms";
+                        labels[x].format += "MiB";
+                        labels[x].format_color = Color::white;
                     }
 
                     // Set background color
@@ -255,13 +261,13 @@ namespace RoninEngine
                     screen_point.x = 10;
                     screen_point.y -= static_cast<int>(g_size.y) - font_height / 2;
                     Gizmos::SetColor(Color::white);
-                    Gizmos::DrawTextToScreen(screen_point, elements[0].format, font_height);
+                    Gizmos::DrawTextToScreen(screen_point, labels[0].format, font_height);
                     for(x = 1; x < max_elements; ++x)
                     {
-                        Gizmos::SetColor(elements[x].format_color);
+                        Gizmos::SetColor(labels[x].format_color);
 
                         screen_point.y += font_height + 1;
-                        Gizmos::DrawTextToScreen(screen_point, elements[x].format, font_height);
+                        Gizmos::DrawTextToScreen(screen_point, labels[x].format, font_height);
                     }
                 }
             }

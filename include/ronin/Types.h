@@ -152,6 +152,7 @@ namespace RoninEngine
         struct IRoninBaseEvents
         {
             void AddOnDestroy(RoninBaseEvent<T> callback);
+            void ClearOnDestroy();
         };
     } // namespace Runtime
 

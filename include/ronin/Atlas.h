@@ -4,7 +4,7 @@
 
 namespace RoninEngine::Runtime
 {
-
+    // TODO: Make atlas object (Collection sprite)
     class RONIN_API Atlas
     {
     private:

@@ -110,10 +110,11 @@ namespace RoninEngine::UI
 
     void UILayout::maketUpdate()
     {
+        Rectf rect;
         for(uid id : elements)
         {
-            UIElement * elem = &call_get_element(handle, id);
-
+            UIElement *elem = &call_get_element(handle, id);
+            elem->rect;
         }
     }
 
@@ -127,6 +128,7 @@ namespace RoninEngine::UI
             region.h = Math::Clamp01(region.h);
         }
         UILayout &layout = handle->ui_layer.layouts.emplace_back();
+        layout.handle = handle;
         layout.aspect = aspect;
         layout.region = region;
     }

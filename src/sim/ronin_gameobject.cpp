@@ -187,4 +187,9 @@ namespace RoninEngine::Runtime
     {
         ev_destroy.emplace_back(callback);
     }
+
+    void GameObject::ClearOnDestroy()
+    {
+        ev_destroy.clear();
+    }
 } // namespace RoninEngine::Runtime

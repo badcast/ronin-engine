@@ -113,7 +113,7 @@ TODO: % CPU в настоящее время используется этим �
 namespace RoninEngine::Perfomances
 {
     // get an bytes
-    RONIN_API size_t GetMemorySize()
+    RONIN_API size_t GetMemoryUsed()
     {
         size_t total;
 #ifdef WIN32

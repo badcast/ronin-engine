@@ -664,7 +664,7 @@ namespace RoninEngine
                 throw ronin_watcher_error();
 
             internal_delta_time = Math::Min<float>(1.f, Math::Max<float>(delayed / 1000.f, game_time_score));
-            internal_game_time += game_time_score;
+            internal_game_time += internal_delta_time;
 
             if(ronin_debug_mode && TimeEngine::startUpTime() > fps)
             {
@@ -676,7 +676,7 @@ namespace RoninEngine
                     "FPS:%.1f Memory:%sMiB, "
                     "Ronin Objects:%s, Internal Objects:%s, Frames:%s",
                     fps,
-                    Math::NumBeautify(Perfomances::GetMemorySize() / 1024 / 1024).c_str(),
+                    Math::NumBeautify(Perfomances::GetMemoryUsed() / 1024 / 1024).c_str(),
                     Math::NumBeautify(RoninMemory::total_allocated()).c_str(),
                     Math::NumBeautify(SDL_GetNumAllocations()).c_str(),
                     Math::NumBeautify(internal_frames).c_str());

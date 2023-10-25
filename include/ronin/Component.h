@@ -80,6 +80,12 @@ namespace RoninEngine
             void AddOnDestroy(Event callback);
 
             /**
+             * @brief Unregister all callbaks OnDestroy
+             * @see AddOnDestroy
+             */
+            void ClearOnDestroy();
+
+            /**
              * @brief Get the Transform component of the GameObject.
              * @return A pointer to the Transform component.
              */
