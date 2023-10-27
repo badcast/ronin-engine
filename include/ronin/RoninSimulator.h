@@ -21,25 +21,24 @@ namespace RoninEngine
         RendererPresentVSync = 0x4,
     };
 
-    enum RendererBackend
+    enum RenderBackend
     {
-        Unknown,
-        Hardware,
-        Software
+        GPU,
+        CPU
     };
 
     struct RenderDriverInfo
     {
         std::string name;
         RendererFlags rendererFlags;
-        RendererBackend rendererBackend;
+        RenderBackend rendererBackend;
         int maxTextureWidth;
         int maxTextureHeight;
 
         RenderDriverInfo(
             const std::string &name,
             RendererFlags rendererFlags,
-            RendererBackend rendererBackend,
+            RenderBackend rendererBackend,
             int maxTextureWidth,
             int maxTextureHeight)
             : name(name),
@@ -70,7 +69,7 @@ namespace RoninEngine
 
     struct RoninSettings
     {
-        RendererBackend selectRenderBackend;
+        RenderBackend selectRenderBackend;
         std::uint8_t selectRenderDriver;
         std::uint8_t selectVideoDriver;
         float brightness;
@@ -99,14 +98,14 @@ namespace RoninEngine
 
     struct TimingWatcher
     {
-        std::uint32_t ms_wait_exec_world;
-        std::uint32_t ms_wait_exec_scripts;
-        std::uint32_t ms_wait_render_world;
-        std::uint32_t ms_wait_render_gui;
-        std::uint32_t ms_wait_render_gizmos;
-        std::uint32_t ms_wait_destructions;
-        std::uint32_t ms_wait_internal_instructions;
-        std::uint32_t ms_wait_frame;
+        std::uint32_t delayExecWorld;
+        std::uint32_t delayExecScripts;
+        std::uint32_t delayRenderWorld;
+        std::uint32_t delayRenderGUI;
+        std::uint32_t delayRenderGizmos;
+        std::uint32_t delayHarakiring;
+        std::uint32_t delaySystem;
+        std::uint32_t delayFrameRate;
     };
 
     class RONIN_API RoninSimulator
@@ -248,7 +247,7 @@ namespace RoninEngine
          * @brief Write log
          * @param str The message string
          */
-        static void Log(const std::string &str);
+        static void Log(const char *str);
 
         /**
          * @brief Handles an out-of-memory failure by terminating the application.

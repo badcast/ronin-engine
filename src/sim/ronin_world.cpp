@@ -94,7 +94,7 @@ namespace RoninEngine
 
             if(world->irs->objects != 0)
             {
-                RoninSimulator::Log("World is have leak objects: " + std::to_string(world->irs->objects));
+                RoninSimulator::Log(("World is have leak objects: " + std::to_string(world->irs->objects)).c_str());
             }
 
             if(world->irs->runtimeCollectors)
@@ -111,8 +111,8 @@ namespace RoninEngine
             }
 
             // NOTE: Free Local Resources
-            gid_resources_free(&world->irs->external_local_resources);
             // world->irs->external_local_resources = nullptr;
+            gid_resources_free(&world->irs->external_local_resources);
 
             // Halt all channels
             Mix_HaltChannel(-1);
@@ -154,7 +154,7 @@ namespace RoninEngine
             scripts_lateUpdate();
 
             // end watcher
-            queue_watcher.ms_wait_exec_scripts = TimeEngine::EndWatch();
+            queue_watcher.delayExecScripts = TimeEngine::EndWatch();
 
             TimeEngine::BeginWatch();
             // Render on main camera
@@ -164,7 +164,7 @@ namespace RoninEngine
                 // draw world in world size
                 native_render_2D(reinterpret_cast<Camera2D *>(cam));
             }
-            queue_watcher.ms_wait_render_world = TimeEngine::EndWatch();
+            queue_watcher.delayRenderWorld = TimeEngine::EndWatch();
 
             // begin watcher
             TimeEngine::BeginWatch();
@@ -208,11 +208,11 @@ namespace RoninEngine
                     if(TimeEngine::frame() % 10 == 0)
                     {
                         // Update data
-                        labels[0].value = last_watcher.ms_wait_frame;
-                        labels[1].value = last_watcher.ms_wait_render_gui;
-                        labels[2].value = last_watcher.ms_wait_exec_scripts + last_watcher.ms_wait_exec_world;
-                        labels[3].value = last_watcher.ms_wait_render_world;
-                        labels[4].value = last_watcher.ms_wait_render_gizmos;
+                        labels[0].value = last_watcher.delayFrameRate;
+                        labels[1].value = last_watcher.delayRenderGUI;
+                        labels[2].value = last_watcher.delayExecScripts + last_watcher.delayExecWorld;
+                        labels[3].value = last_watcher.delayRenderWorld;
+                        labels[4].value = last_watcher.delayRenderGizmos;
                         labels[5].value = Perfomances::GetMemoryUsed() / 1024 / 1024; // convert bytes to MB
 
                         // calculate averrage and max
@@ -273,7 +273,7 @@ namespace RoninEngine
             }
 
             // end watcher
-            queue_watcher.ms_wait_render_gizmos = TimeEngine::EndWatch();
+            queue_watcher.delayRenderGizmos = TimeEngine::EndWatch();
         }
 
     } // namespace Runtime

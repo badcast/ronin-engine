@@ -65,9 +65,7 @@ namespace RoninEngine
     {
         // this is variable for apply settings
         int conf;
-        SDL_Surface *software_surface = nullptr;
-        SDL_Renderer *renderer_hardware = nullptr;
-        SDL_Renderer *renderer_software = nullptr;
+        RenderBackend renderBackend = RenderBackend::GPU;
     } simConfig;
 
     SDL_Renderer *renderer = nullptr;
@@ -89,13 +87,9 @@ namespace RoninEngine
         if(simConfig.conf & CONF_RENDER_CHANGED)
         {
             if(simConfig.conf & CONF_RENDER_SOFTWARE == CONF_RENDER_SOFTWARE)
-            {
-                renderer = simConfig.renderer_software;
-            }
+                simConfig.renderBackend = RenderBackend::CPU;
             else
-            {
-                renderer = simConfig.renderer_hardware;
-            }
+                simConfig.renderBackend = RenderBackend::GPU;
         }
 
         if(simConfig.conf & CONF_RELOAD_WORLD)
@@ -474,15 +468,15 @@ namespace RoninEngine
         float secPerFrame, game_time_score;
         std::uint64_t delayed = 0;
 
-        if(switched_world == nullptr)
-        {
-            ShowMessage("World not loaded");
-            return;
-        }
-
         if(active_window == nullptr)
         {
             ShowMessage("Engine not inited");
+            return;
+        }
+
+        if(switched_world == nullptr)
+        {
+            ShowMessage("World not loaded");
             return;
         }
 
@@ -494,11 +488,11 @@ namespace RoninEngine
         while(!isQuiting)
         {
             // TODO: m_level->request_unloading use as WNILE block (list proc)
-
-            TimeEngine::BeginWatch();
-
             delayed = TimeEngine::millis();
 
+            // Timing for FrameTime
+            TimeEngine::BeginWatch();
+            // Timing for System delay
             TimeEngine::BeginWatch();
 
             // update internal events
@@ -535,27 +529,39 @@ namespace RoninEngine
                 }
 
                 // Destroy last renderer
-                SDL_DestroyRenderer(simConfig.renderer_hardware);
+                SDL_DestroyRenderer(renderer);
 
                 if(switched_world == nullptr)
                 {
                     renderer = nullptr;
-                    simConfig.renderer_hardware = nullptr;
 
-                    queue_watcher.ms_wait_internal_instructions = TimeEngine::EndWatch();
+                    queue_watcher.delaySystem = TimeEngine::EndWatch();
                     goto end_simulate;
                 }
                 else
                 {
-                    // on first load level
-                    renderer = simConfig.renderer_hardware =
-                        SDL_CreateRenderer(active_window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE);
+                    // On Runtime Loading world
 
-                    // Set blendmode
-                    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+                    bool software_render = true;
+                    std::uint32_t renderFlags = SDL_RENDERER_TARGETTEXTURE;
+
+                    if(simConfig.renderBackend == RenderBackend::CPU)
+                    {
+                        renderFlags |= SDL_RENDERER_SOFTWARE;
+                    }
+                    else
+                    {
+                        renderFlags |= SDL_RENDERER_ACCELERATED;
+                    }
+
+                    // on first load level
+                    renderer = SDL_CreateRenderer(active_window, -1, renderFlags);
 
                     if(renderer == nullptr)
                         ShowMessageFail(SDL_GetError());
+
+                    // Set blendmode
+                    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
 
                     // on swtiched and init resources, even require
                     Runtime::internal_load_world(preload_world);
@@ -586,7 +592,7 @@ namespace RoninEngine
 
             input_movement_update();
 
-            queue_watcher.ms_wait_internal_instructions = TimeEngine::EndWatch();
+            queue_watcher.delaySystem = TimeEngine::EndWatch();
             // end watcher
 
             // update level
@@ -606,7 +612,7 @@ namespace RoninEngine
                     switched_world->OnUpdate();
                 }
                 // end watcher
-                queue_watcher.ms_wait_exec_world = TimeEngine::EndWatch();
+                queue_watcher.delayExecWorld = TimeEngine::EndWatch();
 
                 if(switched_world->irs->request_unloading)
                 {
@@ -623,18 +629,18 @@ namespace RoninEngine
             if(!switched_world->irs->request_unloading)
                 RunCollector();
             // end watcher
-            queue_watcher.ms_wait_destructions = TimeEngine::EndWatch();
+            queue_watcher.delayHarakiring = TimeEngine::EndWatch();
 
             if(switched_world->irs->request_unloading)
                 goto end_simulate; // break on unload state
 
-            // Set scale as default
+            // Set scale to default
             SDL_RenderSetScale(renderer, 1.f, 1.f);
 
             // begin watcher
             TimeEngine::BeginWatch();
             UI::native_draw_render(switched_world->irs->gui);
-            queue_watcher.ms_wait_render_gui = TimeEngine::EndWatch();
+            queue_watcher.delayRenderGUI = TimeEngine::EndWatch();
             // end watcher
 
             if(switched_world->irs->request_unloading)
@@ -645,7 +651,7 @@ namespace RoninEngine
                 // begin watcher
                 TimeEngine::BeginWatch();
                 SDL_RenderPresent(renderer);
-                queue_watcher.ms_wait_render_world += TimeEngine::EndWatch();
+                queue_watcher.delayRenderWorld += TimeEngine::EndWatch();
                 // end watcher
             }
 
@@ -653,7 +659,7 @@ namespace RoninEngine
 
             delayed = TimeEngine::millis() - delayed;
 
-            queue_watcher.ms_wait_frame = TimeEngine::EndWatch();
+            queue_watcher.delayFrameRate = TimeEngine::EndWatch();
 
             // update watcher
             last_watcher = queue_watcher;
@@ -704,22 +710,11 @@ namespace RoninEngine
             switched_world = nullptr;
         }
 
-        if(simConfig.renderer_hardware)
+        if(renderer)
         {
-            SDL_DestroyRenderer(simConfig.renderer_hardware);
-            simConfig.renderer_hardware = nullptr;
+            SDL_DestroyRenderer(renderer);
+            renderer = nullptr;
         }
-
-        if(simConfig.renderer_software)
-        {
-            SDL_DestroyRenderer(simConfig.renderer_software);
-            if(simConfig.software_surface)
-                SDL_FreeSurface(simConfig.software_surface);
-
-            simConfig.software_surface = nullptr;
-            simConfig.renderer_software = nullptr;
-        }
-        renderer = nullptr;
     }
 
     void RoninSimulator::ShowMessage(const std::string &message)
@@ -737,9 +732,9 @@ namespace RoninEngine
         Kill();
     }
 
-    void RoninSimulator::Log(const std::string &str)
+    void RoninSimulator::Log(const char *str)
     {
-        SDL_Log("%s", str.c_str());
+        SDL_Log("%s", str);
     }
 
     void RoninSimulator::BreakSimulate()
@@ -770,7 +765,7 @@ namespace RoninEngine
             drivers.emplace_back(
                 rdi.name,
                 RendererFlags(rdi.flags ^ SDL_RENDERER_TARGETTEXTURE),
-                (rdi.flags & SDL_RENDERER_SOFTWARE ? RendererBackend::Software : RendererBackend::Hardware),
+                (rdi.flags & SDL_RENDERER_SOFTWARE ? RenderBackend::CPU : RenderBackend::GPU),
                 rdi.max_texture_width,
                 rdi.max_texture_height);
         }
@@ -805,7 +800,7 @@ namespace RoninEngine
         SDL_RendererInfo info;
         if(renderer != nullptr && SDL_GetRendererInfo(renderer, &info) == 0)
         {
-            settings->selectRenderBackend = (info.flags & SDL_RENDERER_SOFTWARE) ? RendererBackend::Software : RendererBackend::Hardware;
+            settings->selectRenderBackend = (info.flags & SDL_RENDERER_SOFTWARE) ? RenderBackend::CPU : RenderBackend::GPU;
         }
 
         settings->brightness = SDL_GetWindowBrightness(active_window);
@@ -833,30 +828,10 @@ namespace RoninEngine
                 {
                     switch(settings->selectRenderBackend)
                     {
-                        case RendererBackend::Software:
-                            if(simConfig.renderer_software == nullptr)
-                            {
-                                if(simConfig.software_surface == nullptr ||
-                                   (simConfig.software_surface->w != active_resolution.width ||
-                                    simConfig.software_surface->h != active_resolution.height))
-                                {
-                                    // Free old
-                                    if(simConfig.software_surface != nullptr)
-                                        SDL_FreeSurface(simConfig.software_surface);
-
-                                    simConfig.software_surface = SDL_CreateRGBSurfaceWithFormat(
-                                        0, active_resolution.width, active_resolution.height, 32, sdl_default_pixelformat);
-                                }
-
-                                if(simConfig.renderer_software)
-                                    SDL_DestroyRenderer(simConfig.renderer_software);
-
-                                simConfig.renderer_software = SDL_CreateSoftwareRenderer(simConfig.software_surface);
-                                SDL_SetRenderDrawBlendMode(simConfig.renderer_software, SDL_BLENDMODE_BLEND);
-                            }
+                        case RenderBackend::CPU:
                             simConfig.conf |= CONF_RENDER_SOFTWARE;
                             break;
-                        case RendererBackend::Hardware:
+                        case RenderBackend::GPU:
                             simConfig.conf |= CONF_RENDER_CHANGED; // set as HARDWARE
                             break;
                     }

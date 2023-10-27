@@ -70,13 +70,13 @@ bool AssetManager::LoadAsset(const std::string &assetFile, Asset **asset)
         param2 = resource["ref"];
         if(!param1.isString() || !param2.isString())
         {
-            RoninSimulator::Log("Invalid element on \"resources\". Incorrect file " + assetFile);
+            RoninSimulator::Log(("Invalid element on \"resources\". Incorrect file " + assetFile).c_str());
             continue;
         }
         size_t hash_it = string_hasher(param1.asString());
         if(std::end(__files) != std::find_if(std::begin(__files), std::end(__files), [&hash_it](auto &ref) { return hash_it == ref.first; }))
         {
-            RoninSimulator::Log("Conflict resource name \"" + param1.asString() + "\"");
+            RoninSimulator::Log(("Conflict resource name \"" + param1.asString() + "\"").c_str());
             continue;
         }
 
@@ -109,7 +109,7 @@ bool AssetManager::LoadAsset(const std::string &assetFile, Asset **asset)
 
         if(rcid == RES_INVALID)
         {
-            RoninSimulator::Log("Invalid resource " + pair.second);
+            RoninSimulator::Log(("Invalid resource " + pair.second).c_str());
             continue;
         }
 
