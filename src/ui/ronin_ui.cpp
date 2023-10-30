@@ -326,10 +326,34 @@ namespace RoninEngine::UI
 
         if(elem.prototype != RGUI_HSLIDER && elem.prototype != RGUI_VSLIDER)
         {
-            throw std::runtime_error("id component is not slider");
+            throw ronin_uid_nocast_error();
         }
 
         return *static_cast<float *>(elem.resources);
+    }
+
+    void GUI::SliderSetPercentage(uid id, float percentage)
+    {
+        UIElement &elem = call_get_element(this->handle, id);
+
+        if(elem.prototype != RGUI_HSLIDER && elem.prototype != RGUI_VSLIDER)
+        {
+            throw ronin_uid_nocast_error();
+        }
+
+        reinterpret_cast<SliderResource *>(elem.resources)->stepPercentage = percentage;
+    }
+
+    float GUI::SliderGetPercentage(uid id)
+    {
+        UIElement &elem = call_get_element(this->handle, id);
+
+        if(elem.prototype != RGUI_HSLIDER && elem.prototype != RGUI_VSLIDER)
+        {
+            throw ronin_uid_nocast_error();
+        }
+
+        return reinterpret_cast<SliderResource *>(elem.resources)->stepPercentage;
     }
 
     bool GUI::ButtonClicked(uid id)
@@ -343,10 +367,10 @@ namespace RoninEngine::UI
 
         if(elem.prototype != RGUI_HSLIDER && elem.prototype != RGUI_VSLIDER)
         {
-            throw std::runtime_error("id component is not slider");
+            throw ronin_uid_nocast_error();
         }
-
-        memcpy(elem.resources, &value, sizeof value);
+        SliderResource *sliderResource = reinterpret_cast<SliderResource *>(elem.resources);
+        sliderResource->value = Math::Clamp(value, sliderResource->min, sliderResource->max);
     }
 
     // grouping-----------------------------------------------------------------------------------------------------------

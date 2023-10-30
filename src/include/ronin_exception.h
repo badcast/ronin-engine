@@ -115,4 +115,12 @@ namespace RoninEngine::Exception
         {
         }
     };
+
+    class ronin_uid_nocast_error : public ronin_base_error
+    {
+    public:
+        ronin_uid_nocast_error() : ronin_base_error("UID no cast for it")
+        {
+        }
+    };
 } // namespace RoninEngine::Exception

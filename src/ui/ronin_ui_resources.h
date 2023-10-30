@@ -12,6 +12,7 @@ namespace RoninEngine::UI
         float value;
         float min;
         float max;
+        float stepPercentage = 0.1f; // default
     };
 
     typedef std::pair<int, std::list<std::string>> DropDownResource;

@@ -154,6 +154,9 @@ namespace RoninEngine
             UI_METHOD void SliderSetValue(uid id, float value);
             UI_METHOD float SliderGetValue(uid id);
 
+            UI_METHOD void SliderSetPercentage(uid id, float percentage);
+            UI_METHOD float SliderGetPercentage(uid id);
+
             UI_METHOD bool ButtonClicked(uid id);
 
             // grouping-----------------------------------------------------------------------------------------------------------

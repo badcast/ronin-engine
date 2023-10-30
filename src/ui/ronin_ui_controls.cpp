@@ -175,7 +175,6 @@ namespace RoninEngine::UI
                 }
                 break;
             }
-
             case RGUI_HSLIDER:
             {
                 float ratio;
@@ -193,21 +192,21 @@ namespace RoninEngine::UI
 
                 if(ms_hover && Input::GetMouseWheel())
                 {
-                    resource->value += Input::GetMouseWheel() / 10.f; // step wheel mouse = ±0.1
-                    resource->value = Math::Clamp(resource->value, resource->min, resource->max);
-                    result = true;
+                    // step wheel mouse = ±0.1
+                    float percentage = (resource->min + resource->max) * resource->stepPercentage * Input::GetMouseWheel();
+                    resource->value = Math::Clamp(resource->value + percentage, resource->min, resource->max);
                 }
-                // focused state
-                else if(result = (ui_focus && ms_hover))
+                else if(ui_focus || ms_hover)
                 {
-                    if(Input::GetMouseDown(MouseState::MouseLeft))
+                    if((result = Input::GetMouseDown(MouseState::MouseLeft)))
                     {
                         // get *x* component from mouse point for set cursor point
-                        resource->value = Math::Map((float) ms.x, (float) rect.x, (float) rect.x + rect.w, resource->min, resource->max);
+                        resource->value =
+                            Math::Map<float>((float) ms.x, (float) rect.x, (float) rect.x + rect.w, resource->min, resource->max);
                     }
                 }
-                else
-                    resource->value = Math::Clamp(resource->value, resource->min, resource->max);
+
+                // Draw Slider Background
 
                 ratio = Math::Map(resource->value, resource->min, resource->max, 0.f, 1.f);
 
@@ -216,26 +215,37 @@ namespace RoninEngine::UI
 
                 Gizmos::SetColor(ms_hover ? Color::lightgray : Color::gray);
                 Color color = Gizmos::GetColor();
-                roundedBoxColor(renderer, rect.x, rect.y, rect.x + rect.w, rect.y + rect.h, 3, Color::slategray);
-                roundedRectangleColor(renderer, rect.x, rect.y, rect.x + rect.w, rect.y + rect.h, 3, color);
+                // roundedBoxColor(renderer, rect.x, rect.y, rect.x + rect.w, rect.y + rect.h, 3, Color::slategray);
+                // roundedRectangleColor(renderer, rect.x, rect.y, rect.x + rect.w, rect.y + rect.h, 3, color);
+                boxColor(renderer, rect.x, rect.y, rect.x + rect.w, rect.y + rect.h, Color::slategray);
+                rectangleColor(renderer, rect.x, rect.y, rect.x + rect.w, rect.y + rect.h, color);
 
-                // draw cursor
-                rect.w = 9;
+                // Draw Slider Cursor
+
+                // Cursor width
+                rect.w = 20;
+                // Cursor Height
                 rect.h = 11;
+                // Cursor Horizontal position
                 rect.x += (int) element.rect.w * ratio - rect.w / 2;
-                rect.y = element.rect.y + element.rect.h / 2 - rect.h / 2;
+                // Cursor Vertical position
+                rect.y = element.rect.y + (element.rect.h - rect.h) / 2;
+
+                // Cursor background
                 color = Color::darkgray;
-                roundedBoxColor(renderer, rect.x, rect.y, rect.x + rect.w, rect.y + rect.h, 3, color);
-                color = Color::gray;
-                roundedRectangleColor(renderer, rect.x, rect.y, rect.x + rect.w, rect.y + rect.h, 3, color);
+                boxColor(renderer, rect.x, rect.y, rect.x + rect.w, rect.y + rect.h, color);
 
-                // Draw text
-                // char __[32];
+                // Cursor thickness
+                color = ms_hover ? Color::lightgray : Color::gray;
+                rectangleColor(renderer, rect.x, rect.y, rect.x + rect.w + 1, rect.y + rect.h + 1, color);
 
-                // TTF_SizeText(ttf_arial_font, __, &rect.w, &rect.h);
-                // sprintf(__, "%.1f", &resource->value);
-                // Vec2Int tpos = {element.rect.x + element.rect.w - 22, element.rect.y + element.rect.h - 8};
-                // draw_font_at(renderer, __, 1, tpos, color);
+                // Draw Text under Cursor point
+                Gizmos::SetColor(Color::black);
+                char buffer[32];
+                snprintf(buffer, sizeof(buffer), "%.1f", resource->value);
+                rect.x += rect.w / 2;
+                rect.y += rect.h / 2;
+                Render_String_ttf(buffer, 9, rect.GetXY(), true);
 
                 break;
             }
