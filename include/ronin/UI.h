@@ -46,6 +46,7 @@ namespace RoninEngine
             Runtime::Vec2Int buttonSize {240, 30};
             Runtime::Vec2Int editSize {240, 30};
             Runtime::Vec2Int sliderSize {240, 30};
+            Runtime::Vec2Int checkboxSize {120, 25};
         } const defaultMakets;
 
         class RONIN_API GUI final
@@ -137,6 +138,15 @@ namespace RoninEngine
             UI_METHOD uid
             PushSlider(float value, float min, float max, const Runtime::Rect &rect, UIEventFloat changed = nullptr, uid parent = NOPARENT);
 
+            UI_METHOD uid PushCheckBox(
+                bool checked, const std::string &text, const Runtime::Vec2Int &point, UIEventBool changed = nullptr, uid parent = NOPARENT)
+            {
+                return PushCheckBox(checked, text, Runtime::Rect {point, defaultMakets.checkboxSize}, changed, parent);
+            }
+
+            UI_METHOD uid PushCheckBox(
+                bool checked, const std::string &text, const Runtime::Rect &rect, UIEventBool changed = nullptr, uid parent = NOPARENT);
+
             // property-----------------------------------------------------------------------------------------------------------
 
             UI_METHOD Runtime::Rect GetElementRect(uid id);
@@ -158,6 +168,9 @@ namespace RoninEngine
             UI_METHOD float SliderGetPercentage(uid id);
 
             UI_METHOD bool ButtonClicked(uid id);
+
+            UI_METHOD void PictureBoxSetSprite(uid id, Runtime::Sprite *sprite);
+            UI_METHOD Runtime::Sprite *PictureBoxGetSprite(uid id);
 
             // grouping-----------------------------------------------------------------------------------------------------------
 

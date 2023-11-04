@@ -14,50 +14,8 @@ namespace RoninEngine::UI
 
     std::uint8_t legacyVH[] {0, 32, 16, 2, 34, 18, 1, 33, 17};
 
-    uid _controlId;
-    uid _focusedId;
-
     extern TTF_Font *ttf_arial_font;
     extern LegacyFont_t *pLegacyFont;
-
-    void ui_reset_controls()
-    {
-        _controlId = 0;
-    }
-
-    UIRes *factory_resource(GUIControlPresents type)
-    {
-        UIRes *resources;
-
-        switch(type)
-        {
-            case RGUI_DROPDOWN:
-                resources = reinterpret_cast<UIRes *>(RoninMemory::alloc<DropDownResource>());
-                break;
-            case RGUI_HSLIDER:
-                // value, min, max members
-                resources = reinterpret_cast<UIRes *>(RoninMemory::alloc<SliderResource>());
-                break;
-            default:
-                resources = nullptr;
-                break;
-        }
-        return resources;
-    }
-
-    void factory_free(UIElement *element)
-    {
-        switch(element->prototype)
-        {
-            case RGUI_DROPDOWN:
-                RoninMemory::free(static_cast<DropDownResource *>(element->resources));
-                break;
-            case RGUI_HSLIDER:
-            case RGUI_VSLIDER:
-                RoninMemory::free(static_cast<SliderResource *>(element->resources));
-                break;
-        }
-    }
 
     bool general_render_ui_section(GUI *gui, UIElement &element, const bool ms_hover, const bool ms_click, bool &ui_focus)
     {
@@ -117,7 +75,7 @@ namespace RoninEngine::UI
                     rect.GetXY() + (rect.GetWH() - (show_down_side ? (Vec2Int::up * 4) : Vec2Int::zero)) / 2,
                     true);
                 if(result = ms_hover && ms_click)
-                    gui->handle->ui_layer.button_clicked.insert(element.id);
+                    gui->handle->button_clicked.insert(element.id);
                 break;
             }
 
@@ -175,10 +133,11 @@ namespace RoninEngine::UI
                 }
                 break;
             }
+
             case RGUI_HSLIDER:
             {
                 float ratio;
-                SliderResource *resource = reinterpret_cast<SliderResource *>(element.resources);
+                SliderResource *resource = &element.resource.slider;
                 // clamp mouse point an inside
                 ms.x = Math::Clamp(ms.x, element.rect.x, element.rect.x + element.rect.w);
                 ms.y = Math::Clamp(ms.y, element.rect.y, element.rect.y + element.rect.h);
@@ -215,8 +174,6 @@ namespace RoninEngine::UI
 
                 Gizmos::SetColor(ms_hover ? Color::lightgray : Color::gray);
                 Color color = Gizmos::GetColor();
-                // roundedBoxColor(renderer, rect.x, rect.y, rect.x + rect.w, rect.y + rect.h, 3, Color::slategray);
-                // roundedRectangleColor(renderer, rect.x, rect.y, rect.x + rect.w, rect.y + rect.h, 3, color);
                 boxColor(renderer, rect.x, rect.y, rect.x + rect.w, rect.y + rect.h, Color::slategray);
                 rectangleColor(renderer, rect.x, rect.y, rect.x + rect.w, rect.y + rect.h, color);
 
@@ -252,18 +209,13 @@ namespace RoninEngine::UI
 
             case RGUI_VSLIDER:
             {
-                float *value = (float *) element.resources;
-                float *min = value + 1;
-                float *max = min + 1;
-                *value = Math::Clamp(*value, *min, *max);
-
                 break;
             }
 
             case RGUI_PICTURE_BOX:
             {
                 SDL_Rect sdlr;
-                Sprite *sprite = reinterpret_cast<Sprite *>(element.resources);
+                Sprite *sprite = element.resource.picturebox;
                 if(sprite && sprite->surface)
                 {
                     sdlr.x = element.rect.x;
@@ -312,7 +264,7 @@ namespace RoninEngine::UI
                     SDL_FreeSurface(surf);
                 }
                 // get resources
-                auto link = static_cast<std::pair<int, std::list<std::string>> *>(element.resources);
+                DropDownResource *link = element.resource.dropdown;
 
                 // show dropdown list
                 if(ui_focus)
@@ -390,7 +342,7 @@ namespace RoninEngine::UI
         return result;
     }
 
-    void event_action(UIElement *element)
+    void ui_event_action(UIElement *element)
     {
         if(element->event == nullptr)
             return;
@@ -398,14 +350,15 @@ namespace RoninEngine::UI
         switch(element->prototype)
         {
             case RGUI_BUTTON:
-                ((UIEventVoid) (element->event))(element->id);
+                (reinterpret_cast<UIEventVoid>(element->event))(element->id);
                 break;
             case RGUI_DROPDOWN:
-                ((UIEventInteger) (element->event))(element->id, (static_cast<DropDownResource *>(element->resources)->first));
+                (reinterpret_cast<UIEventInteger>(element->event))(element->id, (element->resource.dropdown->first));
                 break;
             case RGUI_HSLIDER:
             case RGUI_VSLIDER:
-                ((UIEventFloat) (element->event))(element->id, static_cast<SliderResource *>(element->resources)->value);
+                (reinterpret_cast<UIEventFloat>(element->event))(element->id, element->resource.slider.value);
+                break;
         }
     }
 

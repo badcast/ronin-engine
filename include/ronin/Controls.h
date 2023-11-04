@@ -19,6 +19,7 @@ namespace RoninEngine
         typedef void (*UIEventInteger)(uid id, int newValue);
         typedef void (*UIEventChar)(uid id, const char *newValue);
         typedef void (*UIEventFloat)(uid id, float newValue);
+        typedef void (*UIEventBool)(uid id, bool newValue);
         typedef void (*UIEventVoid)(uid id);
     } // namespace UI
 } // namespace RoninEngine

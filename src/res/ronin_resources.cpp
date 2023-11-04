@@ -176,7 +176,7 @@ namespace RoninEngine::Runtime
         GidResources *gid;
 
         auto memory = stream_to_mem(stream);
-        SDL_Surface *surf = IMG_Load_RW(SDL_RWFromMem(memory.second, memory.first), SDL_TRUE);
+        SDL_Surface *surf = IMG_Load_RW(SDL_RWFromConstMem(memory.second, memory.first), SDL_TRUE);
         RoninMemory::ronin_memory_free(memory.second);
         if(surf == nullptr)
         {

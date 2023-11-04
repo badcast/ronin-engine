@@ -12,10 +12,14 @@ namespace RoninEngine::UI
         float value;
         float min;
         float max;
-        float stepPercentage = 0.1f; // default
+        float stepPercentage;
     };
 
-    typedef std::pair<int, std::list<std::string>> DropDownResource;
+    struct DropDownResource
+    {
+        int first;
+        std::list<std::string> second;
+    };
 
     struct ElementInteraction
     {
@@ -39,7 +43,7 @@ namespace RoninEngine::UI
     // It's default resource for UI
     struct UIRes;
 
-    enum GUIControlPresents
+    enum GUIControlPresent
     {
         RGUI_TEXT,
         RGUI_BUTTON,
@@ -47,7 +51,8 @@ namespace RoninEngine::UI
         RGUI_HSLIDER,
         RGUI_VSLIDER,
         RGUI_PICTURE_BOX,
-        RGUI_DROPDOWN
+        RGUI_DROPDOWN,
+        RGUI_CHECKBOX
     };
 
     struct UIElement
@@ -58,9 +63,15 @@ namespace RoninEngine::UI
         std::vector<uid> childs;
         Runtime::Rect rect;
         Runtime::Rect contextRect;
-        GUIControlPresents prototype;
+        GUIControlPresent prototype;
         std::string text;
-        void *resources;
+        union
+        {
+            SliderResource slider;
+            Sprite *picturebox;
+            DropDownResource *dropdown;
+            bool checkbox;
+        } resource;
         void *event;
     };
 
@@ -71,7 +82,7 @@ namespace RoninEngine::UI
         Runtime::Rectf region;
         std::vector<uid> elements;
 
-        uid pushElement(uid id);
+        uid addElement(uid id);
         void maketUpdate();
     };
 
@@ -83,14 +94,11 @@ namespace RoninEngine::UI
         bool visible;
         bool mouse_hover;
 
-        struct
-        {
-            uid focusedID;
-            std::vector<UIElement> elements;
-            std::list<uid> layers;
-            std::vector<UILayout> layouts;
-            std::set<uid> button_clicked;
-        } ui_layer;
+        uid focusedID;
+        std::vector<UIElement> elements;
+        std::list<uid> layers;
+        std::vector<UILayout> layouts;
+        std::set<uid> button_clicked;
 
         Runtime::World *owner;
         UIEventUserData callback;

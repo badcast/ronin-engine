@@ -13,40 +13,65 @@ namespace RoninEngine::UI
     using namespace RoninEngine::Runtime;
     using namespace RoninEngine::Exception;
 
-    extern UIRes *factory_resource(GUIControlPresents type);
-    extern void factory_free(UIElement *element);
     extern bool general_render_ui_section(GUI *gui, UIElement &element, const bool ms_hover, const bool ms_click, bool &ui_focus);
-    extern void event_action(UIElement *element);
+    extern void ui_event_action(UIElement *element);
 
-    extern void ui_reset_controls();
-
-    uid call_register_ui(GUI *gui, uid parent = NOPARENT)
+    uid push_new_element(GUI *gui, uid parent = NOPARENT)
     {
         if(!gui->ElementContains(parent))
             throw ronin_ui_group_parent_error();
-        UIElement &data = gui->handle->ui_layer.elements.emplace_back();
-        data.id = gui->handle->ui_layer.elements.size() - 1;
-        data.parentId = parent;
-        data.options = ElementVisibleMask | ElementEnableMask;
+
+        UIElement &elem = gui->handle->elements.emplace_back();
+        elem.id = gui->handle->elements.size() - 1;
+        elem.parentId = parent;
+        elem.options = ElementVisibleMask | ElementEnableMask;
+
+        // Clean memory
+        memset(&elem.resource, 0, sizeof(elem.resource));
+
         // add the child
         if(parent)
-            gui->handle->ui_layer.elements.at(parent).childs.emplace_back(data.id);
+            gui->handle->elements.at(parent).childs.emplace_back(elem.id);
         else
-            gui->handle->ui_layer.layers.push_back(data.id);
+            gui->handle->layers.push_back(elem.id);
 
-        return data.id;
+        return elem.id;
     }
 
     inline UIElement &call_get_element(GUIResources *resources, uid id)
     {
-        return resources->ui_layer.elements[id];
+        return resources->elements[id];
     }
 
     inline UILayout *call_get_last_layout(GUIResources *resources)
     {
-        if(resources->ui_layer.layouts.empty())
+        if(resources->layouts.empty())
             return nullptr;
-        return &resources->ui_layer.layouts.back();
+        return &resources->layouts.back();
+    }
+
+    void ui_resource_new(UIElement &element)
+    {
+        switch(element.prototype)
+        {
+            case GUIControlPresent::RGUI_DROPDOWN:
+            {
+                RoninMemory::alloc_self(element.resource.dropdown);
+                break;
+            }
+        }
+    }
+
+    void ui_resource_del(UIElement &element)
+    {
+        switch(element.prototype)
+        {
+            case GUIControlPresent::RGUI_DROPDOWN:
+            {
+                RoninMemory::free(element.resource.dropdown);
+                break;
+            }
+        }
     }
 
     GUI::GUI(World *world)
@@ -56,7 +81,7 @@ namespace RoninEngine::UI
         handle->interactable = true;
         handle->visible = true;
         // push main component
-        handle->ui_layer.elements.emplace_back();
+        handle->elements.emplace_back();
     }
 
     GUI::~GUI()
@@ -71,7 +96,7 @@ namespace RoninEngine::UI
     {
         std::list<uid> groups;
 
-        for(auto &iter : gui->handle->ui_layer.elements)
+        for(auto &iter : gui->handle->elements)
         {
             if(gui->IsGroup(iter.id))
                 groups.push_back(iter.id);
@@ -84,12 +109,12 @@ namespace RoninEngine::UI
 
     bool GUI::ElementContains(uid id)
     {
-        return handle->ui_layer.elements.size() >= id;
+        return handle->elements.size() >= id;
     }
 
     uid GUI::PushGroup(const Rect &rect)
     {
-        uid id = call_register_ui(this);
+        uid id = push_new_element(this);
         UIElement &data = call_get_element(this->handle, id);
         data.rect = rect;
         data.options |= ElementGroupMask;
@@ -101,7 +126,7 @@ namespace RoninEngine::UI
         return PushGroup(Rect::zero);
     }
 
-    uid UILayout::pushElement(uid id)
+    uid UILayout::addElement(uid id)
     {
         UIElement &element = call_get_element(handle, id);
         this->elements.push_back(id);
@@ -127,7 +152,7 @@ namespace RoninEngine::UI
             region.w = Math::Clamp01(region.w);
             region.h = Math::Clamp01(region.h);
         }
-        UILayout &layout = handle->ui_layer.layouts.emplace_back();
+        UILayout &layout = handle->layouts.emplace_back();
         layout.handle = handle;
         layout.aspect = aspect;
         layout.region = region;
@@ -139,7 +164,7 @@ namespace RoninEngine::UI
         if(layout == nullptr)
             throw RoninEngine::Exception::ronin_ui_layout_error();
 
-        return layout->pushElement(PushLabel(text, Vec2Int::zero, fontWidth));
+        return layout->addElement(PushLabel(text, Vec2Int::zero, fontWidth));
     }
 
     uid GUI::LayoutButton(const std::string &text)
@@ -148,13 +173,13 @@ namespace RoninEngine::UI
         if(layout == nullptr)
             throw RoninEngine::Exception::ronin_ui_layout_error();
 
-        return layout->pushElement(PushButton(text, Vec2Int::zero));
+        return layout->addElement(PushButton(text, Vec2Int::zero));
     }
 
     uid GUI::PushLabel(const std::string &text, const Rect &rect, int fontWidth, uid parent)
     {
         // todo: fontWidth
-        uid id = call_register_ui(this, parent);
+        uid id = push_new_element(this, parent);
         UIElement &data = call_get_element(this->handle, id);
         data.text = text;
         data.rect = rect;
@@ -174,7 +199,7 @@ namespace RoninEngine::UI
 
     uid GUI::PushButton(const std::string &text, const Rect &rect, RoninEngine::UI::UIEventVoid event_callback, uid parent)
     {
-        uid id = call_register_ui(this, parent);
+        uid id = push_new_element(this, parent);
         UIElement &data = call_get_element(this->handle, id);
         data.rect = rect;
         data.text = text;
@@ -190,7 +215,7 @@ namespace RoninEngine::UI
     }
     uid GUI::PushTextEdit(const std::string &text, const Rect &rect, uid parent)
     {
-        uid id = call_register_ui(this, parent);
+        uid id = push_new_element(this, parent);
         UIElement &element = call_get_element(this->handle, id);
 
         element.text = text;
@@ -201,12 +226,12 @@ namespace RoninEngine::UI
 
     uid GUI::PushPictureBox(Sprite *sprite, const Rect &rect, uid parent)
     {
-        uid id = call_register_ui(this, parent);
+        uid id = push_new_element(this, parent);
 
         UIElement &data = call_get_element(this->handle, id);
         data.prototype = RGUI_PICTURE_BOX;
         data.rect = rect;
-        data.resources = sprite;
+        data.resource.picturebox = sprite;
         return id;
     }
     uid GUI::PushPictureBox(Sprite *sprite, const Vec2Int &point, uid parent)
@@ -220,35 +245,30 @@ namespace RoninEngine::UI
     {
         using T = typename std::iterator_traits<decltype(container.cbegin())>::value_type;
 
-        uid id = call_register_ui(guiInstance, parent);
+        uid id = push_new_element(guiInstance, parent);
         UIElement &element = call_get_element(guiInstance->handle, id);
         element.prototype = RGUI_DROPDOWN;
         element.rect = rect;
-        element.resources = factory_resource(element.prototype);
         element.event = (void *) changed;
 
-        if(!element.resources)
-            RoninSimulator::Kill();
-
-        auto link = static_cast<std::pair<int, std::list<std::string>> *>(element.resources);
-        link->first = index;
+        element.resource.dropdown->first = index;
 
         for(auto iter = std::cbegin(container); iter != std::cend(container); ++iter)
         {
             if constexpr(std::is_same<T, std::string>())
             {
-                link->second.emplace_back(*iter);
+                element.resource.dropdown->second.emplace_back(*iter);
             }
             else
             {
-                link->second.emplace_back(std::to_string(*iter));
+                element.resource.dropdown->second.emplace_back(std::to_string(*iter));
             }
         }
 
-        if(!link->second.empty())
+        if(!element.resource.dropdown->second.empty())
         {
-            auto iter = link->second.begin();
-            std::advance(iter, Math::Min(static_cast<int>(link->second.size() - 1), index));
+            auto iter = element.resource.dropdown->second.begin();
+            std::advance(iter, Math::Min(static_cast<int>(element.resource.dropdown->second.size() - 1), index));
             element.text = *iter;
         }
 
@@ -262,17 +282,29 @@ namespace RoninEngine::UI
 
     uid GUI::PushSlider(float value, float min, float max, const Rect &rect, UIEventFloat changed, uid parent)
     {
-        uid id = call_register_ui(this, parent);
+        uid id = push_new_element(this, parent);
         UIElement &element = call_get_element(this->handle, id);
         element.prototype = RGUI_HSLIDER;
         element.rect = rect;
-        element.resources = factory_resource(element.prototype);
-
-        (*(float *) element.resources) = value;
-        (*(float *) (static_cast<char *>(element.resources) + sizeof(float))) = min;
-        (*(float *) (static_cast<char *>(element.resources) + sizeof(float) * 2)) = max;
-
         element.event = (void *) changed;
+        element.resource.slider.value = value;
+        element.resource.slider.min = min;
+        element.resource.slider.max = max;
+        element.resource.slider.stepPercentage = 0.1f;
+        return id;
+    }
+
+    uid GUI::PushCheckBox(bool checked, const std::string &text, const Runtime::Rect &rect, UIEventBool changed, uid parent)
+    {
+        uid id = push_new_element(this, parent);
+
+        UIElement &element = call_get_element(this->handle, id);
+        element.prototype = RGUI_CHECKBOX;
+        element.rect = rect;
+        element.event = (void *) changed;
+        element.text = text;
+        element.resource.checkbox = checked;
+
         return id;
     }
 
@@ -329,7 +361,7 @@ namespace RoninEngine::UI
             throw ronin_uid_nocast_error();
         }
 
-        return *static_cast<float *>(elem.resources);
+        return elem.resource.slider.value;
     }
 
     void GUI::SliderSetPercentage(uid id, float percentage)
@@ -341,7 +373,7 @@ namespace RoninEngine::UI
             throw ronin_uid_nocast_error();
         }
 
-        reinterpret_cast<SliderResource *>(elem.resources)->stepPercentage = percentage;
+        elem.resource.slider.stepPercentage = percentage;
     }
 
     float GUI::SliderGetPercentage(uid id)
@@ -353,12 +385,36 @@ namespace RoninEngine::UI
             throw ronin_uid_nocast_error();
         }
 
-        return reinterpret_cast<SliderResource *>(elem.resources)->stepPercentage;
+        return elem.resource.slider.stepPercentage;
     }
 
     bool GUI::ButtonClicked(uid id)
     {
-        return handle->ui_layer.button_clicked.count(id) > 0;
+        return handle->button_clicked.count(id) > 0;
+    }
+
+    void GUI::PictureBoxSetSprite(uid id, Runtime::Sprite *sprite)
+    {
+        UIElement &elem = call_get_element(this->handle, id);
+
+        if(elem.prototype != RGUI_PICTURE_BOX)
+        {
+            throw ronin_uid_nocast_error();
+        }
+
+        elem.resource.picturebox = sprite;
+    }
+
+    Runtime::Sprite *GUI::PictureBoxGetSprite(uid id)
+    {
+        UIElement &elem = call_get_element(this->handle, id);
+
+        if(elem.prototype != RGUI_PICTURE_BOX)
+        {
+            throw ronin_uid_nocast_error();
+        }
+
+        return elem.resource.picturebox;
     }
 
     void GUI::SliderSetValue(uid id, float value)
@@ -369,8 +425,7 @@ namespace RoninEngine::UI
         {
             throw ronin_uid_nocast_error();
         }
-        SliderResource *sliderResource = reinterpret_cast<SliderResource *>(elem.resources);
-        sliderResource->value = Math::Clamp(value, sliderResource->min, sliderResource->max);
+        elem.resource.slider.value = Math::Clamp(elem.resource.slider.value, elem.resource.slider.min, elem.resource.slider.max);
     }
 
     // grouping-----------------------------------------------------------------------------------------------------------
@@ -385,7 +440,7 @@ namespace RoninEngine::UI
         if(!IsGroup(id))
             return false;
 
-        handle->ui_layer.layers.remove_if([this](auto v) { return IsGroup(v); });
+        handle->layers.remove_if([this](auto v) { return IsGroup(v); });
 
         return GroupShow(id);
     }
@@ -395,12 +450,12 @@ namespace RoninEngine::UI
         bool result = false;
         if(IsGroup(id))
         {
-            auto iter = std::find_if(
-                begin(handle->ui_layer.layers), end(handle->ui_layer.layers), std::bind(std::equal_to<uid>(), std::placeholders::_1, id));
+            auto iter =
+                std::find_if(begin(handle->layers), end(handle->layers), std::bind(std::equal_to<uid>(), std::placeholders::_1, id));
 
-            if(iter == std::end(handle->ui_layer.layers))
+            if(iter == std::end(handle->layers))
             {
-                handle->ui_layer.layers.emplace_back(id);
+                handle->layers.emplace_back(id);
                 SetElementVisible(id, true);
                 result = true;
             }
@@ -412,7 +467,7 @@ namespace RoninEngine::UI
     {
         if(!IsGroup(id))
             return false;
-        handle->ui_layer.layers.remove(id);
+        handle->layers.remove(id);
         SetElementVisible(id, false);
         return true;
     }
@@ -445,12 +500,12 @@ namespace RoninEngine::UI
 
     void GUI::PopAllElements()
     {
-        for(int x = 0; x < handle->ui_layer.elements.size(); ++x)
+        for(UIElement &elem : handle->elements)
         {
-            factory_free(&(handle->ui_layer.elements[x]));
+            ui_resource_del(elem);
         }
-        handle->ui_layer.layers.clear();
-        handle->ui_layer.elements.clear();
+        handle->layers.clear();
+        handle->elements.clear();
     }
 
     bool GUI::FocusedGUI()
@@ -467,77 +522,78 @@ namespace RoninEngine::UI
             return;
 
         uid id;
-        UIElement *uielement;
-        Vec2Int ms;
         std::deque<uid> ui_drains;
-        bool ui_hover;
-        bool ui_contex;
-        bool ms_hover;
-        bool ms_click;
 
+        UIElement *self_ui;
+
+        Vec2Int ms;
+        bool ui_hover, ui_contex, ms_hover, ms_click;
+
+        ms_click = Input::GetMouseUp(MouseState::MouseLeft);
         ms = Input::GetMousePoint();
 
         resources->_focusedUI = false;
-        ui_reset_controls(); // Reset
 
-        for(auto iter = begin(resources->ui_layer.layers); iter != end(resources->ui_layer.layers); ++iter)
+        for(auto iter = begin(resources->layers); iter != end(resources->layers); ++iter)
         {
             if(gui->GetElementVisible(*iter))
                 ui_drains.emplace_back(*iter);
         }
-        ms_click = Input::GetMouseUp(MouseState::MouseLeft);
 
         gui->handle->mouse_hover = false;
-        gui->handle->ui_layer.button_clicked.clear();
+        gui->handle->button_clicked.clear();
         // TODO: OPTIMIZE HERE
         while(ui_drains.empty() == false && !resources->owner->irs->request_unloading)
         {
             id = ui_drains.front();
             ui_drains.pop_front();
-            uielement = &call_get_element(gui->handle, id);
-            for(auto iter = begin(uielement->childs); iter != end(uielement->childs); ++iter)
-                ui_drains.push_back(*iter);
-            // status mouse hovered
-            ms_hover = Vec2Int::HasIntersection(ms, uielement->rect);
-            ui_contex = !uielement->contextRect.empty();
 
-            if(!(uielement->options & ElementGroupMask) && uielement->options & ElementVisibleMask)
+            self_ui = &call_get_element(gui->handle, id);
+            for(auto iter = begin(self_ui->childs); iter != end(self_ui->childs); ++iter)
+                ui_drains.push_back(*iter);
+
+            // status mouse hovered
+            ms_hover = Vec2Int::HasIntersection(ms, self_ui->rect);
+            ui_contex = !self_ui->contextRect.empty();
+
+            if(!(self_ui->options & ElementGroupMask) && (self_ui->options & ElementVisibleMask))
             {
-                ui_hover = id == resources->ui_layer.focusedID;
+                ui_hover = id == resources->focusedID;
 
                 // unfocus on click an not hovered
                 if(ui_hover && (!ms_hover || !ui_contex) && ms_click)
                 {
                     ui_hover = false;
-                    resources->ui_layer.focusedID = 0;
+                    resources->focusedID = 0;
                 }
 
-                if((general_render_ui_section(gui, *uielement, ms_hover, ms_click && ms_hover, ui_hover)) && resources->interactable)
+                // Draw Internal GUI
+                if((general_render_ui_section(gui, *self_ui, ms_hover, ms_click && ms_hover, ui_hover)) && resources->interactable)
                 {
                     // Избавляемся от перекликов в UI
                     resources->_focusedUI = true;
 
                     if(ui_hover)
                     {
-                        resources->ui_layer.focusedID = id;
+                        resources->focusedID = id;
                     }
 
-                    if(uielement->options & ElementEnableMask)
+                    if(self_ui->options & ElementEnableMask)
                     {
                         if(resources->callback)
                         {
-                            // Отправка сообщения о действий.
+                            // Send callback of the General UI Event
                             resources->callback(id, resources->callbackData);
                         }
                         // run event
-                        event_action(uielement);
+                        ui_event_action(self_ui);
                     }
                 }
                 else
                 { // disabled state
                     // TODO: disabled state for UI element's
-                    if(id == resources->ui_layer.focusedID && !ui_hover)
-                        resources->ui_layer.focusedID = 0;
+                    if(id == resources->focusedID && !ui_hover)
+                        resources->focusedID = 0;
                 }
                 if(!resources->_focusedUI)
                     resources->_focusedUI = ui_hover;
