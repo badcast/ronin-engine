@@ -5,8 +5,8 @@
 
 using namespace RoninEngine::Runtime;
 
-constexpr int resources_types_n = 3;
-constexpr const char resource_types[resources_types_n][16] {"Sprite", "AudioClip", "MusicClip"};
+constexpr int resource_types_n = 3;
+constexpr const char resource_types[resource_types_n][16] {"Sprite", "AudioClip", "MusicClip"};
 static std::hash<std::string> string_hasher;
 
 void RoninEngine::Runtime::internal_free_loaded_assets()
@@ -46,14 +46,14 @@ bool AssetManager::LoadAsset(const std::string &assetFile, Asset **asset)
         return false;
     }
 
-    for(types = 0; types < resources_types_n;)
+    for(types = 0; types < resource_types_n;)
     {
         if(resource_type == resource_types[types])
             break;
         ++types;
     }
 
-    if(types >= resources_types_n)
+    if(types >= resource_types_n)
     {
         RoninSimulator::Log("Can not load asset file");
         return false;
