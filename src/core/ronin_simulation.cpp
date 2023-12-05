@@ -2,6 +2,11 @@
 #include "ronin_matrix.h"
 #include "ronin_audio.h"
 
+#ifdef __linux__ || __unix__
+// For malloc_trim
+#include <malloc.h>
+#endif
+
 using namespace RoninEngine::Runtime;
 using namespace RoninEngine::Exception;
 
@@ -218,6 +223,11 @@ namespace RoninEngine
         {
             SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "sdl-memory-leak count: %d", memory_leak);
         }
+
+#ifdef __linux__ || __unix__
+        // On Unix/Linux - free RSS reserved memory
+        malloc_trim(0);
+#endif
     }
 
     void RoninSimulator::Show(const RoninEngine::Resolution &resolution, bool fullscreen)
@@ -244,9 +254,6 @@ namespace RoninEngine
 
         // get activated resolution
         active_resolution = GetCurrentResolution();
-
-        // Brightness
-        SDL_SetWindowBrightness(active_window, 1.f);
     }
 
     void RoninSimulator::RequestQuit()
@@ -405,7 +412,7 @@ namespace RoninEngine
     {
         if(active_window == nullptr)
         {
-            throw ronin_init_error();
+            return false;
         }
 
         std::uint32_t flags = SDL_GetWindowFlags(active_window);

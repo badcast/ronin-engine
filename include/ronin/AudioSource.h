@@ -77,7 +77,7 @@ namespace RoninEngine::Runtime
 
         /**
          * @brief The duration of the AudioClip
-         * @return duration of the AudioClip
+         * @return duration of the AudioClip or -1.0 if error.
          */
         float getDuration();
 

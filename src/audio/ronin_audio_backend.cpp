@@ -117,11 +117,12 @@ namespace RoninEngine::Runtime
 
     double RoninAudio::getAudioClipDuration(AudioClip *clip)
     {
-        if(clip == nullptr)
+        if(clip == nullptr || clip->mix_chunk == nullptr)
             return -1;
         //        double duration = static_cast<double>(clip->mix_chunk->alen) / (MIX_DEFAULT_FORMAT);
-
         //        return duration;
+
+        //double duration = (static_cast<double>(clip->mix_chunk->alen) / MIX_DEFAULT_FREQUENCY);
 
         throw RoninEngine::Exception::ronin_implementation_error();
 
