@@ -164,6 +164,9 @@ namespace RoninEngine
             UI_METHOD void SliderSetValue(uid id, float value);
             UI_METHOD float SliderGetValue(uid id);
 
+            UI_METHOD bool CheckBoxGetValue(uid id);
+            UI_METHOD void CheckBoxSetValue(uid id, bool value);
+
             UI_METHOD void SliderSetPercentage(uid id, float percentage);
             UI_METHOD float SliderGetPercentage(uid id);
 
@@ -181,7 +184,7 @@ namespace RoninEngine
 
             // other--------------------------------------------------------------------------------------------------------------
 
-            bool IsMouseOver();
+            UI_METHOD bool IsMouseOver();
 
             UI_METHOD void SetInteractable(bool state);
             UI_METHOD bool GetInteractable();

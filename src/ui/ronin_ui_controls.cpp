@@ -1,6 +1,8 @@
 #include "ronin.h"
 #include "ronin_ui_resources.h"
 
+// TODO: Make UI Cache
+
 namespace RoninEngine::Runtime
 {
     extern void text_get(std::string &text);
@@ -17,7 +19,7 @@ namespace RoninEngine::UI
     extern TTF_Font *ttf_arial_font;
     extern LegacyFont_t *pLegacyFont;
 
-    bool general_render_ui_section(GUI *gui, UIElement &element, const bool ms_hover, const bool ms_click, bool &ui_focus)
+    bool general_render_ui_section(UIElement &element, const UIState &uiState, bool &ui_focus)
     {
         // TODO: OPTIMIZE HERE (HIGH PRIORITY)
         static float dropDownLinear = 0;
@@ -50,19 +52,25 @@ namespace RoninEngine::UI
             {
                 static uint8_t pSize = 2; // pen size
                 static Rect inside = Rect(pSize, pSize, -pSize * 2, -pSize * 2);
-                bool show_down_side = Input::GetMouseDown(MouseState::MouseLeft) == false || !ms_hover;
-                Rect rect;
+                bool show_down_side = Input::GetMouseDown(MouseState::MouseLeft) == false || !uiState.ms_hover;
 
                 // fill
-                Color col(ms_hover ? colorSpace.defaultInteraction.pressState : colorSpace.defaultInteraction.normalState);
+                Color col(uiState.ms_hover ? colorSpace.defaultInteraction.pressState : colorSpace.defaultInteraction.normalState);
                 rect = element.rect;
                 rect += inside / 2;
                 Gizmos::SetColor(col);
+
                 if(show_down_side)
                 {
-                    roundedBoxColor(renderer, rect.x, rect.y, rect.w + rect.x, rect.h + rect.y, 4, colorSpace.buttonDownSide);
+                    Gizmos::SetColor(colorSpace.buttonDownSide);
+                    SDL_RenderFillRect(renderer, reinterpret_cast<SDL_Rect *>(&rect));
                 }
-                roundedBoxColor(renderer, rect.x, rect.y, rect.w + rect.x, rect.h + rect.y - (show_down_side ? 4 : 0), 4, col);
+
+                Gizmos::SetColor(col);
+                Rect region {rect};
+                region.h -= (show_down_side ? 4 : 0);
+                SDL_RenderFillRect(renderer, reinterpret_cast<SDL_Rect *>(&region));
+
                 // SDL_RenderFillRect(renderer, (SDL_Rect*)&rect);
 
                 // render text
@@ -74,8 +82,8 @@ namespace RoninEngine::UI
                     12,
                     rect.GetXY() + (rect.GetWH() - (show_down_side ? (Vec2Int::up * 4) : Vec2Int::zero)) / 2,
                     true);
-                if(result = ms_hover && ms_click)
-                    gui->handle->button_clicked.insert(element.id);
+                if((result = uiState.ms_click))
+                    uiState.gui->handle->button_clicked.insert(element.id);
                 break;
             }
 
@@ -88,7 +96,7 @@ namespace RoninEngine::UI
                 rect = element.rect + thick;
 
                 // uielement background
-                Gizmos::SetColor((ms_hover) ? colorSpace.defaultInteraction.normalState : colorSpace.defaultInteraction.hoverState);
+                Gizmos::SetColor((uiState.ms_hover) ? colorSpace.defaultInteraction.normalState : colorSpace.defaultInteraction.hoverState);
                 SDL_RenderFillRect(renderer, (SDL_Rect *) &rect);
                 Gizmos::SetColor(Color::gray);
                 for(int x = 0; x < thickness; ++x)
@@ -122,7 +130,7 @@ namespace RoninEngine::UI
                 else
                 {
                     // clik and focused
-                    if(ui_focus = result = ms_click)
+                    if(ui_focus = result = uiState.ms_click)
                     {
                         text_start_input();
                     }
@@ -144,18 +152,18 @@ namespace RoninEngine::UI
                 // get rect
                 rect = *reinterpret_cast<SDL_Rect *>(&element.rect);
 
-                if(ms_click)
+                if(uiState.ms_click)
                 {
-                    ui_focus = ms_click;
+                    ui_focus = uiState.ms_click;
                 }
 
-                if(ms_hover && Input::GetMouseWheel())
+                if(uiState.ms_hover && Input::GetMouseWheel())
                 {
                     // step wheel mouse = ±0.1
                     float percentage = (resource->min + resource->max) * resource->stepPercentage * Input::GetMouseWheel();
                     resource->value = Math::Clamp(resource->value + percentage, resource->min, resource->max);
                 }
-                else if(ui_focus || ms_hover)
+                else if(ui_focus || uiState.ms_hover)
                 {
                     if((result = Input::GetMouseDown(MouseState::MouseLeft)))
                     {
@@ -172,7 +180,7 @@ namespace RoninEngine::UI
                 rect.h = 4;
                 rect.y += (element.rect.h - rect.h) / 2;
 
-                Gizmos::SetColor(ms_hover ? Color::lightgray : Color::gray);
+                Gizmos::SetColor(uiState.ms_hover ? Color::lightgray : Color::gray);
                 Color color = Gizmos::GetColor();
                 boxColor(renderer, rect.x, rect.y, rect.x + rect.w, rect.y + rect.h, Color::slategray);
                 rectangleColor(renderer, rect.x, rect.y, rect.x + rect.w, rect.y + rect.h, color);
@@ -193,7 +201,7 @@ namespace RoninEngine::UI
                 boxColor(renderer, rect.x, rect.y, rect.x + rect.w, rect.y + rect.h, color);
 
                 // Cursor thickness
-                color = ms_hover ? Color::lightgray : Color::gray;
+                color = uiState.ms_hover ? Color::lightgray : Color::gray;
                 rectangleColor(renderer, rect.x, rect.y, rect.x + rect.w + 1, rect.y + rect.h + 1, color);
 
                 // Draw Text under Cursor point
@@ -237,7 +245,7 @@ namespace RoninEngine::UI
                 r += thick;
 
                 // uielement background
-                Gizmos::SetColor((ms_hover) ? colorSpace.defaultInteraction.normalState : colorSpace.defaultInteraction.hoverState);
+                Gizmos::SetColor((uiState.ms_hover) ? colorSpace.defaultInteraction.normalState : colorSpace.defaultInteraction.hoverState);
                 SDL_RenderFillRect(renderer, (SDL_Rect *) &r);
                 Gizmos::SetColor(Color::gray);
                 for(int x = 0; x < thickness; ++x)
@@ -323,7 +331,7 @@ namespace RoninEngine::UI
                         }
                     }
 
-                    if(ms_click)
+                    if(uiState.ms_click)
                     {
                         ui_focus = false;
                         dropDownLinear = 0;
@@ -332,8 +340,45 @@ namespace RoninEngine::UI
                 else
                 {
                     // clik and shown
-                    if(ms_click)
-                        ui_focus = ms_click;
+                    if(uiState.ms_click)
+                        ui_focus = uiState.ms_click;
+                }
+                break;
+            }
+
+            case RGUI_CHECKBOX:
+            {
+                rect = element.rect;
+
+                Gizmos::SetColor(uiState.ms_hover ? Color::white : Color::gray);
+                Render_String_ttf(element.text.c_str(), 14, rect.GetXY() + Vec2Int {17, 0}, false);
+
+                rect.w = 14;
+                rect.h = 14;
+                SDL_RenderFillRect(renderer, reinterpret_cast<SDL_Rect *>(&rect));
+
+                if((result = uiState.ms_click))
+                {
+                    element.resource.checkbox = !element.resource.checkbox;
+                }
+
+                if(element.resource.checkbox)
+                {
+                    Gizmos::SetColor(0xFF3a3a3a);
+
+                    // Vertical
+                    rect.w = 4;
+                    rect.h = 12;
+                    rect.x += 7 - 2;
+                    rect.y++;
+                    SDL_RenderFillRect(renderer, reinterpret_cast<SDL_Rect *>(&rect));
+
+                    // Horizontal
+                    rect.h = 4;
+                    rect.w = 12;
+                    rect.y = element.rect.y + 7 - 2;
+                    rect.x = element.rect.x + 1;
+                    SDL_RenderFillRect(renderer, reinterpret_cast<SDL_Rect *>(&rect));
                 }
                 break;
             }
@@ -358,6 +403,11 @@ namespace RoninEngine::UI
             case RGUI_HSLIDER:
             case RGUI_VSLIDER:
                 (reinterpret_cast<UIEventFloat>(element->event))(element->id, element->resource.slider.value);
+                break;
+            case RGUI_TEXT:
+            case RGUI_TEXT_EDIT:
+            case RGUI_PICTURE_BOX:
+            case RGUI_CHECKBOX:
                 break;
         }
     }

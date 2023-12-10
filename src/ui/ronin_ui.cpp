@@ -13,7 +13,7 @@ namespace RoninEngine::UI
     using namespace RoninEngine::Runtime;
     using namespace RoninEngine::Exception;
 
-    extern bool general_render_ui_section(GUI *gui, UIElement &element, const bool ms_hover, const bool ms_click, bool &ui_focus);
+    extern bool general_render_ui_section(UIElement &element, const UIState &uiState, bool &ui_focus);
     extern void ui_event_action(UIElement *element);
 
     uid push_new_element(GUI *gui, uid parent = NOPARENT)
@@ -121,6 +121,7 @@ namespace RoninEngine::UI
 
         return id;
     }
+
     uid GUI::PushGroup()
     {
         return PushGroup(Rect::zero);
@@ -364,6 +365,28 @@ namespace RoninEngine::UI
         return elem.resource.slider.value;
     }
 
+    bool GUI::CheckBoxGetValue(uid id)
+    {
+        UIElement &elem = call_get_element(this->handle, id);
+
+        if(elem.prototype != RGUI_CHECKBOX)
+        {
+            throw ronin_uid_nocast_error();
+        }
+        return elem.resource.checkbox;
+    }
+
+    void GUI::CheckBoxSetValue(uid id, bool value)
+    {
+        UIElement &elem = call_get_element(this->handle, id);
+
+        if(elem.prototype != RGUI_CHECKBOX)
+        {
+            throw ronin_uid_nocast_error();
+        }
+        elem.resource.checkbox = value;
+    }
+
     void GUI::SliderSetPercentage(uid id, float percentage)
     {
         UIElement &elem = call_get_element(this->handle, id);
@@ -474,7 +497,7 @@ namespace RoninEngine::UI
 
     bool GUI::IsMouseOver()
     {
-        return handle->mouse_hover;
+        return handle->any_mouse_hover;
     }
 
     void GUI::SetInteractable(bool state)
@@ -516,91 +539,98 @@ namespace RoninEngine::UI
     // It's main GUI drawer
     void native_draw_render(GUI *gui)
     {
-        GUIResources *resources = gui->handle;
+        GUIResources *handle = gui->handle;
 
-        if(resources->visible == false)
+        if(handle->visible == false)
             return;
 
         uid id;
         std::deque<uid> ui_drains;
 
-        UIElement *self_ui;
+        UIElement *uiElement;
+        UIState uiState;
 
         Vec2Int ms;
-        bool ui_hover, ui_contex, ms_hover, ms_click;
+        bool ui_msclick, ui_hover, ui_contex;
 
-        ms_click = Input::GetMouseUp(MouseState::MouseLeft);
         ms = Input::GetMousePoint();
 
-        resources->_focusedUI = false;
+        uiState.gui = gui;
 
-        for(auto iter = begin(resources->layers); iter != end(resources->layers); ++iter)
+        handle->_focusedUI = false;
+        ui_msclick = Input::GetMouseUp(MouseState::MouseLeft);
+
+        for(auto iter = begin(handle->layers); iter != end(handle->layers); ++iter)
         {
             if(gui->GetElementVisible(*iter))
                 ui_drains.emplace_back(*iter);
         }
 
-        gui->handle->mouse_hover = false;
+        gui->handle->any_mouse_hover = false;
         gui->handle->button_clicked.clear();
         // TODO: OPTIMIZE HERE
-        while(ui_drains.empty() == false && !resources->owner->irs->request_unloading)
+        while(!ui_drains.empty() && !handle->owner->irs->request_unloading)
         {
             id = ui_drains.front();
             ui_drains.pop_front();
 
-            self_ui = &call_get_element(gui->handle, id);
-            for(auto iter = begin(self_ui->childs); iter != end(self_ui->childs); ++iter)
+            uiElement = &call_get_element(gui->handle, id);
+            for(auto iter = begin(uiElement->childs); iter != end(uiElement->childs); ++iter)
                 ui_drains.push_back(*iter);
 
             // status mouse hovered
-            ms_hover = Vec2Int::HasIntersection(ms, self_ui->rect);
-            ui_contex = !self_ui->contextRect.empty();
+            uiState.ms_hover = Vec2Int::HasIntersection(ms, uiElement->rect);
+            ui_contex = !uiElement->contextRect.empty();
 
-            if(!(self_ui->options & ElementGroupMask) && (self_ui->options & ElementVisibleMask))
+            if(uiState.ms_hover)
+                gui->handle->any_mouse_hover = uiState.ms_hover;
+
+            if(!(uiElement->options & ElementGroupMask) && (uiElement->options & ElementVisibleMask))
             {
-                ui_hover = id == resources->focusedID;
+                ui_hover = id == handle->focusedID;
 
                 // unfocus on click an not hovered
-                if(ui_hover && (!ms_hover || !ui_contex) && ms_click)
+                if(ui_hover && (!uiState.ms_hover || !ui_contex) && uiState.ms_click)
                 {
                     ui_hover = false;
-                    resources->focusedID = 0;
+                    handle->focusedID = 0;
                 }
 
+                // Refresh UIState
+                uiState.ms_click = ui_msclick && uiState.ms_hover;
+
                 // Draw Internal GUI
-                if((general_render_ui_section(gui, *self_ui, ms_hover, ms_click && ms_hover, ui_hover)) && resources->interactable)
+                if((general_render_ui_section(*uiElement, uiState, ui_hover)) && handle->interactable)
                 {
                     // Избавляемся от перекликов в UI
-                    resources->_focusedUI = true;
+                    handle->_focusedUI = true;
 
                     if(ui_hover)
                     {
-                        resources->focusedID = id;
+                        handle->focusedID = id;
                     }
 
-                    if(self_ui->options & ElementEnableMask)
+                    if(uiElement->options & ElementEnableMask)
                     {
-                        if(resources->callback)
+                        if(handle->callback)
                         {
                             // Send callback of the General UI Event
-                            resources->callback(id, resources->callbackData);
+                            handle->callback(id, handle->callbackData);
                         }
                         // run event
-                        ui_event_action(self_ui);
+                        ui_event_action(uiElement);
                     }
                 }
                 else
                 { // disabled state
                     // TODO: disabled state for UI element's
-                    if(id == resources->focusedID && !ui_hover)
-                        resources->focusedID = 0;
+                    if(id == handle->focusedID && !ui_hover)
+                        handle->focusedID = 0;
                 }
-                if(!resources->_focusedUI)
-                    resources->_focusedUI = ui_hover;
+                if(!handle->_focusedUI)
+                    handle->_focusedUI = ui_hover;
             }
 
-            if(ms_hover)
-                gui->handle->mouse_hover = ms_hover;
         }
     }
 

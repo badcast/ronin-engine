@@ -31,7 +31,7 @@ namespace RoninEngine::UI
 
     struct
     {
-        ElementInteraction defaultInteraction = {Color::ghostwhite, Color::white, Color::gainsboro, Color::darkgray};
+        ElementInteraction defaultInteraction = {Color::ghostwhite, Color::gray, Color::gainsboro, Color::darkgray};
 
         Color dropdownText = Color::black;
         Color dropdownSelectedText = Color::lightslategrey;
@@ -53,6 +53,13 @@ namespace RoninEngine::UI
         RGUI_PICTURE_BOX,
         RGUI_DROPDOWN,
         RGUI_CHECKBOX
+    };
+
+    struct UIState
+    {
+        GUI *gui;
+        bool ms_click;
+        bool ms_hover;
     };
 
     struct UIElement
@@ -92,7 +99,7 @@ namespace RoninEngine::UI
         bool interactable;
         bool _focusedUI;
         bool visible;
-        bool mouse_hover;
+        bool any_mouse_hover;
 
         uid focusedID;
         std::vector<UIElement> elements;
