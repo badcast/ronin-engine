@@ -58,6 +58,7 @@ namespace RoninEngine::UI
     struct UIState
     {
         GUI *gui;
+        Vec2Int ms;
         bool ms_click;
         bool ms_hover;
     };

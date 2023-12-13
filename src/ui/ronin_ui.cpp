@@ -556,9 +556,10 @@ namespace RoninEngine::UI
         ms = Input::GetMousePoint();
 
         uiState.gui = gui;
+        uiState.ms = Input::GetMousePoint();
 
         handle->_focusedUI = false;
-        ui_msclick = Input::GetMouseUp(MouseState::MouseLeft);
+        ui_msclick = Input::GetMouseUp(MouseButton::MouseLeft);
 
         for(auto iter = begin(handle->layers); iter != end(handle->layers); ++iter)
         {

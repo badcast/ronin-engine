@@ -3,8 +3,8 @@
 
 namespace RoninEngine::Runtime
 {
-    /* Mouse State */
-    enum MouseState
+    /* Mouse Button */
+    enum MouseButton
     {
         MouseLeft = 0,
         MouseMiddle = 1,
@@ -97,14 +97,14 @@ namespace RoninEngine::Runtime
          * @param state The state of the mouse button to check.
          * @return True if the mouse button is currently pressed, false otherwise.
          */
-        static const bool GetMouseDown(MouseState state);
+        static const bool GetMouseDown(MouseButton state);
 
         /**
          * @brief Check if a mouse button is currently in a released state.
          * @param state The state of the mouse button to check.
          * @return True if the mouse button is currently released, false otherwise.
          */
-        static const bool GetMouseUp(MouseState state);
+        static const bool GetMouseUp(MouseButton state);
 
         /**
          * @brief Get the current mouse wheel scroll amount.

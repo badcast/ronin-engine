@@ -25,7 +25,6 @@ namespace RoninEngine::UI
         static float dropDownLinear = 0;
         static Color colors[3];
         bool result = false;
-        Vec2Int ms = Input::GetMousePoint();
         SDL_Texture *texture;
         SDL_Surface *surface;
         Rect rect;
@@ -52,7 +51,7 @@ namespace RoninEngine::UI
             {
                 static uint8_t pSize = 2; // pen size
                 static Rect inside = Rect(pSize, pSize, -pSize * 2, -pSize * 2);
-                bool show_down_side = Input::GetMouseDown(MouseState::MouseLeft) == false || !uiState.ms_hover;
+                bool show_down_side = Input::GetMouseDown(MouseButton::MouseLeft) == false || !uiState.ms_hover;
 
                 // fill
                 Color col(uiState.ms_hover ? colorSpace.defaultInteraction.pressState : colorSpace.defaultInteraction.normalState);
@@ -146,9 +145,10 @@ namespace RoninEngine::UI
             {
                 float ratio;
                 SliderResource *resource = &element.resource.slider;
+                Vec2Int ms;
                 // clamp mouse point an inside
-                ms.x = Math::Clamp(ms.x, element.rect.x, element.rect.x + element.rect.w);
-                ms.y = Math::Clamp(ms.y, element.rect.y, element.rect.y + element.rect.h);
+                ms.x = Math::Clamp(uiState.ms.x, element.rect.x, element.rect.x + element.rect.w);
+                ms.y = Math::Clamp(uiState.ms.y, element.rect.y, element.rect.y + element.rect.h);
                 // get rect
                 rect = *reinterpret_cast<SDL_Rect *>(&element.rect);
 
@@ -165,7 +165,7 @@ namespace RoninEngine::UI
                 }
                 else if(ui_focus || uiState.ms_hover)
                 {
-                    if((result = Input::GetMouseDown(MouseState::MouseLeft)))
+                    if((result = Input::GetMouseDown(MouseButton::MouseLeft)))
                     {
                         // get *x* component from mouse point for set cursor point
                         resource->value =
@@ -297,11 +297,11 @@ namespace RoninEngine::UI
                         for(auto iter = std::begin(link->second); iter != std::end(link->second); ++iter, ++index)
                         {
                             // draw element highligh
-                            if(!result && SDL_PointInRect((SDL_Point *) &(ms), (SDL_Rect *) &elrect))
+                            if(!result && SDL_PointInRect((SDL_Point *) &(uiState.ms), (SDL_Rect *) &elrect))
                             {
                                 Gizmos::SetColor(colorSpace.defaultInteraction.pressState);
                                 SDL_RenderFillRect(renderer, (SDL_Rect *) &elrect);
-                                if(Input::GetMouseDown(MouseState::MouseLeft))
+                                if(Input::GetMouseDown(MouseButton::MouseLeft))
                                 {
                                     link->first = index;
                                     element.text = *iter;
@@ -348,7 +348,11 @@ namespace RoninEngine::UI
 
             case RGUI_CHECKBOX:
             {
-                rect = element.rect;
+                Rect startRect = element.rect;
+                if(uiState.ms_hover && Input::GetMouseDown(MouseButton::MouseLeft))
+                    startRect.y++;
+
+                rect = startRect;
 
                 Gizmos::SetColor(uiState.ms_hover ? Color::white : Color::gray);
                 Render_String_ttf(element.text.c_str(), 14, rect.GetXY() + Vec2Int {17, 0}, false);
@@ -370,14 +374,15 @@ namespace RoninEngine::UI
                     rect.w = 4;
                     rect.h = 12;
                     rect.x += 7 - 2;
+
                     rect.y++;
                     SDL_RenderFillRect(renderer, reinterpret_cast<SDL_Rect *>(&rect));
 
                     // Horizontal
                     rect.h = 4;
                     rect.w = 12;
-                    rect.y = element.rect.y + 7 - 2;
-                    rect.x = element.rect.x + 1;
+                    rect.y = startRect.y + 7 - 2;
+                    rect.x = startRect.x + 1;
                     SDL_RenderFillRect(renderer, reinterpret_cast<SDL_Rect *>(&rect));
                 }
                 break;
