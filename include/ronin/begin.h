@@ -13,7 +13,7 @@
 
 // ronin standard includes
 #include "Defines.h"
-#include "Namespaces.h"
+#include "Declarations.h"
 #include "RoninMemory.h"
 #include "Color.h"
 #include "Vec2.h"

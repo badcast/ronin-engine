@@ -129,7 +129,7 @@ namespace RoninEngine::UI
                 else
                 {
                     // clik and focused
-                    if(ui_focus = result = uiState.ms_click)
+                    if((ui_focus = result = uiState.ms_click))
                     {
                         text_start_input();
                     }
@@ -144,7 +144,6 @@ namespace RoninEngine::UI
             case RGUI_HSLIDER:
             {
                 float ratio;
-                SliderResource *resource = &element.resource.slider;
                 Vec2Int ms;
                 // clamp mouse point an inside
                 ms.x = Math::Clamp(uiState.ms.x, element.rect.x, element.rect.x + element.rect.w);
@@ -160,22 +159,29 @@ namespace RoninEngine::UI
                 if(uiState.ms_hover && Input::GetMouseWheel())
                 {
                     // step wheel mouse = ±0.1
-                    float percentage = (resource->min + resource->max) * resource->stepPercentage * Input::GetMouseWheel();
-                    resource->value = Math::Clamp(resource->value + percentage, resource->min, resource->max);
+                    float percentage = ((&element.resource.slider)->min + (&element.resource.slider)->max) *
+                        (&element.resource.slider)->stepPercentage * Input::GetMouseWheel();
+                    (&element.resource.slider)->value = Math::Clamp(
+                        (&element.resource.slider)->value + percentage, (&element.resource.slider)->min, (&element.resource.slider)->max);
                 }
                 else if(ui_focus || uiState.ms_hover)
                 {
                     if((result = Input::GetMouseDown(MouseButton::MouseLeft)))
                     {
                         // get *x* component from mouse point for set cursor point
-                        resource->value =
-                            Math::Map<float>((float) ms.x, (float) rect.x, (float) rect.x + rect.w, resource->min, resource->max);
+                        (&element.resource.slider)->value = Math::Map<float>(
+                            (float) ms.x,
+                            (float) rect.x,
+                            (float) rect.x + rect.w,
+                            (&element.resource.slider)->min,
+                            (&element.resource.slider)->max);
                     }
                 }
 
                 // Draw Slider Background
 
-                ratio = Math::Map(resource->value, resource->min, resource->max, 0.f, 1.f);
+                ratio = Math::Map(
+                    (&element.resource.slider)->value, (&element.resource.slider)->min, (&element.resource.slider)->max, 0.f, 1.f);
 
                 rect.h = 4;
                 rect.y += (element.rect.h - rect.h) / 2;
@@ -196,6 +202,12 @@ namespace RoninEngine::UI
                 // Cursor Vertical position
                 rect.y = element.rect.y + (element.rect.h - rect.h) / 2;
 
+                // is mouse down
+                if(result)
+                {
+                    rect.y += 2;
+                }
+
                 // Cursor background
                 color = Color::darkgray;
                 boxColor(renderer, rect.x, rect.y, rect.x + rect.w, rect.y + rect.h, color);
@@ -207,7 +219,7 @@ namespace RoninEngine::UI
                 // Draw Text under Cursor point
                 Gizmos::SetColor(Color::black);
                 char buffer[32];
-                snprintf(buffer, sizeof(buffer), "%.1f", resource->value);
+                snprintf(buffer, sizeof(buffer), "%.1f", (&element.resource.slider)->value);
                 rect.x += rect.w / 2;
                 rect.y += rect.h / 2;
                 Render_String_ttf(buffer, 9, rect.GetXY(), true);

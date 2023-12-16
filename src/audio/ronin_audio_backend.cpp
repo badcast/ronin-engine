@@ -122,7 +122,7 @@ namespace RoninEngine::Runtime
         //        double duration = static_cast<double>(clip->mix_chunk->alen) / (MIX_DEFAULT_FORMAT);
         //        return duration;
 
-        //double duration = (static_cast<double>(clip->mix_chunk->alen) / MIX_DEFAULT_FREQUENCY);
+        // double duration = (static_cast<double>(clip->mix_chunk->alen) / MIX_DEFAULT_FREQUENCY);
 
         throw RoninEngine::Exception::ronin_implementation_error();
 

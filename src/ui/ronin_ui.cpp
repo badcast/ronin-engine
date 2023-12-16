@@ -144,7 +144,7 @@ namespace RoninEngine::UI
         }
     }
 
-    void GUI::PushLayout(Rectf region, bool aspect)
+    void GUI::LayoutNew(Rectf region, bool aspect)
     {
         if(aspect)
         {
@@ -159,13 +159,13 @@ namespace RoninEngine::UI
         layout.region = region;
     }
 
-    uid GUI::LayoutLabel(const std::string &text, int fontWidth)
+    uid GUI::LayoutLabel(const std::string &text)
     {
         UILayout *layout = call_get_last_layout(handle);
         if(layout == nullptr)
             throw RoninEngine::Exception::ronin_ui_layout_error();
 
-        return layout->addElement(PushLabel(text, Vec2Int::zero, fontWidth));
+        return layout->addElement(PushLabel(text, Vec2Int::zero));
     }
 
     uid GUI::LayoutButton(const std::string &text)
@@ -179,7 +179,7 @@ namespace RoninEngine::UI
 
     uid GUI::PushLabel(const std::string &text, const Rect &rect, int fontWidth, uid parent)
     {
-        // todo: fontWidth
+        // TODO: fontWidth - for set Font size
         uid id = push_new_element(this, parent);
         UIElement &data = call_get_element(this->handle, id);
         data.text = text;
@@ -311,44 +311,44 @@ namespace RoninEngine::UI
 
     // property --------------------------------------------------------------------------------------------------------
 
-    void GUI::SetElementRect(uid id, const Rect &rect)
+    void GUI::ElementSetRect(uid id, const Rect &rect)
     {
         call_get_element(this->handle, id).rect = rect;
     }
 
-    Rect GUI::GetElementRect(uid id)
+    Rect GUI::ElementGetRect(uid id)
     {
         return call_get_element(this->handle, id).rect;
     }
 
-    void GUI::SetElementText(uid id, const std::string &text)
+    void GUI::ElementSetText(uid id, const std::string &text)
     {
         call_get_element(this->handle, id).text = text;
     }
 
-    std::string GUI::GetElementText(uid id)
+    std::string GUI::ElementGetText(uid id)
     {
         return call_get_element(this->handle, id).text;
     }
 
-    void GUI::SetElementVisible(uid id, bool state)
+    void GUI::ElementSetVisible(uid id, bool state)
     {
         call_get_element(this->handle, id).options =
             (call_get_element(this->handle, id).options & ~ElementVisibleMask) | (ElementVisibleMask * (state == true));
     }
 
-    bool GUI::GetElementVisible(uid id)
+    bool GUI::ElementGetVisible(uid id)
     {
         return (call_get_element(this->handle, id).options & ElementVisibleMask) != 0;
     }
 
-    void GUI::SetElementEnable(uid id, bool state)
+    void GUI::ElementSetEnable(uid id, bool state)
     {
         call_get_element(this->handle, id).options =
             ((call_get_element(this->handle, id).options & ~ElementEnableMask)) | (ElementEnableMask * (state == true));
     }
 
-    bool GUI::GetElementEnable(uid id)
+    bool GUI::ElementGetEnable(uid id)
     {
         return (call_get_element(this->handle, id).options & ElementEnableMask) != 0;
     }
@@ -479,7 +479,7 @@ namespace RoninEngine::UI
             if(iter == std::end(handle->layers))
             {
                 handle->layers.emplace_back(id);
-                SetElementVisible(id, true);
+                ElementSetVisible(id, true);
                 result = true;
             }
         }
@@ -491,7 +491,7 @@ namespace RoninEngine::UI
         if(!IsGroup(id))
             return false;
         handle->layers.remove(id);
-        SetElementVisible(id, false);
+        ElementSetVisible(id, false);
         return true;
     }
 
@@ -563,7 +563,7 @@ namespace RoninEngine::UI
 
         for(auto iter = begin(handle->layers); iter != end(handle->layers); ++iter)
         {
-            if(gui->GetElementVisible(*iter))
+            if(gui->ElementGetVisible(*iter))
                 ui_drains.emplace_back(*iter);
         }
 
@@ -631,7 +631,6 @@ namespace RoninEngine::UI
                 if(!handle->_focusedUI)
                     handle->_focusedUI = ui_hover;
             }
-
         }
     }
 

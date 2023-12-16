@@ -38,7 +38,12 @@ namespace RoninEngine::Runtime
 
         lastTarget = SDL_GetRenderTarget(renderer);
 
-        target = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TextureAccess::SDL_TEXTUREACCESS_TARGET, active_resolution.width, active_resolution.height);
+        target = SDL_CreateTexture(
+            renderer,
+            SDL_PIXELFORMAT_RGBA8888,
+            SDL_TextureAccess::SDL_TEXTUREACCESS_TARGET,
+            active_resolution.width,
+            active_resolution.height);
 
         SDL_SetRenderTarget(renderer, target);
         SDL_SetRenderDrawColor(renderer, 0, 0, 0, 55);

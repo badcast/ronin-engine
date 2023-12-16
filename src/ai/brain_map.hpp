@@ -151,7 +151,7 @@ namespace brain
          * @brief get the raw brain data (with locks)
          * @return raw data of the brain map (with locks)
          */
-        inline void* data() const;
+        inline void *data() const;
 
         /**
          * @brief clear neurons

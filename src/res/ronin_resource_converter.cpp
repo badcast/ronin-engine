@@ -74,7 +74,8 @@ bool AssetManager::LoadAsset(const std::string &assetFile, Asset **asset)
             continue;
         }
         size_t hash_it = string_hasher(param1.asString());
-        if(std::end(__files) != std::find_if(std::begin(__files), std::end(__files), [&hash_it](auto &ref) { return hash_it == ref.first; }))
+        if(std::end(__files) !=
+           std::find_if(std::begin(__files), std::end(__files), [&hash_it](auto &ref) { return hash_it == ref.first; }))
         {
             RoninSimulator::Log(("Conflict resource name \"" + param1.asString() + "\"").c_str());
             continue;

@@ -36,11 +36,7 @@ namespace RoninEngine
         int maxTextureHeight;
 
         RenderDriverInfo(
-            const std::string &name,
-            RendererFlags rendererFlags,
-            RenderBackend rendererBackend,
-            int maxTextureWidth,
-            int maxTextureHeight)
+            const std::string &name, RendererFlags rendererFlags, RenderBackend rendererBackend, int maxTextureWidth, int maxTextureHeight)
             : name(name),
               rendererFlags(rendererFlags),
               rendererBackend(rendererBackend),

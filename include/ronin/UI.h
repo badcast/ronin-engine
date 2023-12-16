@@ -58,10 +58,9 @@ namespace RoninEngine
             UI_METHOD GUI(Runtime::World *);
             UI_METHOD ~GUI();
 
-            UI_METHOD void PushLayout(Runtime::Rectf region, bool aspect = true);
-
             // Layments
-            UI_METHOD uid LayoutLabel(const std::string &text, int fontWidth = 13);
+            UI_METHOD void LayoutNew(Runtime::Rectf region, bool aspect = true);
+            UI_METHOD uid LayoutLabel(const std::string &text);
             UI_METHOD uid LayoutButton(const std::string &text);
 
             UI_METHOD bool ElementContains(uid id);
@@ -149,17 +148,17 @@ namespace RoninEngine
 
             // property-----------------------------------------------------------------------------------------------------------
 
-            UI_METHOD Runtime::Rect GetElementRect(uid id);
-            UI_METHOD void SetElementRect(uid id, const Runtime::Rect &rect);
+            UI_METHOD void ElementSetRect(uid id, const Runtime::Rect &rect);
+            UI_METHOD Runtime::Rect ElementGetRect(uid id);
 
-            UI_METHOD void SetElementText(uid id, const std::string &text);
-            UI_METHOD std::string GetElementText(uid id);
+            UI_METHOD void ElementSetText(uid id, const std::string &text);
+            UI_METHOD std::string ElementGetText(uid id);
 
-            UI_METHOD void SetElementVisible(uid id, bool state);
-            UI_METHOD bool GetElementVisible(uid id);
+            UI_METHOD void ElementSetVisible(uid id, bool state);
+            UI_METHOD bool ElementGetVisible(uid id);
 
-            UI_METHOD void SetElementEnable(uid id, bool state);
-            UI_METHOD bool GetElementEnable(uid id);
+            UI_METHOD void ElementSetEnable(uid id, bool state);
+            UI_METHOD bool ElementGetEnable(uid id);
 
             UI_METHOD void SliderSetValue(uid id, float value);
             UI_METHOD float SliderGetValue(uid id);

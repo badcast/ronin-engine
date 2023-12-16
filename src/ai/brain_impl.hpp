@@ -324,7 +324,7 @@ std::uint32_t BRAIN_DEFINE::get_height()
 BRAIN_TEMPLATE
 void *BRAIN_DEFINE::data() const
 {
-    return static_cast<void*>(neurons);
+    return static_cast<void *>(neurons);
 }
 
 BRAIN_TEMPLATE
