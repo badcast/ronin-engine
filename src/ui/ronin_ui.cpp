@@ -252,6 +252,9 @@ namespace RoninEngine::UI
         element.rect = rect;
         element.event = (void *) changed;
 
+        // Init UI Element
+        ui_resource_new(element);
+
         element.resource.dropdown->first = index;
 
         for(auto iter = std::cbegin(container); iter != std::cend(container); ++iter)
