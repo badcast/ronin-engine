@@ -535,13 +535,15 @@ namespace RoninEngine
                     last_switched_world = nullptr;
                 }
 
-                // Destroy last renderer
-                SDL_DestroyRenderer(renderer);
+                if(renderer != nullptr)
+                {
+                    // Destroy last renderer
+                    SDL_DestroyRenderer(renderer);
+                    renderer = nullptr;
+                }
 
                 if(switched_world == nullptr)
                 {
-                    renderer = nullptr;
-
                     queue_watcher.delaySystem = TimeEngine::EndWatch();
                     goto end_simulate;
                 }

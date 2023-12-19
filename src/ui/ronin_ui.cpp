@@ -71,6 +71,14 @@ namespace RoninEngine::UI
                 RoninMemory::free(element.resource.dropdown);
                 break;
             }
+            case RGUI_TEXT:
+            case RGUI_BUTTON:
+            case RGUI_TEXT_EDIT:
+            case RGUI_HSLIDER:
+            case RGUI_VSLIDER:
+            case RGUI_PICTURE_BOX:
+            case RGUI_CHECKBOX:
+                break;
         }
     }
 
