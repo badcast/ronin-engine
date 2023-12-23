@@ -142,7 +142,7 @@ namespace RoninEngine
             }
         }
 
-        void RunCollector()
+        void Bushido_Tradition_Harakiri()
         {
             switched_world->irs->_destroyedGameObject = 0;
 

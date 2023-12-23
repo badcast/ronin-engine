@@ -84,6 +84,12 @@ namespace RoninEngine
         Resolution(int Width, int Height, int HZ = 0) : width(Width), height(Height), hz(HZ)
         {
         }
+
+        // Get maximum resolution of the display
+        static Resolution GetMaxResolution();
+
+        // Get minimum resolution of the display
+        static Resolution GetMinResolution();
     };
 
     enum class FullscreenMode

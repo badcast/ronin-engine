@@ -8,8 +8,8 @@ static const char seperator = '\\';
 static const char seperator = '/';
 #endif
 
-static std::string __organization__ {"Ronin Engine"};
-static std::string __application__ {"Framework"};
+std::string __organization__ {"Ronin Engine"};
+std::string __application__ {"Framework"};
 
 void Path::reg_application(const std::string &organization, const std::string &application)
 {

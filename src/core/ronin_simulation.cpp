@@ -347,6 +347,7 @@ namespace RoninEngine
         }
 
         SDL_DisplayMode display_mode;
+
         if(SDL_GetWindowDisplayMode(active_window, &display_mode) == -1)
         {
             RoninSimulator::ShowMessageFail(SDL_GetError());
@@ -636,7 +637,7 @@ namespace RoninEngine
             // Run Collector
             TimeEngine::BeginWatch();
             if(!switched_world->irs->request_unloading)
-                RunCollector();
+                Bushido_Tradition_Harakiri();
             // end watcher
             queue_watcher.delayHarakiring = TimeEngine::EndWatch();
 
@@ -735,7 +736,7 @@ namespace RoninEngine
 
     void RoninSimulator::ShowMessageFail(const std::string &message)
     {
-        fprintf(stderr, "%s", message.data());
+        // fprintf(stderr, "%s", message.data());
         SDL_LogMessage(SDL_LogCategory::SDL_LOG_CATEGORY_APPLICATION, SDL_LogPriority::SDL_LOG_PRIORITY_CRITICAL, "%s", message.c_str());
         SDL_ShowSimpleMessageBox(SDL_MessageBoxFlags::SDL_MESSAGEBOX_ERROR, "Ronin Engine: failed", message.c_str(), active_window);
         Kill();

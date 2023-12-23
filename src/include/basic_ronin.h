@@ -82,6 +82,7 @@ typedef std::map<int, std::unordered_map<MatrixKey, std::set<RoninEngine::Runtim
 namespace RoninEngine
 {
     extern SDL_Renderer *renderer;
+    extern SDL_Window *active_window;
     extern Resolution active_resolution;
     extern bool ronin_debug_mode;
     extern TimingWatcher queue_watcher;
@@ -259,7 +260,7 @@ namespace RoninEngine
 
         void harakiri_GameObject(GameObject *obj, std::set<GameObject *> *input);
 
-        void RunCollector();
+        void Bushido_Tradition_Harakiri();
 
         void level_render_world();
 
