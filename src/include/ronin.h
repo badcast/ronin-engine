@@ -40,7 +40,9 @@
 #define private public
 #define protected public
 
-// Internal
+// INCLUDE MAIN HEADERS
+// #include "framework.h"
+
 #include "Time.h"
 #include "RoninSimulator.h"
 #include "Resources.h"
@@ -66,6 +68,7 @@
 #include "Sprite.h"
 #include "SpriteRenderer.h"
 #include "Terrain2D.h"
+#include "ParticleSystem.h"
 
 #include "Transform.h"
 #include "UI.h"

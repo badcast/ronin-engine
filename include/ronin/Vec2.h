@@ -6,7 +6,6 @@ namespace RoninEngine
 {
     namespace Runtime
     {
-
         struct RONIN_API Vec2Int
         {
         public:

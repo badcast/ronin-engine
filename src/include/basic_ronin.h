@@ -201,6 +201,44 @@ namespace RoninEngine
             std::unordered_map<std::size_t, ResId> music_clips;
         };
 
+        struct ParticleDrain
+        {
+            SpriteRenderer *render;
+            float initTime;
+            Vec2 direction;
+        };
+
+        struct ParticleSystemRef
+        {
+            // TODO: Optimize here for Particle member (Contain in to ronin_particles*.cpp
+            std::set<ParticleDrain> activeParticles;
+            std::vector<SpriteRenderer *> cachedParticles;
+            float m_timing;
+            int m_maked;
+            int m_lastInspected = 0;
+            int m_limit = 0;
+
+            // bool:colorable - if true simulate it
+            bool colorable = true;
+            Color startColor = Color::transparent;
+            Color centerColor = Color::white;
+            Color endColor = Color::transparent;
+
+            // bool:scalable - if true simulate it
+            bool scalable = true;
+            Vec2 startSize = Vec2::zero;
+            Vec2 centerSize = Vec2::one;
+            Vec2 endSize = Vec2::zero;
+
+            // Lifetime for particle
+            float m_duration = 10;
+            float m_durationStartRange = 0.1f; // Range [0.0,1.0]
+            float m_durationEndRange = 0.1f;   // Range [0.0,1.0]
+
+            void link_particles(ParticleSystem *from, int n);
+            void unlink_particle(ParticleSystem *from, const ParticleDrain *drain);
+        };
+
         struct WorldResources
         {
             // object instanced
@@ -246,9 +284,15 @@ namespace RoninEngine
             void event_camera_changed(Camera *target, CameraEvent state);
         };
 
+        /*** PIMPL (pointer to implementation) ***/
+        class ParticleSystemRef;
+
         extern World *switched_world;
         extern float internal_game_time;
         extern std::list<Asset> loaded_assets;
+
+        // using LowerParticleDrain = std::integral_constant<decltype(&IsLowerParticleDrain), &IsLowerParticleDrain>;
+        bool operator<(const ParticleDrain &lhs, const ParticleDrain &rhs);
 
         GameObject *create_game_object();
         GameObject *create_game_object(const std::string &name);

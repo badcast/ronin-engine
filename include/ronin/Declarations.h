@@ -92,6 +92,7 @@ namespace RoninEngine
         class Camera2D;
         class MoveController2D;
         class AudioSource;
+        class ParticleSystem;
 
     } // namespace Runtime
 } // namespace RoninEngine

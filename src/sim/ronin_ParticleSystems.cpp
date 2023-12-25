@@ -1,4 +1,6 @@
-#include "ParticleSystem.hpp"
+#include "ronin.h"
+
+using namespace RoninEngine::Runtime;
 
 enum ParticleState
 {
@@ -7,12 +9,13 @@ enum ParticleState
     END_STATE = 2
 };
 
-bool operator<(const ParticleDrain &lhs, const ParticleDrain &rhs)
+namespace RoninEngine::Runtime
 {
-    return lhs.render < rhs.render;
-}
-
-// using LowerParticleDrain = std::integral_constant<decltype(&IsLowerParticleDrain), &IsLowerParticleDrain>;
+    bool operator<(const ParticleDrain &lhs, const ParticleDrain &rhs)
+    {
+        return lhs.render < rhs.render;
+    }
+} // namespace RoninEngine::Runtime
 
 inline Sprite *inspect_at(const std::vector<Sprite *> &sources, int &last_inspected, ParticleSourceInspect inspection)
 {
@@ -38,34 +41,31 @@ inline Sprite *inspect_at(const std::vector<Sprite *> &sources, int &last_inspec
     return inspected;
 }
 
-void ParticleSystem::link_particles(int n)
+void ParticleSystemRef::link_particles(ParticleSystem *from, int n)
 {
-    std::string particle_name;
+    std::string particle_name {};
 
     // lambda method
     auto fabricate = [&](SpriteRenderer *spriteRender)
     {
         Transform *t = spriteRender->transform();
-        t->position(transform()->position());
-        if(worldSpace)
+        t->position(from->transform()->position());
+        if(from->worldSpace)
         {
             t->setParent(nullptr);
         }
         else
         {
-            t->setParent(transform(), false);
+            t->setParent(from->transform(), false);
         }
 
-        if(rotate)
+        if(from->rotate)
             t->angle(Random::AngleDegress());
         else if(t->angle())
             t->angle(0);
 
-        // Set Layer
-        t->layer(Layers::ParticleClass);
-
         // Set Sprite Source
-        Sprite *targetSprte = inspect_at(m_sources, m_lastInspected, m_sourceInspect);
+        Sprite *targetSprte = inspect_at(from->m_sources, m_lastInspected, from->m_sourceInspect);
         if(spriteRender->getSprite() != targetSprte)
             spriteRender->setSprite(targetSprte);
 
@@ -75,11 +75,11 @@ void ParticleSystem::link_particles(int n)
         // Set Start Color
         spriteRender->setColor(startColor);
 
-        activeParticles.insert({spriteRender, TimeEngine::time(), randomDirection ? Random::RandomVector() : direction});
+        activeParticles.insert({spriteRender, TimeEngine::time(), from->randomDirection ? Random::RandomVector() : from->direction});
     };
 
     // use existences
-    if(reserving)
+    if(from->reserving)
     {
         while(!cachedParticles.empty() && n-- > 0)
         {
@@ -92,7 +92,7 @@ void ParticleSystem::link_particles(int n)
     }
     else if(!cachedParticles.empty())
     {
-        ClearReserved();
+        from->ClearReserved();
     }
 
     // make new
@@ -120,9 +120,9 @@ void ParticleSystem::link_particles(int n)
     }
 }
 
-void ParticleSystem::unlink_particle(const ParticleDrain *drain)
+void ParticleSystemRef::unlink_particle(ParticleSystem *from, const ParticleDrain *drain)
 {
-    bool destroyToo = reserving == false;
+    bool destroyToo = from->reserving == false;
 
     if(destroyToo)
     {
@@ -137,9 +137,18 @@ void ParticleSystem::unlink_particle(const ParticleDrain *drain)
     }
 }
 
-ParticleSystem::ParticleSystem()
-    : Behaviour("Particle System"), m_timing(0), m_maked(0), m_sourceInspect(ParticleSourceInspect::InspectNext)
+ParticleSystem::ParticleSystem() : ParticleSystem("Particle System")
 {
+}
+
+ParticleSystem::ParticleSystem(const std::string &name) : Behaviour(name), m_sourceInspect(ParticleSourceInspect::InspectNext)
+{
+    RoninMemory::alloc_self(ref);
+}
+
+ParticleSystem::~ParticleSystem()
+{
+    RoninMemory::free(ref);
 }
 
 void ParticleSystem::setSource(Sprite *source)
@@ -172,20 +181,17 @@ void ParticleSystem::OnDestroy()
 
 void ParticleSystem::OnAwake()
 {
-    setInterpolates(m_duration, m_durationStartRange, m_durationEndRange);
-    m_maked = 0;
-    m_lastInspected = 0;
+    setInterpolates(ref->m_duration, ref->m_durationStartRange, ref->m_durationEndRange);
+    ref->m_maked = 0;
+    ref->m_lastInspected = 0;
 }
 
 void ParticleSystem::OnStart()
 {
-    // init
-    transform()->layer(Layers::ParticleClass);
-
     if(delay > 0)
-        m_timing = delay + TimeEngine::time();
+        ref->m_timing = delay + TimeEngine::time();
     else
-        m_timing = 0;
+        ref->m_timing = 0;
 }
 
 template <typename Param>
@@ -215,9 +221,9 @@ void ParticleSystem::OnUpdate()
         M_Fabricate = 2, // Создать еще частицы
     };
 
-    int makeFlag = (loop || !activeParticles.empty()) ? M_Execute : 0;
+    int makeFlag = (loop || !ref->activeParticles.empty()) ? M_Execute : 0;
 
-    if(loop && m_limit == 0 || m_maked < m_limit || m_maked < startWith)
+    if(loop && ref->m_limit == 0 || ref->m_maked < ref->m_limit || ref->m_maked < startWith)
     {
         makeFlag |= M_Fabricate;
     }
@@ -226,23 +232,23 @@ void ParticleSystem::OnUpdate()
     {
         float t = TimeEngine::time();
         // Make new particle (interval)
-        if(emit && m_timing <= t && (makeFlag & M_Fabricate))
+        if(emit && ref->m_timing <= t && (makeFlag & M_Fabricate))
         {
-            int make_n = m_limit == 0 ? startWith : Math::Min(startWith, static_cast<int>(m_limit - activeParticles.size()));
-            link_particles(make_n);
-            m_maked += make_n;
+            int make_n = ref->m_limit == 0 ? startWith : Math::Min(startWith, static_cast<int>(ref->m_limit - ref->activeParticles.size()));
+            ref->link_particles(this, make_n);
+            ref->m_maked += make_n;
 
             // update interval
-            m_timing = t + interval;
+            ref->m_timing = t + interval;
         }
 
         // Update existing particles (drains)
-        for(std::set<ParticleDrain>::iterator drain = std::begin(activeParticles); drain != std::end(activeParticles); ++drain)
+        for(std::set<ParticleDrain>::iterator drain = std::begin(ref->activeParticles); drain != std::end(ref->activeParticles); ++drain)
         {
             float drain_lifetime = t - drain->initTime;
-            if(drain_lifetime >= m_duration)
+            if(drain_lifetime >= ref->m_duration)
             {
-                unlink_particle(&(*drain));
+                ref->unlink_particle(this, &(*drain));
                 continue;
             }
 
@@ -251,37 +257,37 @@ void ParticleSystem::OnUpdate()
             float state_percentage;
             int interpolateBegin, interpolateEnd;
 
-            if(drain_lifetime <= m_durationStartRange)
+            if(drain_lifetime <= ref->m_durationStartRange)
             {
                 interpolateBegin = BEGIN_STATE;
-                state_percentage = drain_lifetime / m_durationStartRange;
+                state_percentage = drain_lifetime / ref->m_durationStartRange;
             }
-            else if(drain_lifetime >= m_durationEndRange)
+            else if(drain_lifetime >= ref->m_durationEndRange)
             {
                 interpolateBegin = END_STATE;
-                state_percentage = drain_lifetime / m_durationEndRange;
+                state_percentage = drain_lifetime / ref->m_durationEndRange;
             }
             else
             {
                 interpolateBegin = SIMULATE_STATE;
-                state_percentage = drain_lifetime / m_duration;
+                state_percentage = drain_lifetime / ref->m_duration;
             }
 
             interpolateEnd = Math::Min<int>(Math::Max<int>(interpolateBegin, interpolateBegin + 1), END_STATE);
 
             // Colorize
-            if(colorable)
+            if(ref->colorable)
             {
-                Color interpolate_from = InterpolationValue(interpolateBegin, startColor, centerColor, endColor);
-                Color interpolate_to = InterpolationValue(interpolateEnd, startColor, centerColor, endColor);
+                Color interpolate_from = InterpolationValue(interpolateBegin, ref->startColor, ref->centerColor, ref->endColor);
+                Color interpolate_to = InterpolationValue(interpolateEnd, ref->startColor, ref->centerColor, ref->endColor);
                 drain->render->setColor(Color::Lerp(interpolate_from, interpolate_to, state_percentage));
             }
 
             // Scaling
-            if(scalable)
+            if(ref->scalable)
             {
-                Vec2 interpolate_from = InterpolationValue(interpolateBegin, startSize, centerSize, endSize);
-                Vec2 interpolate_to = InterpolationValue(interpolateEnd, startSize, centerSize, endSize);
+                Vec2 interpolate_from = InterpolationValue(interpolateBegin, ref->startSize, ref->centerSize, ref->endSize);
+                Vec2 interpolate_to = InterpolationValue(interpolateEnd, ref->startSize, ref->centerSize, ref->endSize);
                 drain->render->setSize(Vec2::Lerp(interpolate_from, interpolate_to, state_percentage));
             }
 
@@ -296,10 +302,10 @@ void ParticleSystem::OnUpdate()
         }
 
         ParticleDrain drained;
-        for(SpriteRenderer *reserved : cachedParticles)
+        for(SpriteRenderer *reserved : ref->cachedParticles)
         {
             drained.render = reserved;
-            activeParticles.erase(drained);
+            ref->activeParticles.erase(drained);
         }
     }
     else if(destroyAfter)
@@ -315,15 +321,15 @@ void ParticleSystem::setInterpolates(float duration)
 
 void ParticleSystem::setInterpolates(float duration, float startRange, float endRange)
 {
-    this->m_duration = Math::Max(duration, 0.f);
-    this->m_durationStartRange = this->m_duration * Math::Clamp01(startRange);
-    this->m_durationEndRange = this->m_duration - this->m_duration * Math::Clamp01(endRange);
+    ref->m_duration = Math::Max(duration, 0.f);
+    ref->m_durationStartRange = ref->m_duration * Math::Clamp01(startRange);
+    ref->m_durationEndRange = ref->m_duration - ref->m_duration * Math::Clamp01(endRange);
 }
 
 void ParticleSystem::setColor(Color color)
 {
-    colorable = false;
-    startColor = color;
+    ref->colorable = false;
+    ref->startColor = color;
 }
 
 void ParticleSystem::setColors(Color startState, Color endState)
@@ -333,16 +339,16 @@ void ParticleSystem::setColors(Color startState, Color endState)
 
 void ParticleSystem::setColors(Color startState, Color centerState, Color endState)
 {
-    colorable = true;
-    startColor = startState;
-    centerColor = centerState;
-    endColor = endState;
+    ref->colorable = true;
+    ref->startColor = startState;
+    ref->centerColor = centerState;
+    ref->endColor = endState;
 }
 
 void ParticleSystem::setSize(Vec2 size)
 {
-    scalable = false;
-    startSize = size;
+    ref->scalable = false;
+    ref->startSize = size;
 }
 
 void ParticleSystem::setSizes(Vec2 startState, Vec2 endState)
@@ -352,27 +358,27 @@ void ParticleSystem::setSizes(Vec2 startState, Vec2 endState)
 
 void ParticleSystem::setSizes(Vec2 startState, Vec2 centerState, Vec2 endState)
 {
-    scalable = true;
-    startSize = startState;
-    centerSize = centerState;
-    endSize = endState;
+    ref->scalable = true;
+    ref->startSize = startState;
+    ref->centerSize = centerState;
+    ref->endSize = endState;
 }
 
 float ParticleSystem::getDuration()
 {
-    return m_duration;
+    return ref->m_duration;
 }
 
 int ParticleSystem::getActiveCount()
 {
-    return static_cast<int>(activeParticles.size());
+    return static_cast<int>(ref->activeParticles.size());
 }
 
 ParticleSystemState ParticleSystem::getState()
 {
     return ParticleSystemState(
-        ((loop || !activeParticles.empty()) ? ParticleSystemState::Executable : 0) |
-        ((m_maked < m_limit || m_maked < startWith) ? ParticleSystemState::Fabricatable : 0));
+        ((loop || !ref->activeParticles.empty()) ? ParticleSystemState::Executable : 0) |
+        ((ref->m_maked < ref->m_limit || ref->m_maked < startWith) ? ParticleSystemState::Fabricatable : 0));
 }
 
 void ParticleSystem::setLimitInfinitely()
@@ -385,32 +391,32 @@ void ParticleSystem::setLimit(int max)
     if(max < 0)
         return;
 
-    m_limit = max;
+    ref->m_limit = max;
 }
 
 void ParticleSystem::Reset()
 {
     ClearReserved();
 
-    for(const ParticleDrain &drain : activeParticles)
+    for(const ParticleDrain &drain : ref->activeParticles)
     {
         drain.render->ClearOnDestroy();
         drain.render->gameObject()->Destroy(); // destroy now
     }
 
-    activeParticles.clear();
-    m_maked = 0;
-    m_timing = 0;
-    m_lastInspected = 0;
+    ref->activeParticles.clear();
+    ref->m_maked = 0;
+    ref->m_timing = 0;
+    ref->m_lastInspected = 0;
 }
 
 void ParticleSystem::ClearReserved()
 {
-    for(SpriteRenderer *drain : cachedParticles)
+    for(SpriteRenderer *drain : ref->cachedParticles)
     {
         drain->ClearOnDestroy();
         drain->gameObject()->Destroy(); // destroy now
     }
-    cachedParticles.clear();
-    cachedParticles.shrink_to_fit();
+    ref->cachedParticles.clear();
+    ref->cachedParticles.shrink_to_fit();
 }

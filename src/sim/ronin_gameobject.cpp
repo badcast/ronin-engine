@@ -15,6 +15,7 @@ namespace RoninEngine::Runtime
     template RONIN_API Camera2D *GameObject::AddComponent<Camera2D>();
     template RONIN_API Spotlight *GameObject::AddComponent<Spotlight>();
     template RONIN_API Terrain2D *GameObject::AddComponent<Terrain2D>();
+    template RONIN_API ParticleSystem *GameObject::AddComponent<ParticleSystem>();
     // Get Component
     template RONIN_API MoveController2D *GameObject::GetComponent<MoveController2D>();
     template RONIN_API SpriteRenderer *GameObject::GetComponent<SpriteRenderer>();
@@ -22,12 +23,14 @@ namespace RoninEngine::Runtime
     template RONIN_API Spotlight *GameObject::GetComponent<Spotlight>();
     template RONIN_API Terrain2D *GameObject::GetComponent<Terrain2D>();
     template RONIN_API Transform *GameObject::GetComponent<Transform>();
+    template RONIN_API ParticleSystem *GameObject::GetComponent<ParticleSystem>();
     // Remove Component
     template RONIN_API bool GameObject::RemoveComponent<MoveController2D>();
     template RONIN_API bool GameObject::RemoveComponent<SpriteRenderer>();
     template RONIN_API bool GameObject::RemoveComponent<Camera2D>();
     template RONIN_API bool GameObject::RemoveComponent<Spotlight>();
     template RONIN_API bool GameObject::RemoveComponent<Terrain2D>();
+    template RONIN_API bool GameObject::RemoveComponent<ParticleSystem>();
 
     GameObject::GameObject() : GameObject(DESCRIBE_AS_MAIN_OFF(GameObject))
     {

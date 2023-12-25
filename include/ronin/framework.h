@@ -34,6 +34,7 @@
 #include "AudioSource.h"
 #include "MusicPlayer.h"
 #include "UI.h"
+#include "ParticleSystem.h"
 
 #include "NavMesh.h"
 #include "Gizmos.h"

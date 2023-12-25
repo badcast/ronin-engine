@@ -6,34 +6,61 @@ using namespace RoninEngine::Exception;
 
 namespace RoninEngine
 {
-    Resolution Resolution::GetMaxResolution()
+    // origin = 0 - min
+    // origin = 1 - middle
+    // origin = 2 - max
+    int enter_resolution(SDL_DisplayMode *mode, int origin = 0)
     {
-        std::list<Resolution> resolutions;
-        SDL_DisplayMode mode;
+        int result;int selDisplay;
+        for(;;)
+        {
+            if(active_window == nullptr)
+                result = SDL_GetNumVideoDisplays() > 0 ? 0 : -1;
+            else
+                result = SDL_GetWindowDisplayIndex(active_window);
 
-        if(nullptr == nullptr)
-        {
-            throw ronin_init_error();
-        }
-
-        int active_display = SDL_GetWindowDisplayIndex(active_window);
-        if(active_display < 0)
-        {
-            RoninSimulator::ShowMessage(SDL_GetError());
-        }
-        else
-        {
-            int n, ndisplay_modes = SDL_GetNumDisplayModes(active_display);
-            for(n = 0; n < ndisplay_modes; ++n)
+            if((selDisplay=result) != -1)
             {
-                if(SDL_GetDisplayMode(active_display, n, &mode) == -1)
+                result = SDL_GetNumDisplayModes(result);
+
+                if(result > 0)
                 {
-                    RoninSimulator::ShowMessageFail(SDL_GetError());
+                    int ndex = origin == 2 ? 0 : origin == 1 ? (result / 2 - 1) : result - 1;
+                    result = SDL_GetDisplayMode(selDisplay, ndex, mode);
                 }
-                resolutions.emplace_back(mode.w, mode.h, mode.refresh_rate);
             }
+            break;
         }
-        return resolutions.front();
+        return result;
     }
 
-} // namespace RoninEngine::Runtime
+    Resolution Resolution::GetMaxResolution()
+    {
+        SDL_DisplayMode mode;
+        if(enter_resolution(&mode, 2) < 0)
+        {
+            RoninSimulator::ShowMessageFail(SDL_GetError());
+        }
+        return Resolution {mode.w, mode.h, mode.refresh_rate};
+    }
+
+    Resolution Resolution::GetMinResolution()
+    {
+        SDL_DisplayMode mode;
+        if(enter_resolution(&mode, 0) < 0)
+        {
+            RoninSimulator::ShowMessageFail(SDL_GetError());
+        }
+        return Resolution {mode.w, mode.h, mode.refresh_rate};
+    }
+
+    Resolution Resolution::GetMidResolution()
+    {
+        SDL_DisplayMode mode;
+        if(enter_resolution(&mode, 1) < 0)
+        {
+            RoninSimulator::ShowMessageFail(SDL_GetError());
+        }
+        return Resolution {mode.w, mode.h, mode.refresh_rate};
+    }
+} // namespace RoninEngine

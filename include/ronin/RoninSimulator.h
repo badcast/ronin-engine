@@ -90,6 +90,9 @@ namespace RoninEngine
 
         // Get minimum resolution of the display
         static Resolution GetMinResolution();
+
+        // Get middle resolution of the display
+        static Resolution GetMidResolution();
     };
 
     enum class FullscreenMode
