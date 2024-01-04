@@ -330,7 +330,7 @@ namespace RoninEngine
         int restored = 0;
         for(Transform *dam : damaged_content)
         {
-            MatrixKey key = Matrix::matrix_get_key(dam->_position);
+            matrix_key_t key = Matrix::matrix_get_key(dam->_position);
             // unordered_map<int, ...>
             for(auto &findIter : switched_world->irs->matrix)
                 // unordered_map<Vec2Int,...>

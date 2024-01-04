@@ -136,7 +136,7 @@ namespace RoninEngine::Runtime
            + - - - - - - - - - +    /
         */
 #define MX (switched_world->irs->matrix)
-        MatrixKey camKey = Matrix::matrix_get_key(stack.camera_position);
+        matrix_key_t camKey = Matrix::matrix_get_key(stack.camera_position);
         // unordered_map<int,... <Transform*>>
         for(auto &layer : MX)
         {

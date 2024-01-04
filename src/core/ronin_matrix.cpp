@@ -21,18 +21,18 @@ namespace RoninEngine::Runtime
     extern int _matrix_pack_;
     namespace Matrix
     {
-        MatrixKey matrix_get_key(Vec2 position)
+        matrix_key_t matrix_get_key(Vec2 position)
         {
             return Vec2::RoundToInt(position * _matrix_pack_);
         }
 
-        void matrix_update(Transform *target, const MatrixKey &lastPoint)
+        void matrix_update(Transform *target, const matrix_key_t &lastPoint)
         {
             matrix_update(target, matrix_get_key(target->position()), lastPoint);
         }
 
         // THIS is matrix get from world space
-        void matrix_update(Transform *target, const MatrixKey &newPoint, const MatrixKey &lastPoint)
+        void matrix_update(Transform *target, const matrix_key_t &newPoint, const matrix_key_t &lastPoint)
         {
             // Ignore are not changed
             if(newPoint == lastPoint)
@@ -65,7 +65,7 @@ namespace RoninEngine::Runtime
                 if(layer != std::end(findIter->second))
                 {
                     auto eq = layer->second.find(target);
-                    if(result = (eq != std::end(layer->second)))
+                    if((result = (eq != std::end(layer->second))))
                         layer->second.erase(eq);
                 }
             }
