@@ -31,7 +31,7 @@ namespace RoninEngine::Runtime
      *
      * @see Behaviour
      */
-    class ParticleSystem : public Behaviour
+    class RONIN_API ParticleSystem : public Behaviour
     {
     private:
         struct ParticleSystemRef *ref;
