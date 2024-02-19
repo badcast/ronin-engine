@@ -224,7 +224,7 @@ namespace RoninEngine
             SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "sdl-memory-leak count: %d", memory_leak);
         }
 
-#ifdef __linux__ || __unix__
+#ifdef __linux__
         // On Unix/Linux - free RSS reserved memory
         malloc_trim(0);
 #endif
@@ -245,7 +245,7 @@ namespace RoninEngine
         // Get valid resolution size
         SDL_DisplayMode mode;
         SDL_GetWindowDisplayMode(active_window, &mode);
-        SDL_SetWindowSize(active_window, mode.w, mode.h);
+        //SDL_SetWindowSize(active_window, mode.w, mode.h);
         SDL_SetWindowPosition(active_window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
 
         SDL_ShowWindow(active_window);

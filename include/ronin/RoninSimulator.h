@@ -72,7 +72,7 @@ namespace RoninEngine
         float windowOpacity;
     };
 
-    struct Resolution
+    struct RONIN_API Resolution
     {
         // Display width
         int width;
