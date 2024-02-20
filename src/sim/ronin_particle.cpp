@@ -45,40 +45,41 @@ void ParticleSystemRef::link_particles(ParticleSystem *from, int n)
 {
     std::string particle_name {};
 
-           // lambda method
+    // lambda method
     auto fabricate = [&](SpriteRenderer *spriteRender)
     {
-        Transform *t = spriteRender->transform();
-        t->position(from->transform()->position());
+        Transform *linked = spriteRender->transform();
+        linked->layer(from->transform()->layer());
+        linked->position(from->transform()->position());
         if(from->worldSpace)
         {
-            t->setParent(nullptr);
+            linked->setParent(nullptr);
         }
         else
         {
-            t->setParent(from->transform(), false);
+            linked->setParent(from->transform(), false);
         }
 
         if(from->rotate)
-            t->angle(Random::AngleDegress());
-        else if(t->angle())
-            t->angle(0);
+            linked->angle(Random::AngleDegress());
+        else if(linked->angle())
+            linked->angle(0);
 
-               // Set Sprite Source
+        // Set Sprite Source
         Sprite *targetSprte = inspect_at(from->m_sources, m_lastInspected, from->m_sourceInspect);
         if(spriteRender->getSprite() != targetSprte)
             spriteRender->setSprite(targetSprte);
 
-               // Set Start Size
+        // Set Start Size
         spriteRender->setSize(startSize);
 
-               // Set Start Color
+        // Set Start Color
         spriteRender->setColor(startColor);
 
         activeParticles.insert({spriteRender, TimeEngine::time(), from->randomDirection ? Random::RandomVector() : from->direction});
     };
 
-           // use existences
+    // use existences
     if(from->reserving)
     {
         while(!cachedParticles.empty() && n-- > 0)
@@ -95,7 +96,7 @@ void ParticleSystemRef::link_particles(ParticleSystem *from, int n)
         from->ClearReserved();
     }
 
-           // make new
+    // make new
     for(; n-- > 0;)
     {
         SpriteRenderer *spriteRender = Primitive::CreateEmptyGameObject()->AddComponent<SpriteRenderer>();
@@ -238,11 +239,11 @@ void ParticleSystem::OnUpdate()
             ref->link_particles(this, make_n);
             ref->m_maked += make_n;
 
-                   // update interval
+            // update interval
             ref->m_timing = t + interval;
         }
 
-               // Update existing particles (drains)
+        // Update existing particles (drains)
         for(std::set<ParticleDrain>::iterator drain = std::begin(ref->activeParticles); drain != std::end(ref->activeParticles); ++drain)
         {
             float drain_lifetime = t - drain->initTime;
@@ -275,7 +276,7 @@ void ParticleSystem::OnUpdate()
 
             interpolateEnd = Math::Min<int>(Math::Max<int>(interpolateBegin, interpolateBegin + 1), END_STATE);
 
-                   // Colorize
+            // Colorize
             if(ref->colorable)
             {
                 Color interpolate_from = InterpolationValue(interpolateBegin, ref->startColor, ref->centerColor, ref->endColor);
@@ -283,7 +284,7 @@ void ParticleSystem::OnUpdate()
                 drain->render->setColor(Color::Lerp(interpolate_from, interpolate_to, state_percentage));
             }
 
-                   // Scaling
+            // Scaling
             if(ref->scalable)
             {
                 Vec2 interpolate_from = InterpolationValue(interpolateBegin, ref->startSize, ref->centerSize, ref->endSize);
@@ -291,7 +292,7 @@ void ParticleSystem::OnUpdate()
                 drain->render->setSize(Vec2::Lerp(interpolate_from, interpolate_to, state_percentage));
             }
 
-                   // Move, rotate
+            // Move, rotate
             Transform *particleTransform = drain->render->transform();
             particleTransform->Translate(drain->direction * drain_speed);
 
