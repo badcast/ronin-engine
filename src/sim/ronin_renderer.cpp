@@ -6,7 +6,7 @@ namespace RoninEngine::Runtime
     {
     }
 
-    Renderer::Renderer(const std::string &name) : Component(DESCRIBE_AS_ONLY_NAME(Renderer))
+    Renderer::Renderer(const std::string &name) : Component(DESCRIBE_AS_ONLY_NAME(Renderer)), renderOrder(0)
     {
         DESCRIBE_AS_MAIN(Renderer);
     }

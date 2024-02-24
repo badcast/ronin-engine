@@ -92,16 +92,17 @@ namespace RoninEngine::Runtime
             Vec2Int wpLeftTop;
             Vec2Int wpRightBottom;
             int edges;
-        } stack;
+        } params;
+
         camera->camera_resource->culled = 0;
 
-        stack.camera_position = camera->transform()->position();
-        stack.root_transform = World::self()->irs->main_object->transform();
-        stack.wpLeftTop = Vec2::RoundToInt(Camera::ScreenToWorldPoint(Vec2::zero));
-        stack.wpRightBottom = Vec2::RoundToInt(Camera::ScreenToWorldPoint(Vec2(active_resolution.width, active_resolution.height)));
-        stack.edges =
-            Math::Number(Math::Max(stack.wpRightBottom.x - stack.camera_position.x, stack.wpRightBottom.y - stack.camera_position.y)) + 5 +
-            camera->distanceEvcall;
+        params.camera_position = camera->transform()->position();
+        params.root_transform = World::self()->irs->main_object->transform();
+        params.wpLeftTop = Vec2::RoundToInt(Camera::ScreenToWorldPoint(Vec2::zero));
+        params.wpRightBottom = Vec2::RoundToInt(Camera::ScreenToWorldPoint(Vec2(active_resolution.width, active_resolution.height)));
+        params.edges =
+            Math::Number(Math::Max(params.wpRightBottom.x - params.camera_position.x, params.wpRightBottom.y - params.camera_position.y)) +
+            5 + camera->distanceEvcall;
 
         // Clearing
         if(camera->backclear)
@@ -113,7 +114,7 @@ namespace RoninEngine::Runtime
         if(camera->visibleGrids)
         {
             Gizmos::Draw2DWorldSpace(Vec2::zero);
-            Gizmos::DrawPosition(stack.camera_position, maxWorldScalar);
+            Gizmos::DrawPosition(params.camera_position, maxWorldScalar);
         }
 
         // scale.x = Mathf::Min(Mathf::Max(scale.x, 0.f), 1000.f);
@@ -136,56 +137,14 @@ namespace RoninEngine::Runtime
            + - - - - - - - - - +    /
         */
 #define MX (switched_world->irs->matrix)
-        matrix_key_t camKey = Matrix::matrix_get_key(stack.camera_position);
+        matrix_key_t camKey = Matrix::matrix_get_key(params.camera_position);
         // unordered_map<int,... <Transform*>>
         for(auto &layer : MX)
         {
-            /*
-            // собираем оставшиеся которые прикреплены к видимости
-            //                    for(auto x = std::begin(camera->camera_resources->prev); false && x !=
-            //                    std::end(camera->camera_resources->prev); ++x)
-            //                    {
-            //                        if(area_cast(*x, stack.wpLeftTop, stack.wpRightBottom))
-            //                        {
-            //                            camera->camera_resources->renders[(*x)->transform()->layer].emplace_back((*x));
-            //                        }
-            //                    }
-
-            // order by layer component
-            //            if constexpr(std::is_same<list_type_render, std::vector<Renderer *>>::value)
-            //            {
-            //                Renderer *r;
-            //                const int size = storm_result.size();
-            //                for(int x = 0; x < size; ++x)
-            //                {
-            //                    for(auto iter = ++std::begin(storm_result[x]->_owner->m_components),
-            //                             yiter = std::end(storm_result[x]->_owner->m_components);
-            //                        iter != yiter;
-            //                        ++iter)
-            //                    {
-            //                        if(r = dynamic_cast<Renderer *>(*iter))
-            //                            camera2d->camera_resources->renders[r->transform()->layer].push_back(r);
-            //                    }
-            //                }
-            //            }
-            //            else
-            //            {
-            //                for(auto iter = std::begin(storm_result); iter != std::end(storm_result); ++iter)
-            //                {
-            //                    std::list<Renderer *> rends = (*iter)->gameObject()->GetComponents<Renderer>();
-            //                    for(Renderer *x : rends)
-            //                    {
-            //                        camera2d->camera_resources->renders[x->transform()->layer].emplace_back(x);
-            //                        // camera2d->camera_resources->prev.insert(x);
-            //                    }
-            //                }
-            //            }
-            */
-
             // Render Objects
             storm_cast_eq_all(
                 camKey,
-                stack.edges,
+                params.edges,
                 [&](const Vec2Int &candidate)
                 {
                     // unordered_map<Vec2Int,... <Transform*>>
@@ -203,48 +162,48 @@ namespace RoninEngine::Runtime
                                     continue;
                                 }
 
-                                ++(camera->camera_resource->culled);
-
                                 Transform *render_transform = render_iobject->transform();
-                                memset(&(stack.wrapper), 0, sizeof(stack.wrapper));
+                                memset(&(params.wrapper), 0, sizeof(params.wrapper));
 
                                 // draw
-                                render_iobject->render(&(stack.wrapper));
+                                render_iobject->render(&(params.wrapper));
 
-                                if(stack.wrapper.texture)
+                                if(params.wrapper.texture)
                                 {
-                                    stack.sourcePoint = render_transform->_position;
+                                    params.sourcePoint = render_transform->_position;
 
-                                    stack.wrapper.dst.w *= pixelsPerPoint; //_scale.x;
-                                    stack.wrapper.dst.h *= pixelsPerPoint; //_scale.y;
+                                    params.wrapper.dst.w *= pixelsPerPoint; //_scale.x;
+                                    params.wrapper.dst.h *= pixelsPerPoint; //_scale.y;
 
-                                    Vec2 arranged = stack.wrapper.dst.GetXY();
+                                    Vec2 arranged = params.wrapper.dst.GetXY();
                                     //                                    if(arranged != Vec2::zero)
                                     //                                        arranged =
                                     //                                            Vec2::RotateAround(stack.sourcePoint, arranged,
                                     //                                            render_transform->angle() * Math::deg2rad);
 
-                                    stack.sourcePoint += render_iobject->get_offset();
+                                    params.sourcePoint += render_iobject->get_offset();
 
                                     // convert world to screen
 
                                     // Horizontal
-                                    stack.wrapper.dst.x = arranged.x +
-                                        ((active_resolution.width - stack.wrapper.dst.w) / 2.0f -
-                                         (stack.camera_position.x - stack.sourcePoint.x) * pixelsPerPoint);
+                                    params.wrapper.dst.x = arranged.x +
+                                        ((active_resolution.width - params.wrapper.dst.w) / 2.0f -
+                                         (params.camera_position.x - params.sourcePoint.x) * pixelsPerPoint);
                                     // Vertical
-                                    stack.wrapper.dst.y = arranged.y +
-                                        ((active_resolution.height - stack.wrapper.dst.h) / 2.0f +
-                                         (stack.camera_position.y - stack.sourcePoint.y) * pixelsPerPoint);
+                                    params.wrapper.dst.y = arranged.y +
+                                        ((active_resolution.height - params.wrapper.dst.h) / 2.0f +
+                                         (params.camera_position.y - params.sourcePoint.y) * pixelsPerPoint);
                                     // draw to backbuffer
                                     SDL_RenderCopyExF(
                                         RoninEngine::renderer,
-                                        stack.wrapper.texture,
-                                        reinterpret_cast<SDL_Rect *>(&(stack.wrapper.src)),
-                                        reinterpret_cast<SDL_FRect *>(&(stack.wrapper.dst)),
+                                        params.wrapper.texture,
+                                        reinterpret_cast<SDL_Rect *>(&(params.wrapper.src)),
+                                        reinterpret_cast<SDL_FRect *>(&(params.wrapper.dst)),
                                         render_transform->_angle_,
                                         nullptr,
                                         SDL_RendererFlip::SDL_FLIP_NONE);
+
+                                    ++(camera->camera_resource->culled);
                                 }
                             }
                         }
@@ -287,17 +246,17 @@ namespace RoninEngine::Runtime
             float offset = 25 * std::max(1 - TimeEngine::deltaTime(), 0.1f);
             float height = 200 * TimeEngine::deltaTime();
 
-            stack.wrapper.dst.x = ((active_resolution.width) / 2.0f);
-            stack.wrapper.dst.y = ((active_resolution.height) / 2.0f);
+            params.wrapper.dst.x = ((active_resolution.width) / 2.0f);
+            params.wrapper.dst.y = ((active_resolution.height) / 2.0f);
 
             SDL_SetRenderDrawColor(renderer, 0, 255, 0, 25);
 
             // Center dot
-            SDL_RenderDrawPointF(renderer, stack.wrapper.dst.x, stack.wrapper.dst.y);
-            SDL_RenderDrawPointF(renderer, stack.wrapper.dst.x - offset, stack.wrapper.dst.y);
-            SDL_RenderDrawPointF(renderer, stack.wrapper.dst.x + offset, stack.wrapper.dst.y);
-            SDL_RenderDrawPointF(renderer, stack.wrapper.dst.x, stack.wrapper.dst.y - offset);
-            SDL_RenderDrawPointF(renderer, stack.wrapper.dst.x, stack.wrapper.dst.y + offset);
+            SDL_RenderDrawPointF(renderer, params.wrapper.dst.x, params.wrapper.dst.y);
+            SDL_RenderDrawPointF(renderer, params.wrapper.dst.x - offset, params.wrapper.dst.y);
+            SDL_RenderDrawPointF(renderer, params.wrapper.dst.x + offset, params.wrapper.dst.y);
+            SDL_RenderDrawPointF(renderer, params.wrapper.dst.x, params.wrapper.dst.y - offset);
+            SDL_RenderDrawPointF(renderer, params.wrapper.dst.x, params.wrapper.dst.y + offset);
 
             // borders
             Gizmos::DrawLine(Vec2(offset, offset), Vec2(offset + height, offset));

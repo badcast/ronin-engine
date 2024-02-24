@@ -179,6 +179,13 @@ namespace RoninEngine
         static Resolution GetCurrentResolution();
 
         /**
+         * @brief Retrieves the current display resolution.
+         *
+         * @return The current display resolution.
+         */
+        static Resolution GetCurrentDisplayResolution();
+
+        /**
          * @brief Enumerates the available screen resolutions of the active display.
          *
          * @return A list of available screen resolutions.

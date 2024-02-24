@@ -11,6 +11,15 @@ namespace RoninEngine::Runtime
         return obj;
     }
 
+    GameObject *Primitive::CreateEmptyGameObject(const std::string &name, Vec2 position, float angle)
+    {
+        GameObject *obj = create_game_object();
+        obj->transform()->position(position);
+        obj->transform()->angle(angle);
+        obj->name(name);
+        return obj;
+    }
+
     GameObject *Primitive::CreateBox2D(Vec2 position, float angle, Color fillColor)
     {
         GameObject *obj = CreateEmptyGameObject(position);

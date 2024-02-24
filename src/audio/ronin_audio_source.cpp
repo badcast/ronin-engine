@@ -120,8 +120,8 @@ AudioSource *AudioSource::PlayClipAtPoint(AudioClip *clip, Vec2 position, float 
 
     AudioSource *audio = Primitive::CreateEmptyGameObject(position)->AddComponent<AudioSource>();
     audio->setClip(clip);
-    audio->Play(false);
     audio->setVolume(volume);
+    audio->Play(false);
 
     audio->gameObject()->AddComponent<AudioSourceAutoDestr>()->pinned = audio;
 

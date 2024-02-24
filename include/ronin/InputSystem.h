@@ -194,17 +194,25 @@ namespace RoninEngine::Runtime
 
         /**
          * @brief Check if a keyboard key is currently in a pressed state.
-         * @param code The code of the keyboard key to check.
+         * @param keyCode The keyCode of the keyboard key to check.
          * @return True if the keyboard key is currently pressed, false otherwise.
          */
-        static const bool GetKeyDown(KeyboardCode code);
+        static const bool GetKeyDown(KeyboardCode keyCode);
 
         /**
          * @brief Check if a keyboard key is currently in a released state.
          * @param code The code of the keyboard key to check.
          * @return True if the keyboard key is currently released, false otherwise.
          */
-        static const bool GetKeyUp(KeyboardCode code);
+        static const bool GetKeyUp(KeyboardCode keyCode);
+
+        /**
+         * @brief Get name of the Keyboard Code
+         * @param code
+         * @see KeyboardCode
+         * @return A name of the Key
+         */
+        static const char* GetKeyName(int keyCode);
     };
 
 } // namespace RoninEngine::Runtime

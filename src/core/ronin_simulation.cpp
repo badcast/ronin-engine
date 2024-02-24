@@ -245,7 +245,7 @@ namespace RoninEngine
         // Get valid resolution size
         SDL_DisplayMode mode;
         SDL_GetWindowDisplayMode(active_window, &mode);
-        //SDL_SetWindowSize(active_window, mode.w, mode.h);
+        // SDL_SetWindowSize(active_window, mode.w, mode.h);
         SDL_SetWindowPosition(active_window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
 
         SDL_ShowWindow(active_window);
@@ -340,6 +340,25 @@ namespace RoninEngine
     }
 
     Resolution RoninSimulator::GetCurrentResolution()
+    {
+        if(active_window == nullptr)
+        {
+            throw ronin_init_error();
+        }
+
+        SDL_DisplayMode displayMode;
+
+        if(SDL_GetWindowDisplayMode(active_window, &displayMode) == -1)
+        {
+            RoninSimulator::ShowMessageFail(SDL_GetError());
+        }
+
+        SDL_GetWindowSize(active_window, &displayMode.w, &displayMode.h);
+
+        return {displayMode.w, displayMode.h, displayMode.refresh_rate};
+    }
+
+    Resolution RoninSimulator::GetCurrentDisplayResolution()
     {
         if(active_window == nullptr)
         {

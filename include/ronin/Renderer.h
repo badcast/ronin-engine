@@ -9,6 +9,8 @@ namespace RoninEngine::Runtime
     class RONIN_API Renderer : public Component
     {
     public:
+        int renderOrder;
+
         Renderer();
         Renderer(const std::string &name);
         Renderer(const Renderer &) = delete;
