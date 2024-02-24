@@ -5,6 +5,17 @@ using namespace RoninEngine::Exception;
 
 namespace RoninEngine::Runtime
 {
+    struct
+    {
+        Rendering wrapper;
+        Transform *root_transform;
+        Vec2 sourcePoint, camera_position;
+        Vec2Int wpLeftTop;
+        Vec2Int wpRightBottom;
+        std::map<int, std::vector<Renderer *>> orders;
+        int edges;
+    } params;
+
     void native_render_2D(Camera2D *camera);
     // void native_render_3D(Camera3D *camera);
 
@@ -84,15 +95,6 @@ namespace RoninEngine::Runtime
 
     void native_render_2D(Camera2D *camera)
     {
-        struct
-        {
-            Rendering wrapper;
-            Transform *root_transform;
-            Vec2 sourcePoint, camera_position;
-            Vec2Int wpLeftTop;
-            Vec2Int wpRightBottom;
-            int edges;
-        } params;
 
         camera->camera_resource->culled = 0;
 
@@ -162,54 +164,71 @@ namespace RoninEngine::Runtime
                                     continue;
                                 }
 
-                                Transform *render_transform = render_iobject->transform();
-                                memset(&(params.wrapper), 0, sizeof(params.wrapper));
-
-                                // draw
-                                render_iobject->render(&(params.wrapper));
-
-                                if(params.wrapper.texture)
-                                {
-                                    params.sourcePoint = render_transform->_position;
-
-                                    params.wrapper.dst.w *= pixelsPerPoint; //_scale.x;
-                                    params.wrapper.dst.h *= pixelsPerPoint; //_scale.y;
-
-                                    Vec2 arranged = params.wrapper.dst.GetXY();
-                                    //                                    if(arranged != Vec2::zero)
-                                    //                                        arranged =
-                                    //                                            Vec2::RotateAround(stack.sourcePoint, arranged,
-                                    //                                            render_transform->angle() * Math::deg2rad);
-
-                                    params.sourcePoint += render_iobject->get_offset();
-
-                                    // convert world to screen
-
-                                    // Horizontal
-                                    params.wrapper.dst.x = arranged.x +
-                                        ((active_resolution.width - params.wrapper.dst.w) / 2.0f -
-                                         (params.camera_position.x - params.sourcePoint.x) * pixelsPerPoint);
-                                    // Vertical
-                                    params.wrapper.dst.y = arranged.y +
-                                        ((active_resolution.height - params.wrapper.dst.h) / 2.0f +
-                                         (params.camera_position.y - params.sourcePoint.y) * pixelsPerPoint);
-                                    // draw to backbuffer
-                                    SDL_RenderCopyExF(
-                                        RoninEngine::renderer,
-                                        params.wrapper.texture,
-                                        reinterpret_cast<SDL_Rect *>(&(params.wrapper.src)),
-                                        reinterpret_cast<SDL_FRect *>(&(params.wrapper.dst)),
-                                        render_transform->_angle_,
-                                        nullptr,
-                                        SDL_RendererFlip::SDL_FLIP_NONE);
-
-                                    ++(camera->camera_resource->culled);
-                                }
+                                params.orders[render_iobject->renderOrder].emplace_back(render_iobject);
                             }
                         }
                     }
                 });
         }
+
+        // orders
+        for(auto layer = std::rbegin(params.orders); layer != std::rend(params.orders); ++layer)
+        {
+            for(Renderer *render_iobject : layer->second)
+            {
+                Transform *render_transform = render_iobject->transform();
+                memset(&(params.wrapper), 0, sizeof(params.wrapper));
+
+                // draw
+                render_iobject->render(&(params.wrapper));
+
+                if(params.wrapper.texture)
+                {
+                    params.sourcePoint = render_transform->_position;
+
+                    params.wrapper.dst.w *= pixelsPerPoint; //_scale.x;
+                    params.wrapper.dst.h *= pixelsPerPoint; //_scale.y;
+
+                    Vec2 arranged = params.wrapper.dst.GetXY();
+                    //                                    if(arranged != Vec2::zero)
+                    //                                        arranged =
+                    //                                            Vec2::RotateAround(stack.sourcePoint, arranged,
+                    //                                            render_transform->angle() * Math::deg2rad);
+
+                    params.sourcePoint += render_iobject->get_offset();
+
+                    // convert world to screen
+
+                    // Horizontal
+                    params.wrapper.dst.x = arranged.x +
+                        ((active_resolution.width - params.wrapper.dst.w) / 2.0f -
+                         (params.camera_position.x - params.sourcePoint.x) * pixelsPerPoint);
+                    // Vertical
+                    params.wrapper.dst.y = arranged.y +
+                        ((active_resolution.height - params.wrapper.dst.h) / 2.0f +
+                         (params.camera_position.y - params.sourcePoint.y) * pixelsPerPoint);
+                    // draw to backbuffer
+                    SDL_RenderCopyExF(
+                        RoninEngine::renderer,
+                        params.wrapper.texture,
+                        reinterpret_cast<SDL_Rect *>(&(params.wrapper.src)),
+                        reinterpret_cast<SDL_FRect *>(&(params.wrapper.dst)),
+                        render_transform->_angle_,
+                        nullptr,
+                        SDL_RendererFlip::SDL_FLIP_NONE);
+
+                    ++(camera->camera_resource->culled);
+                }
+            }
+            layer->second.clear();
+
+            // Optimize Orders
+            if(layer->second.capacity() > 1023)
+            {
+                layer->second.shrink_to_fit();
+            }
+        }
+
 #undef MX
 
         // TODO: Render light
