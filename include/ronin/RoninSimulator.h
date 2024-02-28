@@ -81,6 +81,8 @@ namespace RoninEngine
         // Display refresh rate
         int hz;
 
+        Resolution() = default;
+
         Resolution(int Width, int Height, int HZ = 0) : width(Width), height(Height), hz(HZ)
         {
         }
@@ -134,6 +136,18 @@ namespace RoninEngine
          * @param fullscreen Whether to display in fullscreen mode.
          */
         static void Show(const Resolution &resolution, bool fullscreen = false);
+
+        /**
+         * @brief Show Splash Screen settings
+         *
+         * @return result of the selected screen resolution, pair<1,2>:
+         *  1: if true - is sended "OK" or "Apply" or canceled
+         *  2: Selected screen resolution value
+         *
+         * @see Resolution
+         * @see Show
+         */
+        static std::pair<bool, Resolution> ShowSplashScreen();
 
         /**
          * @brief Loads a simulation world for simulation.

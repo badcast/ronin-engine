@@ -240,13 +240,13 @@ namespace RoninEngine
         if(fullscreen)
             __flags |= SDL_WINDOW_FULLSCREEN;
 
-        active_window = SDL_CreateWindow("Ronin Engine", 0, 0, resolution.width, resolution.height, __flags);
+        active_window =
+            SDL_CreateWindow("Ronin Engine", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, resolution.width, resolution.height, __flags);
 
         // Get valid resolution size
         SDL_DisplayMode mode;
         SDL_GetWindowDisplayMode(active_window, &mode);
         // SDL_SetWindowSize(active_window, mode.w, mode.h);
-        SDL_SetWindowPosition(active_window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
 
         SDL_ShowWindow(active_window);
         if(!active_window)
@@ -254,6 +254,54 @@ namespace RoninEngine
 
         // get activated resolution
         active_resolution = GetCurrentResolution();
+    }
+
+    std::pair<bool, Resolution> RoninSimulator::ShowSplashScreen()
+    {
+        bool resultIsOK = false;
+        RoninEngine::Resolution __templs[3];
+        SDL_MessageBoxButtonData btdt[4];
+        std::string _lstrs[3];
+        SDL_MessageBoxData msgbd {};
+        SDL_DisplayMode mode;
+
+        btdt[0].flags = SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT | SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT;
+        btdt[0].buttonid = 0;
+        btdt[0].text = "Cancel";
+
+        __templs[0] = Resolution::GetMinResolution();
+        __templs[1] = Resolution::GetMidResolution();
+        __templs[2] = Resolution::GetMaxResolution();
+
+        for(int s = 1; s < 4; ++s)
+        {
+            btdt[s].buttonid = s;
+
+            _lstrs[s - 1] += std::to_string(__templs[s - 1].width);
+            _lstrs[s - 1] += "x";
+
+            _lstrs[s - 1] += std::to_string(__templs[s - 1].height);
+            _lstrs[s - 1] += "x";
+
+            _lstrs[s - 1] += std::to_string(__templs[s - 1].hz);
+
+            btdt[s].text = _lstrs[s - 1].data();
+        }
+
+        msgbd.flags = SDL_MESSAGEBOX_INFORMATION;
+        msgbd.title = "Screen Resolution";
+        msgbd.message = "Select screen resolution";
+        msgbd.numbuttons = sizeof(btdt) / sizeof(btdt[0]);
+        msgbd.buttons = btdt;
+
+        int btId;
+        if(!SDL_ShowMessageBox(&msgbd, &btId) && btId)
+        {
+            Show(__templs[btId - 1], false);
+            resultIsOK = true;
+        }
+
+        return {resultIsOK, __templs[btId]};
     }
 
     void RoninSimulator::RequestQuit()
@@ -348,7 +396,10 @@ namespace RoninEngine
 
         SDL_DisplayMode displayMode;
 
-        if(SDL_GetWindowDisplayMode(active_window, &displayMode) == -1)
+        int dpIndex = SDL_GetWindowDisplayIndex(active_window);
+        int mdIndex = SDL_GetNumDisplayModes(dpIndex);
+
+        if(SDL_GetDisplayMode(dpIndex, 0, &displayMode) == -1)
         {
             RoninSimulator::ShowMessageFail(SDL_GetError());
         }
