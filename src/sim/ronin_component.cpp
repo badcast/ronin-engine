@@ -24,7 +24,7 @@ namespace RoninEngine
             _enable = value;
         }
 
-        const bool Component::is_binded()
+        const bool Component::isBinded()
         {
             return _owner != nullptr;
         }

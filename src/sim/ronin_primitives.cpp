@@ -20,10 +20,11 @@ namespace RoninEngine::Runtime
         return obj;
     }
 
-    GameObject *Primitive::CreateBox2D(Vec2 position, float angle, Color fillColor)
+    GameObject *Primitive::CreateBox2D(Vec2 position, float angle, Vec2 size, Color fillColor)
     {
         GameObject *obj = CreateEmptyGameObject(position);
         obj->AddComponent<SpriteRenderer>()->setSprite(CreateSpriteRectangle(true, Vec2::one, fillColor));
+        obj->GetComponent<SpriteRenderer>()->setSize(size);
         obj->transform()->angle(angle);
         return obj;
     }

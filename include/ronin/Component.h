@@ -63,7 +63,7 @@ namespace RoninEngine
              * @brief Check if the component is bound to a GameObject.
              * @return True if the component is bound, false otherwise.
              */
-            const bool is_binded();
+            const bool isBinded();
 
             /**
              * @brief Get the GameObject to which this component is attached.

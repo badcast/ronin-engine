@@ -4,15 +4,15 @@
 
 namespace RoninEngine
 {
-    class RONIN_API Path
+    class RONIN_API Paths
     {
     public:
         // Set Orgazniation and Application member use.
-        static void reg_application(const std::string &organization, const std::string &application);
-        // Get Execute Application directory
-        static const std::string app_dir();
+        static void RegOrg(const std::string &organization, const std::string &application);
+        // Get Runtime Application directory
+        static const std::string GetRuntimeDir();
         // Get preference directory
-        static const std::string pref_dir();
+        static const std::string GetPrefDir();
         // Result on Linux "/"
         // Result on Windows "\"
         static char GetPathSeperatorOS();
