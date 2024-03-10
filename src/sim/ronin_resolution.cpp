@@ -11,15 +11,16 @@ namespace RoninEngine
     // origin = 2 - max
     int enter_resolution(SDL_DisplayMode *mode, int origin = 0)
     {
-        int result;int selDisplay;
+        int result;
+        int selDisplay;
         for(;;)
         {
-            if(active_window == nullptr)
+            if(env.active_window == nullptr)
                 result = SDL_GetNumVideoDisplays() > 0 ? 0 : -1;
             else
-                result = SDL_GetWindowDisplayIndex(active_window);
+                result = SDL_GetWindowDisplayIndex(env.active_window);
 
-            if((selDisplay=result) != -1)
+            if((selDisplay = result) != -1)
             {
                 result = SDL_GetNumDisplayModes(result);
 

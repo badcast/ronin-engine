@@ -101,7 +101,8 @@ namespace RoninEngine::Runtime
         params.camera_position = camera->transform()->position();
         params.root_transform = World::self()->irs->main_object->transform();
         params.wpLeftTop = Vec2::RoundToInt(Camera::ScreenToWorldPoint(Vec2::zero));
-        params.wpRightBottom = Vec2::RoundToInt(Camera::ScreenToWorldPoint(Vec2(active_resolution.width, active_resolution.height)));
+        params.wpRightBottom =
+            Vec2::RoundToInt(Camera::ScreenToWorldPoint(Vec2(env.active_resolution.width, env.active_resolution.height)));
         params.edges =
             Math::Number(Math::Max(params.wpRightBottom.x - params.camera_position.x, params.wpRightBottom.y - params.camera_position.y)) +
             5 + camera->distanceEvcall;
@@ -110,7 +111,7 @@ namespace RoninEngine::Runtime
         if(camera->backclear)
         {
             Gizmos::SetColor(camera->backcolor);
-            SDL_RenderClear(renderer);
+            SDL_RenderClear(env.renderer);
         }
 
         if(camera->visibleGrids)
@@ -122,7 +123,7 @@ namespace RoninEngine::Runtime
         // scale.x = Mathf::Min(Mathf::Max(scale.x, 0.f), 1000.f);
         // scale.y = Mathf::Min(Mathf::Max(scale.y, 0.f), 1000.f);
         //_scale = scale*squarePerPixels;
-        SDL_RenderSetScale(RoninEngine::renderer, camera->scale.x, camera->scale.y);
+        SDL_RenderSetScale(env.renderer, camera->scale.x, camera->scale.y);
 
         // get from matrix selection
         /* RUN STORM CAST
@@ -201,15 +202,15 @@ namespace RoninEngine::Runtime
 
                     // Horizontal
                     params.wrapper.dst.x = arranged.x +
-                        ((active_resolution.width - params.wrapper.dst.w) / 2.0f -
+                        ((env.active_resolution.width - params.wrapper.dst.w) / 2.0f -
                          (params.camera_position.x - params.sourcePoint.x) * pixelsPerPoint);
                     // Vertical
                     params.wrapper.dst.y = arranged.y +
-                        ((active_resolution.height - params.wrapper.dst.h) / 2.0f +
+                        ((env.active_resolution.height - params.wrapper.dst.h) / 2.0f +
                          (params.camera_position.y - params.sourcePoint.y) * pixelsPerPoint);
                     // draw to backbuffer
                     SDL_RenderCopyExF(
-                        RoninEngine::renderer,
+                        env.renderer,
                         params.wrapper.texture,
                         reinterpret_cast<SDL_Rect *>(&(params.wrapper.src)),
                         reinterpret_cast<SDL_FRect *>(&(params.wrapper.dst)),
@@ -265,32 +266,36 @@ namespace RoninEngine::Runtime
             float offset = 25 * std::max(1 - TimeEngine::deltaTime(), 0.1f);
             float height = 200 * TimeEngine::deltaTime();
 
-            params.wrapper.dst.x = ((active_resolution.width) / 2.0f);
-            params.wrapper.dst.y = ((active_resolution.height) / 2.0f);
+            params.wrapper.dst.x = ((env.active_resolution.width) / 2.0f);
+            params.wrapper.dst.y = ((env.active_resolution.height) / 2.0f);
 
-            SDL_SetRenderDrawColor(renderer, 0, 255, 0, 25);
+            SDL_SetRenderDrawColor(env.renderer, 0, 255, 0, 25);
 
             // Center dot
-            SDL_RenderDrawPointF(renderer, params.wrapper.dst.x, params.wrapper.dst.y);
-            SDL_RenderDrawPointF(renderer, params.wrapper.dst.x - offset, params.wrapper.dst.y);
-            SDL_RenderDrawPointF(renderer, params.wrapper.dst.x + offset, params.wrapper.dst.y);
-            SDL_RenderDrawPointF(renderer, params.wrapper.dst.x, params.wrapper.dst.y - offset);
-            SDL_RenderDrawPointF(renderer, params.wrapper.dst.x, params.wrapper.dst.y + offset);
+            SDL_RenderDrawPointF(env.renderer, params.wrapper.dst.x, params.wrapper.dst.y);
+            SDL_RenderDrawPointF(env.renderer, params.wrapper.dst.x - offset, params.wrapper.dst.y);
+            SDL_RenderDrawPointF(env.renderer, params.wrapper.dst.x + offset, params.wrapper.dst.y);
+            SDL_RenderDrawPointF(env.renderer, params.wrapper.dst.x, params.wrapper.dst.y - offset);
+            SDL_RenderDrawPointF(env.renderer, params.wrapper.dst.x, params.wrapper.dst.y + offset);
 
             // borders
             Gizmos::DrawLine(Vec2(offset, offset), Vec2(offset + height, offset));
-            Gizmos::DrawLine(Vec2(active_resolution.width - offset, offset), Vec2(active_resolution.width - offset - height, offset));
-            Gizmos::DrawLine(Vec2(offset, active_resolution.height - offset), Vec2(offset + height, active_resolution.height - offset));
             Gizmos::DrawLine(
-                Vec2(active_resolution.width - offset, active_resolution.height - offset),
-                Vec2(active_resolution.width - offset - height, active_resolution.height - offset));
+                Vec2(env.active_resolution.width - offset, offset), Vec2(env.active_resolution.width - offset - height, offset));
+            Gizmos::DrawLine(
+                Vec2(offset, env.active_resolution.height - offset), Vec2(offset + height, env.active_resolution.height - offset));
+            Gizmos::DrawLine(
+                Vec2(env.active_resolution.width - offset, env.active_resolution.height - offset),
+                Vec2(env.active_resolution.width - offset - height, env.active_resolution.height - offset));
 
             Gizmos::DrawLine(Vec2(offset, 1 + offset), Vec2(offset, offset + height));
-            Gizmos::DrawLine(Vec2(active_resolution.width - offset, 1 + offset), Vec2(active_resolution.width - offset, offset + height));
-            Gizmos::DrawLine(Vec2(offset, active_resolution.height - 1 - offset), Vec2(offset, active_resolution.height - offset - height));
             Gizmos::DrawLine(
-                Vec2(active_resolution.width - offset, active_resolution.height - 1 - offset),
-                Vec2(active_resolution.width - offset, active_resolution.height - offset - height));
+                Vec2(env.active_resolution.width - offset, 1 + offset), Vec2(env.active_resolution.width - offset, offset + height));
+            Gizmos::DrawLine(
+                Vec2(offset, env.active_resolution.height - 1 - offset), Vec2(offset, env.active_resolution.height - offset - height));
+            Gizmos::DrawLine(
+                Vec2(env.active_resolution.width - offset, env.active_resolution.height - 1 - offset),
+                Vec2(env.active_resolution.width - offset, env.active_resolution.height - offset - height));
         }
 
         if(camera->visibleObjects || camera->visibleNames)

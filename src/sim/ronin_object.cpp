@@ -14,7 +14,11 @@ namespace RoninEngine
             if(switched_world != nullptr)
             {
                 DESCRIBE_AS_MAIN(Object);
+
+#if RONIN_USE_TYPESTR
                 ::check_object(this);
+#endif
+
                 ++switched_world->irs->objects;
             }
         }

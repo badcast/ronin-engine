@@ -212,7 +212,7 @@ namespace RoninEngine::Runtime
          * @see KeyboardCode
          * @return A name of the Key
          */
-        static const char* GetKeyName(int keyCode);
+        static const char *GetKeyName(int keyCode);
     };
 
 } // namespace RoninEngine::Runtime

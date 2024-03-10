@@ -384,20 +384,36 @@ namespace RoninEngine::Runtime
 
     const char *Input::GetKeyName(int keyCode)
     {
-        const int c_key_len = (sizeof(c_key_codename.key_strings) / sizeof(c_key_codename.key_strings[0]));
+        constexpr int c_key_len = (sizeof(c_key_codename.key_strings) / sizeof(c_key_codename.key_strings[0]));
 
-        if(keyCode < 0 || keyCode > c_key_codename.clast_keyCode)
+        // It's unknown state
+        if(keyCode <= 0 || keyCode > c_key_codename.clast_keyCode)
+        {
             keyCode = 0;
+        }
         else
         {
-            int c_dz_len = (sizeof(c_key_codename.dead_zones) / sizeof(c_key_codename.dead_zones[0]));
+            int x, c_dz_len = (sizeof(c_key_codename.dead_zones) / sizeof(c_key_codename.dead_zones[0]));
+            int key = keyCode;
+
             // foreach dead zones
-            for(; c_dz_len--;)
+            for(x = 0; x < c_dz_len; ++x)
             {
-                if(keyCode >= c_key_codename.dead_zones[c_dz_len][0] && keyCode <= c_key_codename.dead_zones[c_dz_len][1])
+                if(key >= c_key_codename.dead_zones[x][0])
                 {
-                    keyCode = 0;
-                    break;
+                    // if the enter zone
+                    if(key <= c_key_codename.dead_zones[x][1])
+                    {
+                        // zoned: result of the unknown
+                        keyCode = 0;
+                        break;
+                    }
+                    if(key >= c_key_codename.dead_zones[x][1])
+                        keyCode -= c_key_codename.dead_zones[x][1]; // push next zone up
+                }
+                else
+                {
+                    break; // is out range
                 }
             }
         }

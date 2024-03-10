@@ -61,11 +61,13 @@ namespace RoninEngine
             }
 #undef self
 
+#if RONIN_USE_TYPESTR
             // Is Unloding World
             if(!switched_world->irs->request_unloading)
             {
                 candidate->_type_ = nullptr;
             }
+#endif
 
             // Free object
             RoninMemory::free(candidate);
@@ -74,7 +76,7 @@ namespace RoninEngine
 
         void harakiri_GameObject(GameObject *target, std::set<GameObject *> *input)
         {
-#ifndef NDEBUG
+#ifndef RONIN_USE_TYPESTR &&NDEBUG
             if(strcmp(target->_type_, "GameObject"))
             {
                 throw ronin_type_error();
@@ -132,7 +134,10 @@ namespace RoninEngine
                 if(!switched_world->irs->request_unloading)
                 {
                     next->CancelDestroy();
+
+#if RONIN_USE_TYPESTR
                     next->_type_ = nullptr;
+#endif
                 }
 
                 // HARAKIRI GAME OBJECT

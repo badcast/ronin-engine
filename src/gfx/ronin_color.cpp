@@ -15,15 +15,15 @@ Color::Color(Color &&other) : r(other.r), g(other.g), b(other.b), a(other.a)
 {
 }
 
-Color::Color(const Color &from, const std::uint8_t a) : r(from.r), g(from.g), b(from.b), a(a)
+Color::Color(const Color &from, std::uint8_t a) : r(from.r), g(from.g), b(from.b), a(a)
 {
 }
 
-Color::Color(const int rgba) : a((rgba >> 24) & 0xFF), r((rgba >> 16) & 0xFF), g((rgba >> 8) & 0xFF), b(rgba & 0xFF)
+Color::Color(int rgba) : a((rgba >> 24) & 0xFF), r((rgba >> 16) & 0xFF), g((rgba >> 8) & 0xFF), b(rgba & 0xFF)
 {
 }
 
-Color::Color(const int rgb, const std::uint8_t alpha) : r((rgb >> 16) & 0xFF), g((rgb >> 8) & 0xFF), b(rgb & 0xFF), a(alpha)
+Color::Color(int rgb, std::uint8_t alpha) : r((rgb >> 16) & 0xFF), g((rgb >> 8) & 0xFF), b(rgb & 0xFF), a(alpha)
 {
 }
 
@@ -35,7 +35,7 @@ Color::Color(const std::string &hex) : Color(hex.c_str())
 {
 }
 
-Color::Color(const std::uint8_t r, const std::uint8_t g, const std::uint8_t b)
+Color::Color(std::uint8_t r, std::uint8_t g, std::uint8_t b)
 {
     this->r = r;
     this->g = g;
@@ -43,7 +43,7 @@ Color::Color(const std::uint8_t r, const std::uint8_t g, const std::uint8_t b)
     this->a = SDL_ALPHA_OPAQUE;
 }
 
-Color::Color(const std::uint8_t r, const std::uint8_t g, const std::uint8_t b, const std::uint8_t a)
+Color::Color(std::uint8_t r, std::uint8_t g, std::uint8_t b, std::uint8_t a)
 {
     this->r = r;
     this->g = g;
@@ -68,6 +68,12 @@ int Color::toARGB() const
     // standart method: static_cast<int>(a) | (r << 8) | (g << 16) | (b << 24);
     // fast method: RGBA as the pointer
     return static_cast<int>(a) | ((*reinterpret_cast<const int *>(this)) << 8);
+}
+
+std::tuple<float, float, float> Color::toHSV() const
+{
+    std::tuple<float, float, float> conv = Color::RGBToHSV(r, g, b);
+    return conv;
 }
 
 Color::Color(const native_color_t &color)
@@ -136,7 +142,8 @@ Color::operator native_color_t() const
 
 Color Color::HexToColor(const char *hex)
 {
-    unsigned int red = 0, green = 0, blue = 0, alpha = 255;
+    std::uint32_t red = 0, green = 0, blue = 0, alpha = 255;
+
     if(hex[0] == '#')
         hex++;
 
@@ -150,9 +157,14 @@ Color Color::HexToColor(const std::string &hex)
     return HexToColor(hex.c_str());
 }
 
+Color Color::MakeTransparency(const Color &color, float alpha)
+{
+    return {color, (Math::Clamp01(alpha) * 0xFF)};
+}
+
 std::string Color::ColorToHex(const Color &color)
 {
-    char hex[9];
+    char hex[16];
     snprintf(hex, sizeof(hex), "#%02X%02X%02X%02X", color.r, color.g, color.b, color.a);
     return hex;
 }
@@ -209,7 +221,7 @@ Color Color::HSVToRGB(float h, float s, float v)
         static_cast<std::uint8_t>((r + m) * 255), static_cast<std::uint8_t>((g + m) * 255), static_cast<std::uint8_t>((b + m) * 255));
 }
 
-Color Color::RGBToHSV(std::uint8_t r, std::uint8_t g, std::uint8_t b)
+std::tuple<float, float, float> Color::RGBToHSV(std::uint8_t r, std::uint8_t g, std::uint8_t b)
 {
     float rf = static_cast<float>(r) / 255.0f;
     float gf = static_cast<float>(g) / 255.0f;
@@ -247,7 +259,7 @@ Color Color::RGBToHSV(std::uint8_t r, std::uint8_t g, std::uint8_t b)
     // Calculate value
     v = cmax;
 
-    return Color(h, s, v);
+    return {h, s, v};
 }
 
 Color Color::FromRGBA(int rgba)
@@ -262,6 +274,11 @@ Color Color::FromARGB(int argb)
         /*g*/ static_cast<std::uint8_t>((argb >> 16) & 0xFF),
         /*b*/ static_cast<std::uint8_t>((argb >> 24) & 0xFF),
         /*a*/ static_cast<std::uint8_t>(argb & 0xFF)};
+}
+
+Color Color::FromHSV(float h, float s, float v)
+{
+    return Color::HSVToRGB(h, s, v);
 }
 
 Color Color::Lerp(Color start, Color end, float t)

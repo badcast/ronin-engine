@@ -33,11 +33,11 @@ namespace RoninEngine::Runtime
 
         Color(Color &&);
 
-        Color(const Color &from, const std::uint8_t a);
+        Color(const Color &from, std::uint8_t a);
 
-        Color(const int rgba);
+        Color(int rgba);
 
-        Color(const int rgb, const std::uint8_t a);
+        Color(int rgb, std::uint8_t a);
 
         Color(const char *hex);
 
@@ -45,9 +45,9 @@ namespace RoninEngine::Runtime
 
         Color(const native_color_t &color);
 
-        Color(const std::uint8_t r, const std::uint8_t g, const std::uint8_t b);
+        Color(std::uint8_t r, std::uint8_t g, std::uint8_t b);
 
-        Color(const std::uint8_t r, const std::uint8_t g, const std::uint8_t b, const std::uint8_t a);
+        Color(std::uint8_t r, std::uint8_t g, std::uint8_t b, std::uint8_t a);
 
         /**
          * @brief Converts the color to its hexadecimal representation.
@@ -67,6 +67,12 @@ namespace RoninEngine::Runtime
          */
         int toARGB() const;
 
+        /**
+         * @brief Converts the color to its HSV representation.
+         * @return Color in HSV color space (h,s,v)
+         */
+        std::tuple<float, float, float> toHSV() const;
+
         Color operator=(const Color &rhs);
         Color operator=(const int &rhs);
         Color operator=(const native_color_t &rhs);
@@ -79,6 +85,14 @@ namespace RoninEngine::Runtime
 
         operator int() const;
         operator native_color_t() const;
+
+        /**
+         * @brief Make Color to its MakeTransparency
+         * @param color The color to be make
+         * @param alpha Value from 0.0 to 1.0 (Clamp)
+         * @return The color maked of transparency
+         */
+        static Color MakeTransparency(const Color &color, float alpha);
 
         /**
          * @brief Converts the color to its hexadecimal representation.
@@ -129,9 +143,9 @@ namespace RoninEngine::Runtime
          * @param r Red color component (0-255)
          * @param g Green color component (0-255)
          * @param b Blue color component (0-255)
-         * @return Color in HSV color space
+         * @return Color in HSV color space (h,s,v)
          */
-        static Color RGBToHSV(std::uint8_t r, std::uint8_t g, std::uint8_t b);
+        static std::tuple<float, float, float> RGBToHSV(std::uint8_t r, std::uint8_t g, std::uint8_t b);
 
         /**
          * @brief Create a Color object from an integer value in the RGBA format.
@@ -148,6 +162,15 @@ namespace RoninEngine::Runtime
          * @return The Color object corresponding to the given ARGB value.
          */
         static Color FromARGB(int argb);
+
+        /**
+         * @brief  Converts HSV (Hue, Saturation, Value) color representation to RGB (Red, Green, Blue).
+         * @param h Hue value in the range [0, 360].
+         * @param s Saturation value in the range [0, 1].
+         * @param v Value (brightness) value in the range [0, 1].
+         * @return Color object in RGB representation.
+         */
+        static Color FromHSV(float h, float s, float v);
 
         /**
          * @brief Linearly interpolates between two Color objects.

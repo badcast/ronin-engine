@@ -10,14 +10,6 @@
 #define TEST_MALLOC 0
 #endif
 
-#define DESCRIBE_TYPE(TYPE, self, _type_, name) (runtime_define_type<TYPE>(#TYPE, self, (_type_), name))
-
-#define DESCRIBE_AS_ONLY_NAME(TYPE) (DESCRIBE_TYPE(TYPE, this, &_type_, name.c_str()))
-
-#define DESCRIBE_AS_MAIN_OFF(TYPE) (DESCRIBE_TYPE(TYPE, this, &_type_, nullptr))
-
-#define DESCRIBE_AS_MAIN(TYPE) (DESCRIBE_TYPE(TYPE, this, &_type_, name.c_str()))
-
 //#define BASE_VIRTUAL_OVERRIDED(BASE, POINTER, METHOD) \
 //    (reinterpret_cast<const void *>(&BASE::METHOD) == reinterpret_cast<const void *>(&((*POINTER).METHOD)))
 
@@ -47,6 +39,13 @@ namespace std
 
 } // namespace std
 
+#define RONIN_USE_TYPESTR 0
+
+
+#if RONIN_USE_TYPESTR
+
+#define DESCRIBE_TYPE(TYPE, self, _type_, name) (runtime_define_type<TYPE>(#TYPE, self, (_type_), name))
+
 static std::unordered_map<std::type_index, const char *> main_ronin_types;
 
 // this method for replacing C++ dynamic_cast
@@ -71,6 +70,17 @@ static std::enable_if_t<std::is_base_of<RoninEngine::Runtime::Object, T>::value,
 }
 
 void check_object(RoninEngine::Runtime::Object *obj);
+#else
+
+#define DESCRIBE_TYPE(TYPE, self, _type_, name) (#TYPE)
+
+#endif
+
+#define DESCRIBE_AS_ONLY_NAME(TYPE) (DESCRIBE_TYPE(TYPE, this, &_type_, name.c_str()))
+
+#define DESCRIBE_AS_MAIN_OFF(TYPE) (DESCRIBE_TYPE(TYPE, this, &_type_, nullptr))
+
+#define DESCRIBE_AS_MAIN(TYPE) (DESCRIBE_TYPE(TYPE, this, &_type_, name.c_str()))
 
 // bool matrix_compare_layer(RoninEngine::Runtime::Transform const *lhs, RoninEngine::Runtime::Transform const *rhs);
 
@@ -81,12 +91,28 @@ typedef std::map<int, std::unordered_map<matrix_key_t, std::set<RoninEngine::Run
 
 namespace RoninEngine
 {
-    extern SDL_Renderer *renderer;
-    extern SDL_Window *active_window;
-    extern Resolution active_resolution;
-    extern bool ronin_debug_mode;
-    extern TimingWatcher queue_watcher;
-    extern TimingWatcher last_watcher;
+    struct RoninEnvironment
+    {
+        struct
+        {
+            // this is variable for apply settings
+            int conf;
+            RenderBackend renderBackend = RenderBackend::GPU;
+        } simConfig;
+
+        SDL_Renderer *renderer = nullptr;
+
+        SDL_Window *active_window = nullptr;
+        Resolution active_resolution {0, 0, 0};
+        TimingWatcher last_watcher {};
+        TimingWatcher queue_watcher {};
+
+        bool ronin_debug_mode = false;
+        bool internal_world_loaded = false;
+        bool internal_world_can_start = false;
+    };
+
+    extern RoninEnvironment env;
 
     namespace UI
     {

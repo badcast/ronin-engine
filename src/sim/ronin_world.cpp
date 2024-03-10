@@ -154,7 +154,7 @@ namespace RoninEngine
             scripts_lateUpdate();
 
             // end watcher
-            queue_watcher.delayExecScripts = TimeEngine::EndWatch();
+            env.queue_watcher.delayExecScripts = TimeEngine::EndWatch();
 
             TimeEngine::BeginWatch();
             // Render on main camera
@@ -164,7 +164,7 @@ namespace RoninEngine
                 // draw world in world size
                 native_render_2D(reinterpret_cast<Camera2D *>(cam));
             }
-            queue_watcher.delayRenderWorld = TimeEngine::EndWatch();
+            env.queue_watcher.delayRenderWorld = TimeEngine::EndWatch();
 
             // begin watcher
             TimeEngine::BeginWatch();
@@ -176,7 +176,7 @@ namespace RoninEngine
 
                 scripts_gizmos();
 
-                if(ronin_debug_mode)
+                if(env.ronin_debug_mode)
                 {
                     constexpr int font_height = 11;
                     static char buffer[32];
@@ -201,19 +201,19 @@ namespace RoninEngine
                     static std::uint32_t averrage;
 
                     Vec2 g_size {138, static_cast<float>(font_height * (max_elements + 2))};
-                    Vec2Int screen_point = Vec2::RoundToInt({g_size.x, static_cast<float>(active_resolution.height)});
+                    Vec2Int screen_point = Vec2::RoundToInt({g_size.x, static_cast<float>(env.active_resolution.height)});
                     Vec2 g_pos = Camera::ScreenToWorldPoint({screen_point.x / 2.f, screen_point.y - g_size.y / 2});
                     int x;
 
                     if(TimeEngine::frame() % 10 == 0)
                     {
                         // Update data
-                        labels[0].value = last_watcher.delayFrameRate;
-                        labels[1].value = last_watcher.delayRenderGUI;
-                        labels[2].value = last_watcher.delayExecScripts + last_watcher.delayExecWorld;
-                        labels[3].value = last_watcher.delayRenderWorld;
-                        labels[4].value = last_watcher.delayRenderGizmos;
-                        labels[5].value = Perfomances::GetMemoryUsed() / 1024 / 1024; // convert bytes to MB
+                        labels[0].value = env.last_watcher.delayFrameRate;
+                        labels[1].value = env.last_watcher.delayRenderGUI;
+                        labels[2].value = env.last_watcher.delayExecScripts + env.last_watcher.delayExecWorld;
+                        labels[3].value = env.last_watcher.delayRenderWorld;
+                        labels[4].value = env.last_watcher.delayRenderGizmos;
+                        labels[5].value = Perfomances::GetMemoryUsed() / 1024 / 1024; // convert Bytes to MB
 
                         // calculate averrage and max
                         max = 10;
@@ -273,7 +273,7 @@ namespace RoninEngine
             }
 
             // end watcher
-            queue_watcher.delayRenderGizmos = TimeEngine::EndWatch();
+            env.queue_watcher.delayRenderGizmos = TimeEngine::EndWatch();
         }
 
     } // namespace Runtime
