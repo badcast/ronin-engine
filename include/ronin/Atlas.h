@@ -7,16 +7,25 @@ namespace RoninEngine::Runtime
     // TODO: Make atlas object (Collection sprite)
     class RONIN_API Atlas
     {
-    private:
-        Texture *texture;
-        std::map<std::string, Sprite> _sprites;
+    protected:
+        Image *src;
+        std::vector<Sprite *> _sprites;
 
     public:
-        Atlas() = default;
-        Atlas(const Atlas &) = default;
-        ~Atlas() = default;
+        Atlas();
+        Atlas(const Atlas &) = delete;
 
-        Sprite *get_sprite(const std::string &spriteName);
+        Image *GetSource();
+
+        int GetCount();
+
+        Vec2Int GetSize();
+
+        Sprite *GetSpriteFromIndex(int value);
+        Sprite *GetSpriteFromPoint(const Vec2Int &value);
+        Sprite *GetSpriteFromName(const std::string &value);
+
+        std::vector<Sprite*> GetSprites();
     };
 
 } // namespace RoninEngine::Runtime

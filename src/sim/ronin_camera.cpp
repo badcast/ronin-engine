@@ -33,13 +33,15 @@ namespace RoninEngine::Runtime
         Vec2 scale;
 
         SDL_RenderGetScale(env.renderer, &scale.x, &scale.y);
+
         scale *= pixelsPerPoint;
-        screenPoint.x = (env.active_resolution.width / 2.f - screenPoint.x) * -1.f / scale.x;
+
+        screenPoint.x = -(env.active_resolution.width / 2.f - screenPoint.x) / scale.x;
         screenPoint.y = (env.active_resolution.height / 2.f - screenPoint.y) / scale.y;
 
         // Difference at Main Camera
         if(mainCamera())
-            screenPoint += mainCamera()->transform()->position();
+            screenPoint += mainCamera()->transform()->_position;
 
         return screenPoint;
     }

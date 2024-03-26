@@ -224,7 +224,7 @@ namespace RoninEngine::Runtime
             layer->second.clear();
 
             // Optimize Orders
-            if(layer->second.capacity() > 1023)
+            if(layer->second.capacity() > 1024)
             {
                 layer->second.shrink_to_fit();
             }

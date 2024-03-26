@@ -339,12 +339,12 @@ namespace RoninEngine::Runtime
 
     const bool Input::GetMouseDown(MouseButton state)
     {
-        return internal_input._mouse_state[static_cast<int>(state)] & MouseStateFlags::MouseDown;
+        return internal_input._mouse_state[static_cast<int>(state)] & MouseStateFlags::MouseDown != 0;
     }
 
     const bool Input::GetMouseUp(MouseButton state)
     {
-        return internal_input._mouse_state[static_cast<int>(state)] & MouseStateFlags::MouseUp;
+        return internal_input._mouse_state[static_cast<int>(state)] & MouseStateFlags::MouseUp != 0;
     }
 
     const int Input::GetMouseWheel()

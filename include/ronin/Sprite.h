@@ -15,6 +15,8 @@ namespace RoninEngine::Runtime
         Image *surface;
 
     public:
+        std::string name;
+
         Sprite();
         Sprite(Image *src, const Rect &rect);
         Sprite(const Sprite &) = default;

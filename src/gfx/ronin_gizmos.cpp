@@ -337,6 +337,41 @@ namespace RoninEngine::Runtime
         internal_drawLine(pos2, origin);
     }
 
+    void Gizmos::DrawSprite(Sprite *sprite, Vec2 origin, Vec2 size, float angleRadian)
+    {
+        SDL_Texture *texture;
+        SDL_Point center;
+        SDL_Rect dst;
+
+        if(sprite == nullptr || sprite->surface == nullptr)
+            return;
+
+        texture = SDL_CreateTextureFromSurface(env.renderer, sprite->surface);
+        if(texture)
+        {
+            origin = Camera::WorldToScreenPoint(origin);
+
+            center.x = sprite->width() * sprite->m_center.x;
+            center.y = sprite->height() * sprite->m_center.y;
+
+            dst.x = origin.x - center.x;
+            dst.y = origin.y - center.y;
+            dst.w = sprite->width() * size.x;
+            dst.h = sprite->height() * size.x;
+
+            // TODO: Move SDL_RenderCopyEx to Go
+            SDL_RenderCopyEx(
+                env.renderer,
+                texture,
+                reinterpret_cast<SDL_Rect *>(&sprite->m_rect),
+                &dst,
+                angleRadian * Math::rad2deg,
+                &center,
+                SDL_RendererFlip::SDL_FLIP_NONE);
+            SDL_DestroyTexture(texture);
+        }
+    }
+
     void Gizmos::DrawFillRect(Vec2 center, float width, float height)
     {
         center = Camera::WorldToScreenPoint(center);

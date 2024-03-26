@@ -41,7 +41,6 @@ namespace std
 
 #define RONIN_USE_TYPESTR 0
 
-
 #if RONIN_USE_TYPESTR
 
 #define DESCRIBE_TYPE(TYPE, self, _type_, name) (runtime_define_type<TYPE>(#TYPE, self, (_type_), name))
@@ -225,6 +224,8 @@ namespace RoninEngine
             std::unordered_map<std::size_t, ResId> image_clips;
             std::unordered_map<std::size_t, ResId> audio_clips;
             std::unordered_map<std::size_t, ResId> music_clips;
+
+            Atlas *atlasRef;
         };
 
         struct ParticleDrain

@@ -2,11 +2,86 @@
 
 namespace RoninEngine::Runtime
 {
-    Sprite *Atlas::get_sprite(const std::string &spriteName)
+    Atlas::Atlas() : src(nullptr), _sprites {}
     {
-        auto iter = _sprites.find(spriteName);
-        if(iter == end(_sprites))
-            return nullptr;
-        return &iter->second;
     }
+
+    Image *Atlas::GetSource()
+    {
+        return src;
+    }
+
+    int Atlas::GetCount()
+    {
+        return static_cast<int>(_sprites.size());
+    }
+
+    Vec2Int Atlas::GetSize()
+    {
+        Vec2Int sz;
+
+        if(src != nullptr)
+        {
+            sz.x = src->w;
+            sz.y = src->h;
+        }
+
+        return sz;
+    }
+
+    Sprite *Atlas::GetSpriteFromIndex(int value)
+    {
+        Sprite *result;
+
+        if(value >= 0 && value < GetCount())
+        {
+            result = _sprites[value];
+        }
+        else
+        {
+            result = nullptr;
+        }
+
+        return result;
+    }
+
+    Sprite *Atlas::GetSpriteFromPoint(const Vec2Int &value)
+    {
+        Sprite *result = nullptr;
+
+        for(const auto &sprite : _sprites)
+        {
+            if(value.x >= sprite->m_rect.x && value.x <= sprite->m_rect.x + sprite->m_rect.w && value.y >= sprite->m_rect.y &&
+               value.y <= sprite->m_rect.y + sprite->m_rect.h)
+            {
+                result = sprite;
+                break;
+            }
+        }
+
+        return result;
+    }
+
+    Sprite *Atlas::GetSpriteFromName(const std::string &value)
+    {
+        Sprite *result = nullptr;
+
+        // TODO: Optimize here (hash_name use)
+        for(const auto &sprite : _sprites)
+        {
+            if(sprite->name == value)
+            {
+                result = sprite;
+                break;
+            }
+        }
+
+        return result;
+    }
+
+    std::vector<Sprite *> Atlas::GetSprites()
+    {
+        return _sprites;
+    }
+
 } // namespace RoninEngine::Runtime
