@@ -147,7 +147,9 @@ namespace RoninEngine::Runtime
 
     Transform *Transform::root()
     {
-        return World::self()->irs->main_object->transform();
+        if(switched_world==nullptr ||  switched_world->irs == nullptr)
+            return nullptr;
+        return switched_world->irs->main_object->transform();
     }
 
     void Transform::LookAt(Transform *target)

@@ -5,14 +5,14 @@
 
 using namespace RoninEngine::Runtime;
 
-constexpr const char resource_types[][16] {
+constexpr const char resource_classes[][16] {
     "Sprite",
     "AudioClip",
     "MusicClip",
     // Atlas is Object serialize
     "Atlas"};
 
-constexpr int resource_types_n = sizeof(resource_types) / sizeof(resource_types[0]);
+constexpr const char atlas_modes[][6] {"Rect", "Tiled"};
 
 static std::hash<std::string> string_hasher;
 
@@ -30,69 +30,73 @@ void RoninEngine::Runtime::internal_free_loaded_assets()
     loaded_assets.clear();
 }
 
-bool AssetManager::LoadAsset(const std::string &assetFile, Asset **asset)
+bool AssetManager::LoadAsset(const std::string &loaderFile, Asset **asset)
 {
-    int types, status;
     if(asset == nullptr)
     {
-        return false;
-    }
-
-    Json::Reader json_reader;
-    Json::Value json;
-    std::ifstream file(assetFile);
-
-    status = json_reader.parse(file, json, false);
-    file.close();
-
-    if(!status)
-    {
-        RoninSimulator::Log("Can not load asset file");
-        return false;
-    }
-
-    std::string resource_type = json["resource_type"].asString();
-
-    for(types = 0; types < resource_types_n;)
-    {
-        if(resource_type == resource_types[types])
-            break;
-        ++types;
-    }
-
-    if(types >= resource_types_n)
-    {
-        RoninSimulator::Log("Can not load asset file");
+        RoninSimulator::Log("asset argument is null pointer");
         return false;
     }
 
     ResId rcid;
-    Json::Value param1, param2, param3;
+    int num1, num2, num3;
+    std::string str1;
+    Json::Reader json_reader;
+    Json::Value json, param1, param2, param3, map;
     std::vector<std::pair<std::size_t, std::string>> __files;
-    std::filesystem::path dir_of_asset {assetFile};
+    std::filesystem::path dir_of_asset;
+    std::ifstream file(loaderFile);
 
+    num1 = json_reader.parse(file, json, false);
+    file.close();
+
+    if(!num1)
+    {
+        RoninSimulator::Log("Can not load asset file");
+        return false;
+    }
+
+    num2 = sizeof(resource_classes) / sizeof(resource_classes[0]);
+
+    str1 = json["class"].asString();
+
+    for(num1 = 0; num1 < num2;)
+    {
+        if(str1 == resource_classes[num1])
+            break;
+        ++num1;
+    }
+
+    if(num1 >= num2)
+    {
+        RoninSimulator::Log("Can not load asset file");
+        return false;
+    }
+
+    dir_of_asset = loaderFile;
     dir_of_asset = dir_of_asset.parent_path();
-    switch(types)
+
+    switch(num1)
     {
         case 0:
         case 1:
         case 2:
         {
-            Json::Value resources = json["resources"];
+            Json::Value sources = json["source"];
 
-            if(!resources.isArray())
+            if(!sources.isArray())
             {
                 RoninSimulator::Log("Can not load asset file");
                 return false;
             }
 
-            for(auto &resource : resources)
+            for(auto &source0 : sources)
             {
-                param1 = resource["name"];
-                param2 = resource["ref"];
+                param1 = source0["name"];
+                param2 = source0["ref"];
                 if(!param1.isString() || !param2.isString())
                 {
-                    RoninSimulator::Log(("Invalid element on \"resources\". Incorrect file " + assetFile).c_str());
+                    RoninSimulator::Log(("Invalid element on \"resources\". Incorrect file " + loaderFile).c_str());
                     continue;
                 }
                 size_t hash_it = string_hasher(param1.asString());
@@ -110,7 +114,7 @@ bool AssetManager::LoadAsset(const std::string &assetFile, Asset **asset)
             RoninMemory::alloc_self((*asset)->__ref);
             for(auto &pair : __files)
             {
-                switch(types)
+                switch(num1)
                 {
                     /*Sprites*/
                     case 0:
@@ -135,7 +139,7 @@ bool AssetManager::LoadAsset(const std::string &assetFile, Asset **asset)
                     continue;
                 }
 
-                switch(types)
+                switch(num1)
                 {
                     /*Sprites*/
                     case 0:
@@ -155,22 +159,72 @@ bool AssetManager::LoadAsset(const std::string &assetFile, Asset **asset)
         break;
         case 3:
             // ATLAS RESOURCE TYPE
+            std::string _src;
             Atlas *atlas;
             Sprite *spr;
             Rect rect;
-            std::string _src;
 
-            Json::Value map = json["map"];
-            if(!map.isArray())
+            param1 = json["mode"];
+            if(!param1.empty())
             {
-                RoninSimulator::Log("Can not load asset file. Map key is not entry");
-                return false;
+                if(!param1.isString())
+                {
+                    RoninSimulator::Log("mode param is invalid and not contains atlas mode");
+                    return false;
+                }
+                str1 = param1.asString();
+                for(num3 = 0, num2 = sizeof(atlas_modes) / sizeof(atlas_modes[0]); num3 < num2;)
+                {
+                    if(atlas_modes[num3] == str1)
+                        break;
+                    ++num3;
+                }
+
+                if(num3 >= num2)
+                {
+                    RoninSimulator::Log("Can not load asset file");
+                    return false;
+                }
+            }
+            else
+            {
+                num3 = 0;
             }
 
-            param1 = json["resource_ref"];
+            // Load Atlas Map
+
+            map = json["map"];
+            switch(num3)
+            {
+                case 0: // RECT
+                    if(!map.isArray())
+                    {
+                        RoninSimulator::Log("Can not load asset file. Map key is not contains Array maps");
+                        return false;
+                    }
+                    num2 = map.size();
+                    break;
+                case 1: // TILED
+                    if(!map.isString())
+                    {
+                        RoninSimulator::Log("Can not assign mode is Tiled. Map key is not contains Rect value");
+                        return false;
+                    }
+
+                    rect = {0, 0, -1, -1}; // set flush
+                    std::sscanf(map.asString().c_str(), "%d %d", &rect.w, &rect.h);
+
+                    break;
+                default:
+                    RoninSimulator::Log("Invalid atlas mode");
+                    return false;
+                    break;
+            }
+
+            param1 = json["source"];
             if(!param1.isString())
             {
-                RoninSimulator::Log(("Invalid atlas key \"resource_ref\" is not valid from " + assetFile).c_str());
+                RoninSimulator::Log(("Invalid atlas key \"source\" is not valid from " + loaderFile).c_str());
                 return false;
             }
 
@@ -191,37 +245,79 @@ bool AssetManager::LoadAsset(const std::string &assetFile, Asset **asset)
             atlas = (*asset)->__ref->atlasRef = RoninMemory::alloc<Atlas>();
             atlas->src = Resources::GetImageSource(rcid);
 
-            // Map entry
-            for(auto &m : map)
+            // Post settings Tiled Mode
+            int x, y;
+            if(num3 == 1)
             {
-                param1 = m["rect"];
-                if(!param1.isString())
-                {
-                    RoninSimulator::Log("Is not valid key entry \"rect\"");
-                    continue;
-                }
-                rect = {}; // set flush
-                std::sscanf(param1.asString().c_str(), "%d %d %d %d", &rect.x, &rect.y, &rect.w, &rect.h);
-                spr = Primitive::CreateEmptySprite(false);
+                SDL_Surface *surf = atlas->src;
 
-                // TODO: make sprite name spr->name = param1.empty()
-                param1 = m["sprite"];
-                if(!param1.empty())
+                if(rect.w == -1)
+                    rect.w = surf->w;
+                if(rect.h == -1)
+                    rect.h = surf->h;
+
+                x = surf->w / rect.w;
+                y = surf->h / rect.h;
+                num2 = x * y;
+                --x;
+                --y;
+            }
+            // TODO: num2 > num1
+            for(num1 = 0; num1 < num2; ++num1)
+            {
+                // RECT
+                if(num3 == 0)
                 {
+                    param3 = map[num1];
+                    param1 = param3["value"];
                     if(!param1.isString())
                     {
-                        RoninSimulator::Log("Is not valid key entry \"sprite\"");
+                        RoninSimulator::Log("Is not valid key entry value is Rect");
+                        continue;
                     }
-                    else
+                    rect = {}; // set flush
+                    std::sscanf(param1.asString().c_str(), "%d %d %d %d", &rect.x, &rect.y, &rect.w, &rect.h);
+
+                    spr = Primitive::CreateEmptySprite(false);
+
+                    // TODO: make sprite name spr->name = param1.empty()
+                    param1 = param3["sprite"];
+                    if(!param1.empty())
                     {
-                        spr->name = param1.asString();
+                        if(!param1.isString())
+                        {
+                            RoninSimulator::Log("Is not valid key entry \"sprite\"");
+                        }
+                        else
+                        {
+                            spr->name = param1.asString();
+                        }
                     }
+                }
+                // TILED
+                else
+                {
+                    spr = Primitive::CreateEmptySprite(false);
                 }
 
                 spr->m_rect = rect;
                 spr->surface = atlas->src;
 
                 atlas->_sprites.emplace_back(spr);
+
+                // Post setting Tiled
+                if(num3 == 1)
+                {
+                    if(rect.x >= x * rect.w)
+                        rect.x = 0;
+                    else
+                        rect.x += rect.w;
+
+                    if(rect.y >= y * rect.h)
+                        rect.y = 0;
+                    else
+                        rect.y += rect.h;
+                }
             }
 
             break;

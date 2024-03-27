@@ -58,6 +58,7 @@ void ParticleSystemRef::link_particles(ParticleSystem *from, int n)
         else
         {
             linked->setParent(from->transform(), false);
+            linked->position(from->transform()->position());
         }
 
         if(from->rotate)
