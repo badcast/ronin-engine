@@ -1,4 +1,5 @@
 #include "ronin.h"
+#include "ronin_render_cache.h"
 
 namespace RoninEngine::Runtime
 {
@@ -297,8 +298,10 @@ namespace RoninEngine::Runtime
 
     void Gizmos::DrawText(Vec2 origin, const std::string &text)
     {
+        using namespace RoninEngine::UI;
+
         origin = Camera::WorldToScreenPoint(origin);
-        RoninEngine::UI::Render_String_ttf(text.data(), 11, Vec2::RoundToInt(origin), true);
+        Render_String_ttf(text.data(), 11, Vec2::RoundToInt(origin), true);
     }
 
     void Gizmos::DrawTextLegacy(Vec2 origin, const std::string &text)
@@ -346,7 +349,7 @@ namespace RoninEngine::Runtime
         if(sprite == nullptr || sprite->surface == nullptr)
             return;
 
-        texture = SDL_CreateTextureFromSurface(env.renderer, sprite->surface);
+        texture = render_cache_texture(sprite);
         if(texture)
         {
             origin = Camera::WorldToScreenPoint(origin);
@@ -363,12 +366,11 @@ namespace RoninEngine::Runtime
             SDL_RenderCopyEx(
                 env.renderer,
                 texture,
-                reinterpret_cast<SDL_Rect *>(&sprite->m_rect),
+                nullptr,
                 &dst,
                 angleRadian * Math::rad2deg,
                 &center,
                 SDL_RendererFlip::SDL_FLIP_NONE);
-            SDL_DestroyTexture(texture);
         }
     }
 

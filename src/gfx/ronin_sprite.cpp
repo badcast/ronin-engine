@@ -50,11 +50,11 @@ namespace RoninEngine::Runtime
 
     int Sprite::width() const
     {
-        return Math::Abs(m_rect.w - m_rect.x);
+        return m_rect.w;
     }
     int Sprite::height() const
     {
-        return Math::Abs(m_rect.h - m_rect.y);
+        return m_rect.h;
     }
 
     const Vec2 Sprite::size() const

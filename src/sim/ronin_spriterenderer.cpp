@@ -198,7 +198,7 @@ namespace RoninEngine::Runtime
                         // renderer, sdl_default_pixelformat, SDL_TextureAccess::SDL_TEXTUREACCESS_TARGET, rendering->src.w,
                         // rendering->src.h);
                         env.renderer,
-                        sdl_default_pixelformat,
+                        ronin_default_pixelformat,
                         SDL_TextureAccess::SDL_TEXTUREACCESS_TARGET,
                         1024,
                         1024);

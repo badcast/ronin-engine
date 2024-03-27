@@ -308,6 +308,8 @@ namespace RoninEngine
             // Main or Root object
             GameObject *main_object;
 
+            std::map<Runtime::Sprite *, SDL_Texture *> render_cache;
+
             void event_camera_changed(Camera *target, CameraEvent state);
         };
 

@@ -47,7 +47,7 @@ namespace RoninEngine::Runtime
         Sprite *sprite;
 
         size *= pixelsPerPoint;
-        SDL_Surface *surface = SDL_CreateRGBSurfaceWithFormat(0, size.x, size.y, 32, sdl_default_pixelformat);
+        SDL_Surface *surface = SDL_CreateRGBSurfaceWithFormat(0, size.x, size.y, 32, ronin_default_pixelformat);
         if(surface == nullptr)
         {
             RoninSimulator::Kill();
@@ -66,7 +66,7 @@ namespace RoninEngine::Runtime
         Sprite *sprite;
 
         size *= pixelsPerPoint;
-        SDL_Surface *surface = SDL_CreateRGBSurfaceWithFormat(0, size.x, size.y, 32, sdl_default_pixelformat);
+        SDL_Surface *surface = SDL_CreateRGBSurfaceWithFormat(0, size.x, size.y, 32, ronin_default_pixelformat);
         if(surface == nullptr)
         {
             RoninSimulator::Kill();
@@ -89,7 +89,7 @@ namespace RoninEngine::Runtime
 
         size *= pixelsPerPoint;
         height *= pixelsPerPoint;
-        SDL_Surface *surface = SDL_CreateRGBSurfaceWithFormat(0, size.x, size.y, 32, sdl_default_pixelformat);
+        SDL_Surface *surface = SDL_CreateRGBSurfaceWithFormat(0, size.x, size.y, 32, ronin_default_pixelformat);
         if(surface == nullptr)
         {
             RoninSimulator::Kill();
