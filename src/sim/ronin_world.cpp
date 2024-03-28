@@ -143,7 +143,7 @@ namespace RoninEngine
         void level_render_world()
         {
             // set default color
-            Gizmos::SetColor(Color::white);
+            RenderUtility::SetColor(Color::white);
 
             TimeEngine::BeginWatch();
 
@@ -171,7 +171,7 @@ namespace RoninEngine
             if(!switched_world->irs->request_unloading && cam)
             {
                 // Reset Color
-                Gizmos::SetColor(Color::white);
+                RenderUtility::SetColor(Color::white);
                 switched_world->OnGizmos(); // Draw gizmos
 
                 scripts_gizmos();
@@ -253,21 +253,21 @@ namespace RoninEngine
                     }
 
                     // Set background color
-                    Gizmos::SetColor(Color(0, 0, 0, 100));
+                    RenderUtility::SetColor(Color(0, 0, 0, 100));
 
                     // Draw box
-                    Gizmos::DrawFillRect(g_pos, g_size.x / pixelsPerPoint, g_size.y / pixelsPerPoint);
+                    RenderUtility::DrawFillRect(g_pos, g_size.x / pixelsPerPoint, g_size.y / pixelsPerPoint);
 
                     screen_point.x = 10;
                     screen_point.y -= static_cast<int>(g_size.y) - font_height / 2;
-                    Gizmos::SetColor(Color::white);
-                    Gizmos::DrawTextToScreen(screen_point, labels[0].format, font_height);
+                    RenderUtility::SetColor(Color::white);
+                    RenderUtility::DrawTextToScreen(screen_point, labels[0].format, font_height);
                     for(x = 1; x < max_elements; ++x)
                     {
-                        Gizmos::SetColor(labels[x].format_color);
+                        RenderUtility::SetColor(labels[x].format_color);
 
                         screen_point.y += font_height + 1;
-                        Gizmos::DrawTextToScreen(screen_point, labels[x].format, font_height);
+                        RenderUtility::DrawTextToScreen(screen_point, labels[x].format, font_height);
                     }
                 }
             }

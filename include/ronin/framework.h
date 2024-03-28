@@ -38,7 +38,7 @@
 #include "Atlas.h"
 
 #include "NavMesh.h"
-#include "Gizmos.h"
+#include "RenderUtility.h"
 #include "Physics2D.h"
 
 #endif

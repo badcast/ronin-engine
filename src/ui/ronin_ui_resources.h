@@ -52,7 +52,8 @@ namespace RoninEngine::UI
         RGUI_VSLIDER,
         RGUI_PICTURE_BOX,
         RGUI_DROPDOWN,
-        RGUI_CHECKBOX
+        RGUI_CHECKBOX,
+        RGUI_CUSTOM_OVERLAY
     };
 
     struct UIState
@@ -79,6 +80,11 @@ namespace RoninEngine::UI
             Sprite *picturebox;
             DropDownResource *dropdown;
             bool checkbox;
+            struct
+            {
+                bool isInit;
+                UIOverlay *inspector;
+            } overlay;
         } resource;
         void *event;
     };

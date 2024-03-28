@@ -13,8 +13,8 @@ namespace RoninEngine::UI
     using namespace RoninEngine::Runtime;
     using namespace RoninEngine::Exception;
 
-    extern bool general_render_ui_section(UIElement &element, const UIState &uiState, bool &ui_focus);
-    extern void ui_event_action(UIElement *element);
+    extern bool general_ui_render(UIElement &element, const UIState &uiState, bool &ui_focus);
+    extern void general_ui_event_action(UIElement *element);
 
     uid push_new_element(GUI *gui, uid parent = NOPARENT)
     {
@@ -67,10 +67,8 @@ namespace RoninEngine::UI
         switch(element.prototype)
         {
             case GUIControlPresent::RGUI_DROPDOWN:
-            {
                 RoninMemory::free(element.resource.dropdown);
                 break;
-            }
             case RGUI_TEXT:
             case RGUI_BUTTON:
             case RGUI_TEXT_EDIT:
@@ -78,6 +76,7 @@ namespace RoninEngine::UI
             case RGUI_VSLIDER:
             case RGUI_PICTURE_BOX:
             case RGUI_CHECKBOX:
+            default:
                 break;
         }
     }
@@ -150,6 +149,23 @@ namespace RoninEngine::UI
             UIElement *elem = &call_get_element(handle, id);
             elem->rect;
         }
+    }
+
+    uid GUI::PushCustomUI(const UIOverlay *custom, const Rect &rect, uid parent)
+    {
+        if(custom == nullptr)
+        {
+            RoninSimulator::Log("overlay can not be null");
+            return -1;
+        }
+
+        uid id = push_new_element(this, parent);
+        UIElement &data = call_get_element(this->handle, id);
+        data.id = id;
+        data.rect = rect;
+        data.prototype = RGUI_CUSTOM_OVERLAY;
+        data.resource.overlay.inspector = const_cast<UIOverlay*>(custom);
+        return id;
     }
 
     void GUI::LayoutNew(Rectf region, bool aspect)
@@ -612,7 +628,7 @@ namespace RoninEngine::UI
                 uiState.ms_click = ui_msclick && uiState.ms_hover;
 
                 // Draw Internal GUI
-                if((general_render_ui_section(*uiElement, uiState, ui_hover)) && handle->interactable)
+                if((general_ui_render(*uiElement, uiState, ui_hover)) && handle->interactable)
                 {
                     // Избавляемся от перекликов в UI
                     handle->_focusedUI = true;
@@ -630,7 +646,7 @@ namespace RoninEngine::UI
                             handle->callback(id, handle->callbackData);
                         }
                         // run event
-                        ui_event_action(uiElement);
+                        general_ui_event_action(uiElement);
                     }
                 }
                 else

@@ -49,6 +49,23 @@ namespace RoninEngine
             Runtime::Vec2Int checkboxSize {120, 25};
         } const defaultMakets;
 
+        struct UIData
+        {
+            uid id;
+            Runtime::Rect rect;
+            Runtime::Vec2Int mousePoint;
+            bool isMouseDown;
+            bool isMouseHover;
+        };
+
+        class UIOverlay
+        {
+        public:
+            virtual void OnInit() = 0;
+            virtual void OnDraw(const UIData *const uiData) = 0;
+            virtual void OnDestroy() = 0;
+        };
+
         class RONIN_API GUI final
         {
         private:
@@ -57,6 +74,8 @@ namespace RoninEngine
         public:
             UI_METHOD GUI(Runtime::World *);
             UI_METHOD ~GUI();
+
+            UI_METHOD uid PushCustomUI(const UIOverlay *custom, const Runtime::Rect &rect, uid parent = NOPARENT);
 
             // Layments
             UI_METHOD void LayoutNew(Runtime::Rectf region, bool aspect = true);

@@ -228,7 +228,7 @@ bool AssetManager::LoadAsset(const std::string &loaderFile, Asset **asset)
                 return false;
             }
 
-            _src = dir_of_asset;
+            _src = dir_of_asset.generic_string();
             _src += Paths::GetPathSeperatorOS();
             _src += param1.asString();
 

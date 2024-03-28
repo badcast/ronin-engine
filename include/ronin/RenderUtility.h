@@ -3,7 +3,7 @@
 
 namespace RoninEngine::Runtime
 {
-    class RONIN_API Gizmos
+    class RONIN_API RenderUtility
     {
     public:
         static Color GetColor();
@@ -24,7 +24,11 @@ namespace RoninEngine::Runtime
         static void DrawTextLegacy(Vec2 origin, const std::string &text);
         static void DrawCircle(Vec2 origin, float distance);
         static void DrawArrow(Vec2 origin, Vec2 dir, float tailLength = 0.5f);
+
         static void DrawSprite(Sprite *sprite, Vec2 origin, Vec2 size = Vec2::one, float angleRadian = 0);
+        static void DrawSpriteToScreen(Sprite *sprite, const Rect &rect, float angleRadian = 0);
+
+        static void DrawSpriteExtent(Sprite *sprite, const Rect &rect, float angleRadian = 0);
 
         static void DrawFillRect(Vec2 origin, float width, float height);
         static void DrawFillRectRounded(Vec2 origin, float width, float height, std::uint16_t radius);
@@ -32,6 +36,6 @@ namespace RoninEngine::Runtime
         static void DrawFillSquareRounded(Vec2 origin, float width, std::uint16_t radius);
         static void DrawFillCircle(Vec2 origin, float distance);
 
-        static void DrawTextToScreen(Vec2Int screen_point, const std::string &text, int font_size = 11);
+        static void DrawTextToScreen(Vec2Int screenPoint, const std::string &text, int font_size = 11);
     };
 } // namespace RoninEngine::Runtime

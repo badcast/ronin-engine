@@ -19,7 +19,7 @@ namespace RoninEngine::UI
     extern TTF_Font *ttf_arial_font;
     extern LegacyFont_t *pLegacyFont;
 
-    bool general_render_ui_section(UIElement &element, const UIState &uiState, bool &ui_focus)
+    bool general_ui_render(UIElement &element, const UIState &uiState, bool &ui_focus)
     {
         // TODO: OPTIMIZE HERE (HIGH PRIORITY)
         static float dropDownLinear = 0;
@@ -41,7 +41,7 @@ namespace RoninEngine::UI
         {
             case RGUI_TEXT:
             {
-                Gizmos::SetColor(Color::white);
+                RenderUtility::SetColor(Color::white);
                 Render_String_ttf(element.text.data(), 15, element.rect.GetXY(), Color::white);
                 // Render_String(render, element.rect, element.text.c_str(), element.text.size());
                 break;
@@ -57,15 +57,15 @@ namespace RoninEngine::UI
                 Color col(uiState.ms_hover ? colorSpace.defaultInteraction.pressState : colorSpace.defaultInteraction.normalState);
                 rect = element.rect;
                 rect += inside / 2;
-                Gizmos::SetColor(col);
+                RenderUtility::SetColor(col);
 
                 if(show_down_side)
                 {
-                    Gizmos::SetColor(colorSpace.buttonDownSide);
+                    RenderUtility::SetColor(colorSpace.buttonDownSide);
                     SDL_RenderFillRect(env.renderer, reinterpret_cast<SDL_Rect *>(&rect));
                 }
 
-                Gizmos::SetColor(col);
+                RenderUtility::SetColor(col);
                 Rect region {rect};
                 region.h -= (show_down_side ? 4 : 0);
                 SDL_RenderFillRect(env.renderer, reinterpret_cast<SDL_Rect *>(&region));
@@ -75,7 +75,7 @@ namespace RoninEngine::UI
                 // render text
                 // Render_String(render, element.rect, element.text.c_str(), element.text.size(), 13,
                 // TextAlign::MiddleCenter, true, uiHover);
-                Gizmos::SetColor(Color::gray);
+                RenderUtility::SetColor(Color::gray);
                 Render_String_ttf(
                     element.text.data(),
                     12,
@@ -95,9 +95,9 @@ namespace RoninEngine::UI
                 rect = element.rect + thick;
 
                 // uielement background
-                Gizmos::SetColor((uiState.ms_hover) ? colorSpace.defaultInteraction.normalState : colorSpace.defaultInteraction.hoverState);
+                RenderUtility::SetColor((uiState.ms_hover) ? colorSpace.defaultInteraction.normalState : colorSpace.defaultInteraction.hoverState);
                 SDL_RenderFillRect(env.renderer, (SDL_Rect *) &rect);
-                Gizmos::SetColor(Color::gray);
+                RenderUtility::SetColor(Color::gray);
                 for(int x = 0; x < thickness; ++x)
                 {
                     rect -= thickPer;
@@ -186,8 +186,8 @@ namespace RoninEngine::UI
                 rect.h = 4;
                 rect.y += (element.rect.h - rect.h) / 2;
 
-                Gizmos::SetColor(uiState.ms_hover ? Color::lightgray : Color::gray);
-                Color color = Gizmos::GetColor();
+                RenderUtility::SetColor(uiState.ms_hover ? Color::lightgray : Color::gray);
+                Color color = RenderUtility::GetColor();
                 boxColor(env.renderer, rect.x, rect.y, rect.x + rect.w, rect.y + rect.h, Color::slategray);
                 rectangleColor(env.renderer, rect.x, rect.y, rect.x + rect.w, rect.y + rect.h, color);
 
@@ -217,7 +217,7 @@ namespace RoninEngine::UI
                 rectangleColor(env.renderer, rect.x, rect.y, rect.x + rect.w + 1, rect.y + rect.h + 1, color);
 
                 // Draw Text under Cursor point
-                Gizmos::SetColor(Color::black);
+                RenderUtility::SetColor(Color::black);
                 char buffer[32];
                 snprintf(buffer, sizeof(buffer), "%.1f", (&element.resource.slider)->value);
                 rect.x += rect.w / 2;
@@ -257,9 +257,9 @@ namespace RoninEngine::UI
                 r += thick;
 
                 // uielement background
-                Gizmos::SetColor((uiState.ms_hover) ? colorSpace.defaultInteraction.normalState : colorSpace.defaultInteraction.hoverState);
+                RenderUtility::SetColor((uiState.ms_hover) ? colorSpace.defaultInteraction.normalState : colorSpace.defaultInteraction.hoverState);
                 SDL_RenderFillRect(env.renderer, (SDL_Rect *) &r);
-                Gizmos::SetColor(Color::gray);
+                RenderUtility::SetColor(Color::gray);
                 for(int x = 0; x < thickness; ++x)
                 {
                     r -= Rect(1, 1, -1, -1);
@@ -296,7 +296,7 @@ namespace RoninEngine::UI
 
                     r.h = dropDownLinear = Math::Ceil(Math::Lerp(dropDownLinear, link->second.size() * sz, TimeEngine::deltaTime()));
 
-                    Gizmos::SetColor(colorSpace.defaultInteraction.hoverState);
+                    RenderUtility::SetColor(colorSpace.defaultInteraction.hoverState);
                     // draw background
                     SDL_RenderFillRect(env.renderer, (SDL_Rect *) &r);
                     if(link->second.size() * sz == r.h)
@@ -311,7 +311,7 @@ namespace RoninEngine::UI
                             // draw element highligh
                             if(!result && SDL_PointInRect((SDL_Point *) &(uiState.ms), (SDL_Rect *) &elrect))
                             {
-                                Gizmos::SetColor(colorSpace.defaultInteraction.pressState);
+                                RenderUtility::SetColor(colorSpace.defaultInteraction.pressState);
                                 SDL_RenderFillRect(env.renderer, (SDL_Rect *) &elrect);
                                 if(Input::GetMouseDown(MouseButton::MouseLeft))
                                 {
@@ -323,7 +323,7 @@ namespace RoninEngine::UI
                                 }
                             }
 
-                            Gizmos::SetColor(colorSpace.defaultInteraction.hoverState);
+                            RenderUtility::SetColor(colorSpace.defaultInteraction.hoverState);
                             // Draw element text
                             surf = TTF_RenderUTF8_Blended(
                                 ttf_arial_font,
@@ -366,7 +366,7 @@ namespace RoninEngine::UI
 
                 rect = startRect;
 
-                Gizmos::SetColor(uiState.ms_hover ? Color::white : Color::gray);
+                RenderUtility::SetColor(uiState.ms_hover ? Color::white : Color::gray);
                 Render_String_ttf(element.text.c_str(), 14, rect.GetXY() + Vec2Int {17, 0}, false);
 
                 rect.w = 14;
@@ -380,7 +380,7 @@ namespace RoninEngine::UI
 
                 if(element.resource.checkbox)
                 {
-                    Gizmos::SetColor(0xFF3a3a3a);
+                    RenderUtility::SetColor(0xFF3a3a3a);
 
                     // Vertical
                     rect.w = 4;
@@ -399,12 +399,27 @@ namespace RoninEngine::UI
                 }
                 break;
             }
+
+            case RGUI_CUSTOM_OVERLAY:
+                UIData data {};
+                data.id = element.id;
+                data.rect = element.rect;
+                data.isMouseDown = uiState.ms_click;
+                if(data.isMouseHover = uiState.ms_hover)
+                    data.mousePoint = uiState.ms;
+                if(!element.resource.overlay.isInit)
+                {
+                    element.resource.overlay.isInit = true;
+                    element.resource.overlay.inspector->OnInit();
+                }
+                element.resource.overlay.inspector->OnDraw(&data);
+                break;
         }
 
         return result;
     }
 
-    void ui_event_action(UIElement *element)
+    void general_ui_event_action(UIElement *element)
     {
         if(element->event == nullptr)
             return;
@@ -435,7 +450,7 @@ namespace RoninEngine::UI
         SDL_Surface *surf;
 
         TTF_SetFontSize(ttf_arial_font, fontSize);
-        surf = TTF_RenderUTF8_Blended(ttf_arial_font, text, Gizmos::GetColor());
+        surf = TTF_RenderUTF8_Blended(ttf_arial_font, text, RenderUtility::GetColor());
         if(surf)
         {
             SDL_Rect r {screenPoint.x, screenPoint.y, surf->w, surf->h};

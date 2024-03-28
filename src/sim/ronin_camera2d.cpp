@@ -110,14 +110,14 @@ namespace RoninEngine::Runtime
         // Clearing
         if(camera->backclear)
         {
-            Gizmos::SetColor(camera->backcolor);
+            RenderUtility::SetColor(camera->backcolor);
             SDL_RenderClear(env.renderer);
         }
 
         if(camera->visibleGrids)
         {
-            Gizmos::Draw2DWorldSpace(Vec2::zero);
-            Gizmos::DrawPosition(params.camera_position, maxWorldScalar);
+            RenderUtility::Draw2DWorldSpace(Vec2::zero);
+            RenderUtility::DrawPosition(params.camera_position, maxWorldScalar);
         }
 
         // scale.x = Mathf::Min(Mathf::Max(scale.x, 0.f), 1000.f);
@@ -279,21 +279,21 @@ namespace RoninEngine::Runtime
             SDL_RenderDrawPointF(env.renderer, params.wrapper.dst.x, params.wrapper.dst.y + offset);
 
             // borders
-            Gizmos::DrawLine(Vec2(offset, offset), Vec2(offset + height, offset));
-            Gizmos::DrawLine(
+            RenderUtility::DrawLine(Vec2(offset, offset), Vec2(offset + height, offset));
+            RenderUtility::DrawLine(
                 Vec2(env.active_resolution.width - offset, offset), Vec2(env.active_resolution.width - offset - height, offset));
-            Gizmos::DrawLine(
+            RenderUtility::DrawLine(
                 Vec2(offset, env.active_resolution.height - offset), Vec2(offset + height, env.active_resolution.height - offset));
-            Gizmos::DrawLine(
+            RenderUtility::DrawLine(
                 Vec2(env.active_resolution.width - offset, env.active_resolution.height - offset),
                 Vec2(env.active_resolution.width - offset - height, env.active_resolution.height - offset));
 
-            Gizmos::DrawLine(Vec2(offset, 1 + offset), Vec2(offset, offset + height));
-            Gizmos::DrawLine(
+            RenderUtility::DrawLine(Vec2(offset, 1 + offset), Vec2(offset, offset + height));
+            RenderUtility::DrawLine(
                 Vec2(env.active_resolution.width - offset, 1 + offset), Vec2(env.active_resolution.width - offset, offset + height));
-            Gizmos::DrawLine(
+            RenderUtility::DrawLine(
                 Vec2(offset, env.active_resolution.height - 1 - offset), Vec2(offset, env.active_resolution.height - offset - height));
-            Gizmos::DrawLine(
+            RenderUtility::DrawLine(
                 Vec2(env.active_resolution.width - offset, env.active_resolution.height - 1 - offset),
                 Vec2(env.active_resolution.width - offset, env.active_resolution.height - offset - height));
         }
