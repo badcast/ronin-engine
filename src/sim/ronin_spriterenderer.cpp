@@ -1,4 +1,5 @@
 #include "ronin.h"
+#include "ronin_render_cache.h"
 
 namespace RoninEngine::Runtime
 {

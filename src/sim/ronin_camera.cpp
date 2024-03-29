@@ -45,17 +45,19 @@ namespace RoninEngine::Runtime
 
         return screenPoint;
     }
+
     const Vec2 Camera::WorldToScreenPoint(Vec2 worldPoint)
     {
         Vec2 scale;
         // Difference at Main Camera
         if(mainCamera())
-            worldPoint = mainCamera()->transform()->position() - worldPoint;
+            worldPoint = mainCamera()->transform()->_position - worldPoint;
         else
             worldPoint = Vec2::zero - worldPoint;
 
         SDL_RenderGetScale(env.renderer, &scale.x, &scale.y);
         scale *= pixelsPerPoint;
+
         // Horizontal position
         worldPoint.x = env.active_resolution.width / 2.f - worldPoint.x * scale.x;
         // Vertical position
@@ -74,7 +76,7 @@ namespace RoninEngine::Runtime
         viewportPoint.y = (env.active_resolution.height / 2.f - env.active_resolution.height * viewportPoint.y) / scale.y;
         // Difference at Main Camera
         if(mainCamera())
-            viewportPoint += mainCamera()->transform()->position();
+            viewportPoint += mainCamera()->transform()->_position;
         return viewportPoint;
     }
 

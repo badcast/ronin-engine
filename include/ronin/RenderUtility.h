@@ -29,6 +29,7 @@ namespace RoninEngine::Runtime
         static void DrawSpriteToScreen(Sprite *sprite, const Rect &rect, float angleRadian = 0);
 
         static void DrawSpriteExtent(Sprite *sprite, const Rect &rect, float angleRadian = 0);
+        static void DrawSpriteExtent(Sprite *sprite, Vec2Int baseSize, const Rect &rect, float angleRadian = 0);
 
         static void DrawFillRect(Vec2 origin, float width, float height);
         static void DrawFillRectRounded(Vec2 origin, float width, float height, std::uint16_t radius);
