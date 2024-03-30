@@ -62,7 +62,7 @@
 #include "Component.h"
 #include "World.h"
 #include "Light.h"
-#include "Player.h"
+#include "MoveController2D.h"
 #include "Renderer.h"
 #include "Spotlight.h"
 #include "Sprite.h"
