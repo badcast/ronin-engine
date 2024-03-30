@@ -69,7 +69,7 @@ namespace RoninEngine
              * @brief Get the GameObject to which this component is attached.
              * @return A pointer to the GameObject.
              */
-            GameObject *gameObject();
+            GameObject *gameObject() const;
 
             // Other member functions for adding, removing, and accessing components...
 
@@ -89,25 +89,25 @@ namespace RoninEngine
              * @brief Get the Transform component of the GameObject.
              * @return A pointer to the Transform component.
              */
-            Transform *transform();
+            Transform *transform() const;
 
             /**
              * @brief Get the SpriteRenderer component of the GameObject.
              * @return A pointer to the SpriteRenderer component.
              */
-            SpriteRenderer *spriteRenderer();
+            SpriteRenderer *spriteRenderer() const;
 
             /**
              * @brief Get the Camera2D component of the GameObject.
              * @return A pointer to the Camera2D component.
              */
-            Camera2D *camera2D();
+            Camera2D *camera2D() const;
 
             /**
              * @brief Get the Terrain2D component of the GameObject.
              * @return A pointer to the Terrain2D component.
              */
-            Terrain2D *terrain2D();
+            Terrain2D *terrain2D() const;
 
             /**
              * @brief Add a component to the GameObject.
@@ -152,7 +152,7 @@ namespace RoninEngine
              * @return A pointer to the component if found, nullptr if not found.
              */
             template <typename T>
-            std::enable_if_t<std::is_base_of<Component, T>::value, T *> GetComponent();
+            std::enable_if_t<std::is_base_of<Component, T>::value, T *> GetComponent() const;
 
             /**
              * @brief Remove a component of the specified type from the GameObject.

@@ -147,7 +147,7 @@ namespace RoninEngine::Runtime
 
     Transform *Transform::root()
     {
-        if(switched_world==nullptr ||  switched_world->irs == nullptr)
+        if(switched_world == nullptr || switched_world->irs == nullptr)
             return nullptr;
         return switched_world->irs->main_object->transform();
     }

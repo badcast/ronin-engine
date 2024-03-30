@@ -29,27 +29,27 @@ namespace RoninEngine
             return _owner != nullptr;
         }
 
-        Transform *Component::transform()
+        Transform *Component::transform() const
         {
             return static_cast<Transform *>(_owner->m_components.front());
         }
 
-        GameObject *Component::gameObject()
+        GameObject *Component::gameObject() const
         {
             return _owner;
         }
 
-        Camera2D *Component::camera2D()
+        Camera2D *Component::camera2D() const
         {
             return _owner->camera2D();
         }
 
-        SpriteRenderer *Component::spriteRenderer()
+        SpriteRenderer *Component::spriteRenderer() const
         {
             return _owner->spriteRenderer();
         }
 
-        Terrain2D *Component::terrain2D()
+        Terrain2D *Component::terrain2D() const
         {
             return _owner->terrain2D();
         }

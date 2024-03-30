@@ -13,16 +13,19 @@ namespace RoninEngine::Runtime
         void *ronin_memory_alloc(std::size_t size)
         {
             void *mem = std::malloc(size);
+
             if(mem == nullptr)
-            {
                 return nullptr;
-            }
+
             ++__ronin_allocated;
-            // Set up controls memory pointer. Set zero.
+
+            // Set up controls memory pointer. Set to zero.
             memset(mem, 0, size);
+
 #if TEST_MALLOC
             allocated_leaker.insert(mem);
 #endif
+
             return mem;
         }
 

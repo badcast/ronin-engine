@@ -46,11 +46,6 @@ namespace RoninEngine
             GameObject(const GameObject &) = delete;
 
             /**
-             * @brief Destructor for GameObject.
-             */
-            ~GameObject();
-
-            /**
              * @brief Check if the GameObject is active.
              * @return True if the GameObject is active, false otherwise.
              */
@@ -90,25 +85,25 @@ namespace RoninEngine
              * @brief Get the Transform component of the GameObject.
              * @return A pointer to the Transform component.
              */
-            Transform *transform();
+            Transform *transform() const;
 
             /**
              * @brief Get the SpriteRenderer component of the GameObject.
              * @return A pointer to the SpriteRenderer component, or nullptr if not found.
              */
-            SpriteRenderer *spriteRenderer();
+            SpriteRenderer *spriteRenderer() const;
 
             /**
              * @brief Get the Camera2D component of the GameObject.
              * @return A pointer to the Camera2D component, or nullptr if not found.
              */
-            Camera2D *camera2D();
+            Camera2D *camera2D() const;
 
             /**
              * @brief Get the Terrain2D component of the GameObject.
              * @return A pointer to the Terrain2D component, or nullptr if not found.
              */
-            Terrain2D *terrain2D();
+            Terrain2D *terrain2D() const;
 
             /**
              * @brief Mark the GameObject for destruction now.
@@ -181,7 +176,7 @@ namespace RoninEngine
              * @return A pointer to the found component, or nullptr if the component was not found.
              */
             template <typename T>
-            std::enable_if_t<std::is_base_of<Component, T>::value, T *> GetComponent();
+            std::enable_if_t<std::is_base_of<Component, T>::value, T *> GetComponent() const;
 
             /**
              * @brief Removes the first component of the specified type from the GameObject.
@@ -206,7 +201,7 @@ namespace RoninEngine
              * @return A list containing pointers to the found components.
              */
             template <typename T>
-            std::enable_if_t<std::is_base_of<Component, T>::value, std::list<T *>> GetComponents();
+            std::enable_if_t<std::is_base_of<Component, T>::value, std::list<T *>> GetComponents() const;
 
             /**
              * @brief Register a callback for the GameObject's "destroy" event.
@@ -285,7 +280,7 @@ namespace RoninEngine
         }
 
         template <typename T>
-        inline std::enable_if_t<std::is_base_of<Component, T>::value, std::list<T *>> GameObject::GetComponents()
+        inline std::enable_if_t<std::is_base_of<Component, T>::value, std::list<T *>> GameObject::GetComponents() const
         {
             std::list<T *> types;
             T *cast;
@@ -301,7 +296,7 @@ namespace RoninEngine
         }
 
         template <typename T>
-        inline std::enable_if_t<std::is_base_of<Component, T>::value, T *> GameObject::GetComponent()
+        inline std::enable_if_t<std::is_base_of<Component, T>::value, T *> GameObject::GetComponent() const
         {
             if constexpr(std::is_same<T, Transform>::value)
             {
@@ -309,10 +304,10 @@ namespace RoninEngine
             }
             else
             {
-                auto iter =
-                    std::find_if(begin(m_components), end(m_components), [](Component *c) { return dynamic_cast<T *>(c) != nullptr; });
+                auto iter = std::find_if(
+                    std::cbegin(m_components), std::cend(m_components), [](const Component *c) { return dynamic_cast<const T *>(c) != nullptr; });
 
-                if(iter != end(m_components))
+                if(iter != std::end(m_components))
                     return static_cast<T *>(*iter);
             }
             return nullptr;
@@ -325,7 +320,7 @@ namespace RoninEngine
         }
 
         template <typename T>
-        std::enable_if_t<std::is_base_of<Component, T>::value, T *> Component::GetComponent()
+        std::enable_if_t<std::is_base_of<Component, T>::value, T *> Component::GetComponent() const
         {
             return _owner->GetComponent<T>();
         }

@@ -17,13 +17,13 @@ namespace RoninEngine::Runtime
     template RONIN_API Terrain2D *GameObject::AddComponent<Terrain2D>();
     template RONIN_API ParticleSystem *GameObject::AddComponent<ParticleSystem>();
     // Get Component
-    template RONIN_API MoveController2D *GameObject::GetComponent<MoveController2D>();
-    template RONIN_API SpriteRenderer *GameObject::GetComponent<SpriteRenderer>();
-    template RONIN_API Camera2D *GameObject::GetComponent<Camera2D>();
-    template RONIN_API Spotlight *GameObject::GetComponent<Spotlight>();
-    template RONIN_API Terrain2D *GameObject::GetComponent<Terrain2D>();
-    template RONIN_API Transform *GameObject::GetComponent<Transform>();
-    template RONIN_API ParticleSystem *GameObject::GetComponent<ParticleSystem>();
+    template RONIN_API MoveController2D *GameObject::GetComponent<MoveController2D>() const;
+    template RONIN_API SpriteRenderer *GameObject::GetComponent<SpriteRenderer>() const;
+    template RONIN_API Camera2D *GameObject::GetComponent<Camera2D>() const;
+    template RONIN_API Spotlight *GameObject::GetComponent<Spotlight>() const;
+    template RONIN_API Terrain2D *GameObject::GetComponent<Terrain2D>() const;
+    template RONIN_API Transform *GameObject::GetComponent<Transform>() const;
+    template RONIN_API ParticleSystem *GameObject::GetComponent<ParticleSystem>() const;
     // Remove Component
     template RONIN_API bool GameObject::RemoveComponent<MoveController2D>();
     template RONIN_API bool GameObject::RemoveComponent<SpriteRenderer>();
@@ -43,10 +43,6 @@ namespace RoninEngine::Runtime
         m_components.front()->_owner = this;
         // create matrix-slot for transform object
         Matrix::matrix_update(transform(), Matrix::matrix_get_key(Vec2::infinity));
-    }
-
-    GameObject::~GameObject()
-    {
     }
 
     bool GameObject::isActive()
@@ -98,24 +94,24 @@ namespace RoninEngine::Runtime
         }
     }
 
-    Transform *GameObject::transform()
+    Transform *GameObject::transform() const
     {
         // NOTE: Transform всегда первый объект из контейнера m_components
         return static_cast<Transform *>(m_components.front());
         // return GetComponent<Transform>();
     }
 
-    SpriteRenderer *GameObject::spriteRenderer()
+    SpriteRenderer *GameObject::spriteRenderer() const
     {
         return GetComponent<SpriteRenderer>();
     }
 
-    Camera2D *GameObject::camera2D()
+    Camera2D *GameObject::camera2D() const
     {
         return GetComponent<Camera2D>();
     }
 
-    Terrain2D *GameObject::terrain2D()
+    Terrain2D *GameObject::terrain2D() const
     {
         return GetComponent<Terrain2D>();
     }

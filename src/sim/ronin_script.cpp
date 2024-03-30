@@ -4,7 +4,7 @@
     if(bindFlags & FLAG)   \
         binder[FLAG].insert(SCRIPT);
 
-#define RUN_SCRIPT(FLAG, METHOD)                                              \
+#define RUN_SCRIPTS(FLAG, METHOD)                                             \
     for(Behaviour * script : switched_world->irs->runtimeScriptBinders[FLAG]) \
         script->METHOD();
 
@@ -29,6 +29,32 @@ namespace RoninEngine::Runtime
         BIND(Bind_Gizmos, script);
     }
 
+    ////////////////////////////////////////////
+    void Behaviour::OnAwake()
+    {
+    }
+
+    void Behaviour::OnStart()
+    {
+    }
+
+    void Behaviour::OnUpdate()
+    {
+    }
+
+    void Behaviour::OnLateUpdate()
+    {
+    }
+
+    void Behaviour::OnGizmos()
+    {
+    }
+
+    void Behaviour::OnDestroy()
+    {
+    }
+    ////////////////////////////////////////////
+
     void scripts_start()
     {
         std::set<Behaviour *> __last;
@@ -40,17 +66,17 @@ namespace RoninEngine::Runtime
 
     void scripts_update()
     {
-        RUN_SCRIPT(GameObject::BindType::Bind_Update, OnUpdate);
+        RUN_SCRIPTS(GameObject::BindType::Bind_Update, OnUpdate);
     }
 
     void scripts_lateUpdate()
     {
-        RUN_SCRIPT(GameObject::BindType::Bind_LateUpdate, OnLateUpdate);
+        RUN_SCRIPTS(GameObject::BindType::Bind_LateUpdate, OnLateUpdate);
     }
 
     void scripts_gizmos()
     {
-        RUN_SCRIPT(GameObject::BindType::Bind_Gizmos, OnGizmos);
+        RUN_SCRIPTS(GameObject::BindType::Bind_Gizmos, OnGizmos);
     }
 
     void scripts_unbind(Behaviour *script)
@@ -65,4 +91,4 @@ namespace RoninEngine::Runtime
 } // namespace RoninEngine::Runtime
 
 #undef BIND
-#undef RUN_SCRIPT
+#undef RUN_SCRIPTS
