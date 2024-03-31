@@ -31,10 +31,6 @@ namespace RoninEngine::Runtime
 
         void RequestUnload();
 
-        bool SetCursor(Cursor *cursor);
-
-        void ShowCursor(bool value);
-
         int GetCulled();
         int GetDestroyedFrames();
 

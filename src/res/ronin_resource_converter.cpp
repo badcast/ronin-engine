@@ -26,8 +26,22 @@ void RoninEngine::Runtime::internal_free_loaded_assets()
         }
         RoninMemory::free(asset.__ref); // free asset
     }
-
     loaded_assets.clear();
+
+    // System Cursors
+    for(Cursor *cur : env.sysCursors)
+    {
+        if(cur)
+            SDL_FreeCursor(cur);
+    }
+    env.sysCursors.clear();
+    env.sysCursors.shrink_to_fit();
+}
+
+Cursor *AssetManager::ConvertImageToCursor(Image *imageSrc, Vec2Int cursorHotspot)
+{
+    Cursor *cursor = SDL_CreateColorCursor(imageSrc, cursorHotspot.x, cursorHotspot.y);
+    return cursor;
 }
 
 bool AssetManager::LoadAsset(const std::string &loaderFile, Asset **asset)
@@ -325,19 +339,11 @@ bool AssetManager::LoadAsset(const std::string &loaderFile, Asset **asset)
     return true;
 }
 
-Cursor *AssetManager::ConvertImageToCursor(Image *imageSrc, Vec2Int cursorHotspot)
-{
-    Cursor *cursor = SDL_CreateColorCursor(imageSrc, cursorHotspot.x, cursorHotspot.y);
-    return cursor;
-}
-
 Image *Asset::GetImage(const std::string &name)
 {
     auto f = __ref->image_clips.find(string_hasher(name));
-
     if(f == std::end(__ref->image_clips))
         return nullptr;
-
     return Resources::GetImageSource(f->second);
 }
 

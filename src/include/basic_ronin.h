@@ -87,7 +87,6 @@ void check_object(RoninEngine::Runtime::Object *obj);
 
 typedef RoninEngine::Runtime::Vec2Int matrix_key_t;
 typedef std::map<int, std::unordered_map<matrix_key_t, std::set<RoninEngine::Runtime::Transform *>>> matrix_map_t;
-
 namespace RoninEngine
 {
     struct RoninEnvironment
@@ -105,6 +104,7 @@ namespace RoninEngine
         Resolution active_resolution {0, 0, 0};
         TimingWatcher last_watcher {};
         TimingWatcher queue_watcher {};
+        std::vector<SDL_Cursor *> sysCursors {};
 
         bool ronin_debug_mode = false;
         bool internal_world_loaded = false;
@@ -126,6 +126,7 @@ namespace RoninEngine
 
         extern void Render_String_ttf(const char *text, int fontSize, const Runtime::Vec2Int &screenPoint, bool alignCenter = false);
     } // namespace UI
+
     namespace Runtime
     {
         enum class CameraEvent
@@ -308,7 +309,7 @@ namespace RoninEngine
             // Main or Root object
             GameObject *main_object;
 
-            std::map<Runtime::Sprite *, std::pair<int,SDL_Texture *>> render_cache;
+            std::map<Runtime::Sprite *, std::pair<int, SDL_Texture *>> render_cache;
 
             void event_camera_changed(Camera *target, CameraEvent state);
         };

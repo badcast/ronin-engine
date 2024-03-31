@@ -95,7 +95,6 @@ namespace RoninEngine::Runtime
 
     void native_render_2D(Camera2D *camera)
     {
-
         camera->camera_resource->culled = 0;
 
         params.camera_position = camera->transform()->position();
@@ -151,7 +150,7 @@ namespace RoninEngine::Runtime
                 [&](const Vec2Int &candidate)
                 {
                     // unordered_map<Vec2Int,... <Transform*>>
-                    auto layerObject = layer.second.find(candidate);
+                    const auto & layerObject = layer.second.find(candidate);
                     if(layerObject != std::end(layer.second))
                     {
                         for(Transform *transform_object : layerObject->second)
@@ -165,7 +164,7 @@ namespace RoninEngine::Runtime
                                     continue;
                                 }
 
-                                params.orders[render_iobject->renderOrder].emplace_back(render_iobject);
+                                params.orders[render_iobject->_owner->m_zOrder].push_back(render_iobject);
                             }
                         }
                     }
@@ -173,7 +172,7 @@ namespace RoninEngine::Runtime
         }
 
         // orders
-        for(auto layer = std::rbegin(params.orders); layer != std::rend(params.orders); ++layer)
+        for(auto layer = std::begin(params.orders); layer != std::end(params.orders); ++layer)
         {
             for(Renderer *render_iobject : layer->second)
             {
@@ -226,7 +225,7 @@ namespace RoninEngine::Runtime
             // Optimize Orders
             if(layer->second.capacity() > 1024)
             {
-                layer->second.shrink_to_fit();
+                layer->second.reserve(1024);
             }
         }
 

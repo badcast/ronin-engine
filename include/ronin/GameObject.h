@@ -15,6 +15,7 @@ namespace RoninEngine
             std::list<Component *> m_components;
             std::list<Event> ev_destroy;
             int m_layer;
+            int m_zOrder;
             bool m_active;
 
         protected:
@@ -74,6 +75,18 @@ namespace RoninEngine
              * @return layer
              */
             int GetLayer() const;
+
+            /**
+             * @brief Get Z-Order for draw orders
+             * @return Z-Order value
+             */
+            int GetZOrder() const;
+
+            /**
+             * @brief Set Z-Order for draw orders
+             * @param value The new Z-Order for set
+             */
+            void SetZOrder(int value);
 
             /**
              * @brief Set the active state recursively for the GameObject and its children.

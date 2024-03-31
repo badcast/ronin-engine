@@ -240,7 +240,7 @@ namespace RoninEngine
         env.active_resolution = GetCurrentResolution();
     }
 
-    std::pair<bool, Resolution> RoninSimulator::ShowSplashScreen()
+    std::pair<bool, Resolution> RoninSimulator::ShowSplashScreen(bool applyScreen)
     {
         bool resultIsOK = false;
         RoninEngine::Resolution __templs[3];
@@ -281,7 +281,8 @@ namespace RoninEngine
         int btId;
         if(!SDL_ShowMessageBox(&msgbd, &btId) && btId)
         {
-            Show(__templs[btId - 1], false);
+            if(applyScreen)
+                Show(__templs[btId - 1], false);
             resultIsOK = true;
         }
 
@@ -757,11 +758,11 @@ namespace RoninEngine
             // delay elapsed
             delayed = Math::Max(0, static_cast<int>(Math::Ceil(secPerFrame) - delayed));
 
-            if(switched_world == nullptr || switched_world->irs->request_unloading && preload_world == nullptr)
-                break; // break on unload state
-
             // update events
             internal_reseting();
+
+            if(switched_world == nullptr || switched_world->irs->request_unloading && preload_world == nullptr)
+                break; // break on unload state
 
             // delaying
             SDL_Delay(delayed);

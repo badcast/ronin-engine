@@ -140,6 +140,8 @@ namespace RoninEngine
         /**
          * @brief Show Splash Screen settings
          *
+         * @param applyScreen The apply resolution selected screen, false otherwise.
+         *
          * @return result of the selected screen resolution, pair<1,2>:
          *  1: if true - is sended "OK" or "Apply" or canceled
          *  2: Selected screen resolution value
@@ -147,7 +149,7 @@ namespace RoninEngine
          * @see Resolution
          * @see Show
          */
-        static std::pair<bool, Resolution> ShowSplashScreen();
+        static std::pair<bool, Resolution> ShowSplashScreen(bool applyScreen = true);
 
         /**
          * @brief Loads a simulation world for simulation.

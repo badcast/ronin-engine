@@ -1,0 +1,58 @@
+#include "ronin.h"
+#include "RoninCursor.h"
+
+namespace RoninEngine::Runtime
+{
+
+    void RoninCursor::SetCursor(Cursor *cursor)
+    {
+        SDL_SetCursor(cursor);
+    }
+
+    bool RoninCursor::ShowCursor(bool toggle)
+    {
+        return SDL_ShowCursor(static_cast<int>(toggle)) == SDL_ENABLE;
+    }
+
+    bool RoninCursor::IsCursorShown()
+    {
+        return SDL_ShowCursor(SDL_QUERY) == SDL_ENABLE;
+    }
+
+    bool RoninCursor::CaptureMouse(bool capture)
+    {
+        return SDL_CaptureMouse(static_cast<SDL_bool>(capture)) == 0;
+    }
+
+    Cursor *RoninCursor::GetCursor()
+    {
+        return SDL_GetCursor();
+    }
+
+    Cursor *RoninCursor::GetDefaultCursor()
+    {
+        return SDL_GetDefaultCursor();
+    }
+
+    Cursor *RoninCursor::GetSystemCursor(SystemCursorID id)
+    {
+        // Check range
+        if(static_cast<int>(id) < 0 || static_cast<int>(id) >= SDL_NUM_SYSTEM_CURSORS)
+            return nullptr;
+
+        if(env.sysCursors.empty())
+        {
+            env.sysCursors.resize(static_cast<int>(SDL_NUM_SYSTEM_CURSORS), nullptr);
+        }
+
+        if(env.sysCursors[static_cast<int>(id)] == nullptr)
+        {
+            if((env.sysCursors[static_cast<int>(id)] = SDL_CreateSystemCursor(static_cast<SDL_SystemCursor>(static_cast<int>(id)))) ==
+               nullptr)
+                RoninSimulator::Log(SDL_GetError());
+        }
+
+        return env.sysCursors[static_cast<int>(id)];
+    }
+
+} // namespace RoninEngine::Runtime

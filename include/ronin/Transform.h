@@ -98,6 +98,10 @@ namespace RoninEngine::Runtime
         int layer() const;
         void layer(int value);
 
+        // Layer for zOrder
+        int zOrder() const;
+        void zOrder(int value);
+
         static Transform *root();
     };
 

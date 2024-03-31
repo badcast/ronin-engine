@@ -369,6 +369,16 @@ namespace RoninEngine::Runtime
             Matrix::matrix_update(this, Matrix::matrix_get_key(Vec2::infinity));
     }
 
+    int Transform::zOrder() const
+    {
+        return _owner->m_zOrder;
+    }
+
+    void Transform::zOrder(int value)
+    {
+        _owner->m_zOrder = value;
+    }
+
     Transform *Transform::parent() const
     {
         if(m_parent == switched_world->irs->main_object->transform())
@@ -391,7 +401,8 @@ namespace RoninEngine::Runtime
             for(Transform *child : hierarchy)
             {
                 // Set the world position to childs
-                child->position(_position + child->_position);
+                child->position(child->_position - parent->_position);
+                // child->position(_position + child->_position);
             }
         }
         else
@@ -414,7 +425,7 @@ namespace RoninEngine::Runtime
     void Transform::angle(float value)
     {
         // Formulas:
-        // 1. For get local positoin  = child.position - parent.position
+        // 1. For get local position  = child.position - parent.position
         // 2. For get absolute position = parent.position + (child.position - parent.position)
 
         float lastAngle = _angle_;

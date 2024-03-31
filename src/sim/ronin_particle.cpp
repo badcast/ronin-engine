@@ -50,6 +50,7 @@ void ParticleSystemRef::link_particles(ParticleSystem *from, int n)
     {
         Transform *linked = spriteRender->transform();
         linked->layer(from->transform()->layer());
+        linked->_owner->m_zOrder = from->_owner->m_zOrder;
         linked->position(from->transform()->position());
         if(from->worldSpace)
         {

@@ -36,7 +36,7 @@ namespace RoninEngine::Runtime
     {
     }
 
-    GameObject::GameObject(const std::string &name) : Object(DESCRIBE_AS_ONLY_NAME(GameObject)), m_active(true), m_layer(0)
+    GameObject::GameObject(const std::string &name) : Object(DESCRIBE_AS_ONLY_NAME(GameObject)), m_active(true), m_layer(0), m_zOrder(0)
     {
         DESCRIBE_AS_MAIN(GameObject);
         m_components.push_back(create_empty_transform());
@@ -67,6 +67,16 @@ namespace RoninEngine::Runtime
     int GameObject::GetLayer() const
     {
         return m_layer;
+    }
+
+    int GameObject::GetZOrder() const
+    {
+        return m_zOrder;
+    }
+
+    void GameObject::SetZOrder(int value)
+    {
+        m_zOrder = value;
     }
 
     const bool GameObject::CancelDestroy()

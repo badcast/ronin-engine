@@ -159,7 +159,7 @@ namespace RoninEngine
             TimeEngine::BeginWatch();
             // Render on main camera
             Camera *cam = Camera::mainCamera(); // Draw level from active camera (main)
-            if(!switched_world->irs->request_unloading && cam)
+            if(!switched_world->irs->request_unloading && cam && cam->enable())
             {
                 // draw world in world size
                 native_render_2D(reinterpret_cast<Camera2D *>(cam));
@@ -477,26 +477,6 @@ namespace RoninEngine
             throw ronin_world_notloaded_error();
 
         this->irs->request_unloading = true;
-    }
-
-    bool World::SetCursor(Cursor *cursor)
-    {
-        if(irs == nullptr)
-            throw ronin_world_notloaded_error();
-
-        if(cursor == nullptr)
-            return false;
-
-        SDL_SetCursor(cursor);
-        return true;
-    }
-
-    void World::ShowCursor(bool value)
-    {
-        if(irs == nullptr)
-            throw ronin_world_notloaded_error();
-
-        SDL_ShowCursor(static_cast<int>(value));
     }
 
     int World::GetDestroyedFrames()

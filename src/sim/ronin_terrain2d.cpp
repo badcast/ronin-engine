@@ -34,6 +34,7 @@ namespace RoninEngine::Runtime
 
     void Terrain2D::load_from(const TerrainData &terrainData)
     {
+        throw Exception::ronin_implementation_error();
     }
 
     const bool Terrain2D::is_collider(const Vec2 destination)
@@ -45,6 +46,7 @@ namespace RoninEngine::Runtime
     const Vec2 Terrain2D::getSize() const
     {
         Vec2 sz;
+        throw Exception::ronin_implementation_error();
         return sz;
     }
 
