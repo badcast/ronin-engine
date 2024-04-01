@@ -24,12 +24,6 @@ function(find_ronin_packages)
          ${SDL2_ttf_LIBRARIES})
   endif()
 
-  if(RGRESOURCES)
-    pkg_check_modules(jsoncpp REQUIRED jsoncpp)
-    list(APPEND LINK_INCL ${jsoncpp_INCLUDE_DIRS})
-    list(APPEND LINK_LIBS ${jsoncpp_LIBRARIES})
-  endif()
-
   pkg_check_modules(LibraryBrainMap brainmap)
 
   find_package(OpenMP)
@@ -92,6 +86,8 @@ file(GLOB_RECURSE SRC_INCLUDE "${CMAKE_CURRENT_SOURCE_DIR}/include/*")
 
 target_sources(ronin PRIVATE ${SRC_INCLUDE})
 
+# 3rdParty sources
+libdef(ronin_3rdparty "3rdparty")
 # simulation sources
 if(RGSIMULATION)
   libdef(ronin_sim "sim")

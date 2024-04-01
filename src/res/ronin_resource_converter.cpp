@@ -1,7 +1,8 @@
 #include <filesystem>
-#include <json/json.h>
 
 #include "ronin.h"
+
+#include "../3rdparty/SimpleJSON/json.hpp"
 
 using namespace RoninEngine::Runtime;
 
@@ -46,6 +47,8 @@ Cursor *AssetManager::ConvertImageToCursor(Image *imageSrc, Vec2Int cursorHotspo
 
 bool AssetManager::LoadAsset(const std::string &loaderFile, Asset **asset)
 {
+    using namespace json;
+
     if(asset == nullptr)
     {
         RoninSimulator::Log("asset argument is null pointer");
@@ -55,16 +58,17 @@ bool AssetManager::LoadAsset(const std::string &loaderFile, Asset **asset)
     ResId rcid;
     int num1, num2, num3;
     std::string str1;
-    Json::Reader json_reader;
-    Json::Value json, param1, param2, param3, map;
+
+    JSON json, param1, param2, param3, map;
     std::vector<std::pair<std::size_t, std::string>> __files;
     std::filesystem::path dir_of_asset;
-    std::ifstream file(loaderFile);
+    std::ifstream input(loaderFile);
+    str1.assign(std::istreambuf_iterator<char>(input), std::istreambuf_iterator<char>());
+    input.close();
 
-    num1 = json_reader.parse(file, json, false);
-    file.close();
+    json = JSON::Load(str1);
 
-    if(!num1)
+    if(json.IsNull())
     {
         RoninSimulator::Log("Can not load asset file");
         return false;
@@ -72,7 +76,7 @@ bool AssetManager::LoadAsset(const std::string &loaderFile, Asset **asset)
 
     num2 = sizeof(resource_classes) / sizeof(resource_classes[0]);
 
-    str1 = json["class"].asString();
+    str1 = json["class"].ToString();
 
     for(num1 = 0; num1 < num2;)
     {
@@ -96,32 +100,32 @@ bool AssetManager::LoadAsset(const std::string &loaderFile, Asset **asset)
         case 1:
         case 2:
         {
-            Json::Value sources = json["source"];
+            JSON sources = json["source"];
 
-            if(!sources.isArray())
+            if(sources.JSONType() != JSON::Class::Array)
             {
                 RoninSimulator::Log("Can not load asset file");
                 return false;
             }
 
-            for(auto &source0 : sources)
+            for(auto &source0 : sources.ArrayRange())
             {
                 param1 = source0["name"];
                 param2 = source0["ref"];
-                if(!param1.isString() || !param2.isString())
+                if(param1.JSONType() != JSON::Class::String || param2.JSONType() != JSON::Class::String)
                 {
                     RoninSimulator::Log(("Invalid element on \"resources\". Incorrect file " + loaderFile).c_str());
                     continue;
                 }
-                size_t hash_it = string_hasher(param1.asString());
+                size_t hash_it = string_hasher(param1.ToString());
                 if(std::end(__files) !=
                    std::find_if(std::begin(__files), std::end(__files), [&hash_it](auto &ref) { return hash_it == ref.first; }))
                 {
-                    RoninSimulator::Log(("Conflict resource name \"" + param1.asString() + "\"").c_str());
+                    RoninSimulator::Log(("Conflict resource name \"" + param1.ToString() + "\"").c_str());
                     continue;
                 }
 
-                __files.emplace_back(std::make_pair(hash_it, (dir_of_asset / param2.asString()).string()));
+                __files.emplace_back(std::make_pair(hash_it, (dir_of_asset / param2.ToString()).string()));
             }
 
             *asset = &loaded_assets.emplace_back();
@@ -179,14 +183,14 @@ bool AssetManager::LoadAsset(const std::string &loaderFile, Asset **asset)
             Rect rect;
 
             param1 = json["mode"];
-            if(!param1.empty())
+            if(!param1.IsNull())
             {
-                if(!param1.isString())
+                if(param1.JSONType() != JSON::Class::String)
                 {
                     RoninSimulator::Log("mode param is invalid and not contains atlas mode");
                     return false;
                 }
-                str1 = param1.asString();
+                str1 = param1.ToString();
                 for(num3 = 0, num2 = sizeof(atlas_modes) / sizeof(atlas_modes[0]); num3 < num2;)
                 {
                     if(atlas_modes[num3] == str1)
@@ -211,7 +215,7 @@ bool AssetManager::LoadAsset(const std::string &loaderFile, Asset **asset)
             switch(num3)
             {
                 case 0: // RECT
-                    if(!map.isArray())
+                    if(map.JSONType() != JSON::Class::Array)
                     {
                         RoninSimulator::Log("Can not load asset file. Map key is not contains Array maps");
                         return false;
@@ -219,14 +223,14 @@ bool AssetManager::LoadAsset(const std::string &loaderFile, Asset **asset)
                     num2 = map.size();
                     break;
                 case 1: // TILED
-                    if(!map.isString())
+                    if(map.JSONType() != JSON::Class::String)
                     {
                         RoninSimulator::Log("Can not assign mode is Tiled. Map key is not contains Rect value");
                         return false;
                     }
 
                     rect = {0, 0, -1, -1}; // set flush
-                    std::sscanf(map.asString().c_str(), "%d %d", &rect.w, &rect.h);
+                    std::sscanf(map.ToString().c_str(), "%d %d", &rect.w, &rect.h);
 
                     break;
                 default:
@@ -236,7 +240,7 @@ bool AssetManager::LoadAsset(const std::string &loaderFile, Asset **asset)
             }
 
             param1 = json["source"];
-            if(!param1.isString())
+            if(param1.JSONType() != JSON::Class::String)
             {
                 RoninSimulator::Log(("Invalid atlas key \"source\" is not valid from " + loaderFile).c_str());
                 return false;
@@ -244,12 +248,12 @@ bool AssetManager::LoadAsset(const std::string &loaderFile, Asset **asset)
 
             _src = dir_of_asset.generic_string();
             _src += Paths::GetPathSeperatorOS();
-            _src += param1.asString();
+            _src += param1.ToString();
 
             rcid = Resources::LoadImage(_src, false);
             if(rcid == RES_INVALID)
             {
-                RoninSimulator::Log(("Atlas image is invalid " + param1.asString()).c_str());
+                RoninSimulator::Log(("Atlas image is invalid " + param1.ToString()).c_str());
                 return false;
             }
 
@@ -284,27 +288,27 @@ bool AssetManager::LoadAsset(const std::string &loaderFile, Asset **asset)
                 {
                     param3 = map[num1];
                     param1 = param3["value"];
-                    if(!param1.isString())
+                    if(param1.JSONType() != JSON::Class::String)
                     {
                         RoninSimulator::Log("Is not valid key entry value is Rect");
                         continue;
                     }
                     rect = {}; // set flush
-                    std::sscanf(param1.asString().c_str(), "%d %d %d %d", &rect.x, &rect.y, &rect.w, &rect.h);
+                    std::sscanf(param1.ToString().c_str(), "%d %d %d %d", &rect.x, &rect.y, &rect.w, &rect.h);
 
                     spr = Primitive::CreateEmptySprite(false);
 
                     // TODO: make sprite name spr->name = param1.empty()
                     param1 = param3["sprite"];
-                    if(!param1.empty())
+                    if(!param1.IsNull())
                     {
-                        if(!param1.isString())
+                        if(param1.JSONType() != JSON::Class::String)
                         {
                             RoninSimulator::Log("Is not valid key entry \"sprite\"");
                         }
                         else
                         {
-                            spr->name = param1.asString();
+                            spr->name = param1.ToString();
                         }
                     }
                 }
