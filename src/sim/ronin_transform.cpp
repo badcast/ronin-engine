@@ -268,9 +268,6 @@ namespace RoninEngine::Runtime
 
     void Transform::Translate(Vec2 translation)
     {
-        if(translation == Vec2::zero)
-            return;
-
         position(_position + translation);
     }
 
@@ -427,22 +424,27 @@ namespace RoninEngine::Runtime
         // Formulas:
         // 1. For get local position  = child.position - parent.position
         // 2. For get absolute position = parent.position + (child.position - parent.position)
+        float lastAngle, rad;
 
-        float lastAngle = _angle_;
+        if(_angle_ == value)
+            return;
 
+        lastAngle = _angle_;
         _angle_ = value;
 
-        if(_owner->m_active)
+        if(!_owner->m_active)
+            return;
+
+        // Difference
+        value = lastAngle - value;
+        rad = value * Math::deg2rad;
+
+        for(Transform *child : hierarchy)
         {
-            value = lastAngle - value; // new diff angle from parent
-            // send in hierarchy
-            for(Transform *child : hierarchy)
-            {
-                // update child angle
-                child->localAngle(value);
-                // update child position
-                child->position(Vec2::RotateAround(_position, child->_position - _position, value * Math::deg2rad));
-            }
+            // update child position
+            child->position(Vec2::RotateAround(_position, child->_position - _position, rad));
+            // update child angle
+            child->localAngle(value);
         }
     }
 

@@ -7,7 +7,6 @@ namespace RoninEngine
 {
     namespace Runtime
     {
-
         template <typename T>
         T *instance_new(bool initInHierarchy, T *instance, const char *name)
         {
@@ -98,25 +97,28 @@ namespace RoninEngine
         }
 
         constexpr char _cloneStr[] = " (clone)";
-        GameObject *Instantiate(GameObject *obj)
+
+        GameObject *__instantiate(GameObject *obj, std::vector<std::pair<Transform *, Transform *>> &postApplyProp)
         {
             GameObject *clone;
 
             clone = create_game_object((obj->m_name.find(_cloneStr) == std::string::npos ? obj->m_name + _cloneStr : obj->m_name));
+
             for(auto iter = begin(obj->m_components); iter != end(obj->m_components); ++iter)
             {
                 Component *replacement = *iter;
-                if(Transform *t = dynamic_cast<Transform *>(replacement))
+                if(Transform *refTransform = dynamic_cast<Transform *>(replacement))
                 {
-                    Transform *existent = clone->transform();
-                    existent->_angle_ = t->_angle_;
-                    existent->position(t->position());
+                    Transform *clonedTransform = clone->transform();
+                    clonedTransform->_angle_ = refTransform->_angle_;
+                    //  parent->position(t->_position);
+                    postApplyProp.emplace_back(clonedTransform, refTransform);
                     //  Clone childs recursive
-                    for(Transform *y : t->hierarchy)
+                    for(Transform *y : refTransform->hierarchy)
                     {
-                        GameObject *yClone = Instantiate(y->gameObject());
-                        yClone->transform()->setParent(existent);
-                        yClone->m_name = t->gameObject()->m_name; // put " (clone)" name
+                        GameObject *yClone = __instantiate(y->gameObject(), postApplyProp);
+                        yClone->transform()->setParent(clonedTransform, false);
+                        yClone->m_name = refTransform->gameObject()->m_name; // put " (clone)" name
                         yClone->m_name.shrink_to_fit();
                     }
                     // skip transform existent component
@@ -143,23 +145,44 @@ namespace RoninEngine
                 replacement->_owner = nullptr;
                 clone->AddComponent(replacement);
             }
-
             return clone;
+        }
+
+        GameObject *Instantiate(GameObject *obj)
+        {
+            std::vector<std::pair<Transform *, Transform *>> postApplyProp;
+
+            if(obj == nullptr)
+                return nullptr;
+
+            obj = __instantiate(obj, postApplyProp);
+            for(auto iter = std::rbegin(postApplyProp); iter != std::rend(postApplyProp); ++iter)
+            {
+                iter->first->position(iter->second->_position);
+                iter->first->angle(iter->second->_angle_);
+            }
+            return obj;
         }
 
         GameObject *Instantiate(GameObject *obj, Vec2 position, float angle)
         {
             obj = Instantiate(obj);
-            obj->transform()->position(position);
-            obj->transform()->angle(angle);
+            if(obj != nullptr)
+            {
+                obj->transform()->position(position);
+                obj->transform()->angle(angle);
+            }
             return obj;
         }
 
         GameObject *Instantiate(GameObject *obj, Vec2 position, Transform *parent, bool worldPositionStay)
         {
             obj = Instantiate(obj);
-            obj->transform()->position(position);
-            obj->transform()->setParent(parent, worldPositionStay);
+            if(obj != nullptr)
+            {
+                obj->transform()->position(position);
+                obj->transform()->setParent(parent, worldPositionStay);
+            }
             return obj;
         }
 

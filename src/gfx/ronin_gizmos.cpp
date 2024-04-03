@@ -304,15 +304,17 @@ namespace RoninEngine::Runtime
         Render_String_ttf(text.data(), 11, Vec2::RoundToInt(origin), true);
     }
 
-    void RenderUtility::DrawTextLegacy(Vec2 origin, const std::string &text)
+    void RenderUtility::DrawTextLegacy(Vec2 origin, const std::string &text, bool hilight)
     {
+        using namespace RoninEngine::UI;
+
         Rect r;
         // relative to
         origin = Camera::WorldToScreenPoint(origin);
         r.x = static_cast<int>(origin.x);
         r.y = static_cast<int>(origin.y);
 
-        UI::Render_String_Legacy(r, text.c_str(), text.length(), 2);
+        UI::Render_String_Legacy(r, text.c_str(), text.length(), 2, UI::Align::Left, true, hilight);
     }
 
     void RenderUtility::DrawCircle(Vec2 origin, float distance)
@@ -359,7 +361,6 @@ namespace RoninEngine::Runtime
     void RenderUtility::DrawSpriteToScreen(Sprite *sprite, const Rect &rect, float angleRadian)
     {
         SDL_Texture *texture;
-        SDL_Point center;
 
         if(sprite == nullptr || sprite->surface == nullptr)
             return;
@@ -367,9 +368,6 @@ namespace RoninEngine::Runtime
         texture = render_cache_texture(sprite);
         if(texture)
         {
-            center.x = sprite->m_rect.w * sprite->m_center.x;
-            center.y = sprite->m_rect.h * sprite->m_center.y;
-
             // TODO: Move SDL_RenderCopyEx to Go
             SDL_RenderCopyEx(
                 env.renderer,
@@ -377,7 +375,7 @@ namespace RoninEngine::Runtime
                 nullptr,
                 reinterpret_cast<const SDL_Rect *>(&rect),
                 angleRadian * Math::rad2deg,
-                &center,
+                nullptr,
                 SDL_RendererFlip::SDL_FLIP_NONE);
         }
     }

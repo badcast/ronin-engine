@@ -102,7 +102,7 @@ namespace RoninEngine::Runtime
                 src.h = baseSize->y;
             }
 
-            SDL_BlitSurface(surfSrc, nullptr, templateSurf, &src);
+            SDL_BlitScaled(surfSrc, nullptr, templateSurf, &src);
             SDL_UnlockTexture(texture);
 
             dst = src;
@@ -117,10 +117,10 @@ namespace RoninEngine::Runtime
 
             dst.x = 0;
             dst.y = src.h;
-            // Recover width
-            dst.w = extent->w;
             for(; dst.y < extent->h;)
             {
+                // Recover width
+                dst.w = extent->w;
                 SDL_BlitSurface(templateSurf, &src, templateSurf, &dst);
                 dst.y += src.h;
                 src.h *= 2;

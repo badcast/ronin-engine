@@ -29,31 +29,26 @@ namespace RoninEngine::Runtime
         BIND(Bind_Gizmos, script);
     }
 
-    ////////////////////////////////////////////
-    void Behaviour::OnAwake()
-    {
-    }
-
-    void Behaviour::OnStart()
-    {
-    }
-
-    void Behaviour::OnUpdate()
-    {
-    }
-
-    void Behaviour::OnLateUpdate()
-    {
-    }
-
-    void Behaviour::OnGizmos()
-    {
-    }
-
-    void Behaviour::OnDestroy()
-    {
-    }
-    ////////////////////////////////////////////
+    ///////////////////////////////////////////
+    void Behaviour::OnAwake()      ////////////
+    {                              ////////////
+    }                              ////////////
+    void Behaviour::OnStart()      ////////////
+    {                              ////////////
+    }                              ////////////
+    void Behaviour::OnUpdate()     ////////////
+    {                              ////////////
+    }                              ////////////
+    void Behaviour::OnLateUpdate() ////////////
+    {                              ////////////
+    }                              ////////////
+    void Behaviour::OnGizmos()     ////////////
+    {                              ////////////
+    }                              ////////////
+    void Behaviour::OnDestroy()    ////////////
+    {                              ////////////
+    }                              ////////////
+    ///////////////////////////////////////////
 
     void scripts_start()
     {
