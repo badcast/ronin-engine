@@ -10,22 +10,24 @@ namespace RoninEngine::Runtime
 
     struct RONIN_API Color
     {
+        using value_type = std::uint8_t;
+
         /**
          * @brief Red Color component
          */
-        std::uint8_t r;
+        value_type r;
         /**
          * @brief Green Color component
          */
-        std::uint8_t g;
+        value_type g;
         /**
          * @brief Blue Color component
          */
-        std::uint8_t b;
+        value_type b;
         /**
          * @brief Alpha Transparent Color component
          */
-        std::uint8_t a;
+        value_type a;
 
         Color();
 
@@ -33,11 +35,11 @@ namespace RoninEngine::Runtime
 
         Color(Color &&);
 
-        Color(const Color &from, std::uint8_t a);
+        Color(const Color &from, value_type a);
 
         Color(int rgba);
 
-        Color(int rgb, std::uint8_t a);
+        Color(int rgb, value_type a);
 
         Color(const char *hex);
 
@@ -45,9 +47,9 @@ namespace RoninEngine::Runtime
 
         Color(const native_color_t &color);
 
-        Color(std::uint8_t r, std::uint8_t g, std::uint8_t b);
+        Color(value_type r, value_type g, value_type b);
 
-        Color(std::uint8_t r, std::uint8_t g, std::uint8_t b, std::uint8_t a);
+        Color(value_type r, value_type g, value_type b, value_type a);
 
         /**
          * @brief Converts the color to its hexadecimal representation.
@@ -98,9 +100,10 @@ namespace RoninEngine::Runtime
          * @brief Converts the color to its hexadecimal representation.
          *
          * @param color The color to be converted.
+         * @param appendAlpha If true, put the color alpha component, false otherwise.
          * @return The color in hexadecimal format (e.g., "#RRGGBBAA").
          */
-        static std::string ColorToHex(const Color &color);
+        static std::string ColorToHex(const Color &color, bool appendAlpha = true);
 
         /**
          * @brief Converts a hexadecimal color value to a Color object.
@@ -145,7 +148,7 @@ namespace RoninEngine::Runtime
          * @param b Blue color component (0-255)
          * @return Color in HSV color space (h,s,v)
          */
-        static std::tuple<float, float, float> RGBToHSV(std::uint8_t r, std::uint8_t g, std::uint8_t b);
+        static std::tuple<float, float, float> RGBToHSV(std::uint8_t r, value_type g, value_type b);
 
         /**
          * @brief Create a Color object from an integer value in the RGBA format.

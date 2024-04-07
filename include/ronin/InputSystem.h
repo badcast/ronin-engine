@@ -13,16 +13,6 @@ namespace RoninEngine::Runtime
         MouseX2 = 4
     };
 
-    enum class KeyboardState
-    {
-        // The CAPS LOCK light is on.
-        CapsLock = 57,
-        // The NUM LOCK light is on.
-        NumLock = 83,
-        // The SCROLL LOCK light is on.
-        ScrollLock = 71,
-    };
-
     // This Code applyies from SDL_SCANCODE
     enum KeyboardCode
     {
@@ -135,10 +125,12 @@ namespace RoninEngine::Runtime
         KB_LSHIFT = 225,
         KB_LALT = 226,
         KB_LGUI = 227,
+        KB_LWIN = KB_LGUI,
         KB_RCTRL = 228,
         KB_RSHIFT = 229,
         KB_RALT = 230,
         KB_RGUI = 231,
+        KB_RWIN = KB_RGUI
     };
 
     /**
@@ -187,10 +179,10 @@ namespace RoninEngine::Runtime
 
         /**
          * @brief Check the state of a keyboard key.
-         * @param state The state of the keyboard key to check.
+         * @param keyState The state of the keyboard key to check.
          * @return True if the keyboard key is currently in the specified state, false otherwise.
          */
-        static const bool GetKeyState(KeyboardState state);
+        static const bool GetKeyState(KeyboardCode keyState);
 
         /**
          * @brief Check if a keyboard key is currently in a pressed state.
@@ -201,14 +193,14 @@ namespace RoninEngine::Runtime
 
         /**
          * @brief Check if a keyboard key is currently in a released state.
-         * @param code The code of the keyboard key to check.
+         * @param keyCode The code of the keyboard key to check.
          * @return True if the keyboard key is currently released, false otherwise.
          */
         static const bool GetKeyUp(KeyboardCode keyCode);
 
         /**
          * @brief Get name of the Keyboard Code
-         * @param code
+         * @param keyCode The code value for name.
          * @see KeyboardCode
          * @return A name of the Key
          */

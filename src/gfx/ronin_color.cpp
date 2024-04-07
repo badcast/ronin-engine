@@ -144,14 +144,20 @@ Color Color::HexToColor(const char *hex)
 {
     std::uint32_t red = 0, green = 0, blue = 0, alpha = 255;
 
+    constexpr auto hex_color_format32 = "%02X%02X%02X%02X";
     if(hex[0] == '#')
         hex++;
 
-    sscanf(hex, "%02x%02x%02x%02x", &red, &green, &blue, &alpha);
+    int len = strlen(hex);
+    char *chars = static_cast<char *>(alloca(len));
+
+    for(int i = 0; hex[i]; ++i)
+        chars[i] = std::toupper(hex[i]);
+
+    sscanf(chars, hex_color_format32, &red, &green, &blue, &alpha);
 
     return Color(red, green, blue, alpha);
 }
-
 Color Color::HexToColor(const std::string &hex)
 {
     return HexToColor(hex.c_str());
@@ -159,14 +165,19 @@ Color Color::HexToColor(const std::string &hex)
 
 Color Color::MakeTransparency(const Color &color, float alpha)
 {
-    return {color, (Math::Clamp01(alpha) * 0xFF)};
+    return {color, static_cast<std::uint8_t>(Math::Clamp01(alpha) * 0xFF)};
 }
 
-std::string Color::ColorToHex(const Color &color)
+std::string Color::ColorToHex(const Color &color, bool appendAlpha)
 {
-    char hex[16];
-    snprintf(hex, sizeof(hex), "#%02X%02X%02X%02X", color.r, color.g, color.b, color.a);
-    return hex;
+    char hex[18];
+
+    if(appendAlpha)
+        snprintf(hex, sizeof(hex), "#%02X%02X%02X%02X", color.r, color.g, color.b, color.a);
+    else
+        snprintf(hex, sizeof(hex), "#%02X%02X%02X", color.r, color.g, color.b);
+
+    return {hex};
 }
 
 Color Color::HSVToRGB(float h, float s, float v)

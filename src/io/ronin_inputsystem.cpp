@@ -6,12 +6,20 @@ namespace RoninEngine::Runtime
     extern bool text_inputState;
     std::string internalText;
 
+#define VLO(X) (X & 0xFFFF)
+#define VHI(X) (X >> 16)
+#define VCR(X, Y) ((X & 0xFFFF) | (Y << 16))
+
     constexpr struct
     {
-        int dead_zones[2][2] {{1, 3}, {100, 223}};
+        int dead_zones[2] {VCR(1, 3), VCR(100, 223)};
+
         char key_strings[105][16] {
             // KB_UNKNOWN = 0,
             "None",
+            /*
+                { Black Hole  1 ... 3 }
+            */
             // KB_A = 4,
             "A",
             // KB_B = 5,
@@ -64,7 +72,6 @@ namespace RoninEngine::Runtime
             "Y",
             // KB_Z = 29,
             "Z",
-
             // KB_1 = 30,
             "1",
             // KB_2 = 31,
@@ -85,7 +92,6 @@ namespace RoninEngine::Runtime
             "9",
             // KB_0 = 39,
             "0",
-
             // KB_RETURN = 40,
             "Return",
             // KB_ESCAPE = 41,
@@ -96,7 +102,6 @@ namespace RoninEngine::Runtime
             "TAB",
             // KB_SPACE = 44,
             "Space",
-
             // KB_MINUS = 45,
             "MINUS",
             // KB_EQUALS = 46,
@@ -121,10 +126,8 @@ namespace RoninEngine::Runtime
             "PERIOD",
             // KB_SLASH = 56,
             "SLASH",
-
             // KB_CAPSLOCK = 57,
             "CapsLock",
-
             // KB_F1 = 58,
             "F1",
             // KB_F2 = 59,
@@ -149,7 +152,6 @@ namespace RoninEngine::Runtime
             "F11",
             // KB_F12 = 69,
             "F12",
-
             // KB_PRINTSCREEN = 70,
             "PrintScreen",
             // KB_SCROLLLOCK = 71,
@@ -176,7 +178,6 @@ namespace RoninEngine::Runtime
             "Down",
             // KB_UP = 82,
             "Up",
-
             // KB_NUMLOCKCLEAR = 83,
             "Numlock",
             // KB_KP_DIVIDE = 84,
@@ -211,7 +212,9 @@ namespace RoninEngine::Runtime
             "0",
             // KB_KP_PERIOD = 99,
             "Period",
-
+            /*
+                { Black Hole  100 ... 223 }
+            */
             // KB_LCTRL = 224,
             "LCtrl",
             // KB_LSHIFT = 225,
@@ -367,9 +370,9 @@ namespace RoninEngine::Runtime
         return internal_input._movement_axis;
     }
 
-    const bool Input::GetKeyState(KeyboardState state)
+    const bool Input::GetKeyState(KeyboardCode keyState)
     {
-        return static_cast<bool>(SDL_GetKeyboardState(nullptr)[static_cast<int>(state)]);
+        return static_cast<bool>(SDL_GetKeyboardState(nullptr)[static_cast<int>(keyState)]);
     }
 
     const bool Input::GetKeyDown(KeyboardCode keyCode)
@@ -385,6 +388,7 @@ namespace RoninEngine::Runtime
     const char *Input::GetKeyName(int keyCode)
     {
         constexpr int c_key_len = (sizeof(c_key_codename.key_strings) / sizeof(c_key_codename.key_strings[0]));
+        constexpr int c_dz_len = (sizeof(c_key_codename.dead_zones) / sizeof(c_key_codename.dead_zones[0]));
 
         // It's unknown state
         if(keyCode <= 0 || keyCode > c_key_codename.clast_keyCode)
@@ -393,28 +397,23 @@ namespace RoninEngine::Runtime
         }
         else
         {
-            int x, c_dz_len = (sizeof(c_key_codename.dead_zones) / sizeof(c_key_codename.dead_zones[0]));
-            int key = keyCode;
-
-            // foreach dead zones
-            for(x = 0; x < c_dz_len; ++x)
+            for(int i = 0, x, y, key = keyCode; i < c_dz_len; ++i)
             {
-                if(key >= c_key_codename.dead_zones[x][0])
+                x = VLO(c_key_codename.dead_zones[i]);
+                if(key < x)
                 {
-                    // if the enter zone
-                    if(key <= c_key_codename.dead_zones[x][1])
-                    {
-                        // zoned: result of the unknown
-                        keyCode = 0;
-                        break;
-                    }
-                    if(key >= c_key_codename.dead_zones[x][1])
-                        keyCode -= c_key_codename.dead_zones[x][1]; // push next zone up
+                    // Key find
+                    break;
                 }
-                else
+
+                y = VHI(c_key_codename.dead_zones[i]);
+                if(key <= y)
                 {
-                    break; // is out range
+                    // zoned: result of the unknown
+                    keyCode = 0;
+                    break;
                 }
+                keyCode -= y - x + 1;
             }
         }
 
