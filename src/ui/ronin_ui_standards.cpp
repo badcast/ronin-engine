@@ -95,7 +95,8 @@ namespace RoninEngine::UI
                 rect = element.rect + thick;
 
                 // uielement background
-                RenderUtility::SetColor((uiState.ms_hover) ? colorSpace.defaultInteraction.normalState : colorSpace.defaultInteraction.hoverState);
+                RenderUtility::SetColor(
+                    (uiState.ms_hover) ? colorSpace.defaultInteraction.normalState : colorSpace.defaultInteraction.hoverState);
                 SDL_RenderFillRect(env.renderer, (SDL_Rect *) &rect);
                 RenderUtility::SetColor(Color::gray);
                 for(int x = 0; x < thickness; ++x)
@@ -257,7 +258,8 @@ namespace RoninEngine::UI
                 r += thick;
 
                 // uielement background
-                RenderUtility::SetColor((uiState.ms_hover) ? colorSpace.defaultInteraction.normalState : colorSpace.defaultInteraction.hoverState);
+                RenderUtility::SetColor(
+                    (uiState.ms_hover) ? colorSpace.defaultInteraction.normalState : colorSpace.defaultInteraction.hoverState);
                 SDL_RenderFillRect(env.renderer, (SDL_Rect *) &r);
                 RenderUtility::SetColor(Color::gray);
                 for(int x = 0; x < thickness; ++x)

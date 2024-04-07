@@ -93,7 +93,6 @@ namespace RoninEngine::Runtime
                 break;
             }
 
-
             if(baseSize == nullptr)
                 baseSize = reinterpret_cast<const Vec2Int *>(&src.w);
             else

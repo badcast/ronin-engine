@@ -318,7 +318,9 @@ namespace RoninEngine
             else
             {
                 auto iter = std::find_if(
-                    std::cbegin(m_components), std::cend(m_components), [](const Component *c) { return dynamic_cast<const T *>(c) != nullptr; });
+                    std::cbegin(m_components),
+                    std::cend(m_components),
+                    [](const Component *c) { return dynamic_cast<const T *>(c) != nullptr; });
 
                 if(iter != std::end(m_components))
                     return static_cast<T *>(*iter);

@@ -25,7 +25,7 @@ namespace RoninEngine::Runtime
         Sprite *GetSpriteFromPoint(const Vec2Int &value);
         Sprite *GetSpriteFromName(const std::string &value);
 
-        std::vector<Sprite*> GetSprites();
+        std::vector<Sprite *> GetSprites();
     };
 
 } // namespace RoninEngine::Runtime

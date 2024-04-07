@@ -37,7 +37,7 @@ namespace RoninEngine
         public:
             Image *GetImage(const std::string &name);
             AudioClip *GetAudioClip(const std::string &name);
-            Atlas* GetAtlasObject();
+            Atlas *GetAtlasObject();
         };
 
         class RONIN_API AssetManager

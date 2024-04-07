@@ -164,7 +164,7 @@ namespace RoninEngine::UI
         data.id = id;
         data.rect = rect;
         data.prototype = RGUI_CUSTOM_OVERLAY;
-        data.resource.overlay.inspector = const_cast<UIOverlay*>(custom);
+        data.resource.overlay.inspector = const_cast<UIOverlay *>(custom);
         return id;
     }
 
