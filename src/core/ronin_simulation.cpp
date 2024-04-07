@@ -50,7 +50,7 @@ namespace RoninEngine
         extern void text_stop_input();
         extern void text_start_input();
         extern void input_movement_update();
-        extern void internal_update_input(SDL_Event *e);
+        extern void internal_update_input(const SDL_Event &e);
 
         extern void internal_load_world(World *world);
         extern bool internal_unload_world(World *world);
@@ -657,7 +657,7 @@ namespace RoninEngine
 
             while(SDL_PollEvent(&event))
             {
-                internal_update_input(&event);
+                internal_update_input(event);
                 switch(event.type)
                 {
                     case SDL_QUIT:
@@ -701,7 +701,6 @@ namespace RoninEngine
                 {
                     // On Runtime Loading world
 
-                    bool software_render = true;
                     std::uint32_t renderFlags = SDL_RENDERER_TARGETTEXTURE;
 
                     if(env.simConfig.renderBackend == RenderBackend::CPU)

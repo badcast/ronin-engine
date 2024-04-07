@@ -254,70 +254,48 @@ namespace RoninEngine::Runtime
             internal_input._movement_axis.y = 0;
     }
 
-    void internal_update_input(SDL_Event *e)
+    void internal_update_input(const SDL_Event &e)
     {
-        switch(e->type)
+        switch(e.type)
         {
             case SDL_TEXTINPUT:
-                internalText += e->text.text;
+                internalText += e.text.text;
                 break;
-            case SDL_EventType::SDL_MOUSEMOTION:
-                internal_input._mouse_position.x = e->motion.x;
-                internal_input._mouse_position.y = e->motion.y;
+            case SDL_MOUSEMOTION:
+                internal_input._mouse_position.x = e.motion.x;
+                internal_input._mouse_position.y = e.motion.y;
                 break;
             case SDL_MOUSEWHEEL:
-                internal_input._mouse_wheels = e->wheel.y;
+                internal_input._mouse_wheels = e.wheel.y;
                 break;
             case SDL_MOUSEBUTTONDOWN:
-                internal_input._mouse_state[e->button.button - 1] = MouseStateFlags::MouseDown;
+                internal_input._mouse_state[e.button.button - 1] = MouseStateFlags::MouseDown;
                 break;
             case SDL_MOUSEBUTTONUP:
-                internal_input._mouse_state[e->button.button - 1] = MouseStateFlags::MouseUp;
+                internal_input._mouse_state[e.button.button - 1] = MouseStateFlags::MouseUp;
                 break;
-            case SDL_EventType::SDL_KEYDOWN:
+            case SDL_KEYDOWN:
+            case SDL_KEYUP:
             {
-                if(e->key.repeat != 0)
+                bool isKeyDown = e.type == SDL_KEYDOWN;
+                switch(e.key.keysym.sym)
                 {
-                    switch(e->key.keysym.sym)
-                    {
-                        case SDL_KeyCode::SDLK_a:
-                        case SDL_KeyCode::SDLK_LEFT:
-                            internal_input._movement_axis.x = 1;
-                            break;
-                        case SDL_KeyCode::SDLK_d:
-                        case SDL_KeyCode::SDLK_RIGHT:
-                            internal_input._movement_axis.x = -1;
-                            break;
-                        case SDL_KeyCode::SDLK_w:
-                        case SDL_KeyCode::SDLK_UP:
-                            internal_input._movement_axis.y = 1;
-                            break;
-                        case SDL_KeyCode::SDLK_s:
-                        case SDL_KeyCode::SDLK_DOWN:
-                            internal_input._movement_axis.y = -1;
-                            break;
-                    }
-                }
-            }
-            case SDL_EventType::SDL_KEYUP:
-            {
-                if(false && e->key.repeat == 0)
-                {
-                    switch(e->key.keysym.sym)
-                    {
-                        case SDL_KeyCode::SDLK_a:
-                        case SDL_KeyCode::SDLK_LEFT:
-                        case SDL_KeyCode::SDLK_d:
-                        case SDL_KeyCode::SDLK_RIGHT:
-                            internal_input._movement_axis.x = 0;
-                            break;
-                        case SDL_KeyCode::SDLK_w:
-                        case SDL_KeyCode::SDLK_UP:
-                        case SDL_KeyCode::SDLK_s:
-                        case SDL_KeyCode::SDLK_DOWN:
-                            internal_input._movement_axis.y = 0;
-                            break;
-                    }
+                    case SDLK_a:
+                    case SDLK_LEFT:
+                        internal_input._movement_axis.x = isKeyDown ? 1 : 0;
+                        break;
+                    case SDLK_d:
+                    case SDLK_RIGHT:
+                        internal_input._movement_axis.x = isKeyDown ? -1 : 0;
+                        break;
+                    case SDLK_w:
+                    case SDLK_UP:
+                        internal_input._movement_axis.y = isKeyDown ? 1 : 0;
+                        break;
+                    case SDLK_s:
+                    case SDLK_DOWN:
+                        internal_input._movement_axis.y = isKeyDown ? -1 : 0;
+                        break;
                 }
             }
         }
