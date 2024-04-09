@@ -21,6 +21,7 @@ namespace RoninEngine::Runtime
             SDL_Surface *blitDst;
             void *pixels;
             int pitch;
+            std::uint8_t r, g, b, a;
 
             blitDst = SDL_CreateRGBSurfaceWithFormat(0, rect.w, rect.h, 32, ronin_default_pixelformat);
             if(blitDst == nullptr)
@@ -30,12 +31,21 @@ namespace RoninEngine::Runtime
                 break;
             }
 
+            SDL_GetSurfaceColorMod(sprite->surface, &r, &g, &b);
+            SDL_GetSurfaceAlphaMod(sprite->surface, &a);
+
+            SDL_SetSurfaceColorMod(blitDst, r, g, b);
+            SDL_SetSurfaceAlphaMod(blitDst, a);
+            SDL_SetTextureColorMod(texture, r, g, b);
+            SDL_SetTextureAlphaMod(texture, a);
             SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
 
             // COPY PIXELS
             SDL_LockTexture(texture, nullptr, &pixels, &pitch);
             SDL_BlitSurface(sprite->surface, &rect, blitDst, nullptr);
             memcpy(pixels, blitDst->pixels, blitDst->pitch * blitDst->h);
+
+            SDL_UpdateTexture(texture, nullptr, sprite->surface->pixels, sprite->surface->pitch);
 
             // Apply changes
             SDL_UnlockTexture(texture);

@@ -95,7 +95,7 @@ namespace RoninEngine
         {
             // this is variable for apply settings
             int conf;
-            RenderBackend renderBackend = RenderBackend::GPU;
+            RenderDriverInfo::RenderBackend renderBackend = RenderDriverInfo::RenderBackend::GPU;
         } simConfig;
 
         SDL_Renderer *renderer = nullptr;

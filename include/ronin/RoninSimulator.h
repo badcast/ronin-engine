@@ -11,27 +11,28 @@ namespace RoninEngine
         Audio = 2
     };
 
-    enum RendererFlags
-    {
-        /** The renderer is a software fallback */
-        RendererSoftware = 0x1,
-        /** The renderer uses hardware acceleration */
-        RendererAccelerated = 0x2,
-        /** Present is synchronized with the refresh rate */
-        RendererPresentVSync = 0x4,
-    };
-
-    enum RenderBackend
-    {
-        GPU,
-        CPU
-    };
-
     struct RenderDriverInfo
     {
+        enum RendererFlags
+        {
+            /** The renderer is a software fallback */
+            RendererSoftware = 0x1,
+            /** The renderer uses hardware acceleration */
+            RendererAccelerated = 0x2,
+            /** Present is synchronized with the refresh rate */
+            RendererPresentVSync = 0x4,
+        };
+
+        enum RenderBackend
+        {
+            GPU,
+            CPU
+        };
+
         std::string name;
         RendererFlags rendererFlags;
         RenderBackend rendererBackend;
+
         int maxTextureWidth;
         int maxTextureHeight;
 
@@ -65,9 +66,17 @@ namespace RoninEngine
 
     struct RoninSettings
     {
-        RenderBackend selectRenderBackend;
+        enum RenderTextureScaleQuality
+        {
+            Nearest,
+            Linear
+        };
+
+        RenderDriverInfo::RenderBackend selectRenderBackend;
+        RenderTextureScaleQuality selectTextureQuality;
         std::uint8_t selectRenderDriver;
         std::uint8_t selectVideoDriver;
+
         float brightness;
         float windowOpacity;
     };

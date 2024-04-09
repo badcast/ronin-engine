@@ -76,9 +76,9 @@ namespace RoninEngine
         if(env.simConfig.conf & CONF_RENDER_CHANGED)
         {
             if(env.simConfig.conf & CONF_RENDER_SOFTWARE == CONF_RENDER_SOFTWARE)
-                env.simConfig.renderBackend = RenderBackend::CPU;
+                env.simConfig.renderBackend = RenderDriverInfo::RenderBackend::CPU;
             else
-                env.simConfig.renderBackend = RenderBackend::GPU;
+                env.simConfig.renderBackend = RenderDriverInfo::RenderBackend::GPU;
         }
 
         if(env.simConfig.conf & CONF_RELOAD_WORLD)
@@ -241,7 +241,7 @@ namespace RoninEngine
         // setup
         switched_world = nullptr;
 
-        // inti fonts
+        // Init legacy fonts
         UI::init_legacy_font(true);
     }
 
@@ -700,7 +700,7 @@ namespace RoninEngine
 
                     std::uint32_t renderFlags = SDL_RENDERER_TARGETTEXTURE;
 
-                    if(env.simConfig.renderBackend == RenderBackend::CPU)
+                    if(env.simConfig.renderBackend == RenderDriverInfo::RenderBackend::CPU)
                     {
                         renderFlags |= SDL_RENDERER_SOFTWARE;
                     }
@@ -924,8 +924,8 @@ namespace RoninEngine
 
             drivers.emplace_back(
                 rdi.name,
-                RendererFlags(rdi.flags ^ SDL_RENDERER_TARGETTEXTURE),
-                (rdi.flags & SDL_RENDERER_SOFTWARE ? RenderBackend::CPU : RenderBackend::GPU),
+                RenderDriverInfo::RendererFlags(rdi.flags ^ SDL_RENDERER_TARGETTEXTURE),
+                (rdi.flags & SDL_RENDERER_SOFTWARE ? RenderDriverInfo::RenderBackend::CPU : RenderDriverInfo::RenderBackend::GPU),
                 rdi.max_texture_width,
                 rdi.max_texture_height);
         }
@@ -959,10 +959,20 @@ namespace RoninEngine
         SDL_RendererInfo info;
         if(env.renderer != nullptr && SDL_GetRendererInfo(env.renderer, &info) == 0)
         {
-            settings->selectRenderBackend = (info.flags & SDL_RENDERER_SOFTWARE) ? RenderBackend::CPU : RenderBackend::GPU;
+            settings->selectRenderBackend =
+                (info.flags & SDL_RENDERER_SOFTWARE) ? RenderDriverInfo::RenderBackend::CPU : RenderDriverInfo::RenderBackend::GPU;
         }
 
         settings->brightness = SDL_GetWindowBrightness(env.active_window);
+
+        if(!SDL_strcmp(SDL_GetHint(SDL_HINT_RENDER_SCALE_QUALITY), "1"))
+        {
+            settings->selectTextureQuality = RoninSettings::RenderTextureScaleQuality::Linear;
+        }
+        else
+        {
+            settings->selectTextureQuality = RoninSettings::RenderTextureScaleQuality::Nearest;
+        }
 
         SDL_GetWindowOpacity(env.active_window, &settings->windowOpacity);
     }
@@ -977,42 +987,48 @@ namespace RoninEngine
         RoninSettings refSettings;
         GetSettings(&refSettings);
 
-        std::function<bool(void)> applies[] {// Apply Render Backend
-                                             [&]()
-                                             {
-                                                 bool state = false;
-                                                 if(refSettings.selectRenderBackend != settings->selectRenderBackend)
-                                                 {
-                                                     switch(settings->selectRenderBackend)
-                                                     {
-                                                         case RenderBackend::CPU:
-                                                             env.simConfig.conf |= CONF_RENDER_SOFTWARE;
-                                                             break;
-                                                         case RenderBackend::GPU:
-                                                             env.simConfig.conf |= CONF_RENDER_CHANGED; // set as HARDWARE
-                                                             break;
-                                                     }
-                                                     state = true;
-                                                 }
+        std::function<bool(void)> applies[] {
 
-                                                 return state;
-                                             },
-                                             // Apply Video Driver
-                                             [&]() { return false; },
-                                             // Apply Render Driver
-                                             [&]() { return false; },
-                                             // Apply Brightness
-                                             [&]() {
-                                                 return (
-                                                     refSettings.brightness != settings->brightness &&
-                                                     SDL_SetWindowBrightness(env.active_window, settings->brightness) == 0);
-                                             },
-                                             // Apply Window Opacity
-                                             [&]() {
-                                                 return (
-                                                     refSettings.windowOpacity != settings->windowOpacity &&
-                                                     SDL_SetWindowOpacity(env.active_window, settings->windowOpacity) == 0);
-                                             }};
+            [&]() // Apply Render Backend
+            {
+                bool state = false;
+                if(refSettings.selectRenderBackend != settings->selectRenderBackend)
+                {
+                    switch(settings->selectRenderBackend)
+                    {
+                        case RenderDriverInfo::RenderBackend::CPU:
+                            env.simConfig.conf |= CONF_RENDER_SOFTWARE;
+                            break;
+                        case RenderDriverInfo::RenderBackend::GPU:
+                            env.simConfig.conf |= CONF_RENDER_CHANGED; // set as HARDWARE
+                            break;
+                    }
+                    state = true;
+                }
+
+                return state;
+            },
+            [&]() // Apply Render Texture Scale Quality
+            {
+                return refSettings.selectTextureQuality != settings->selectTextureQuality &&
+                    (SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, (settings->selectTextureQuality ? "1" : "0")) == SDL_TRUE);
+            },
+            // Apply Video Driver
+            [&]() { return false; },
+            // Apply Render Driver
+            [&]() { return false; },
+            // Apply Brightness
+            [&]() {
+                return (
+                    refSettings.brightness != settings->brightness &&
+                    SDL_SetWindowBrightness(env.active_window, settings->brightness) == 0);
+            },
+            // Apply Window Opacity
+            [&]() {
+                return (
+                    refSettings.windowOpacity != settings->windowOpacity &&
+                    SDL_SetWindowOpacity(env.active_window, settings->windowOpacity) == 0);
+            }};
         bool apply_any = false;
         for(auto &apply : applies)
         {
