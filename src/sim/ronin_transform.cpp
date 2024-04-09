@@ -199,17 +199,27 @@ namespace RoninEngine::Runtime
 
     void Transform::LookAtLerp(Vec2 target, float t)
     {
-        target.x = _position.x - target.x;
-        target.y = _position.y - target.y;
+        LookAtLerp(target, Vec2::zero, t);
+    }
+
+    void Transform::LookAtLerp(Vec2 target, Vec2 axis, float t)
+    {
+        target.x -= _position.x - axis.x;
+        target.y -= _position.y - axis.y;
 
         float newAngle = Math::Atan2(target.y, target.x);
 
-        angle(Math::LerpAngle(_angle_, -newAngle * Math::rad2deg - 90, t));
+        angle(Math::LerpAngle(_angle_, (Math::Pi / 2 - newAngle) * Math::rad2deg, t));
     }
 
     void Transform::LookAtLerp(Transform *target, float t)
     {
-        LookAtLerp(target->_position, t);
+        LookAtLerp(target, Vec2::zero, t);
+    }
+
+    void Transform::LookAtLerp(Transform *target, Vec2 axis, float t)
+    {
+        LookAtLerp(target->_position, axis, t);
     }
 
     void Transform::AsFirstChild()

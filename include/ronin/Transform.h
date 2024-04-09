@@ -35,7 +35,9 @@ namespace RoninEngine::Runtime
         void LookAt(Transform *target, Vec2 axis);
         void LookAt(Transform *target);
         void LookAtLerp(Vec2 target, float t);
+        void LookAtLerp(Vec2 target, Vec2 axis, float t);
         void LookAtLerp(Transform *target, float t);
+        void LookAtLerp(Transform *target, Vec2 axis, float t);
 
         void AsFirstChild();
         void AsLastChild();
