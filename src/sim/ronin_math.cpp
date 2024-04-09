@@ -86,12 +86,12 @@ float Math::Atan2(float y, float x)
 
 int Math::Abs(int x)
 {
-    return std::abs(x);
+    return SDL_abs(x);
 }
 
 float Math::Abs(float x)
 {
-    return std::abs(x);
+    return SDL_fabs(x);
 }
 
 // negative absolute value

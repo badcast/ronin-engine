@@ -13,7 +13,9 @@ constexpr const char resource_classes[][16] {
     // Atlas is Object serialize
     "Atlas"};
 
-constexpr const char atlas_modes[][6] {"Rect", "Tiled"};
+constexpr char atlas_modes[][6] {"Rect", "Tiled"};
+
+constexpr char atlas_directions[][6] {"Right", "Down"};
 
 static std::hash<std::string> string_hasher;
 
@@ -56,18 +58,15 @@ bool AssetManager::LoadAsset(const std::string &loaderFile, Asset **asset)
     }
 
     ResId rcid;
-    int num1, num2, num3;
+    int num1, num2, num3, num4;
     std::string str1;
-
     JSON json, param1, param2, param3, map;
     std::vector<std::pair<std::size_t, std::string>> __files;
     std::filesystem::path dir_of_asset;
     std::ifstream input(loaderFile);
     str1.assign(std::istreambuf_iterator<char>(input), std::istreambuf_iterator<char>());
     input.close();
-
     json = JSON::Load(str1);
-
     if(json.IsNull())
     {
         RoninSimulator::Log("Can not load asset file");
@@ -232,6 +231,30 @@ bool AssetManager::LoadAsset(const std::string &loaderFile, Asset **asset)
                     rect = {0, 0, -1, -1}; // set flush
                     std::sscanf(map.ToString().c_str(), "%d %d", &rect.w, &rect.h);
 
+                    num4 = 0; // Set default direction (Right)
+                    param1 = json["direction"];
+                    if(param1.JSONType() == JSON::Class::String)
+                    {
+                        str1 = param1.ToString();
+                        num2 = sizeof(atlas_directions) / sizeof(atlas_directions[0]);
+                        for(num1 = 0; num1 < num2;)
+                        {
+                            if(str1 == atlas_directions[num1])
+                                break;
+                            ++num1;
+                        }
+
+                        if(num1 < num2)
+                        {
+                            // Assign new direction
+                            num4 = num1;
+                        }
+                        else
+                        {
+                            RoninSimulator::Log("Invalid key value in \"direction\"");
+                        }
+                    }
+
                     break;
                 default:
                     RoninSimulator::Log("Invalid atlas mode");
@@ -280,7 +303,7 @@ bool AssetManager::LoadAsset(const std::string &loaderFile, Asset **asset)
                 --x;
                 --y;
             }
-            // TODO: num2 > num1
+
             for(num1 = 0; num1 < num2; ++num1)
             {
                 // RECT
@@ -326,18 +349,30 @@ bool AssetManager::LoadAsset(const std::string &loaderFile, Asset **asset)
                 // Post setting Tiled
                 if(num3 == 1)
                 {
-                    if(rect.x >= x * rect.w)
-                        rect.x = 0;
-                    else
-                        rect.x += rect.w;
+                    // num4 - direction property
+                    switch(num4)
+                    {
+                        case 0: // Right
+                            if(rect.x >= x * rect.w)
+                                rect.x = 0;
+                            else
+                                rect.x += rect.w;
 
-                    if(rect.y >= y * rect.h)
-                        rect.y = 0;
-                    else
-                        rect.y += rect.h;
+                            if(rect.y >= y * rect.h)
+                                rect.y = 0;
+                            else
+                                rect.y += rect.h;
+                            break;
+
+                        case 1: // Down
+                            // TODO: Make direction to down
+                            num4 = 0;
+                            continue;
+
+                        default:;
+                    }
                 }
             }
-
             break;
     }
     return true;

@@ -5,6 +5,9 @@
 
 namespace RoninEngine::Runtime
 {
+
+    SDL_Texture *render_make_texture(Sprite *sprite);
+
     /**
      * @brief render_cache_texture
      * @param sprite

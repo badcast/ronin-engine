@@ -158,10 +158,24 @@ namespace RoninEngine::Runtime
         {
             std::uint16_t x, y;
             SDL_Rect dest;
-
+            SDL_Texture *newTexture;
             switch(this->renderType)
             {
                 case SpriteRenderType::Simple:
+                    newTexture = SDL_CreateTextureFromSurface(env.renderer, sprite->surface);
+                    Uint32 format, format2;
+                    int ac,ac2;
+
+                    SDL_QueryTexture(newTexture, &format, &ac, nullptr, nullptr);
+
+                    save_texture = render_make_texture(sprite );
+                    SDL_QueryTexture(newTexture, &format2, &ac2, nullptr, nullptr);
+                    SDL_DestroyTexture(newTexture);
+                    rendering->src.w = sprite->width();
+                    rendering->src.h = sprite->height();
+                    rendering->dst.w = sprite->width();
+                    rendering->dst.h = sprite->height();
+                    break;
                     save_texture = SDL_CreateTextureFromSurface(env.renderer, sprite->surface);
                     rendering->src.w = sprite->width();
                     rendering->src.h = sprite->height();

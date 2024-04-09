@@ -208,7 +208,7 @@ namespace RoninEngine
     {
         std::uint32_t current_inits;
 
-        if(env.active_window != nullptr)
+        if(SDL_WasInit(SDL_INIT_VIDEO))
             return;
 
         current_inits = SDL_INIT_EVENTS | SDL_INIT_TIMER;
@@ -953,7 +953,6 @@ namespace RoninEngine
     {
         if(env.active_window == nullptr)
         {
-            ShowMessage("Engine not inited");
             return;
         }
 
@@ -970,9 +969,8 @@ namespace RoninEngine
 
     bool RoninSimulator::SetSettings(const RoninSettings *settings)
     {
-        if(env.active_window == nullptr)
+        if(SDL_WasInit(SDL_INIT_VIDEO))
         {
-            ShowMessage("Engine not inited");
             return false;
         }
 

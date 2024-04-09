@@ -184,6 +184,19 @@ namespace RoninEngine::Runtime
             return RES_INVALID;
         }
 
+        // Convert surface if possible.
+        if(surf->format->format != ronin_default_pixelformat)
+        {
+            SDL_Surface *conv = SDL_ConvertSurfaceFormat(surf, ronin_default_pixelformat, 0);
+            SDL_FreeSurface(surf);
+            if(conv == nullptr)
+            {
+                SDL_LogError(SDL_LOG_CATEGORY_ERROR, "Surface: invalid convert");
+                return RES_INVALID;
+            }
+            surf = conv;
+        }
+
         gid = make_resource(&id, local);
         id |= gid->gid_surfaces.size();
 
