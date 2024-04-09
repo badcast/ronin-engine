@@ -46,8 +46,8 @@ namespace RoninEngine::Runtime
     {
         Sprite *sprite;
 
-        size *= pixelsPerPoint;
-        SDL_Surface *surface = SDL_CreateRGBSurfaceWithFormat(0, size.x, size.y, 32, ronin_default_pixelformat);
+        size = Vec2::Scale(size, switched_world->irs->metricPixelsPerPoint);
+        SDL_Surface *surface = SDL_CreateRGBSurfaceWithFormat(0, size.x, size.y, 32, defaultPixelFormat);
         if(surface == nullptr)
         {
             RoninSimulator::Kill();
@@ -65,8 +65,8 @@ namespace RoninEngine::Runtime
     {
         Sprite *sprite;
 
-        size *= pixelsPerPoint;
-        SDL_Surface *surface = SDL_CreateRGBSurfaceWithFormat(0, size.x, size.y, 32, ronin_default_pixelformat);
+        size =Vec2::Scale(size,switched_world->irs->metricPixelsPerPoint);
+        SDL_Surface *surface = SDL_CreateRGBSurfaceWithFormat(0, size.x, size.y, 32, defaultPixelFormat);
         if(surface == nullptr)
         {
             RoninSimulator::Kill();
@@ -74,7 +74,7 @@ namespace RoninEngine::Runtime
         SDL_Renderer *renderer = SDL_CreateSoftwareRenderer(surface);
 
         // draw circle
-        filledCircleColor(renderer, size.x / 2, size.y / 2, static_cast<std::uint16_t>(radius * pixelsPerPoint / 2) - 1, fillColor);
+        filledCircleColor(renderer, size.x / 2, size.y / 2, static_cast<std::uint16_t>(radius * switched_world->irs->metricPixelsPerPoint.x / 2) - 1, fillColor);
 
         SDL_DestroyRenderer(renderer);
         switched_world->irs->offload_surfaces.push_back(surface);
@@ -87,9 +87,9 @@ namespace RoninEngine::Runtime
     {
         Sprite *sprite;
 
-        size *= pixelsPerPoint;
-        height *= pixelsPerPoint;
-        SDL_Surface *surface = SDL_CreateRGBSurfaceWithFormat(0, size.x, size.y, 32, ronin_default_pixelformat);
+        size = Vec2::Scale(size,switched_world->irs->metricPixelsPerPoint);
+        height *= switched_world->irs->metricPixelsPerPoint.y;
+        SDL_Surface *surface = SDL_CreateRGBSurfaceWithFormat(0, size.x, size.y, 32, defaultPixelFormat);
         if(surface == nullptr)
         {
             RoninSimulator::Kill();

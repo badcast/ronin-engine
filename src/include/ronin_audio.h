@@ -19,7 +19,8 @@ namespace RoninEngine::Runtime
         static bool HasInit();
 
         static AudioState getChannelState(int channel);
-        static int pushChannel();
+        static int openChannel();
+        static bool closeChannel(int channel);
         static bool resumeChannel(int channel);
         static bool setChannelState(int channel, AudioClip *clip, AudioState state, bool loop);
         static float getChannelVolume(int channel);

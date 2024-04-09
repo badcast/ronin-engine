@@ -25,7 +25,7 @@ namespace RoninEngine::Runtime
         Transform *parent() const;
         void setParent(Transform *parent, bool worldPositionStays = true);
 
-        void detach();
+        void Detach();
 
         int childCount() const;
         Transform *childOf(int index);
@@ -83,12 +83,12 @@ namespace RoninEngine::Runtime
         // get position in local space from parent
         Vec2 localPosition() const;
         // set position in local space from parent
-        const Vec2 localPosition(const Vec2 &value);
+        const Vec2 localPosition(Vec2 value);
 
         // get position in world space
         Vec2 position() const;
         // set position in world space
-        const Vec2 position(const Vec2 &value);
+        const Vec2 position(Vec2 value);
 
         // Angle with Degress
         float angle() const;
@@ -103,6 +103,8 @@ namespace RoninEngine::Runtime
         // Layer for zOrder
         int zOrder() const;
         void zOrder(int value);
+
+        std::vector<Transform*> GetAllTransforms();
 
         static Transform *root();
     };

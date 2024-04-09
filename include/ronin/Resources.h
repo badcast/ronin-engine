@@ -32,10 +32,10 @@ namespace RoninEngine
         class RONIN_API Asset
         {
         private:
-            struct AssetRef *__ref;
+            struct AssetRef *ref;
 
         public:
-            Image *GetImage(const std::string &name);
+            Sprite *GetSprite(const std::string &name);
             AudioClip *GetAudioClip(const std::string &name);
             Atlas *GetAtlasObject();
         };

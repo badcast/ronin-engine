@@ -34,23 +34,23 @@ namespace RoninEngine::Runtime
             fieldFogTexture->color(c);
         }
 
-        lastTarget = SDL_GetRenderTarget(env.renderer);
+        lastTarget = SDL_GetRenderTarget(gscope.renderer);
 
         target = SDL_CreateTexture(
-            env.renderer,
+            gscope.renderer,
             SDL_PIXELFORMAT_RGBA8888,
             SDL_TextureAccess::SDL_TEXTUREACCESS_TARGET,
-            env.active_resolution.width,
-            env.active_resolution.height);
+            gscope.activeResolution.width,
+            gscope.activeResolution.height);
 
-        SDL_SetRenderTarget(env.renderer, target);
-        SDL_SetRenderDrawColor(env.renderer, 0, 0, 0, 55);
+        SDL_SetRenderTarget(gscope.renderer, target);
+        SDL_SetRenderDrawColor(gscope.renderer, 0, 0, 0, 55);
 
         // Get light
         this->get_light();
 
-        SDL_SetRenderTarget(env.renderer, lastTarget);
-        SDL_RenderCopy(env.renderer, target, nullptr, nullptr); // copy
+        SDL_SetRenderTarget(gscope.renderer, lastTarget);
+        SDL_RenderCopy(gscope.renderer, target, nullptr, nullptr); // copy
         SDL_DestroyTexture(target);
     }
 } // namespace RoninEngine::Runtime

@@ -44,16 +44,14 @@ namespace RoninEngine::Runtime
         Rectf save_dst;
         Vec2 m_size;
         Color color;
+        Color prevColorTexture;
         SpriteRenderType renderType;
         SpriteRenderOut renderOut;
         SpriteRenderPresentMode renderPresentMode;
 
         void free_render_cache();
-        void render(Rendering *rendering);
 
     public:
-        Vec2 offset;
-
         SpriteRenderFlip flip;
 
         SpriteRenderer();

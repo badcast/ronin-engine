@@ -178,13 +178,6 @@ namespace RoninEngine::Runtime
         static const Vec2 GetAxis();
 
         /**
-         * @brief Check the state of a keyboard key.
-         * @param keyState The state of the keyboard key to check.
-         * @return True if the keyboard key is currently in the specified state, false otherwise.
-         */
-        static const bool GetKeyState(KeyboardCode keyState);
-
-        /**
          * @brief Check if a keyboard key is currently in a pressed state.
          * @param keyCode The keyCode of the keyboard key to check.
          * @return True if the keyboard key is currently pressed, false otherwise.

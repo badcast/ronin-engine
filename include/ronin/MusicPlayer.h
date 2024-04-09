@@ -18,7 +18,7 @@ namespace RoninEngine::Runtime
         // Set Clip position to begin
         static void Rewind();
         // Set play audio source
-        static void Play(bool loop = true);
+        static void Play(bool loop = false);
         // Set pause state
         static void Pause();
         // Set stoping state
@@ -35,5 +35,7 @@ namespace RoninEngine::Runtime
         static double getPosition();
         // Get music state
         static AudioState getState();
+        // Get music state is loop
+        static bool isLoop();
     };
 } // namespace RoninEngine::Runtime

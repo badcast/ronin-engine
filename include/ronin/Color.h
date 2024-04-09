@@ -201,6 +201,19 @@ namespace RoninEngine::Runtime
          */
         static Color Lerp(Color start, Color end, float t);
 
+        /**
+         * @brief Entries the basic colors.
+         * @return List of the Colors
+         */
+        static std::vector<Color> GetBasicColors();
+
+        /**
+         * @brief Entries the extended colors.
+         * @return List of the Colors
+         */
+        static std::vector<Color> GetExtendedColors();
+
+
         // Basic Colors
         COLOR_IMPL Color transparent;
         COLOR_IMPL Color black;

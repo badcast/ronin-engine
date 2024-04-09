@@ -7,7 +7,7 @@ namespace RoninEngine::Runtime
     class RONIN_API Camera : public Component
     {
     protected:
-        struct CameraResource *camera_resource;
+        struct CameraResource *res;
 
     public:
         bool backclear;
@@ -19,6 +19,9 @@ namespace RoninEngine::Runtime
 
         bool isFocused();
         void Focus();
+
+        Vec2 GetScale();
+        void SetScale(Vec2 scale);
 
         static const Vec2 ScreenToWorldPoint(Vec2 screenPoint);
         static const Vec2 WorldToScreenPoint(Vec2 worldPoint);

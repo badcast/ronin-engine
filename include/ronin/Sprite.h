@@ -22,7 +22,7 @@ namespace RoninEngine::Runtime
         Sprite(const Sprite &) = default;
 
         void setSurface(Image *surface);
-        const Image *get_surface() const;
+        Image *getImage() const;
 
         const Rect rect() const;
         void rect(const Rect &rect);

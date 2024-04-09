@@ -56,8 +56,8 @@ namespace RoninEngine::Runtime
                 ' * * * * * * * * *'
 
         */
-        std::unordered_map<Matrix::MatrixKey, std::set<Transform *>> &mx = World::self()->internal_resources->matrix;
-        Matrix::MatrixKey ray = Matrix::matrix_get_key(origin);
+        matrix_map_t &mx = World::self()->irs->matrix;
+        matrix_key_t ray = Matrix::matrix_get_key(origin);
         std::uint64_t stormMember = 0;
         std::uint64_t stormFlags = 1;
         container_result result;
@@ -183,14 +183,14 @@ namespace RoninEngine::Runtime
     template <bool foreach>
     inline void storm_cast_eq_t(Vec2Int origin, int edges, std::function<void(const Vec2Int &)> predicate)
     {
-        constexpr int nvec = 4;
-        static const Vec2Int storm_vec[nvec] {
+        constexpr std::int8_t storm_vec[][2] {
             /*X  Y*/
             {-1, 0}, // ←
             {0, 1},  // ↑
             {1, 0},  // →
             {0, -1}  // ↓
         };
+        constexpr int nvec = sizeof(storm_vec) / sizeof(storm_vec[0]);
 
         int section, iv;
 
@@ -205,18 +205,21 @@ namespace RoninEngine::Runtime
                 // Section
                 if(!(iv & 1))
                     ++section;
+
                 if constexpr(foreach)
                 {
                     int s = 0;
                     do
                     {
-                        origin += storm_vec[iv];
+                        origin.x += storm_vec[iv][0];
+                        origin.y += storm_vec[iv][1];
                         predicate(origin);
                     } while(++s < section);
                 }
                 else
                 {
-                    origin += storm_vec[iv] * section;
+                    origin.x += storm_vec[iv][0] * section;
+                    origin.y += storm_vec[iv][1] * section;
                     predicate(origin);
                 }
             }

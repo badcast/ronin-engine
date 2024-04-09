@@ -89,42 +89,19 @@ typedef RoninEngine::Runtime::Vec2Int matrix_key_t;
 typedef std::map<int, std::unordered_map<matrix_key_t, std::set<RoninEngine::Runtime::Transform *>>> matrix_map_t;
 namespace RoninEngine
 {
-    struct RoninEnvironment
-    {
-        struct
-        {
-            // this is variable for apply settings
-            int conf;
-            RenderBackend renderBackend = RenderBackend::GPU;
-        } simConfig;
-
-        SDL_Renderer *renderer = nullptr;
-
-        SDL_Window *active_window = nullptr;
-        Resolution active_resolution {0, 0, 0};
-        TimingWatcher last_watcher {};
-        TimingWatcher queue_watcher {};
-        std::vector<SDL_Cursor *> sysCursors {};
-
-        bool ronin_debug_mode = false;
-        bool internal_world_loaded = false;
-        bool internal_world_can_start = false;
-    };
-
-    extern RoninEnvironment env;
-
     namespace UI
     {
-
         struct LegacyFont_t
         {
+            int compressed;
             SDL_Surface *surfNormal;
             SDL_Surface *surfHilight;
             Runtime::Vec2Int fontSize;
             Runtime::Rect data[255];
         };
 
-        extern void Render_String_ttf(const char *text, int fontSize, const Runtime::Vec2Int &screenPoint, bool alignCenter = false);
+        extern void Render_String_ttf(
+            const char *text, int fontSize, const Runtime::Vec2Int &screenPoint, bool alignCenter = false, bool blend = true);
     } // namespace UI
 
     namespace Runtime
@@ -141,10 +118,16 @@ namespace RoninEngine
             RES_LOCAL_FLAG = 0x80000000
         };
 
-        enum MouseStateFlags
+        enum InputStateFlags
         {
-            MouseDown = 1,
-            MouseUp = 2
+            KeyDown = 1,
+            KeyUp = 2
+        };
+
+        enum class RenderCommand
+        {
+            PreRender,
+            PostRender
         };
 
         struct RoninInput
@@ -153,6 +136,7 @@ namespace RoninEngine
             std::int8_t _mouse_state[SDL_BUTTON_X2];
             Vec2Int _mouse_position;
             Vec2 _movement_axis;
+            std::uint8_t *prev_frame_keys;
         };
 
         struct Rendering
@@ -165,7 +149,9 @@ namespace RoninEngine
         struct CameraResource
         {
             int culled;
-            std::set<Renderer *> prev;
+            Vec2 offsetScaling;
+            Vec2 scale;
+            std::set<Renderer *> prevs;
         };
 
         struct AudioClip
@@ -209,6 +195,7 @@ namespace RoninEngine
         struct MusicPlayerData
         {
             MusicClip *m_clip;
+            int loops;
         };
 
         struct GidResources
@@ -222,9 +209,9 @@ namespace RoninEngine
 
         struct AssetRef
         {
-            std::unordered_map<std::size_t, ResId> image_clips;
-            std::unordered_map<std::size_t, ResId> audio_clips;
-            std::unordered_map<std::size_t, ResId> music_clips;
+            std::unordered_map<std::size_t, ResId> bindAudioClips;
+            std::unordered_map<std::size_t, ResId> bindMusicClips;
+            std::unordered_map<std::size_t, Sprite*> bindSprites;
 
             Atlas *atlasRef;
         };
@@ -280,8 +267,9 @@ namespace RoninEngine
             SDL_Texture *legacy_font_normal;
             SDL_Texture *legacy_font_hover;
 
-            int audio_channels;
-            int audio_reserved_channels = MIX_CHANNELS;
+            std::vector<bool> audioChannels;
+
+            Vec2 metricPixelsPerPoint;
 
             // destroyed queue object
             int _destroyedGameObject;
@@ -295,21 +283,22 @@ namespace RoninEngine
             // Matrix
             matrix_map_t matrix;
 
-            std::list<CameraResource *> camera_resources;
+            std::list<CameraResource *> cameraResources;
 
             // External resources
-            GidResources external_local_resources;
+            GidResources externalLocalResources;
 
             // Main UI Object
             UI::GUI *gui;
 
             // Main camera for render
-            Camera *main_camera;
+            Camera *mainCamera;
 
             // Main or Root object
-            GameObject *main_object;
+            GameObject *mainObject;
 
-            std::map<Runtime::Sprite *, std::pair<int, SDL_Texture *>> render_cache;
+            std::map<SDL_Surface *, std::pair<int, SDL_Texture *>> renderCache;
+            std::map<SDL_Texture *, SDL_Surface *> renderCacheRefs;
 
             void event_camera_changed(Camera *target, CameraEvent state);
         };
@@ -362,4 +351,29 @@ namespace RoninEngine
         void storm_cast_eq_all(Vec2Int origin, int edges, std::function<void(const Vec2Int &)> predicate);
         void storm_cast_eq_edges(Vec2Int origin, int edges, std::function<void(const Vec2Int &)> predicate);
     } // namespace Runtime
+
+    extern struct RoninEnvironment
+    {
+        struct
+        {
+            // this is variable for apply settings
+            int conf;
+            RenderDriverInfo::RenderBackend renderBackend = RenderDriverInfo::RenderBackend::GPU;
+        } simConfig;
+
+        SDL_Renderer *renderer = nullptr;
+
+        SDL_Window *activeWindow = nullptr;
+        Resolution activeResolution {0, 0, 0};
+        TimingWatcher lastWatcher {};
+        TimingWatcher queueWatcher {};
+        std::vector<SDL_Cursor *> sysCursors {};
+
+        bool debugMode = false;
+        bool internalWorldLoaded = false;
+        bool internalWorldCanStart = false;
+
+        Runtime::MusicPlayerData musicData;
+    } gscope;
+
 } // namespace RoninEngine

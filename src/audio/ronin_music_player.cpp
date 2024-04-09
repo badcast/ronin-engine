@@ -5,28 +5,26 @@ namespace RoninEngine::Runtime
 {
     using namespace RoninEngine::Runtime;
 
-    MusicPlayerData data;
-
     MusicClip *clip()
     {
-        return data.m_clip;
+        return gscope.musicData.m_clip;
     }
 
     void MusicPlayer::setClip(MusicClip *clip)
     {
         Stop();
 #ifndef NDEBUG
-        if(data.m_clip)
-            data.m_clip->used--;
+        if(gscope.musicData.m_clip)
+            gscope.musicData.m_clip->used--;
         if(clip)
             clip->used++;
 #endif
-        data.m_clip = clip;
+        gscope.musicData.m_clip = clip;
     }
 
     float MusicPlayer::getVolume()
     {
-        return RoninAudio::getMusicVolume(data.m_clip);
+        return RoninAudio::getMusicVolume(gscope.musicData.m_clip);
     }
 
     void MusicPlayer::setVolume(float value)
@@ -42,17 +40,17 @@ namespace RoninEngine::Runtime
     void MusicPlayer::Play(bool loop)
     {
         Stop();
-        RoninAudio::setMusicState(data.m_clip, AudioState::Play, loop);
+        RoninAudio::setMusicState(gscope.musicData.m_clip, AudioState::Play, loop);
     }
 
     void MusicPlayer::Pause()
     {
-        RoninAudio::setMusicState(data.m_clip, AudioState::Pause, false);
+        RoninAudio::setMusicState(gscope.musicData.m_clip, AudioState::Pause, false);
     }
 
     void MusicPlayer::Stop()
     {
-        RoninAudio::setMusicState(data.m_clip, AudioState::Stop, false);
+        RoninAudio::setMusicState(gscope.musicData.m_clip, AudioState::Stop, false);
     }
 
     bool MusicPlayer::isPlaying()
@@ -67,17 +65,22 @@ namespace RoninEngine::Runtime
 
     double MusicPlayer::getDuration()
     {
-        return RoninAudio::getMusicDuration(data.m_clip);
+        return RoninAudio::getMusicDuration(gscope.musicData.m_clip);
     }
 
     double MusicPlayer::getPosition()
     {
-        return RoninAudio::getMusicPosition(data.m_clip);
+        return RoninAudio::getMusicPosition(gscope.musicData.m_clip);
     }
 
     AudioState MusicPlayer::getState()
     {
         return RoninAudio::getMusicState();
+    }
+
+    bool MusicPlayer::isLoop()
+    {
+        return gscope.musicData.loops == 1;
     }
 
     void MusicPlayer::setPosition(double value)

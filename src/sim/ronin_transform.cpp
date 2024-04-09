@@ -5,6 +5,7 @@ using namespace RoninEngine::Exception;
 
 namespace RoninEngine::Runtime
 {
+
     void hierarchy_childs_move(Transform *oldParent, Transform *newParent)
     {
         if(oldParent == newParent)
@@ -31,7 +32,7 @@ namespace RoninEngine::Runtime
         }
 
         if(!newParent)
-            hierarchy_append(World::self()->irs->main_object->transform(), from); // nullptr as Root
+            hierarchy_append(World::self()->irs->mainObject->transform(), from); // nullptr as Root
         else
         {
             from->m_parent = newParent;
@@ -71,6 +72,7 @@ namespace RoninEngine::Runtime
             parent->hierarchy.emplace_back(who);
         }
     }
+
     void hierarchy_sibiling(Transform *parent, Transform *who, int index)
     {
         // TODO: Set sibling for Transform component
@@ -149,7 +151,7 @@ namespace RoninEngine::Runtime
     {
         if(switched_world == nullptr || switched_world->irs == nullptr)
             return nullptr;
-        return switched_world->irs->main_object->transform();
+        return switched_world->irs->mainObject->transform();
     }
 
     void Transform::LookAt(Transform *target)
@@ -297,7 +299,7 @@ namespace RoninEngine::Runtime
         return (this->m_parent ? _position - this->m_parent->_position : _position);
     }
 
-    const Vec2 Transform::localPosition(const Vec2 &value)
+    const Vec2 Transform::localPosition(Vec2 value)
     {
         Vec2Int lastPoint = Matrix::matrix_get_key(_position);
         _position = (this->m_parent ? this->m_parent->_position + value : value);
@@ -311,10 +313,13 @@ namespace RoninEngine::Runtime
         return _position;
     }
 
-    const Vec2 Transform::position(const Vec2 &value)
+    const Vec2 Transform::position(Vec2 value)
     {
         Vec2 lastPosition = _position;
-        _position = value; // set the position
+
+        // set the new position
+        _position = value;
+
         if(_owner->m_active)
         {
             Matrix::matrix_update(this, Matrix::matrix_get_key(lastPosition));
@@ -328,6 +333,40 @@ namespace RoninEngine::Runtime
         return value;
     }
 
+    float Transform::angle() const
+    {
+        return this->_angle_;
+    }
+
+    void Transform::angle(float value)
+    {
+        // Formulas:
+        // 1. For get local position  = child.position - parent.position
+        // 2. For get absolute position = parent.position + (child.position - parent.position)
+        float angle1;
+
+        if(_angle_ == value || !_owner->m_active)
+            return;
+
+        angle1 = _angle_;
+        _angle_ = value;
+
+        // Difference
+        value = angle1 - value;
+        angle1 = value * Math::deg2rad;
+
+        // FIXME: BUG! Hierarchy O(n^2) Frozing of the change position (Recursive)
+
+        for(Transform *child : hierarchy)
+        {
+            // update child position
+            child->position(Vec2::RotateAround(_position, child->_position - _position, angle1));
+
+            // update child angle
+            child->angle(child->_angle_ - value);
+        }
+    }
+
     float Transform::localAngle() const
     {
         return _angle_ - m_parent->_angle_;
@@ -335,9 +374,6 @@ namespace RoninEngine::Runtime
 
     void Transform::localAngle(float value)
     {
-        // Lerp range at 0 .. 360
-        //        while(value > 360)
-        //            value -= 360;
         angle(value + m_parent->_angle_);
     }
 
@@ -388,7 +424,7 @@ namespace RoninEngine::Runtime
 
     Transform *Transform::parent() const
     {
-        if(m_parent == switched_world->irs->main_object->transform())
+        if(m_parent == switched_world->irs->mainObject->transform())
             return nullptr;
 
         return m_parent;
@@ -397,7 +433,7 @@ namespace RoninEngine::Runtime
     void Transform::setParent(Transform *parent, bool worldPositionStays)
     {
         if(parent == nullptr)
-            parent = switched_world->irs->main_object->transform();
+            parent = switched_world->irs->mainObject->transform();
 
         // change children of the parent
         hierarchy_parent_change(this, parent);
@@ -419,43 +455,32 @@ namespace RoninEngine::Runtime
         }
     }
 
-    void Transform::detach()
+    void Transform::Detach()
     {
         setParent(nullptr);
     }
 
-    float Transform::angle() const
+    std::vector<Transform *> Transform::GetAllTransforms()
     {
-        return this->_angle_;
-    }
+        Transform *current;
+        std::vector<Transform *> result {};
+        std::queue<Transform *> queue {};
+        queue.push(this);
 
-    void Transform::angle(float value)
-    {
-        // Formulas:
-        // 1. For get local position  = child.position - parent.position
-        // 2. For get absolute position = parent.position + (child.position - parent.position)
-        float lastAngle, rad;
-
-        if(_angle_ == value)
-            return;
-
-        lastAngle = _angle_;
-        _angle_ = value;
-
-        if(!_owner->m_active)
-            return;
-
-        // Difference
-        value = lastAngle - value;
-        rad = value * Math::deg2rad;
-
-        for(Transform *child : hierarchy)
+        while(!queue.empty())
         {
-            // update child position
-            child->position(Vec2::RotateAround(_position, child->_position - _position, rad));
-            // update child angle
-            child->localAngle(value);
+            current = queue.front();
+            queue.pop();
+
+            result.push_back(current);
+
+            for(Transform *child : current->hierarchy)
+            {
+                queue.push(child);
+            }
         }
+
+        return result;
     }
 
 } // namespace RoninEngine::Runtime

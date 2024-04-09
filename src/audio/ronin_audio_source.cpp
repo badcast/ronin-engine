@@ -25,15 +25,14 @@ AudioSource::AudioSource(const std::string &name) : Component(DESCRIBE_AS_ONLY_N
     DESCRIBE_AS_MAIN(AudioSource);
 
     RoninMemory::alloc_self(data);
-    data->target_channel = RoninAudio::pushChannel();
+    data->target_channel = RoninAudio::openChannel();
 }
 
 AudioSource::~AudioSource()
 {
-    // TODO: Make Free Channel in
-    // World::self()->internal_resources->__world_resources->audio_channels--
-
     setClip(nullptr);
+    // Close opened channel
+    RoninAudio::closeChannel(data->target_channel);
     RoninMemory::free(data);
 }
 

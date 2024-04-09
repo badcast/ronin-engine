@@ -25,13 +25,14 @@ namespace RoninEngine::Runtime
     class RONIN_API Math
     {
     public:
-        static constexpr long double long_Pi = 3.14159265358979323846264338327950288;
-        static constexpr float Pi = static_cast<float>(long_Pi); // calc PI formula l / d (Length circle div diameter)
+        static constexpr long double longPi = 3.14159265358979323846264338327950288;
+        static constexpr float Pi = static_cast<float>(longPi); // calc PI formula l / d (Length circle div diameter)
         static constexpr float Pi2 = Pi * 2;
         static constexpr float infinity = std::numeric_limits<float>::infinity();
-        static constexpr float negative_infinity = -infinity;
+        static constexpr float negativeInfinity = -infinity;
         static constexpr float deg2rad = 0.01745329;
         static constexpr float rad2deg = 180 / Pi;
+        static constexpr float epsilon = 9.999999E-11; // 1e-10f
 
         static float Cos(float x);
 

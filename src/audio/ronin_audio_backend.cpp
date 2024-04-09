@@ -2,31 +2,38 @@
 
 namespace RoninEngine::Runtime
 {
-    static int last_inited_result = 0;
+
+    static int lastInitResult = 0;
 
     constexpr int CHUNK_SIZE = 2048;
 
     int RoninAudio::Init()
     {
-        int current_inits = MIX_InitFlags::MIX_INIT_OGG;
-        if((last_inited_result = (Mix_Init(current_inits))) < 1)
+        int currentInits = MIX_InitFlags::MIX_INIT_OGG;
+        if((lastInitResult = (Mix_Init(currentInits))) < 1)
             return -1;
 
-        if(Mix_OpenAudio(MIX_DEFAULT_FREQUENCY, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS, CHUNK_SIZE))
+        if(Mix_OpenAudioDevice(
+               MIX_DEFAULT_FREQUENCY,
+               MIX_DEFAULT_FORMAT,
+               MIX_DEFAULT_CHANNELS,
+               CHUNK_SIZE,
+               NULL,
+               SDL_AUDIO_ALLOW_FREQUENCY_CHANGE | SDL_AUDIO_ALLOW_CHANNELS_CHANGE) != 0)
         {
-            last_inited_result = 0;
+            lastInitResult = 0;
             Mix_Quit();
             return -1;
         }
 
-        last_inited_result = 1;
+        lastInitResult = 1;
 
         return 0;
     }
 
     void RoninAudio::Finalize()
     {
-        if(last_inited_result == 0)
+        if(lastInitResult == 0)
             return;
         Mix_CloseAudio();
         Mix_Quit();
@@ -34,7 +41,7 @@ namespace RoninEngine::Runtime
 
     bool RoninAudio::HasInit()
     {
-        return last_inited_result > 0;
+        return lastInitResult > 0;
     }
 
     AudioState RoninAudio::getChannelState(int channel)
@@ -56,18 +63,61 @@ namespace RoninEngine::Runtime
         return state;
     }
 
-    int RoninAudio::pushChannel()
+    int RoninAudio::openChannel()
     {
         if(!HasInit())
             return -1;
 
-        WorldResources *__world_resources = World::self()->irs;
-        int channel = __world_resources->audio_channels++;
+        auto IRS = World::self()->irs;
 
-        if(__world_resources->audio_channels > __world_resources->audio_reserved_channels)
-            Mix_AllocateChannels(__world_resources->audio_reserved_channels *= 2);
+        int channel = -1;
+        int lastChannel;
+
+        // TODO: Optimize here, use BIT Mask for audioChannels (Replace from Bool)
+
+        // if the first state
+        if(IRS->audioChannels.empty())
+        {
+            // Reserve with default channels length
+            IRS->audioChannels.resize(Mix_AllocateChannels(SDL_QUERY), false);
+        }
+
+        // find is not allocated channel in reserve
+        for(lastChannel = 0; lastChannel < IRS->audioChannels.size(); ++lastChannel)
+        {
+            // is not played channel, then grub it
+            if(!IRS->audioChannels[lastChannel])
+            {
+                // Allocated
+                channel = lastChannel;
+                break;
+            }
+        }
+
+        // if channel is not enough, request get new allocates
+        if(channel == -1)
+        {
+            int newReserve = Mix_AllocateChannels(Mix_AllocateChannels(SDL_QUERY) * 2);
+            IRS->audioChannels.resize(newReserve, false);
+            channel = lastChannel; // it's n-1 ( size is ) +1
+        }
+
+        IRS->audioChannels[channel] = true;
 
         return channel;
+    }
+
+    bool RoninAudio::closeChannel(int channel)
+    {
+        auto &channels = World::self()->irs->audioChannels;
+        if(HasInit() && channel < channels.size() && channel > -1)
+        {
+            // Request Close
+            channels[channel] = false;
+            return true;
+        }
+
+        return false;
     }
 
     bool RoninAudio::resumeChannel(int channel)
@@ -132,9 +182,8 @@ namespace RoninEngine::Runtime
     float RoninAudio::getChannelVolume(int channel)
     {
         float volume;
-        Mix_Chunk *ch;
-        if(HasInit() && (ch = Mix_GetChunk(channel)))
-            volume = Math::Map<std::uint8_t, float>(ch->volume, 0, MIX_MAX_VOLUME, 0.0, 1.f);
+        if(HasInit())
+            volume = Math::Map<std::uint8_t, float>(Mix_Volume(channel, SDL_QUERY), 0, MIX_MAX_VOLUME, 0.0, 1.f);
         else
             volume = -1;
         return volume;
@@ -163,11 +212,15 @@ namespace RoninEngine::Runtime
     {
         bool result;
         if(result = HasInit())
+        {
+            gscope.musicData.loops = 0; // clear loop flag
             switch(state)
             {
                 case AudioState::Play:
                     if(clip != nullptr && clip->mix_music != nullptr)
+                    {
                         result = Mix_PlayMusic(clip->mix_music, loop == true ? -1 : 0) == 0;
+                    }
                     break;
                 case AudioState::Pause:
                     Mix_PauseMusic();
@@ -179,6 +232,11 @@ namespace RoninEngine::Runtime
                     result = false;
                     break;
             }
+            if(result)
+            {
+                gscope.musicData.loops = static_cast<int>(loop);
+            }
+        }
         return result;
     }
 
@@ -192,7 +250,7 @@ namespace RoninEngine::Runtime
     {
         float volume;
         if(HasInit() && clip && clip->mix_music)
-            volume = Math::Map<int, float>(Mix_GetMusicVolume(clip->mix_music), 0, MIX_MAX_VOLUME, 0.f, 1.f);
+            volume = Math::Map<int, float>(Mix_VolumeMusic(SDL_QUERY), 0, MIX_MAX_VOLUME, 0.f, 1.f);
         else
             volume = -1;
         return volume;
@@ -220,4 +278,5 @@ namespace RoninEngine::Runtime
     {
         return HasInit() && (Mix_SetMusicPosition(position) == 0);
     }
+
 } // namespace RoninEngine::Runtime

@@ -17,28 +17,28 @@ constexpr char atlas_modes[][6] {"Rect", "Tiled"};
 
 constexpr char atlas_directions[][6] {"Right", "Down"};
 
-static std::hash<std::string> string_hasher;
+std::hash<std::string> stringHasher;
 
 void RoninEngine::Runtime::internal_free_loaded_assets()
 {
     for(Asset &asset : loaded_assets)
     {
-        if(asset.__ref->atlasRef)
+        if(asset.ref->atlasRef)
         {
-            RoninMemory::free(asset.__ref->atlasRef);
+            RoninMemory::free(asset.ref->atlasRef);
         }
-        RoninMemory::free(asset.__ref); // free asset
+        RoninMemory::free(asset.ref); // free asset
     }
     loaded_assets.clear();
 
     // System Cursors
-    for(Cursor *cur : env.sysCursors)
+    for(Cursor *cur : gscope.sysCursors)
     {
         if(cur)
             SDL_FreeCursor(cur);
     }
-    env.sysCursors.clear();
-    env.sysCursors.shrink_to_fit();
+    gscope.sysCursors.clear();
+    gscope.sysCursors.shrink_to_fit();
 }
 
 Cursor *AssetManager::ConvertImageToCursor(Image *imageSrc, Vec2Int cursorHotspot)
@@ -116,7 +116,7 @@ bool AssetManager::LoadAsset(const std::string &loaderFile, Asset **asset)
                     RoninSimulator::Log(("Invalid element on \"resources\". Incorrect file " + loaderFile).c_str());
                     continue;
                 }
-                size_t hash_it = string_hasher(param1.ToString());
+                size_t hash_it = stringHasher(param1.ToString());
                 if(std::end(__files) !=
                    std::find_if(std::begin(__files), std::end(__files), [&hash_it](auto &ref) { return hash_it == ref.first; }))
                 {
@@ -128,7 +128,7 @@ bool AssetManager::LoadAsset(const std::string &loaderFile, Asset **asset)
             }
 
             *asset = &loaded_assets.emplace_back();
-            RoninMemory::alloc_self((*asset)->__ref);
+            RoninMemory::alloc_self((*asset)->ref);
             for(auto &pair : __files)
             {
                 switch(num1)
@@ -160,16 +160,17 @@ bool AssetManager::LoadAsset(const std::string &loaderFile, Asset **asset)
                 {
                     /*Sprites*/
                     case 0:
-                        (*asset)->__ref->image_clips[pair.first] = rcid;
+                        (*asset)->ref->bindSprites[pair.first] = Primitive::CreateSpriteFrom(Resources::GetImageSource(rcid), false);
                         break;
                     /*AudioClip*/
                     case 1:
-                        (*asset)->__ref->audio_clips[pair.first] = rcid;
+                        (*asset)->ref->bindAudioClips[pair.first] = rcid;
                         break;
                     /*MusicClip*/
                     case 2:
-                        (*asset)->__ref->music_clips[pair.first] = rcid;
+                        (*asset)->ref->bindMusicClips[pair.first] = rcid;
                         break;
+                    default:;
                 }
             }
         }
@@ -281,9 +282,9 @@ bool AssetManager::LoadAsset(const std::string &loaderFile, Asset **asset)
             }
 
             *asset = &loaded_assets.emplace_back();
-            RoninMemory::alloc_self((*asset)->__ref);
+            RoninMemory::alloc_self((*asset)->ref);
 
-            atlas = (*asset)->__ref->atlasRef = RoninMemory::alloc<Atlas>();
+            atlas = (*asset)->ref->atlasRef = RoninMemory::alloc<Atlas>();
             atlas->src = Resources::GetImageSource(rcid);
 
             // Post settings Tiled Mode
@@ -378,23 +379,27 @@ bool AssetManager::LoadAsset(const std::string &loaderFile, Asset **asset)
     return true;
 }
 
-Image *Asset::GetImage(const std::string &name)
+Sprite *Asset::GetSprite(const std::string &name)
 {
-    auto f = __ref->image_clips.find(string_hasher(name));
-    if(f == std::end(__ref->image_clips))
+    auto f = ref->bindSprites.find(stringHasher(name));
+
+    if(f == std::end(ref->bindSprites))
         return nullptr;
-    return Resources::GetImageSource(f->second);
+
+    return f->second;
 }
 
 AudioClip *Asset::GetAudioClip(const std::string &name)
 {
-    auto f = __ref->audio_clips.find(string_hasher(name));
-    if(f == std::end(__ref->audio_clips))
+    auto f = ref->bindAudioClips.find(stringHasher(name));
+
+    if(f == std::end(ref->bindAudioClips))
         return nullptr;
+
     return Resources::GetAudioClipSource(f->second);
 }
 
 Atlas *Asset::GetAtlasObject()
 {
-    return __ref->atlasRef;
+    return ref->atlasRef;
 }

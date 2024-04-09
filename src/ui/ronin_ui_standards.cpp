@@ -6,8 +6,6 @@
 namespace RoninEngine::Runtime
 {
     extern void text_get(std::string &text);
-    extern void text_start_input();
-    extern void text_stop_input();
 } // namespace RoninEngine::Runtime
 
 namespace RoninEngine::UI
@@ -16,8 +14,8 @@ namespace RoninEngine::UI
 
     std::uint8_t legacyVH[] {0, 32, 16, 2, 34, 18, 1, 33, 17};
 
-    extern TTF_Font *ttf_arial_font;
-    extern LegacyFont_t *pLegacyFont;
+    extern TTF_Font *pDefaultTTFFont;
+    extern LegacyFont_t *pDefaultLegacyFont;
 
     bool general_ui_render(UIElement &element, const UIState &uiState, bool &ui_focus)
     {
@@ -62,13 +60,13 @@ namespace RoninEngine::UI
                 if(show_down_side)
                 {
                     RenderUtility::SetColor(colorSpace.buttonDownSide);
-                    SDL_RenderFillRect(env.renderer, reinterpret_cast<SDL_Rect *>(&rect));
+                    SDL_RenderFillRect(gscope.renderer, reinterpret_cast<SDL_Rect *>(&rect));
                 }
 
                 RenderUtility::SetColor(col);
                 Rect region {rect};
                 region.h -= (show_down_side ? 4 : 0);
-                SDL_RenderFillRect(env.renderer, reinterpret_cast<SDL_Rect *>(&region));
+                SDL_RenderFillRect(gscope.renderer, reinterpret_cast<SDL_Rect *>(&region));
 
                 // SDL_RenderFillRect(renderer, (SDL_Rect*)&rect);
 
@@ -97,24 +95,24 @@ namespace RoninEngine::UI
                 // uielement background
                 RenderUtility::SetColor(
                     (uiState.ms_hover) ? colorSpace.defaultInteraction.normalState : colorSpace.defaultInteraction.hoverState);
-                SDL_RenderFillRect(env.renderer, (SDL_Rect *) &rect);
+                SDL_RenderFillRect(gscope.renderer, (SDL_Rect *) &rect);
                 RenderUtility::SetColor(Color::gray);
                 for(int x = 0; x < thickness; ++x)
                 {
                     rect -= thickPer;
-                    SDL_RenderDrawRect(env.renderer, (SDL_Rect *) &rect);
+                    SDL_RenderDrawRect(gscope.renderer, (SDL_Rect *) &rect);
                 }
 
                 // draw main text
-                surface = TTF_RenderUTF8_Solid(ttf_arial_font, element.text.c_str(), *reinterpret_cast<SDL_Color *>(&colorSpace.editText));
-                if((texture = SDL_CreateTextureFromSurface(env.renderer, surface)) != nullptr)
+                surface = TTF_RenderUTF8_Solid(pDefaultTTFFont, element.text.c_str(), *reinterpret_cast<SDL_Color *>(&colorSpace.editText));
+                if((texture = SDL_CreateTextureFromSurface(gscope.renderer, surface)) != nullptr)
                 {
                     rect = element.rect;
                     SDL_QueryTexture(texture, nullptr, nullptr, &rect.w, &rect.h);
                     rect.x += 5;
                     rect.y += element.rect.h / 2 - rect.h / 2;
 
-                    SDL_RenderCopy(env.renderer, texture, nullptr, (SDL_Rect *) &(rect));
+                    SDL_RenderCopy(gscope.renderer, texture, nullptr, (SDL_Rect *) &(rect));
 
                     SDL_DestroyTexture(texture);
                     SDL_FreeSurface(surface);
@@ -132,11 +130,11 @@ namespace RoninEngine::UI
                     // clik and focused
                     if((ui_focus = result = uiState.ms_click))
                     {
-                        text_start_input();
+                        // SDL_StartTextInput();
                     }
                     else
                     {
-                        text_stop_input();
+                        // SDL_StopTextInput();
                     }
                 }
                 break;
@@ -189,8 +187,8 @@ namespace RoninEngine::UI
 
                 RenderUtility::SetColor(uiState.ms_hover ? Color::lightgray : Color::gray);
                 Color color = RenderUtility::GetColor();
-                boxColor(env.renderer, rect.x, rect.y, rect.x + rect.w, rect.y + rect.h, Color::slategray);
-                rectangleColor(env.renderer, rect.x, rect.y, rect.x + rect.w, rect.y + rect.h, color);
+                boxColor(gscope.renderer, rect.x, rect.y, rect.x + rect.w, rect.y + rect.h, Color::slategray);
+                rectangleColor(gscope.renderer, rect.x, rect.y, rect.x + rect.w, rect.y + rect.h, color);
 
                 // Draw Slider Cursor
 
@@ -211,11 +209,11 @@ namespace RoninEngine::UI
 
                 // Cursor background
                 color = Color::darkgray;
-                boxColor(env.renderer, rect.x, rect.y, rect.x + rect.w, rect.y + rect.h, color);
+                boxColor(gscope.renderer, rect.x, rect.y, rect.x + rect.w, rect.y + rect.h, color);
 
                 // Cursor thickness
                 color = uiState.ms_hover ? Color::lightgray : Color::gray;
-                rectangleColor(env.renderer, rect.x, rect.y, rect.x + rect.w + 1, rect.y + rect.h + 1, color);
+                rectangleColor(gscope.renderer, rect.x, rect.y, rect.x + rect.w + 1, rect.y + rect.h + 1, color);
 
                 // Draw Text under Cursor point
                 RenderUtility::SetColor(Color::black);
@@ -243,8 +241,8 @@ namespace RoninEngine::UI
                     sdlr.y = element.rect.y;
                     sdlr.w = element.rect.w == 0 ? sprite->width() : element.rect.w;
                     sdlr.h = element.rect.h == 0 ? sprite->height() : element.rect.h;
-                    SDL_Texture *tex = SDL_CreateTextureFromSurface(env.renderer, sprite->surface);
-                    SDL_RenderCopy(env.renderer, tex, nullptr, &sdlr);
+                    SDL_Texture *tex = SDL_CreateTextureFromSurface(gscope.renderer, sprite->surface);
+                    SDL_RenderCopy(gscope.renderer, tex, nullptr, &sdlr);
                     SDL_DestroyTexture(tex);
                 }
                 break;
@@ -260,26 +258,26 @@ namespace RoninEngine::UI
                 // uielement background
                 RenderUtility::SetColor(
                     (uiState.ms_hover) ? colorSpace.defaultInteraction.normalState : colorSpace.defaultInteraction.hoverState);
-                SDL_RenderFillRect(env.renderer, (SDL_Rect *) &r);
+                SDL_RenderFillRect(gscope.renderer, (SDL_Rect *) &r);
                 RenderUtility::SetColor(Color::gray);
                 for(int x = 0; x < thickness; ++x)
                 {
                     r -= Rect(1, 1, -1, -1);
-                    SDL_RenderDrawRect(env.renderer, (SDL_Rect *) &r);
+                    SDL_RenderDrawRect(gscope.renderer, (SDL_Rect *) &r);
                 }
 
                 // draw main text
                 SDL_Texture *texture;
                 SDL_Surface *surf =
-                    TTF_RenderUTF8_Blended(ttf_arial_font, element.text.c_str(), *reinterpret_cast<SDL_Color *>(&colorSpace.dropdownText));
-                if((texture = SDL_CreateTextureFromSurface(env.renderer, surf)) != nullptr)
+                    TTF_RenderUTF8_Blended(pDefaultTTFFont, element.text.c_str(), *reinterpret_cast<SDL_Color *>(&colorSpace.dropdownText));
+                if((texture = SDL_CreateTextureFromSurface(gscope.renderer, surf)) != nullptr)
                 {
                     r = element.rect;
                     r.x += 5;
                     SDL_QueryTexture(texture, nullptr, nullptr, &r.w, &r.h);
                     r.y += element.rect.h / 2 - r.h / 2;
 
-                    SDL_RenderCopy(env.renderer, texture, nullptr, (SDL_Rect *) &(r));
+                    SDL_RenderCopy(gscope.renderer, texture, nullptr, (SDL_Rect *) &(r));
 
                     SDL_DestroyTexture(texture);
                     texture = nullptr;
@@ -300,7 +298,7 @@ namespace RoninEngine::UI
 
                     RenderUtility::SetColor(colorSpace.defaultInteraction.hoverState);
                     // draw background
-                    SDL_RenderFillRect(env.renderer, (SDL_Rect *) &r);
+                    SDL_RenderFillRect(gscope.renderer, (SDL_Rect *) &r);
                     if(link->second.size() * sz == r.h)
                     {
                         r.h = sz; // set for height
@@ -314,7 +312,7 @@ namespace RoninEngine::UI
                             if(!result && SDL_PointInRect((SDL_Point *) &(uiState.ms), (SDL_Rect *) &elrect))
                             {
                                 RenderUtility::SetColor(colorSpace.defaultInteraction.pressState);
-                                SDL_RenderFillRect(env.renderer, (SDL_Rect *) &elrect);
+                                SDL_RenderFillRect(gscope.renderer, (SDL_Rect *) &elrect);
                                 if(Input::GetMouseDown(MouseButton::MouseLeft))
                                 {
                                     link->first = index;
@@ -328,15 +326,15 @@ namespace RoninEngine::UI
                             RenderUtility::SetColor(colorSpace.defaultInteraction.hoverState);
                             // Draw element text
                             surf = TTF_RenderUTF8_Blended(
-                                ttf_arial_font,
+                                pDefaultTTFFont,
                                 iter->c_str(),
                                 *reinterpret_cast<SDL_Color *>(
                                     &(link->first != index ? colorSpace.dropdownText : colorSpace.dropdownSelectedText)));
-                            texture = SDL_CreateTextureFromSurface(env.renderer, surf);
+                            texture = SDL_CreateTextureFromSurface(gscope.renderer, surf);
                             SDL_QueryTexture(texture, nullptr, nullptr, &r.w, &r.h);
 
                             r.y = elrect.y + elrect.h / 2 - r.h / 2;
-                            SDL_RenderCopy(env.renderer, texture, nullptr, (SDL_Rect *) &(r));
+                            SDL_RenderCopy(gscope.renderer, texture, nullptr, (SDL_Rect *) &(r));
 
                             SDL_DestroyTexture(texture);
                             texture = nullptr;
@@ -373,7 +371,7 @@ namespace RoninEngine::UI
 
                 rect.w = 14;
                 rect.h = 14;
-                SDL_RenderFillRect(env.renderer, reinterpret_cast<SDL_Rect *>(&rect));
+                SDL_RenderFillRect(gscope.renderer, reinterpret_cast<SDL_Rect *>(&rect));
 
                 if((result = uiState.ms_click))
                 {
@@ -390,14 +388,14 @@ namespace RoninEngine::UI
                     rect.x += 7 - 2;
 
                     rect.y++;
-                    SDL_RenderFillRect(env.renderer, reinterpret_cast<SDL_Rect *>(&rect));
+                    SDL_RenderFillRect(gscope.renderer, reinterpret_cast<SDL_Rect *>(&rect));
 
                     // Horizontal
                     rect.h = 4;
                     rect.w = 12;
                     rect.y = startRect.y + 7 - 2;
                     rect.x = startRect.x + 1;
-                    SDL_RenderFillRect(env.renderer, reinterpret_cast<SDL_Rect *>(&rect));
+                    SDL_RenderFillRect(gscope.renderer, reinterpret_cast<SDL_Rect *>(&rect));
                 }
                 break;
             }
@@ -446,24 +444,25 @@ namespace RoninEngine::UI
         }
     }
 
-    void Render_String_ttf(const char *text, int fontSize, const Runtime::Vec2Int &screenPoint, bool alignCenter)
+    void Render_String_ttf(const char *text, int fontSize, const Runtime::Vec2Int &screenPoint, bool alignCenter, bool blend)
     {
         SDL_Texture *texture;
         SDL_Surface *surf;
 
-        TTF_SetFontSize(ttf_arial_font, fontSize);
-        surf = TTF_RenderUTF8_Blended(ttf_arial_font, text, RenderUtility::GetColor());
+        TTF_SetFontSize(pDefaultTTFFont, fontSize);
+
+        surf = blend ? TTF_RenderUTF8_Blended(pDefaultTTFFont, text, RenderUtility::GetColor()) : TTF_RenderUTF8_Solid(pDefaultTTFFont, text, RenderUtility::GetColor());
         if(surf)
         {
             SDL_Rect r {screenPoint.x, screenPoint.y, surf->w, surf->h};
-            texture = SDL_CreateTextureFromSurface(env.renderer, surf);
+            texture = SDL_CreateTextureFromSurface(gscope.renderer, surf);
 
             if(alignCenter)
             {
                 r.x -= r.w / 2;
                 r.y -= r.h / 2;
             }
-            SDL_RenderCopy(env.renderer, texture, nullptr, &r);
+            SDL_RenderCopy(gscope.renderer, texture, nullptr, &r);
             SDL_DestroyTexture(texture);
             SDL_FreeSurface(surf);
         }
@@ -473,8 +472,9 @@ namespace RoninEngine::UI
     {
         int width = 0;
         for(auto iter = begin(text); iter != end(text); ++iter)
-            // TODO: Учитывать размер шрифта (fontSize)
-            width += pLegacyFont->data[(unsigned char) *iter].w;
+        {
+            width += pDefaultLegacyFont->data[(unsigned char) *iter].w;
+        }
         return width;
     }
 
@@ -488,13 +488,13 @@ namespace RoninEngine::UI
         std::uint16_t pos;
         SDL_Rect dst = *reinterpret_cast<SDL_Rect *>(&rect);
 
-        Vec2Int fontSize = pLegacyFont->fontSize + Vec2Int::one * (fontWidth - pLegacyFont->fontSize.x);
+        Vec2Int fontSize = pDefaultLegacyFont->fontSize + Vec2Int::one * (fontWidth - pDefaultLegacyFont->fontSize.x);
         int textWidth = Single_TextWidth_WithCyrilic(text, fontWidth);
 
         if(!rect.w)
             rect.w = textWidth;
         if(!rect.h)
-            rect.h = pLegacyFont->fontSize.y;
+            rect.h = pDefaultLegacyFont->fontSize.y;
 
         // x
         temp = (legacyVH[textAlign] >> 4 & 15);
@@ -520,7 +520,7 @@ namespace RoninEngine::UI
         for(pos = 0; pos < len; ++pos)
         {
             memcpy(&temp, text + pos, 1);
-            src = (pLegacyFont->data + temp);
+            src = (pDefaultLegacyFont->data + temp);
             if(temp != '\n')
             {
                 dst.w = src->w;
@@ -542,7 +542,7 @@ namespace RoninEngine::UI
 
                 dst.w = Math::Max(0, Math::Min(deltax - dst.x, dst.w));
                 SDL_RenderCopy(
-                    env.renderer,
+                    gscope.renderer,
                     (hilight ? switched_world->irs->legacy_font_hover : switched_world->irs->legacy_font_normal),
                     reinterpret_cast<SDL_Rect *>(src),
                     &dst);

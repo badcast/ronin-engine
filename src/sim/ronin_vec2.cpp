@@ -124,35 +124,39 @@ namespace RoninEngine::Runtime
     {
         t = Math::Clamp01(t);
 
-        // get cosine of angle between disposition (-1 -> 1)
-        float cosalpha = Dot(lhs, rhs);
-        // get angle (0 -> pi)
-        float alpha = Math::Acos(cosalpha);
-        // get sine of angle between disposition (0 -> 1)
-        float sinalpha = Math::Sin(alpha);
-        // this breaks down when SinAlpha = 0, i.e. Alpha = 0 or pi
-        float t1 = Math::Sin(1.f - t * alpha) / sinalpha;
-        float t2 = Math::Sin(t * alpha) / sinalpha;
+        Vec2 a_norm = lhs.normalized();
+        Vec2 b_norm = rhs.normalized();
 
-        // interpolate source at disposition
-        Vec2 p = lhs * t1 + rhs * t2;
-        return p;
+        float dot = Dot(a_norm, b_norm);
+        float theta = std::acos(dot);
+
+        if(std::abs(theta) < 0.001f)
+        {
+            return Lerp(lhs, rhs, t);
+        }
+
+        float sin_theta = std::sin(theta);
+        float a_coeff = std::sin((1 - t) * theta) / sin_theta;
+        float b_coeff = std::sin(t * theta) / sin_theta;
+
+        return a_norm * a_coeff + b_norm * b_coeff;
     }
+
     Vec2 Vec2::SlerpUnclamped(const Vec2 &lhs, const Vec2 &rhs, float t)
     {
-        // get cosine of angle between disposition (-1 -> 1)
-        float cosalpha = Dot(lhs, rhs);
-        // get angle (0 -> pi)
-        float alpha = Math::Acos(cosalpha);
-        // get sine of angle between disposition (0 -> 1)
-        float sinalpha = Math::Sin(alpha);
-        // this breaks down when SinAlpha = 0, i.e. Alpha = 0 or pi
-        float t1 = Math::Sin(1.f - t * alpha) / sinalpha;
-        float t2 = Math::Sin(t * alpha) / sinalpha;
+        Vec2 a_norm = lhs.normalized();
+        Vec2 b_norm = rhs.normalized();
 
-        // interpolate source disposition
-        return lhs * t1 + rhs * t2;
+        float dot = Dot(a_norm, b_norm);
+        float theta = std::acos(dot);
+
+        float sin_theta = std::sin(theta);
+        float a_coeff = std::sin((1 - t) * theta) / sin_theta;
+        float b_coeff = std::sin(t * theta) / sin_theta;
+
+        return a_norm * a_coeff + b_norm * b_coeff;
     }
+
     Vec2 Vec2::Lerp(const Vec2 &lhs, const Vec2 &rhs, float t)
     {
         t = Math::Clamp01(t);
@@ -309,19 +313,10 @@ namespace RoninEngine::Runtime
 
     const Vec2 Vec2::Rotate(Vec2 position, float angleRadian)
     {
-        float Cos = Math::Cos(angleRadian);
         float Sin = Math::Sin(angleRadian);
+        float Cos = Math::Cos(angleRadian);
         position.x = position.x * Cos - position.y * Sin;
         position.y = position.x * Sin + position.y * Cos;
-        return position;
-    }
-
-    const Vec2 Vec2::RotateClockwise(Vec2 position, float angleRadian)
-    {
-        float Cos = Math::Cos(angleRadian);
-        float Sin = Math::Sin(angleRadian);
-        position.x = position.x * Cos + position.y * Sin;
-        position.y = -position.x * Sin + position.y * Cos;
         return position;
     }
 
@@ -332,6 +327,15 @@ namespace RoninEngine::Runtime
         center.x = localPosition.x * Cos - localPosition.y * Sin + center.x;
         center.y = localPosition.x * Sin + localPosition.y * Cos + center.y;
         return center;
+    }
+
+    const Vec2 Vec2::RotateClockwise(Vec2 position, float angleRadian)
+    {
+        float Cos = Math::Cos(angleRadian);
+        float Sin = Math::Sin(angleRadian);
+        position.x = position.x * Cos + position.y * Sin;
+        position.y = -position.x * Sin + position.y * Cos;
+        return position;
     }
 
     const Vec2 Vec2::Mirror(const Vec2 &position)
@@ -408,12 +412,12 @@ namespace RoninEngine::Runtime
     bool operator==(const Vec2Int &lhs, const Vec2 &rhs)
     {
         // return rhs.x == lhs.x && rhs.y == lhs.y;
-        return memcmp(&lhs, &rhs, sizeof rhs) == 0;
+        return Vec2 {rhs} == rhs;
     }
 
     bool operator!=(const Vec2Int &lhs, const Vec2 &rhs)
     {
-        return memcmp(&lhs, &rhs, sizeof rhs) != 0;
+        return !(lhs == rhs);
     }
 
     Vec2 operator+(const Vec2 &lhs, const Vec2 &rhs)
@@ -428,14 +432,12 @@ namespace RoninEngine::Runtime
 
     bool operator==(const Vec2 &lhs, const Vec2 &rhs)
     {
-        // Alternative equal compute version
-        // >>> return (lhs - rhs).sqr_magnitude() < 9.999999E-11;
-        return memcmp(&lhs, &rhs, sizeof rhs) == 0;
+        return (lhs - rhs).sqrMagnitude() < Math::epsilon;
     }
 
     bool operator!=(const Vec2 &lhs, const Vec2 &rhs)
     {
-        return memcmp(&lhs, &rhs, sizeof rhs) != 0;
+        return !(lhs == rhs);
     }
 
     Vec2 operator*(const float d, const Vec2 &rhs)
@@ -467,12 +469,12 @@ namespace RoninEngine::Runtime
 
     Vec2Int operator+(const Vec2Int &lhs, const Vec2Int &rhs)
     {
-        return Vec2Int(lhs.x + rhs.x, lhs.y + rhs.y);
+        return Vec2Int {lhs.x + rhs.x, lhs.y + rhs.y};
     }
 
     Vec2Int operator-(const Vec2Int &lhs, const Vec2Int &rhs)
     {
-        return Vec2Int(lhs.x - rhs.x, lhs.y - rhs.y);
+        return Vec2Int {lhs.x - rhs.x, lhs.y - rhs.y};
     }
 
     Vec2 operator+(const Vec2 &lhs, const Vec2Int &rhs)
@@ -517,12 +519,12 @@ namespace RoninEngine::Runtime
 
     Vec2 operator*(const Vec2Int &rhs, const float d)
     {
-        return Vec2(std::move(rhs)) * d;
+        return Vec2 {std::move(rhs)} * d;
     }
 
     Vec2 operator/(const Vec2Int &rhs, const float d)
     {
-        return Vec2(std::move(rhs)) / d;
+        return Vec2 {std::move(rhs)} / d;
     }
 
 } // namespace RoninEngine::Runtime

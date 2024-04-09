@@ -6,6 +6,150 @@ namespace RoninEngine::Runtime
     extern bool text_inputState;
     std::string internalText;
 
+    void internal_input_init()
+    {
+        int n;
+        const std::uint8_t *keys = SDL_GetKeyboardState(&n);
+
+        if(keys == nullptr)
+        {
+            std::cerr << "ERROR: " << SDL_GetError() << std::endl;
+            return;
+        }
+
+        internal_input.prev_frame_keys = static_cast<std::uint8_t *>(RoninMemory::ronin_memory_alloc(n));
+        memcpy((internal_input.prev_frame_keys) + sizeof(std::uint16_t), keys, n);
+    }
+
+    void internal_input_update(const SDL_Event &e)
+    {
+        switch(e.type)
+        {
+            case SDL_TEXTINPUT:
+                internalText += e.text.text;
+                break;
+            case SDL_MOUSEMOTION:
+                internal_input._mouse_position.x = e.motion.x;
+                internal_input._mouse_position.y = e.motion.y;
+                break;
+            case SDL_MOUSEWHEEL:
+                internal_input._mouse_wheels = e.wheel.y;
+                break;
+            case SDL_MOUSEBUTTONDOWN:
+                internal_input._mouse_state[e.button.button - 1] = InputStateFlags::KeyDown;
+                break;
+            case SDL_MOUSEBUTTONUP:
+                internal_input._mouse_state[e.button.button - 1] = InputStateFlags::KeyUp;
+                break;
+            case SDL_KEYDOWN:
+            case SDL_KEYUP:
+            {
+                internal_input.prev_frame_keys[e.key.keysym.scancode] = e.type - SDL_KEYDOWN + 1;
+                break;
+            }
+        }
+    }
+
+    void internal_input_release()
+    {
+        if(internal_input.prev_frame_keys != nullptr)
+        {
+            RoninMemory::ronin_memory_free(internal_input.prev_frame_keys);
+            internal_input.prev_frame_keys = nullptr;
+        }
+    }
+
+    void internal_input_update_before()
+    {
+        // Update Game Axis on events
+
+        const Uint8 *keys = SDL_GetKeyboardState(nullptr);
+
+        if(keys[SDL_SCANCODE_A] || keys[SDL_SCANCODE_LEFT])
+            internal_input._movement_axis.x = -1;
+        else if(keys[SDL_SCANCODE_D] || keys[SDL_SCANCODE_RIGHT])
+            internal_input._movement_axis.x = 1;
+        else
+            internal_input._movement_axis.x = 0;
+
+        if(keys[SDL_SCANCODE_W] || keys[SDL_SCANCODE_UP])
+            internal_input._movement_axis.y = 1;
+        else if(keys[SDL_SCANCODE_S] || keys[SDL_SCANCODE_DOWN])
+            internal_input._movement_axis.y = -1;
+        else
+            internal_input._movement_axis.y = 0;
+    }
+
+    void internal_input_update_after()
+    {
+
+        // TODO: Optimize here (List Key Downs)
+
+        std::replace_if(
+            internal_input._mouse_state,
+            internal_input._mouse_state + sizeof(internal_input._mouse_state),
+            [](auto val) { return val == InputStateFlags::KeyUp; },
+            0);
+        std::replace_if(
+            internal_input.prev_frame_keys,
+            internal_input.prev_frame_keys + SDL_NUM_SCANCODES,
+            [](auto val) { return val == InputStateFlags::KeyUp; },
+            0);
+        internal_input._mouse_wheels = 0;
+
+        /* int n; const std::uint8_t *keys = SDL_GetKeyboardState(&n);  if(keys == nullptr || n == 0) return;
+         * if(internal_input.prev_frame_keys == nullptr || (*reinterpret_cast<std::uint16_t *>(internal_input.prev_frame_keys)) != n) {
+         * internal_input.prev_frame_keys = static_cast<std::uint8_t *>(RoninMemory::ronin_memory_realloc(internal_input.prev_frame_keys, n
+         * + sizeof(std::uint16_t))); *reinterpret_cast<std::uint16_t *>(internal_input.prev_frame_keys) = static_cast<std::uint16_t>(n); }
+         * memcpy((internal_input.prev_frame_keys) + sizeof(std::uint16_t), keys, n); */
+    }
+
+    void text_get(std::string &text)
+    {
+        text = internalText;
+        internalText.resize(0);
+    }
+
+    const bool Input::GetMouseDown(MouseButton state)
+    {
+        return internal_input._mouse_state[static_cast<int>(state)] == InputStateFlags::KeyDown;
+    }
+
+    const bool Input::GetMouseUp(MouseButton state)
+    {
+        return internal_input._mouse_state[static_cast<int>(state)] == InputStateFlags::KeyUp;
+    }
+
+    const int Input::GetMouseWheel()
+    {
+        return internal_input._mouse_wheels;
+    }
+
+    const Vec2Int Input::GetMousePoint()
+    {
+        return internal_input._mouse_position;
+    }
+
+    const Vec2 Input::GetMousePointf()
+    {
+        return Vec2 {internal_input._mouse_position};
+    }
+
+    const Vec2 Input::GetAxis()
+    {
+        return internal_input._movement_axis;
+    }
+
+    const bool Input::GetKeyDown(KeyboardCode keyCode)
+    {
+        return internal_input.prev_frame_keys[keyCode] == InputStateFlags::KeyDown;
+    }
+
+    const bool Input::GetKeyUp(KeyboardCode keyCode)
+    {
+        return internal_input.prev_frame_keys[keyCode] == InputStateFlags::KeyUp;
+    }
+
 #define VLO(X) (X & 0xFFFF)
 #define VHI(X) (X >> 16)
 #define VCR(X, Y) ((X & 0xFFFF) | (Y << 16))
@@ -13,7 +157,6 @@ namespace RoninEngine::Runtime
     constexpr struct
     {
         int dead_zones[2] {VCR(1, 3), VCR(100, 223)};
-
         char key_strings[105][16] {
             // KB_UNKNOWN = 0,
             "None",
@@ -232,141 +375,14 @@ namespace RoninEngine::Runtime
             // KB_RGUI = 231,
             "RGUI",
         };
-
         const int clast_keyCode = KeyboardCode::KB_RGUI;
     } c_key_codename;
 
-    void input_movement_update()
-    {
-        const uint8_t *s = SDL_GetKeyboardState(nullptr);
-        if(s[SDL_SCANCODE_D] || s[SDL_SCANCODE_RIGHT])
-            internal_input._movement_axis.x = 1;
-        else if(s[SDL_SCANCODE_A] || s[SDL_SCANCODE_LEFT])
-            internal_input._movement_axis.x = -1;
-        else
-            internal_input._movement_axis.x = 0;
-
-        if(s[SDL_SCANCODE_W] || s[SDL_SCANCODE_UP])
-            internal_input._movement_axis.y = 1;
-        else if(s[SDL_SCANCODE_S] || s[SDL_SCANCODE_DOWN])
-            internal_input._movement_axis.y = -1;
-        else
-            internal_input._movement_axis.y = 0;
-    }
-
-    void internal_update_input(const SDL_Event &e)
-    {
-        switch(e.type)
-        {
-            case SDL_TEXTINPUT:
-                internalText += e.text.text;
-                break;
-            case SDL_MOUSEMOTION:
-                internal_input._mouse_position.x = e.motion.x;
-                internal_input._mouse_position.y = e.motion.y;
-                break;
-            case SDL_MOUSEWHEEL:
-                internal_input._mouse_wheels = e.wheel.y;
-                break;
-            case SDL_MOUSEBUTTONDOWN:
-                internal_input._mouse_state[e.button.button - 1] = MouseStateFlags::MouseDown;
-                break;
-            case SDL_MOUSEBUTTONUP:
-                internal_input._mouse_state[e.button.button - 1] = MouseStateFlags::MouseUp;
-                break;
-            case SDL_KEYDOWN:
-            case SDL_KEYUP:
-            {
-                bool isKeyDown = e.type == SDL_KEYDOWN;
-                switch(e.key.keysym.sym)
-                {
-                    case SDLK_a:
-                    case SDLK_LEFT:
-                        internal_input._movement_axis.x = isKeyDown ? 1 : 0;
-                        break;
-                    case SDLK_d:
-                    case SDLK_RIGHT:
-                        internal_input._movement_axis.x = isKeyDown ? -1 : 0;
-                        break;
-                    case SDLK_w:
-                    case SDLK_UP:
-                        internal_input._movement_axis.y = isKeyDown ? 1 : 0;
-                        break;
-                    case SDLK_s:
-                    case SDLK_DOWN:
-                        internal_input._movement_axis.y = isKeyDown ? -1 : 0;
-                        break;
-                }
-            }
-        }
-    }
-
-    void text_start_input()
-    {
-        //    SDL_IsTextInputActive for check state
-        SDL_StartTextInput();
-    }
-
-    void text_stop_input()
-    {
-        SDL_StopTextInput();
-    }
-
-    void text_get(std::string &text)
-    {
-        text = internalText;
-        internalText.resize(0);
-    }
-
-    const bool Input::GetMouseDown(MouseButton state)
-    {
-        return internal_input._mouse_state[static_cast<int>(state)] & MouseStateFlags::MouseDown != 0;
-    }
-
-    const bool Input::GetMouseUp(MouseButton state)
-    {
-        return internal_input._mouse_state[static_cast<int>(state)] & MouseStateFlags::MouseUp != 0;
-    }
-
-    const int Input::GetMouseWheel()
-    {
-        return internal_input._mouse_wheels;
-    }
-
-    const Vec2Int Input::GetMousePoint()
-    {
-        return internal_input._mouse_position;
-    }
-
-    const Vec2 Input::GetMousePointf()
-    {
-        return Vec2 {internal_input._mouse_position};
-    }
-
-    const Vec2 Input::GetAxis()
-    {
-        return internal_input._movement_axis;
-    }
-
-    const bool Input::GetKeyState(KeyboardCode keyState)
-    {
-        return static_cast<bool>(SDL_GetKeyboardState(nullptr)[static_cast<int>(keyState)]);
-    }
-
-    const bool Input::GetKeyDown(KeyboardCode keyCode)
-    {
-        return static_cast<bool>(SDL_GetKeyboardState(nullptr)[keyCode]);
-    }
-
-    const bool Input::GetKeyUp(KeyboardCode keyCode)
-    {
-        return !static_cast<bool>(SDL_GetKeyboardState(nullptr)[keyCode]);
-    }
+    constexpr int c_key_len = (sizeof(c_key_codename.key_strings) / sizeof(c_key_codename.key_strings[0]));
+    constexpr int c_dz_len = (sizeof(c_key_codename.dead_zones) / sizeof(c_key_codename.dead_zones[0]));
 
     const char *Input::GetKeyName(int keyCode)
     {
-        constexpr int c_key_len = (sizeof(c_key_codename.key_strings) / sizeof(c_key_codename.key_strings[0]));
-        constexpr int c_dz_len = (sizeof(c_key_codename.dead_zones) / sizeof(c_key_codename.dead_zones[0]));
 
         // It's unknown state
         if(keyCode <= 0 || keyCode > c_key_codename.clast_keyCode)

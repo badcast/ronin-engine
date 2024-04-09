@@ -2,6 +2,8 @@
 
 #include "begin.h"
 
+#include "Math.h"
+
 namespace RoninEngine
 {
     namespace Runtime
@@ -139,9 +141,8 @@ namespace RoninEngine
         API_EXPORT inline const Vec2 Vec2::up_left(-1.f, 1.f);
         API_EXPORT inline const Vec2 Vec2::down_right(1.f, -1.f);
         API_EXPORT inline const Vec2 Vec2::down_left(-1.f, -1.f);
-        API_EXPORT inline const Vec2 Vec2::infinity(std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity());
-        API_EXPORT inline const Vec2 Vec2::negativeInfinity(
-            -std::numeric_limits<float>::infinity(), -std::numeric_limits<float>::infinity());
+        API_EXPORT inline const Vec2 Vec2::infinity(Math::infinity, Math::infinity);
+        API_EXPORT inline const Vec2 Vec2::negativeInfinity(Math::negativeInfinity, Math::negativeInfinity);
 
         RONIN_API bool operator==(const Vec2 &lhs, const Vec2 &rhs);
         RONIN_API bool operator!=(const Vec2 &lhs, const Vec2 &rhs);

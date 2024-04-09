@@ -9,7 +9,7 @@ namespace RoninEngine
 {
     namespace Runtime
     {
-        extern std::set<World *> pinned_worlds;
+        extern std::set<World *> pinnedWorlds;
 
         void WorldResources::event_camera_changed(Camera *target, CameraEvent state)
         {
@@ -17,16 +17,18 @@ namespace RoninEngine
             {
                 case CameraEvent::CAM_DELETED:
                     // TODO: find free Camera and set as Main
-                    if(main_camera == target)
-                        main_camera = nullptr;
-                    camera_resources.remove(target->camera_resource);
-                    RoninMemory::free(target->camera_resource);
+                    if(mainCamera == target)
+                        mainCamera = nullptr;
+                    cameraResources.remove(target->res);
+
+                    RoninMemory::free(target->res);
                     break;
                 case CameraEvent::CAM_TARGET:
-                    main_camera = target;
+                    mainCamera = target;
                     break;
             }
         }
+
         void internal_load_world(World *world)
         {
             if(world == nullptr)
@@ -46,9 +48,9 @@ namespace RoninEngine
                 world->irs->request_unloading = false;
 
                 // update internal loaded font
-                RoninEngine::UI::refresh_legacy_font(world);
+                RoninEngine::UI::update_legacy_font(world);
 
-                pinned_worlds.insert(world);
+                pinnedWorlds.insert(world);
             }
         }
 
@@ -71,7 +73,7 @@ namespace RoninEngine
             world->OnUnloading();
 
             // Free Game Objects
-            Transform *target = world->irs->main_object->transform();
+            Transform *target = world->irs->mainObject->transform();
             std::list<Transform *> stacks;
             while(target)
             {
@@ -90,7 +92,7 @@ namespace RoninEngine
                     stacks.pop_front();
                 }
             }
-            world->irs->main_object = nullptr;
+            world->irs->mainObject = nullptr;
 
             if(world->irs->objects != 0)
             {
@@ -112,7 +114,7 @@ namespace RoninEngine
 
             // NOTE: Free Local Resources
             // world->irs->external_local_resources = nullptr;
-            gid_resources_free(&world->irs->external_local_resources);
+            gid_resources_free(&world->irs->externalLocalResources);
 
             // Halt all channels
             Mix_HaltChannel(-1);
@@ -126,7 +128,7 @@ namespace RoninEngine
                 SDL_FreeSurface(surface);
             }
 
-            for(CameraResource *cam_res : world->irs->camera_resources)
+            for(CameraResource *cam_res : world->irs->cameraResources)
             {
                 RoninMemory::free(cam_res);
             }
@@ -134,7 +136,7 @@ namespace RoninEngine
             RoninMemory::free(world->irs);
             world->irs = nullptr;
 
-            pinned_worlds.erase(world);
+            pinnedWorlds.erase(world);
 
             switched_world = lastWorld;
             return true;
@@ -154,7 +156,7 @@ namespace RoninEngine
             scripts_lateUpdate();
 
             // end watcher
-            env.queue_watcher.delayExecScripts = Time::EndWatch();
+            gscope.queueWatcher.delayExecScripts = Time::EndWatch();
 
             Time::BeginWatch();
             // Render on main camera
@@ -164,7 +166,7 @@ namespace RoninEngine
                 // draw world in world size
                 native_render_2D(reinterpret_cast<Camera2D *>(cam));
             }
-            env.queue_watcher.delayRenderWorld = Time::EndWatch();
+            gscope.queueWatcher.delayRenderWorld = Time::EndWatch();
 
             // begin watcher
             Time::BeginWatch();
@@ -178,7 +180,7 @@ namespace RoninEngine
             }
 
             // end watcher
-            env.queue_watcher.delayRenderGizmos = Time::EndWatch();
+            gscope.queueWatcher.delayRenderGizmos = Time::EndWatch();
         }
 
     } // namespace Runtime
@@ -270,10 +272,10 @@ namespace RoninEngine
 
     int World::GetCulled()
     {
-        if(irs == nullptr || irs->main_camera == nullptr)
+        if(irs == nullptr || irs->mainCamera == nullptr || irs->mainCamera->res == nullptr)
             return -1;
 
-        return irs->main_camera->camera_resource->culled;
+        return irs->mainCamera->res->culled;
     }
 
     int World::MatrixCacheCount()
@@ -330,7 +332,7 @@ namespace RoninEngine
         std::string delims;
         std::string result;
         std::list<Runtime::Transform *> stack;
-        Transform *target = this->irs->main_object->transform();
+        Transform *target = this->irs->mainObject->transform();
 
         while(target)
         {
@@ -360,7 +362,7 @@ namespace RoninEngine
         if(irs == nullptr)
             throw ronin_world_notloaded_error();
 
-        return this->irs->main_object != nullptr;
+        return this->irs->mainObject != nullptr;
     }
 
     std::string &World::name()
@@ -398,7 +400,7 @@ namespace RoninEngine
             throw ronin_world_notloaded_error();
 
         std::list<GameObject *> all_gobjects;
-        GameObject *next = irs->main_object;
+        GameObject *next = irs->mainObject;
 
         while(next)
         {

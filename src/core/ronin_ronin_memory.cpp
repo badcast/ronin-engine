@@ -50,7 +50,7 @@ namespace RoninEngine::Runtime
         {
             std::free(memory);
             if(__ronin_allocated-- == 0)
-                RoninSimulator::ShowMessageFail("invalid ronin_memory_free()");
+                RoninSimulator::ShowMessageFail("Fail on free memory");
 #if TEST_MALLOC
             allocated_leaker.erase(memory);
 #endif

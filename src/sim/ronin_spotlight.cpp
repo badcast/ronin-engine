@@ -25,12 +25,12 @@ namespace RoninEngine::Runtime
     void Spotlight::get_light()
     {
 
-        SDL_Texture *texture = SDL_CreateTextureFromSurface(env.renderer, spotlightMask);
+        SDL_Texture *texture = SDL_CreateTextureFromSurface(gscope.renderer, spotlightMask);
         SDL_TextureAccess access;
 
         SDL_QueryTexture(texture, nullptr, reinterpret_cast<int *>(&access), nullptr, nullptr);
 
-        SDL_RenderCopyEx(env.renderer, texture, nullptr, nullptr, transform()->angle(), nullptr, SDL_RendererFlip::SDL_FLIP_NONE);
+        SDL_RenderCopyEx(gscope.renderer, texture, nullptr, nullptr, transform()->angle(), nullptr, SDL_RendererFlip::SDL_FLIP_NONE);
 
         SDL_DestroyTexture(texture);
     }

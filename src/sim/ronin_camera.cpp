@@ -8,13 +8,24 @@ namespace RoninEngine::Runtime
         DESCRIBE_AS_MAIN(Camera);
 
         // using this camera as main
-        World::self()->irs->camera_resources.emplace_front(RoninMemory::alloc_self(camera_resource));
-        camera_resource->culled = 0;
-        // set focusing
+        World::self()->irs->cameraResources.emplace_front(RoninMemory::alloc_self(res));
+        res->scale = Vec2::one;
+        res->culled = 0;
+
         Focus();
     }
     Camera::~Camera()
     {
+    }
+
+    Vec2 Camera::GetScale()
+    {
+        return res->scale;
+    }
+
+    void Camera::SetScale(Vec2 scale)
+    {
+        res->scale = scale;
     }
 
     bool Camera::isFocused()
@@ -32,16 +43,23 @@ namespace RoninEngine::Runtime
     {
         Vec2 scale;
 
-        SDL_RenderGetScale(env.renderer, &scale.x, &scale.y);
+        if(switched_world->irs->mainCamera)
+        {
+            scale = switched_world->irs->mainCamera->res->scale;
+        }
+        else
+        {
+            scale = Vec2::one;
+        }
 
-        scale *= pixelsPerPoint;
+        scale = Vec2::Scale(scale, switched_world->irs->metricPixelsPerPoint);
 
-        screenPoint.x = -(env.active_resolution.width / 2.f - screenPoint.x) / scale.x;
-        screenPoint.y = (env.active_resolution.height / 2.f - screenPoint.y) / scale.y;
+        screenPoint.x = -(gscope.activeResolution.width / 2.f - screenPoint.x) / scale.x;
+        screenPoint.y = (gscope.activeResolution.height / 2.f - screenPoint.y) / scale.y;
 
         // Difference at Main Camera
-        if(mainCamera())
-            screenPoint += mainCamera()->transform()->_position;
+        if(switched_world->irs->mainCamera)
+            screenPoint += switched_world->irs->mainCamera->transform()->_position;
 
         return screenPoint;
     }
@@ -50,33 +68,44 @@ namespace RoninEngine::Runtime
     {
         Vec2 scale;
         // Difference at Main Camera
-        if(mainCamera())
-            worldPoint = mainCamera()->transform()->_position - worldPoint;
+        if(switched_world->irs->mainCamera)
+        {
+            worldPoint = switched_world->irs->mainCamera->transform()->_position - worldPoint;
+            scale = switched_world->irs->mainCamera->res->scale;
+        }
         else
+        {
             worldPoint = Vec2::zero - worldPoint;
+            scale = Vec2::one;
+        }
 
-        SDL_RenderGetScale(env.renderer, &scale.x, &scale.y);
-        scale *= pixelsPerPoint;
+        scale = Vec2::Scale(scale, switched_world->irs->metricPixelsPerPoint);
 
         // Horizontal position
-        worldPoint.x = env.active_resolution.width / 2.f - worldPoint.x * scale.x;
+        worldPoint.x = gscope.activeResolution.width / 2.f - worldPoint.x * scale.x;
         // Vertical position
-        worldPoint.y = env.active_resolution.height / 2.f + worldPoint.y * scale.y;
+        worldPoint.y = gscope.activeResolution.height / 2.f + worldPoint.y * scale.y;
         return worldPoint;
     }
 
     const Vec2 Camera::ViewportToWorldPoint(Vec2 viewportPoint)
     {
         Vec2 scale;
-        SDL_RenderGetScale(env.renderer, &scale.x, &scale.y);
-        scale *= pixelsPerPoint;
+
+        if(switched_world->irs->mainCamera)
+            scale = switched_world->irs->mainCamera->res->scale;
+        else
+            scale = Vec2::one;
+
+        scale = Vec2::Scale(scale, switched_world->irs->metricPixelsPerPoint);
+
         // Horizontal position
-        viewportPoint.x = (env.active_resolution.width / 2.f - env.active_resolution.width * viewportPoint.x) * -1.f / scale.x;
+        viewportPoint.x = (gscope.activeResolution.width / 2.f - gscope.activeResolution.width * viewportPoint.x) * -1.f / scale.x;
         // Vertical position
-        viewportPoint.y = (env.active_resolution.height / 2.f - env.active_resolution.height * viewportPoint.y) / scale.y;
-        // Difference at Main Camera
-        if(mainCamera())
-            viewportPoint += mainCamera()->transform()->_position;
+        viewportPoint.y = (gscope.activeResolution.height / 2.f - gscope.activeResolution.height * viewportPoint.y) / scale.y;
+        // Offset of Main Camera
+        if(switched_world->irs->mainCamera)
+            viewportPoint += switched_world->irs->mainCamera->transform()->_position;
         return viewportPoint;
     }
 
@@ -85,17 +114,23 @@ namespace RoninEngine::Runtime
         Vec2 scale;
 
         // Difference at Main Camera
-        if(mainCamera())
+        if(switched_world->irs->mainCamera)
+        {
             worldPoint = mainCamera()->transform()->position() - worldPoint;
+            scale = switched_world->irs->mainCamera->res->scale;
+        }
         else
+        {
             worldPoint = Vec2::zero - worldPoint;
+            scale = Vec2::one;
+        }
 
-        SDL_RenderGetScale(env.renderer, &scale.x, &scale.y);
-        scale *= pixelsPerPoint;
+        scale = Vec2::Scale(scale, switched_world->irs->metricPixelsPerPoint);
+
         // Horizontal position
-        worldPoint.x = (env.active_resolution.width / 2.0f - worldPoint.x * scale.x) / env.active_resolution.width;
+        worldPoint.x = (gscope.activeResolution.width / 2.0f - worldPoint.x * scale.x) / gscope.activeResolution.width;
         // Vertical position
-        worldPoint.y = (env.active_resolution.height / 2.0f + worldPoint.y * scale.y) / env.active_resolution.height;
+        worldPoint.y = (gscope.activeResolution.height / 2.0f + worldPoint.y * scale.y) / gscope.activeResolution.height;
         return worldPoint;
     }
 
@@ -110,7 +145,7 @@ namespace RoninEngine::Runtime
     Camera *Camera::mainCamera()
     {
         if(switched_world)
-            return switched_world->irs->main_camera;
+            return switched_world->irs->mainCamera;
         return nullptr;
     }
 

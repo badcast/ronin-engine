@@ -11,11 +11,18 @@ namespace RoninEngine::Runtime
         bool visibleGrids;
         bool visibleObjects;
         bool visibleNames;
-        Vec2 scale;
 
         Camera2D();
         Camera2D(const std::string &name);
         Camera2D(const Camera2D &other);
+
+        /**
+         * @brief Set the Zoom in scales.
+         * @param value of the zooming.
+         * @see GetZoom, SetScale, GetScale
+         */
+        void SetZoom(float value);
+        float GetZoom();
     };
 
 } // namespace RoninEngine::Runtime

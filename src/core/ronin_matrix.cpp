@@ -28,7 +28,7 @@ namespace RoninEngine::Runtime
 
         void matrix_update(Transform *target, const matrix_key_t &lastPoint)
         {
-            matrix_update(target, matrix_get_key(target->position()), lastPoint);
+            matrix_update(target, matrix_get_key(target->_position), lastPoint);
         }
 
         // THIS is matrix get from world space
@@ -61,7 +61,7 @@ namespace RoninEngine::Runtime
             auto findIter = switched_world->irs->matrix.find(target->_owner->m_layer);
             if(std::end(switched_world->irs->matrix) != findIter)
             {
-                auto layer = findIter->second.find(matrix_get_key(target->position()));
+                auto layer = findIter->second.find(matrix_get_key(target->_position));
                 if(layer != std::end(findIter->second))
                 {
                     auto eq = layer->second.find(target);

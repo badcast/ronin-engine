@@ -15,10 +15,10 @@ namespace RoninEngine
         int selDisplay;
         for(;;)
         {
-            if(env.active_window == nullptr)
+            if(gscope.activeWindow == nullptr)
                 result = SDL_GetNumVideoDisplays() > 0 ? 0 : -1;
             else
-                result = SDL_GetWindowDisplayIndex(env.active_window);
+                result = SDL_GetWindowDisplayIndex(gscope.activeWindow);
 
             if((selDisplay = result) != -1)
             {
