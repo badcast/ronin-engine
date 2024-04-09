@@ -4,7 +4,7 @@
 
 namespace RoninEngine::Runtime
 {
-    class RONIN_API TimeEngine
+    class RONIN_API Time
     {
     public:
         static float time();

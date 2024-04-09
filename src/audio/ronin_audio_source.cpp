@@ -9,7 +9,7 @@ public:
     AudioSource *pinned;
     void OnUpdate()
     {
-        if(TimeEngine::frame() % 10 == 0 && !pinned->isPlaying())
+        if(Time::frame() % 10 == 0 && !pinned->isPlaying())
         {
             Destroy(gameObject());
         }

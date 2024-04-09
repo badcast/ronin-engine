@@ -78,7 +78,7 @@ void ParticleSystemRef::link_particles(ParticleSystem *from, int n)
         // Set Start Color
         spriteRender->setColor(startColor);
 
-        activeParticles.insert({spriteRender, TimeEngine::time(), from->randomDirection ? Random::RandomVector() : from->direction});
+        activeParticles.insert({spriteRender, Time::time(), from->randomDirection ? Random::RandomVector() : from->direction});
     };
 
     // use existences
@@ -192,7 +192,7 @@ void ParticleSystem::OnAwake()
 void ParticleSystem::OnStart()
 {
     if(delay > 0)
-        ref->m_timing = delay + TimeEngine::time();
+        ref->m_timing = delay + Time::time();
     else
         ref->m_timing = 0;
 }
@@ -233,7 +233,7 @@ void ParticleSystem::OnUpdate()
 
     if(makeFlag)
     {
-        float t = TimeEngine::time();
+        float t = Time::time();
         // Make new particle (interval)
         if(emit && ref->m_timing <= t && (makeFlag & M_Fabricate))
         {
@@ -255,7 +255,7 @@ void ParticleSystem::OnUpdate()
                 continue;
             }
 
-            float drain_speed = TimeEngine::deltaTime() * speed;
+            float drain_speed = Time::deltaTime() * speed;
 
             float state_percentage;
             int interpolateBegin, interpolateEnd;

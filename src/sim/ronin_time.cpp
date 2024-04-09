@@ -8,57 +8,57 @@ namespace RoninEngine::Runtime
     extern std::uint32_t internal_start_engine_time;
     extern std::vector<std::uint32_t> _watcher_time;
 
-    float TimeEngine::time()
+    float Time::time()
     {
         return internal_game_time;
     }
 
-    float TimeEngine::startUpTime()
+    float Time::startUpTime()
     {
         return static_cast<float>(millis()) / 1000;
     }
 
-    float TimeEngine::deltaTime()
+    float Time::deltaTime()
     {
         return internal_delta_time;
     }
 
-    bool TimeEngine::IsPaused()
+    bool Time::IsPaused()
     {
         return internal_time_scale == 0;
     }
 
-    bool TimeEngine::IsPlaying()
+    bool Time::IsPlaying()
     {
         return internal_time_scale != 0;
     }
 
-    float TimeEngine::GetTimeScale()
+    float Time::GetTimeScale()
     {
         return internal_time_scale;
     }
 
-    void TimeEngine::SetTimeScale(float scale)
+    void Time::SetTimeScale(float scale)
     {
         internal_time_scale = Math::Clamp(scale, 0.f, 2.f);
     }
 
-    std::uint32_t TimeEngine::frame()
+    std::uint32_t Time::frame()
     {
         return internal_frames;
     }
 
-    std::uint64_t TimeEngine::millis()
+    std::uint64_t Time::millis()
     {
         return SDL_GetTicks64();
     }
 
-    void TimeEngine::BeginWatch()
+    void Time::BeginWatch()
     {
         _watcher_time.push_back(millis());
     }
 
-    std::uint32_t TimeEngine::EndWatch()
+    std::uint32_t Time::EndWatch()
     {
         std::uint32_t time;
         if(_watcher_time.empty())

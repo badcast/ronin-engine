@@ -97,7 +97,7 @@ namespace RoninEngine
         internal_game_time = 0;
         internal_time_scale = 1;
         internal_start_engine_time = 0;
-        internal_start_engine_time = TimeEngine::startUpTime();
+        internal_start_engine_time = Time::startUpTime();
     }
 
     void internal_reseting()
@@ -138,7 +138,7 @@ namespace RoninEngine
         Vec2 g_pos = Camera::ScreenToWorldPoint({screen_point.x / 2.f, screen_point.y - g_size.y / 2});
         int x;
 
-        if(TimeEngine::frame() % 10 == 0)
+        if(Time::frame() % 10 == 0)
         {
             // Update data
             labels[0].value = env.last_watcher.delayFrameRate;
@@ -160,7 +160,7 @@ namespace RoninEngine
 
             // Calculate FPS and timing
             labels[0].format.resize(labels[0].labelLen);
-            snprintf(buffer, sizeof(buffer), "%d (%d ms)", static_cast<int>(1 / TimeEngine::deltaTime()), labels[0].value);
+            snprintf(buffer, sizeof(buffer), "%d (%d ms)", static_cast<int>(1 / Time::deltaTime()), labels[0].value);
             labels[0].format += buffer;
 
             // format text
@@ -619,7 +619,7 @@ namespace RoninEngine
         SDL_Event event;
         SDL_DisplayMode displayMode;
 
-        bool isQuiting = false;
+        bool isQuitting = false;
         char title[96];
         float fps = 0;
         float secPerFrame, game_time_score;
@@ -642,18 +642,15 @@ namespace RoninEngine
 
         secPerFrame = 1000.f / current_resolution.hz; // refresh screen from Monitor Settings
         game_time_score = secPerFrame / 1000;
-        while(!isQuiting)
+        while(!isQuitting)
         {
             // TODO: m_level->request_unloading use as WNILE block (list proc)
-            delayed = TimeEngine::millis();
+            delayed = Time::millis();
 
             // Timing for FrameTime
-            TimeEngine::BeginWatch();
+            Time::BeginWatch();
             // Timing for System delay
-            TimeEngine::BeginWatch();
-
-            // update internal events
-            SDL_PumpEvents();
+            Time::BeginWatch();
 
             while(SDL_PollEvent(&event))
             {
@@ -662,7 +659,7 @@ namespace RoninEngine
                 {
                     case SDL_QUIT:
                     {
-                        isQuiting = true;
+                        isQuitting = true;
                         switched_world->RequestUnload();
                         last_switched_world = switched_world;
                         env.simConfig.conf = CONF_RENDER_NOCONF;
@@ -694,7 +691,7 @@ namespace RoninEngine
 
                 if(switched_world == nullptr)
                 {
-                    env.queue_watcher.delaySystem = TimeEngine::EndWatch();
+                    env.queue_watcher.delaySystem = Time::EndWatch();
                     goto end_simulate;
                 }
                 else
@@ -750,14 +747,14 @@ namespace RoninEngine
 
             input_movement_update();
 
-            env.queue_watcher.delaySystem = TimeEngine::EndWatch();
+            env.queue_watcher.delaySystem = Time::EndWatch();
             // end watcher
 
             // update level
             if(!switched_world->irs->request_unloading)
             {
                 // begin watcher
-                TimeEngine::BeginWatch();
+                Time::BeginWatch();
 
                 if(!env.internal_world_can_start)
                 {
@@ -770,7 +767,7 @@ namespace RoninEngine
                     switched_world->OnUpdate();
                 }
                 // end watcher
-                env.queue_watcher.delayExecWorld = TimeEngine::EndWatch();
+                env.queue_watcher.delayExecWorld = Time::EndWatch();
 
                 if(switched_world->irs->request_unloading)
                 {
@@ -783,11 +780,11 @@ namespace RoninEngine
             level_render_world();
 
             // Run Collector
-            TimeEngine::BeginWatch();
+            Time::BeginWatch();
             if(!switched_world->irs->request_unloading)
                 Bushido_Tradition_Harakiri();
             // end watcher
-            env.queue_watcher.delayHarakiring = TimeEngine::EndWatch();
+            env.queue_watcher.delayHarakiring = Time::EndWatch();
 
             if(switched_world->irs->request_unloading)
                 goto end_simulate; // break on unload state
@@ -796,9 +793,9 @@ namespace RoninEngine
             SDL_RenderSetScale(env.renderer, 1.f, 1.f);
 
             // begin watcher
-            TimeEngine::BeginWatch();
+            Time::BeginWatch();
             UI::native_draw_render(switched_world->irs->gui);
-            env.queue_watcher.delayRenderGUI = TimeEngine::EndWatch();
+            env.queue_watcher.delayRenderGUI = Time::EndWatch();
             // end watcher
 
             if(switched_world->irs->request_unloading)
@@ -812,17 +809,17 @@ namespace RoninEngine
             if(!last_switched_world)
             {
                 // begin watcher
-                TimeEngine::BeginWatch();
+                Time::BeginWatch();
                 SDL_RenderPresent(env.renderer);
-                env.queue_watcher.delayRenderWorld += TimeEngine::EndWatch();
+                env.queue_watcher.delayRenderWorld += Time::EndWatch();
                 // end watcher
             }
 
         end_simulate:
 
-            delayed = TimeEngine::millis() - delayed;
+            delayed = Time::millis() - delayed;
 
-            env.queue_watcher.delayFrameRate = TimeEngine::EndWatch();
+            env.queue_watcher.delayFrameRate = Time::EndWatch();
 
             // update watcher
             env.last_watcher = env.queue_watcher;
@@ -835,7 +832,7 @@ namespace RoninEngine
             internal_delta_time = Math::Min<float>(1.f, Math::Max<float>(delayed / 1000.f, game_time_score));
             internal_game_time += internal_delta_time;
 
-            if(env.ronin_debug_mode && TimeEngine::startUpTime() > fps)
+            if(env.ronin_debug_mode && Time::startUpTime() > fps)
             {
                 // SDL_METHOD:
                 // fps = internal_frames / (TimeEngine::startUpTime());
@@ -850,7 +847,7 @@ namespace RoninEngine
                     Math::NumBeautify(SDL_GetNumAllocations()).c_str(),
                     Math::NumBeautify(internal_frames).c_str());
                 SDL_SetWindowTitle(env.active_window, title);
-                fps = TimeEngine::startUpTime() + .5f; // updater per N seconds
+                fps = Time::startUpTime() + .5f; // updater per N seconds
             }
 
             // delay elapsed

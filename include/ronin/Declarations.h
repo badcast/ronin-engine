@@ -65,7 +65,7 @@ namespace RoninEngine
         // core
         class World;
         class Resources;
-        class TimeEngine;
+        class Time;
 
         // base
         class Math;

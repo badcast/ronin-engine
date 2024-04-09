@@ -318,13 +318,13 @@ bool Math::LineSegmentIntersection(Vec2 p1, Vec2 p2, Vec2 p3, Vec2 p4, Vec2 &res
 
 float Math::SmoothDamp(float current, float target, float &currentVelocity, float smoothTime, float maxSpeed)
 {
-    return Math::SmoothDamp(current, target, currentVelocity, smoothTime, maxSpeed, TimeEngine::deltaTime());
+    return Math::SmoothDamp(current, target, currentVelocity, smoothTime, maxSpeed, Time::deltaTime());
 }
 
 float Math::SmoothDamp(float current, float target, float &currentVelocity, float smoothTime)
 {
     float maxSpeed = infinity;
-    return Math::SmoothDamp(current, target, currentVelocity, smoothTime, maxSpeed, TimeEngine::deltaTime());
+    return Math::SmoothDamp(current, target, currentVelocity, smoothTime, maxSpeed, Time::deltaTime());
 }
 
 float Math::SmoothDamp(float current, float target, float &currentVelocity, float smoothTime, float maxSpeed, float deltaTime)
@@ -361,13 +361,13 @@ float Math::Far2Cel(float fahrenheit)
 
 float Math::SmoothDampAngle(float current, float target, float &currentVelocity, float smoothTime, float maxSpeed)
 {
-    return SmoothDampAngle(current, target, currentVelocity, smoothTime, maxSpeed, TimeEngine::deltaTime());
+    return SmoothDampAngle(current, target, currentVelocity, smoothTime, maxSpeed, Time::deltaTime());
 }
 
 float Math::SmoothDampAngle(float current, float target, float &currentVelocity, float smoothTime)
 {
     float maxSpeed = infinity;
-    return SmoothDampAngle(current, target, currentVelocity, smoothTime, maxSpeed, TimeEngine::deltaTime());
+    return SmoothDampAngle(current, target, currentVelocity, smoothTime, maxSpeed, Time::deltaTime());
 }
 
 float Math::SmoothDampAngle(float current, float target, float &currentVelocity, float smoothTime, float maxSpeed, float deltaTime)

@@ -145,7 +145,7 @@ namespace RoninEngine
             // set default color
             RenderUtility::SetColor(Color::white);
 
-            TimeEngine::BeginWatch();
+            Time::BeginWatch();
 
             scripts_start();
 
@@ -154,9 +154,9 @@ namespace RoninEngine
             scripts_lateUpdate();
 
             // end watcher
-            env.queue_watcher.delayExecScripts = TimeEngine::EndWatch();
+            env.queue_watcher.delayExecScripts = Time::EndWatch();
 
-            TimeEngine::BeginWatch();
+            Time::BeginWatch();
             // Render on main camera
             Camera *cam = Camera::mainCamera(); // Draw level from active camera (main)
             if(!switched_world->irs->request_unloading && cam && cam->enable())
@@ -164,10 +164,10 @@ namespace RoninEngine
                 // draw world in world size
                 native_render_2D(reinterpret_cast<Camera2D *>(cam));
             }
-            env.queue_watcher.delayRenderWorld = TimeEngine::EndWatch();
+            env.queue_watcher.delayRenderWorld = Time::EndWatch();
 
             // begin watcher
-            TimeEngine::BeginWatch();
+            Time::BeginWatch();
             if(!switched_world->irs->request_unloading && cam)
             {
                 // Reset Color
@@ -178,7 +178,7 @@ namespace RoninEngine
             }
 
             // end watcher
-            env.queue_watcher.delayRenderGizmos = TimeEngine::EndWatch();
+            env.queue_watcher.delayRenderGizmos = Time::EndWatch();
         }
 
     } // namespace Runtime
