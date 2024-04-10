@@ -12,23 +12,23 @@ namespace RoninEngine::Runtime
         Vec2 p = Camera::mainCamera()->transform()->position();
         Vec2 dst;
 
-        // dst.x = ((rect.w - dst.w) / 2.0f - (point->x + sourcePoint->x) *
-        // squarePerPixels); dst.y = ((rect.h - dst.h) / 2.0f + (point->y -
-        // sourcePoint->y) * squarePerPixels);
-
-        // scalars
-
         Vec2 scale;
         SDL_RenderGetScale(env.renderer, &scale.x, &scale.y);
-        scale *= pixelsPerPoint;
+
         dst.x = env.active_resolution.width / 2.f;
         dst.y = env.active_resolution.height / 2.f;
+
         a.x = dst.x - (p.x - a.x) * scale.x;
         a.y = dst.y + (p.y - a.y) * scale.y;
         b.x = dst.x - (p.x - b.x) * scale.x;
         b.y = dst.y + (p.y - b.y) * scale.y;
 
-        SDL_RenderDrawLineF(env.renderer, a.x, a.y, b.x, b.y);
+        int x1 = static_cast<int>(std::round(a.x));
+        int y1 = static_cast<int>(std::round(a.y));
+        int x2 = static_cast<int>(std::round(b.x));
+        int y2 = static_cast<int>(std::round(b.y));
+
+        SDL_RenderDrawLine(env.renderer, x1, y1, x2, y2);
     }
 
     Color RenderUtility::GetColor()
@@ -372,7 +372,7 @@ namespace RoninEngine::Runtime
             SDL_RenderCopyEx(
                 env.renderer,
                 texture,
-                nullptr,
+                reinterpret_cast<const SDL_Rect *>(&sprite->m_rect),
                 reinterpret_cast<const SDL_Rect *>(&rect),
                 angleRadian * Math::rad2deg,
                 nullptr,

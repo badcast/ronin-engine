@@ -2,63 +2,67 @@
 
 namespace RoninEngine::Runtime
 {
-    SDL_Texture *render_make_texture(Sprite *sprite)
+    SDL_Texture *render_make_texture(SDL_Surface *surface)
     {
-        SDL_Rect rect;
-        SDL_Texture *texture = nullptr;
+        SDL_Texture *texture;
 
-        memcpy(&rect, &sprite->m_rect, sizeof(rect));
+        texture = SDL_CreateTextureFromSurface(env.renderer, surface);
+        SDL_SetTextureUserData(texture, surface);
 
-        for(;;)
-        {
-            texture = SDL_CreateTexture(env.renderer, ronin_default_pixelformat, SDL_TEXTUREACCESS_STREAMING, rect.w, rect.h);
-            if(texture == nullptr)
-            {
-                RoninSimulator::Log(SDL_GetError());
-                break;
-            }
-
-            SDL_Surface *blitDst;
-            void *pixels;
-            int pitch;
-            std::uint8_t r, g, b, a;
-
-            blitDst = SDL_CreateRGBSurfaceWithFormat(0, rect.w, rect.h, 32, ronin_default_pixelformat);
-            if(blitDst == nullptr)
-            {
-                RoninSimulator::Log(SDL_GetError());
-                SDL_DestroyTexture(texture);
-                break;
-            }
-
-            SDL_GetSurfaceColorMod(sprite->surface, &r, &g, &b);
-            SDL_GetSurfaceAlphaMod(sprite->surface, &a);
-
-            SDL_SetSurfaceColorMod(blitDst, r, g, b);
-            SDL_SetSurfaceAlphaMod(blitDst, a);
-            SDL_SetTextureColorMod(texture, r, g, b);
-            SDL_SetTextureAlphaMod(texture, a);
-            SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
-
-            // COPY PIXELS
-            SDL_LockTexture(texture, nullptr, &pixels, &pitch);
-            SDL_BlitSurface(sprite->surface, &rect, blitDst, nullptr);
-            memcpy(pixels, blitDst->pixels, blitDst->pitch * blitDst->h);
-
-            SDL_UpdateTexture(texture, nullptr, sprite->surface->pixels, sprite->surface->pitch);
-
-            // Apply changes
-            SDL_UnlockTexture(texture);
-            SDL_FreeSurface(blitDst);
-            break;
-        }
         return texture;
+
+        // for(;;)
+        // {
+        //     texture = SDL_CreateTexture(env.renderer, ronin_default_pixelformat, SDL_TEXTUREACCESS_STREAMING, srcRect->w, srcRect->h);
+        //     if(texture == nullptr)
+        //     {
+        //         RoninSimulator::Log(SDL_GetError());
+        //         break;
+        //     }
+
+        //     SDL_Surface *blitDst;
+        //     void *pixels;
+        //     int pitch;
+        //     std::uint8_t r, g, b, a;
+
+        //     blitDst = SDL_CreateRGBSurfaceWithFormat(0, srcRect->w, srcRect->h, 32, ronin_default_pixelformat);
+        //     if(blitDst == nullptr)
+        //     {
+        //         RoninSimulator::Log(SDL_GetError());
+        //         SDL_DestroyTexture(texture);
+        //         break;
+        //     }
+
+        //     SDL_GetSurfaceColorMod(surface->surface, &r, &g, &b);
+        //     SDL_GetSurfaceAlphaMod(surface->surface, &a);
+
+        //     SDL_SetSurfaceColorMod(blitDst, r, g, b);
+        //     SDL_SetSurfaceAlphaMod(blitDst, a);
+        //     SDL_SetTextureColorMod(texture, r, g, b);
+        //     SDL_SetTextureAlphaMod(texture, a);
+        //     SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
+
+        //     // COPY PIXELS
+        //     SDL_LockTexture(texture, srcRect, &pixels, &pitch);
+        //     SDL_BlitSurface(surface->surface, &rect, blitDst, nullptr);
+        //     memcpy(pixels, blitDst->pixels, blitDst->pitch * blitDst->h);
+
+        //     SDL_LockSurface(surface->surface);
+        //     SDL_UpdateTexture(texture, srcRect, surface->surface->pixels, surface->surface->pitch);
+        //     SDL_UnlockSurface(surface->surface);
+
+        //     // Apply changes
+        //     SDL_UnlockTexture(texture);
+        //     SDL_FreeSurface(blitDst);
+        //     break;
+        // }
+        // return texture;
     }
 
     SDL_Texture *render_cache_texture(Sprite *sprite)
     {
         SDL_Texture *texture;
-        std::map<Runtime::Sprite *, std::pair<int, SDL_Texture *>> *_cache;
+        std::map<SDL_Surface *, std::pair<int, SDL_Texture *>> *_cache;
 
         if(sprite == nullptr || sprite->surface == nullptr)
             return nullptr;
@@ -67,13 +71,16 @@ namespace RoninEngine::Runtime
         {
             _cache = &switched_world->irs->render_cache;
 
-            const auto iter = _cache->find(sprite);
+            const auto iter = _cache->find(sprite->surface);
             if(iter == std::end(*_cache))
             {
-                texture = render_make_texture(sprite);
+                texture = render_make_texture(sprite->surface);
 
                 if(texture != nullptr)
-                    _cache->insert({sprite, {1, texture}});
+                {
+                    _cache->insert({sprite->surface, {1, texture}});
+                    switched_world->irs->render_cache_refs.insert({texture, sprite->surface});
+                }
             }
             else
             {
@@ -89,6 +96,7 @@ namespace RoninEngine::Runtime
     void render_texture_extension(SDL_Texture *texture, const Vec2Int *baseSize, const SDL_Rect *extent, float angleRad)
     {
         SDL_Rect dst, src;
+        int access;
         SDL_Texture *destTexture;
 
         SDL_Surface *templateSurf = nullptr, *surfSrc = nullptr;
@@ -102,19 +110,27 @@ namespace RoninEngine::Runtime
         {
             src.x = 0;
             src.y = 0;
-            SDL_QueryTexture(texture, nullptr, nullptr, &src.w, &src.h);
+            SDL_QueryTexture(texture, nullptr, &access, &src.w, &src.h);
 
-            // Set first draw
-            SDL_LockTextureToSurface(texture, nullptr, &surfSrc);
+            switch(access)
+            {
+                case SDL_TEXTUREACCESS_STREAMING:
+                    SDL_LockTextureToSurface(texture, nullptr, &surfSrc);
+                    break;
+                case SDL_TEXTUREACCESS_STATIC:
+                    surfSrc = static_cast<SDL_Surface *>(SDL_GetTextureUserData(texture));
+                    src.w = surfSrc->w;
+                    src.h = surfSrc->h;
+                    break;
+                default:;
+            }
 
             if(surfSrc == nullptr)
                 break;
 
             templateSurf = SDL_CreateRGBSurfaceWithFormat(0, extent->w, extent->h, 32, ronin_default_pixelformat);
             if(templateSurf == nullptr)
-            {
                 break;
-            }
 
             if(baseSize == nullptr)
                 baseSize = reinterpret_cast<const Vec2Int *>(&src.w);
@@ -125,7 +141,6 @@ namespace RoninEngine::Runtime
             }
 
             SDL_BlitScaled(surfSrc, nullptr, templateSurf, &src);
-            SDL_UnlockTexture(texture);
 
             dst = src;
             dst.x += src.w;
@@ -152,11 +167,16 @@ namespace RoninEngine::Runtime
             destTexture = SDL_CreateTextureFromSurface(env.renderer, templateSurf);
             if(destTexture == nullptr)
                 break;
+
             SDL_SetTextureBlendMode(destTexture, SDL_BLENDMODE_BLEND);
             SDL_RenderCopyEx(env.renderer, destTexture, nullptr, extent, Math::rad2deg * angleRad, nullptr, SDL_FLIP_NONE);
             SDL_DestroyTexture(destTexture);
             break;
         }
+
+        if(access != SDL_TEXTUREACCESS_STATIC)
+            SDL_UnlockTexture(texture);
+
         SDL_FreeSurface(templateSurf);
     }
 
@@ -224,7 +244,34 @@ namespace RoninEngine::Runtime
 
     void render_cache_unref(SDL_Texture *texture)
     {
-        // go unref
+        // TODO: FIXME - release unused texture
+        return; // DO NOT REMOVE
+
+        if(texture == nullptr)
+            return;
+
+        auto &_refs = switched_world->irs->render_cache_refs;
+        auto &_cache = switched_world->irs->render_cache;
+        const auto iter1 = _refs.find(texture);
+        if(iter1 != std::end(_refs))
+        {
+            const auto iter2 = _cache.find(iter1->second);
+            if(iter2 != std::end(_cache))
+            {
+                // Rem ref
+                if(--iter2->second.first == 0)
+                {
+
+                    SDL_DestroyTexture(texture);
+                    _cache.erase(iter2);
+                    _refs.erase(iter1);
+                }
+            }
+            else
+            {
+                _refs.erase(iter1);
+            }
+        }
     }
 
 } // namespace RoninEngine::Runtime

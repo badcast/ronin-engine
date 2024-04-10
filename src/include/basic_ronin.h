@@ -147,6 +147,12 @@ namespace RoninEngine
             MouseUp = 2
         };
 
+        enum class RenderCommand
+        {
+            PreRender,
+            PostRender
+        };
+
         struct RoninInput
         {
             int _mouse_wheels;
@@ -309,7 +315,8 @@ namespace RoninEngine
             // Main or Root object
             GameObject *main_object;
 
-            std::map<Runtime::Sprite *, std::pair<int, SDL_Texture *>> render_cache;
+            std::map<SDL_Surface *, std::pair<int, SDL_Texture *>> render_cache;
+            std::map<SDL_Texture *, SDL_Surface *> render_cache_refs;
 
             void event_camera_changed(Camera *target, CameraEvent state);
         };

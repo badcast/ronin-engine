@@ -1,5 +1,6 @@
 #include "ronin.h"
 #include "ronin_matrix.h"
+#include "ronin_render_cache.h"
 
 using namespace RoninEngine::Exception;
 
@@ -174,13 +175,18 @@ namespace RoninEngine::Runtime
         // orders
         for(auto layer = std::begin(params.orders); layer != std::end(params.orders); ++layer)
         {
-            for(Renderer *render_iobject : layer->second)
+            for(Renderer *renderRef : layer->second)
             {
-                Transform *render_transform = render_iobject->transform();
+                Transform *render_transform = renderRef->transform();
                 memset(&(params.wrapper), 0, sizeof(params.wrapper));
 
                 // draw
-                render_iobject->render(&(params.wrapper));
+                SpriteRenderer *spriteRenderer;
+                if((spriteRenderer = dynamic_cast<SpriteRenderer *>(renderRef)) == nullptr)
+                    continue;
+
+                // Render
+                render_sprite_renderer(RenderCommand::PreRender, spriteRenderer, &params.wrapper);
 
                 if(params.wrapper.texture)
                 {
@@ -195,7 +201,7 @@ namespace RoninEngine::Runtime
                     //                                            Vec2::RotateAround(stack.sourcePoint, arranged,
                     //                                            render_transform->angle() * Math::deg2rad);
 
-                    params.sourcePoint += render_iobject->get_offset();
+                    params.sourcePoint += spriteRenderer->get_offset();
 
                     // convert world to screen
 
@@ -216,6 +222,9 @@ namespace RoninEngine::Runtime
                         render_transform->_angle_,
                         nullptr,
                         SDL_RendererFlip::SDL_FLIP_NONE);
+
+                    // Send command post render
+                    render_sprite_renderer(RenderCommand::PostRender, spriteRenderer, &params.wrapper);
 
                     ++(camera->camera_resource->culled);
                 }

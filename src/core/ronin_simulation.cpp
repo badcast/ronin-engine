@@ -965,7 +965,7 @@ namespace RoninEngine
 
         settings->brightness = SDL_GetWindowBrightness(env.active_window);
 
-        if(!SDL_strcmp(SDL_GetHint(SDL_HINT_RENDER_SCALE_QUALITY), "1"))
+        if(SDL_GetHint(SDL_HINT_RENDER_SCALE_QUALITY) != nullptr && !SDL_strcmp(SDL_GetHint(SDL_HINT_RENDER_SCALE_QUALITY), "1"))
         {
             settings->selectTextureQuality = RoninSettings::RenderTextureScaleQuality::Linear;
         }
@@ -979,7 +979,7 @@ namespace RoninEngine
 
     bool RoninSimulator::SetSettings(const RoninSettings *settings)
     {
-        if(SDL_WasInit(SDL_INIT_VIDEO))
+        if(!SDL_WasInit(SDL_INIT_VIDEO))
         {
             return false;
         }

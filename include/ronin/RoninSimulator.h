@@ -73,7 +73,7 @@ namespace RoninEngine
         };
 
         RenderDriverInfo::RenderBackend selectRenderBackend;
-        RenderTextureScaleQuality selectTextureQuality;
+        std::uint8_t selectTextureQuality;
         std::uint8_t selectRenderDriver;
         std::uint8_t selectVideoDriver;
 
