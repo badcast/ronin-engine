@@ -9,7 +9,7 @@ namespace RoninEngine
 {
     namespace Runtime
     {
-        extern std::set<World *> pinned_worlds;
+        extern std::set<World *> pinnedWorlds;
 
         void WorldResources::event_camera_changed(Camera *target, CameraEvent state)
         {
@@ -27,6 +27,7 @@ namespace RoninEngine
                     break;
             }
         }
+
         void internal_load_world(World *world)
         {
             if(world == nullptr)
@@ -46,9 +47,9 @@ namespace RoninEngine
                 world->irs->request_unloading = false;
 
                 // update internal loaded font
-                RoninEngine::UI::refresh_legacy_font(world);
+                RoninEngine::UI::update_legacy_font(world);
 
-                pinned_worlds.insert(world);
+                pinnedWorlds.insert(world);
             }
         }
 
@@ -134,7 +135,7 @@ namespace RoninEngine
             RoninMemory::free(world->irs);
             world->irs = nullptr;
 
-            pinned_worlds.erase(world);
+            pinnedWorlds.erase(world);
 
             switched_world = lastWorld;
             return true;
@@ -154,7 +155,7 @@ namespace RoninEngine
             scripts_lateUpdate();
 
             // end watcher
-            env.queue_watcher.delayExecScripts = Time::EndWatch();
+            env.queueWatcher.delayExecScripts = Time::EndWatch();
 
             Time::BeginWatch();
             // Render on main camera
@@ -164,7 +165,7 @@ namespace RoninEngine
                 // draw world in world size
                 native_render_2D(reinterpret_cast<Camera2D *>(cam));
             }
-            env.queue_watcher.delayRenderWorld = Time::EndWatch();
+            env.queueWatcher.delayRenderWorld = Time::EndWatch();
 
             // begin watcher
             Time::BeginWatch();
@@ -178,7 +179,7 @@ namespace RoninEngine
             }
 
             // end watcher
-            env.queue_watcher.delayRenderGizmos = Time::EndWatch();
+            env.queueWatcher.delayRenderGizmos = Time::EndWatch();
         }
 
     } // namespace Runtime

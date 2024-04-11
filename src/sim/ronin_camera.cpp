@@ -36,8 +36,8 @@ namespace RoninEngine::Runtime
 
         scale *= pixelsPerPoint;
 
-        screenPoint.x = -(env.active_resolution.width / 2.f - screenPoint.x) / scale.x;
-        screenPoint.y = (env.active_resolution.height / 2.f - screenPoint.y) / scale.y;
+        screenPoint.x = -(env.activeResolution.width / 2.f - screenPoint.x) / scale.x;
+        screenPoint.y = (env.activeResolution.height / 2.f - screenPoint.y) / scale.y;
 
         // Difference at Main Camera
         if(mainCamera())
@@ -59,9 +59,9 @@ namespace RoninEngine::Runtime
         scale *= pixelsPerPoint;
 
         // Horizontal position
-        worldPoint.x = env.active_resolution.width / 2.f - worldPoint.x * scale.x;
+        worldPoint.x = env.activeResolution.width / 2.f - worldPoint.x * scale.x;
         // Vertical position
-        worldPoint.y = env.active_resolution.height / 2.f + worldPoint.y * scale.y;
+        worldPoint.y = env.activeResolution.height / 2.f + worldPoint.y * scale.y;
         return worldPoint;
     }
 
@@ -71,9 +71,9 @@ namespace RoninEngine::Runtime
         SDL_RenderGetScale(env.renderer, &scale.x, &scale.y);
         scale *= pixelsPerPoint;
         // Horizontal position
-        viewportPoint.x = (env.active_resolution.width / 2.f - env.active_resolution.width * viewportPoint.x) * -1.f / scale.x;
+        viewportPoint.x = (env.activeResolution.width / 2.f - env.activeResolution.width * viewportPoint.x) * -1.f / scale.x;
         // Vertical position
-        viewportPoint.y = (env.active_resolution.height / 2.f - env.active_resolution.height * viewportPoint.y) / scale.y;
+        viewportPoint.y = (env.activeResolution.height / 2.f - env.activeResolution.height * viewportPoint.y) / scale.y;
         // Difference at Main Camera
         if(mainCamera())
             viewportPoint += mainCamera()->transform()->_position;
@@ -93,9 +93,9 @@ namespace RoninEngine::Runtime
         SDL_RenderGetScale(env.renderer, &scale.x, &scale.y);
         scale *= pixelsPerPoint;
         // Horizontal position
-        worldPoint.x = (env.active_resolution.width / 2.0f - worldPoint.x * scale.x) / env.active_resolution.width;
+        worldPoint.x = (env.activeResolution.width / 2.0f - worldPoint.x * scale.x) / env.activeResolution.width;
         // Vertical position
-        worldPoint.y = (env.active_resolution.height / 2.0f + worldPoint.y * scale.y) / env.active_resolution.height;
+        worldPoint.y = (env.activeResolution.height / 2.0f + worldPoint.y * scale.y) / env.activeResolution.height;
         return worldPoint;
     }
 

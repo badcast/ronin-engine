@@ -102,7 +102,7 @@ namespace RoninEngine::Runtime
         params.root_transform = World::self()->irs->main_object->transform();
         params.wpLeftTop = Vec2::RoundToInt(Camera::ScreenToWorldPoint(Vec2::zero));
         params.wpRightBottom =
-            Vec2::RoundToInt(Camera::ScreenToWorldPoint(Vec2(env.active_resolution.width, env.active_resolution.height)));
+            Vec2::RoundToInt(Camera::ScreenToWorldPoint(Vec2(env.activeResolution.width, env.activeResolution.height)));
         params.edges =
             Math::Number(Math::Max(params.wpRightBottom.x - params.camera_position.x, params.wpRightBottom.y - params.camera_position.y)) +
             5 + camera->distanceEvcall;
@@ -207,11 +207,11 @@ namespace RoninEngine::Runtime
 
                     // Horizontal
                     params.wrapper.dst.x = arranged.x +
-                        ((env.active_resolution.width - params.wrapper.dst.w) / 2.0f -
+                        ((env.activeResolution.width - params.wrapper.dst.w) / 2.0f -
                          (params.camera_position.x - params.sourcePoint.x) * pixelsPerPoint);
                     // Vertical
                     params.wrapper.dst.y = arranged.y +
-                        ((env.active_resolution.height - params.wrapper.dst.h) / 2.0f +
+                        ((env.activeResolution.height - params.wrapper.dst.h) / 2.0f +
                          (params.camera_position.y - params.sourcePoint.y) * pixelsPerPoint);
                     // draw to backbuffer
                     SDL_RenderCopyExF(
@@ -274,8 +274,8 @@ namespace RoninEngine::Runtime
             float offset = 25 * std::max(1 - Time::deltaTime(), 0.1f);
             float height = 200 * Time::deltaTime();
 
-            params.wrapper.dst.x = ((env.active_resolution.width) / 2.0f);
-            params.wrapper.dst.y = ((env.active_resolution.height) / 2.0f);
+            params.wrapper.dst.x = ((env.activeResolution.width) / 2.0f);
+            params.wrapper.dst.y = ((env.activeResolution.height) / 2.0f);
 
             SDL_SetRenderDrawColor(env.renderer, 0, 255, 0, 25);
 
@@ -289,21 +289,21 @@ namespace RoninEngine::Runtime
             // borders
             RenderUtility::DrawLine(Vec2(offset, offset), Vec2(offset + height, offset));
             RenderUtility::DrawLine(
-                Vec2(env.active_resolution.width - offset, offset), Vec2(env.active_resolution.width - offset - height, offset));
+                Vec2(env.activeResolution.width - offset, offset), Vec2(env.activeResolution.width - offset - height, offset));
             RenderUtility::DrawLine(
-                Vec2(offset, env.active_resolution.height - offset), Vec2(offset + height, env.active_resolution.height - offset));
+                Vec2(offset, env.activeResolution.height - offset), Vec2(offset + height, env.activeResolution.height - offset));
             RenderUtility::DrawLine(
-                Vec2(env.active_resolution.width - offset, env.active_resolution.height - offset),
-                Vec2(env.active_resolution.width - offset - height, env.active_resolution.height - offset));
+                Vec2(env.activeResolution.width - offset, env.activeResolution.height - offset),
+                Vec2(env.activeResolution.width - offset - height, env.activeResolution.height - offset));
 
             RenderUtility::DrawLine(Vec2(offset, 1 + offset), Vec2(offset, offset + height));
             RenderUtility::DrawLine(
-                Vec2(env.active_resolution.width - offset, 1 + offset), Vec2(env.active_resolution.width - offset, offset + height));
+                Vec2(env.activeResolution.width - offset, 1 + offset), Vec2(env.activeResolution.width - offset, offset + height));
             RenderUtility::DrawLine(
-                Vec2(offset, env.active_resolution.height - 1 - offset), Vec2(offset, env.active_resolution.height - offset - height));
+                Vec2(offset, env.activeResolution.height - 1 - offset), Vec2(offset, env.activeResolution.height - offset - height));
             RenderUtility::DrawLine(
-                Vec2(env.active_resolution.width - offset, env.active_resolution.height - 1 - offset),
-                Vec2(env.active_resolution.width - offset, env.active_resolution.height - offset - height));
+                Vec2(env.activeResolution.width - offset, env.activeResolution.height - 1 - offset),
+                Vec2(env.activeResolution.width - offset, env.activeResolution.height - offset - height));
         }
 
         if(camera->visibleObjects || camera->visibleNames)

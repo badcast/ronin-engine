@@ -14,9 +14,10 @@ namespace RoninEngine::Runtime
 
         Vec2 scale;
         SDL_RenderGetScale(env.renderer, &scale.x, &scale.y);
+        scale *= pixelsPerPoint;
 
-        dst.x = env.active_resolution.width / 2.f;
-        dst.y = env.active_resolution.height / 2.f;
+        dst.x = env.activeResolution.width / 2.f;
+        dst.y = env.activeResolution.height / 2.f;
 
         a.x = dst.x - (p.x - a.x) * scale.x;
         a.y = dst.y + (p.y - a.y) * scale.y;
@@ -206,7 +207,7 @@ namespace RoninEngine::Runtime
         // First Point (Top Left)
         navMesh->get(Camera::ScreenToWorldPoint(Vec2::zero), p1);
         // Last Point (Bottom Right)
-        navMesh->get(Camera::ScreenToWorldPoint(Vec2(env.active_resolution.width, env.active_resolution.height)), p2);
+        navMesh->get(Camera::ScreenToWorldPoint(Vec2(env.activeResolution.width, env.activeResolution.height)), p2);
 
         prev = GetColor();
         SetColor(next = 0xfff6f723);

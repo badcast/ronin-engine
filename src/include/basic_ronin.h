@@ -100,15 +100,15 @@ namespace RoninEngine
 
         SDL_Renderer *renderer = nullptr;
 
-        SDL_Window *active_window = nullptr;
-        Resolution active_resolution {0, 0, 0};
-        TimingWatcher last_watcher {};
-        TimingWatcher queue_watcher {};
+        SDL_Window *activeWindow = nullptr;
+        Resolution activeResolution {0, 0, 0};
+        TimingWatcher lastWatcher {};
+        TimingWatcher queueWatcher {};
         std::vector<SDL_Cursor *> sysCursors {};
 
-        bool ronin_debug_mode = false;
-        bool internal_world_loaded = false;
-        bool internal_world_can_start = false;
+        bool debugMode = false;
+        bool internalWorldLoaded = false;
+        bool internalWorldCanStart = false;
     };
 
     extern RoninEnvironment env;
@@ -141,10 +141,10 @@ namespace RoninEngine
             RES_LOCAL_FLAG = 0x80000000
         };
 
-        enum MouseStateFlags
+        enum InputStateFlags
         {
-            MouseDown = 1,
-            MouseUp = 2
+            KeyDown = 1,
+            KeyUp = 2
         };
 
         enum class RenderCommand
@@ -159,6 +159,7 @@ namespace RoninEngine
             std::int8_t _mouse_state[SDL_BUTTON_X2];
             Vec2Int _mouse_position;
             Vec2 _movement_axis;
+            std::uint8_t *prev_frame_keys;
         };
 
         struct Rendering

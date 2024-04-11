@@ -40,8 +40,8 @@ namespace RoninEngine::Runtime
             env.renderer,
             SDL_PIXELFORMAT_RGBA8888,
             SDL_TextureAccess::SDL_TEXTUREACCESS_TARGET,
-            env.active_resolution.width,
-            env.active_resolution.height);
+            env.activeResolution.width,
+            env.activeResolution.height);
 
         SDL_SetRenderTarget(env.renderer, target);
         SDL_SetRenderDrawColor(env.renderer, 0, 0, 0, 55);

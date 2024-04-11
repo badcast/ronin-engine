@@ -6,8 +6,6 @@
 namespace RoninEngine::Runtime
 {
     extern void text_get(std::string &text);
-    extern void text_start_input();
-    extern void text_stop_input();
 } // namespace RoninEngine::Runtime
 
 namespace RoninEngine::UI
@@ -16,8 +14,8 @@ namespace RoninEngine::UI
 
     std::uint8_t legacyVH[] {0, 32, 16, 2, 34, 18, 1, 33, 17};
 
-    extern TTF_Font *ttf_arial_font;
-    extern LegacyFont_t *pLegacyFont;
+    extern TTF_Font *pDefaultTTFFont;
+    extern LegacyFont_t *pDefaultLegacyFont;
 
     bool general_ui_render(UIElement &element, const UIState &uiState, bool &ui_focus)
     {
@@ -106,7 +104,7 @@ namespace RoninEngine::UI
                 }
 
                 // draw main text
-                surface = TTF_RenderUTF8_Solid(ttf_arial_font, element.text.c_str(), *reinterpret_cast<SDL_Color *>(&colorSpace.editText));
+                surface = TTF_RenderUTF8_Solid(pDefaultTTFFont, element.text.c_str(), *reinterpret_cast<SDL_Color *>(&colorSpace.editText));
                 if((texture = SDL_CreateTextureFromSurface(env.renderer, surface)) != nullptr)
                 {
                     rect = element.rect;
@@ -132,11 +130,11 @@ namespace RoninEngine::UI
                     // clik and focused
                     if((ui_focus = result = uiState.ms_click))
                     {
-                        text_start_input();
+                        // SDL_StartTextInput();
                     }
                     else
                     {
-                        text_stop_input();
+                        // SDL_StopTextInput();
                     }
                 }
                 break;
@@ -271,7 +269,7 @@ namespace RoninEngine::UI
                 // draw main text
                 SDL_Texture *texture;
                 SDL_Surface *surf =
-                    TTF_RenderUTF8_Blended(ttf_arial_font, element.text.c_str(), *reinterpret_cast<SDL_Color *>(&colorSpace.dropdownText));
+                    TTF_RenderUTF8_Blended(pDefaultTTFFont, element.text.c_str(), *reinterpret_cast<SDL_Color *>(&colorSpace.dropdownText));
                 if((texture = SDL_CreateTextureFromSurface(env.renderer, surf)) != nullptr)
                 {
                     r = element.rect;
@@ -328,7 +326,7 @@ namespace RoninEngine::UI
                             RenderUtility::SetColor(colorSpace.defaultInteraction.hoverState);
                             // Draw element text
                             surf = TTF_RenderUTF8_Blended(
-                                ttf_arial_font,
+                                pDefaultTTFFont,
                                 iter->c_str(),
                                 *reinterpret_cast<SDL_Color *>(
                                     &(link->first != index ? colorSpace.dropdownText : colorSpace.dropdownSelectedText)));
@@ -451,8 +449,8 @@ namespace RoninEngine::UI
         SDL_Texture *texture;
         SDL_Surface *surf;
 
-        TTF_SetFontSize(ttf_arial_font, fontSize);
-        surf = TTF_RenderUTF8_Blended(ttf_arial_font, text, RenderUtility::GetColor());
+        TTF_SetFontSize(pDefaultTTFFont, fontSize);
+        surf = TTF_RenderUTF8_Blended(pDefaultTTFFont, text, RenderUtility::GetColor());
         if(surf)
         {
             SDL_Rect r {screenPoint.x, screenPoint.y, surf->w, surf->h};
@@ -474,7 +472,7 @@ namespace RoninEngine::UI
         int width = 0;
         for(auto iter = begin(text); iter != end(text); ++iter)
             // TODO: Учитывать размер шрифта (fontSize)
-            width += pLegacyFont->data[(unsigned char) *iter].w;
+            width += pDefaultLegacyFont->data[(unsigned char) *iter].w;
         return width;
     }
 
@@ -488,13 +486,13 @@ namespace RoninEngine::UI
         std::uint16_t pos;
         SDL_Rect dst = *reinterpret_cast<SDL_Rect *>(&rect);
 
-        Vec2Int fontSize = pLegacyFont->fontSize + Vec2Int::one * (fontWidth - pLegacyFont->fontSize.x);
+        Vec2Int fontSize = pDefaultLegacyFont->fontSize + Vec2Int::one * (fontWidth - pDefaultLegacyFont->fontSize.x);
         int textWidth = Single_TextWidth_WithCyrilic(text, fontWidth);
 
         if(!rect.w)
             rect.w = textWidth;
         if(!rect.h)
-            rect.h = pLegacyFont->fontSize.y;
+            rect.h = pDefaultLegacyFont->fontSize.y;
 
         // x
         temp = (legacyVH[textAlign] >> 4 & 15);
@@ -520,7 +518,7 @@ namespace RoninEngine::UI
         for(pos = 0; pos < len; ++pos)
         {
             memcpy(&temp, text + pos, 1);
-            src = (pLegacyFont->data + temp);
+            src = (pDefaultLegacyFont->data + temp);
             if(temp != '\n')
             {
                 dst.w = src->w;
