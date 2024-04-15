@@ -172,7 +172,7 @@ namespace RoninEngine
         struct CameraResource
         {
             int culled;
-            std::set<Renderer *> prev;
+            std::set<Renderer *> prevs;
         };
 
         struct AudioClip
