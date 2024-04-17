@@ -385,14 +385,16 @@ namespace RoninEngine::Runtime
     {
         SDL_Texture *texture = render_cache_texture(sprite);
 
-        render_texture_extension(texture, nullptr, reinterpret_cast<const SDL_Rect *>(&rect), angleRadian);
+        render_texture_extension(
+            texture, nullptr, reinterpret_cast<SDL_Rect *>(&sprite->m_rect), reinterpret_cast<const SDL_Rect *>(&rect), angleRadian);
     }
 
     void RenderUtility::DrawSpriteExtent(Sprite *sprite, Vec2Int baseSize, const Rect &rect, float angleRadian)
     {
         SDL_Texture *texture = render_cache_texture(sprite);
 
-        render_texture_extension(texture, &baseSize, reinterpret_cast<const SDL_Rect *>(&rect), angleRadian);
+        render_texture_extension(
+            texture, &baseSize, reinterpret_cast<SDL_Rect *>(&sprite->m_rect), reinterpret_cast<const SDL_Rect *>(&rect), angleRadian);
     }
 
     void RenderUtility::DrawFillRect(Vec2 center, float width, float height)

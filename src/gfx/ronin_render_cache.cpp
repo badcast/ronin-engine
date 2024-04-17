@@ -6,57 +6,62 @@ namespace RoninEngine::Runtime
     {
         SDL_Texture *texture;
 
+// Use by SDL_CreateTextureFromSurface ...
+#if 1
         texture = SDL_CreateTextureFromSurface(env.renderer, surface);
-        SDL_SetTextureUserData(texture, surface);
+        if(texture != nullptr)
+            SDL_SetTextureUserData(texture, surface);
+#else
+        SDL_Rect rect;
 
+        for(;;)
+        {
+            texture = SDL_CreateTexture(
+                env.renderer, ronin_default_pixelformat, SDL_TEXTUREACCESS_STREAMING, surface->clip_rect.w, surface->clip_rect.h);
+            if(texture == nullptr)
+            {
+                RoninSimulator::Log(SDL_GetError());
+                break;
+            }
+
+            SDL_Surface *blitDst;
+            void *pixels;
+            int pitch;
+            std::uint8_t r, g, b, a;
+
+            blitDst = SDL_CreateRGBSurfaceWithFormat(0, surface->clip_rect.w, surface->clip_rect.h, 32, ronin_default_pixelformat);
+            if(blitDst == nullptr)
+            {
+                RoninSimulator::Log(SDL_GetError());
+                SDL_DestroyTexture(texture);
+                break;
+            }
+
+            SDL_GetSurfaceColorMod(surface, &r, &g, &b);
+            SDL_GetSurfaceAlphaMod(surface, &a);
+
+            SDL_SetSurfaceColorMod(blitDst, r, g, b);
+            SDL_SetSurfaceAlphaMod(blitDst, a);
+            SDL_SetTextureColorMod(texture, r, g, b);
+            SDL_SetTextureAlphaMod(texture, a);
+            SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
+
+            // COPY PIXELS
+            SDL_LockTexture(texture, &surface->clip_rect, &pixels, &pitch);
+            SDL_BlitSurface(surface, &rect, blitDst, nullptr);
+            memcpy(pixels, blitDst->pixels, blitDst->pitch * blitDst->h);
+
+            SDL_LockSurface(surface);
+            SDL_UpdateTexture(texture, &surface->clip_rect, surface->pixels, surface->pitch);
+            SDL_UnlockSurface(surface);
+
+            // Apply changes
+            SDL_UnlockTexture(texture);
+            SDL_FreeSurface(blitDst);
+            break;
+        }
+#endif
         return texture;
-
-        // for(;;)
-        // {
-        //     texture = SDL_CreateTexture(env.renderer, ronin_default_pixelformat, SDL_TEXTUREACCESS_STREAMING, srcRect->w, srcRect->h);
-        //     if(texture == nullptr)
-        //     {
-        //         RoninSimulator::Log(SDL_GetError());
-        //         break;
-        //     }
-
-        //     SDL_Surface *blitDst;
-        //     void *pixels;
-        //     int pitch;
-        //     std::uint8_t r, g, b, a;
-
-        //     blitDst = SDL_CreateRGBSurfaceWithFormat(0, srcRect->w, srcRect->h, 32, ronin_default_pixelformat);
-        //     if(blitDst == nullptr)
-        //     {
-        //         RoninSimulator::Log(SDL_GetError());
-        //         SDL_DestroyTexture(texture);
-        //         break;
-        //     }
-
-        //     SDL_GetSurfaceColorMod(surface->surface, &r, &g, &b);
-        //     SDL_GetSurfaceAlphaMod(surface->surface, &a);
-
-        //     SDL_SetSurfaceColorMod(blitDst, r, g, b);
-        //     SDL_SetSurfaceAlphaMod(blitDst, a);
-        //     SDL_SetTextureColorMod(texture, r, g, b);
-        //     SDL_SetTextureAlphaMod(texture, a);
-        //     SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
-
-        //     // COPY PIXELS
-        //     SDL_LockTexture(texture, srcRect, &pixels, &pitch);
-        //     SDL_BlitSurface(surface->surface, &rect, blitDst, nullptr);
-        //     memcpy(pixels, blitDst->pixels, blitDst->pitch * blitDst->h);
-
-        //     SDL_LockSurface(surface->surface);
-        //     SDL_UpdateTexture(texture, srcRect, surface->surface->pixels, surface->surface->pitch);
-        //     SDL_UnlockSurface(surface->surface);
-
-        //     // Apply changes
-        //     SDL_UnlockTexture(texture);
-        //     SDL_FreeSurface(blitDst);
-        //     break;
-        // }
-        // return texture;
     }
 
     SDL_Texture *render_cache_texture(Sprite *sprite)
@@ -93,15 +98,16 @@ namespace RoninEngine::Runtime
         return texture;
     }
 
-    void render_texture_extension(SDL_Texture *texture, const Vec2Int *baseSize, const SDL_Rect *extent, float angleRad)
+    void render_texture_extension(
+        SDL_Texture *texture, const Vec2Int *baseSize, const SDL_Rect *srcFrom, const SDL_Rect *extent, float angleRad)
     {
-        SDL_Rect dst, src;
         int access;
+        SDL_Rect dst, src, srcCopy;
         SDL_Texture *destTexture;
+        SDL_Surface *extentSurface = nullptr, *surfSrc = nullptr;
 
-        SDL_Surface *templateSurf = nullptr, *surfSrc = nullptr;
-
-        if(texture == nullptr || extent == nullptr || extent->w <= 0 || extent->h <= 0)
+        if(texture == nullptr || srcFrom == nullptr || extent == nullptr || extent->w <= 0 || extent->h <= 0 ||
+           (baseSize && (baseSize->x < 1 || baseSize->y < 1)))
         {
             return;
         }
@@ -110,8 +116,9 @@ namespace RoninEngine::Runtime
         {
             src.x = 0;
             src.y = 0;
-            SDL_QueryTexture(texture, nullptr, &access, &src.w, &src.h);
-
+            src.h = srcFrom->h;
+            src.w = srcFrom->w;
+            SDL_QueryTexture(texture, nullptr, &access, nullptr, nullptr);
             switch(access)
             {
                 case SDL_TEXTUREACCESS_STREAMING:
@@ -119,8 +126,6 @@ namespace RoninEngine::Runtime
                     break;
                 case SDL_TEXTUREACCESS_STATIC:
                     surfSrc = static_cast<SDL_Surface *>(SDL_GetTextureUserData(texture));
-                    src.w = surfSrc->w;
-                    src.h = surfSrc->h;
                     break;
                 default:;
             }
@@ -128,25 +133,24 @@ namespace RoninEngine::Runtime
             if(surfSrc == nullptr)
                 break;
 
-            templateSurf = SDL_CreateRGBSurfaceWithFormat(0, extent->w, extent->h, 32, ronin_default_pixelformat);
-            if(templateSurf == nullptr)
+            extentSurface = SDL_CreateRGBSurfaceWithFormat(0, extent->w, extent->h, 32, ronin_default_pixelformat);
+            if(extentSurface == nullptr)
                 break;
 
-            if(baseSize == nullptr)
-                baseSize = reinterpret_cast<const Vec2Int *>(&src.w);
-            else
+            if(baseSize != nullptr)
             {
                 src.w = baseSize->x;
                 src.h = baseSize->y;
             }
 
-            SDL_BlitScaled(surfSrc, nullptr, templateSurf, &src);
+            srcCopy = src;
+            SDL_BlitScaled(surfSrc, srcFrom, extentSurface, &srcCopy);
 
             dst = src;
             dst.x += src.w;
             for(; dst.x < extent->w;)
             {
-                SDL_BlitSurface(templateSurf, &src, templateSurf, &dst);
+                SDL_BlitSurface(extentSurface, &src, extentSurface, &dst);
                 dst.x += src.w;
                 src.w *= 2;
                 dst.w = src.w;
@@ -158,13 +162,13 @@ namespace RoninEngine::Runtime
             {
                 // Recover width
                 dst.w = extent->w;
-                SDL_BlitSurface(templateSurf, &src, templateSurf, &dst);
+                SDL_BlitSurface(extentSurface, &src, extentSurface, &dst);
                 dst.y += src.h;
                 src.h *= 2;
                 dst.h = src.h;
             }
 
-            destTexture = SDL_CreateTextureFromSurface(env.renderer, templateSurf);
+            destTexture = SDL_CreateTextureFromSurface(env.renderer, extentSurface);
             if(destTexture == nullptr)
                 break;
 
@@ -177,7 +181,7 @@ namespace RoninEngine::Runtime
         if(access != SDL_TEXTUREACCESS_STATIC)
             SDL_UnlockTexture(texture);
 
-        SDL_FreeSurface(templateSurf);
+        SDL_FreeSurface(extentSurface);
     }
 
     void render_texture_extension2(SDL_Texture *texture, const Vec2Int *baseSize, const SDL_Rect *extent, float angleRad)

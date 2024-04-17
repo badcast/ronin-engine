@@ -16,7 +16,8 @@ namespace RoninEngine::Runtime
      */
     SDL_Texture *render_cache_texture(Sprite *sprite);
 
-    void render_texture_extension(SDL_Texture *texture, const Vec2Int *baseSize, const SDL_Rect *rect, float angleRad);
+    void render_texture_extension(
+        SDL_Texture *texture, const Vec2Int *baseSize, const SDL_Rect *srcFrom, const SDL_Rect *rect, float angleRad);
 
     void render_cache_unref(SDL_Texture *texture);
 
