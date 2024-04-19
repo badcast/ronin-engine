@@ -444,13 +444,14 @@ namespace RoninEngine::UI
         }
     }
 
-    void Render_String_ttf(const char *text, int fontSize, const Runtime::Vec2Int &screenPoint, bool alignCenter)
+    void Render_String_ttf(const char *text, int fontSize, const Runtime::Vec2Int &screenPoint, bool alignCenter, bool blend)
     {
         SDL_Texture *texture;
         SDL_Surface *surf;
 
         TTF_SetFontSize(pDefaultTTFFont, fontSize);
-        surf = TTF_RenderUTF8_Blended(pDefaultTTFFont, text, RenderUtility::GetColor());
+
+        surf = blend ? TTF_RenderUTF8_Blended(pDefaultTTFFont, text, RenderUtility::GetColor()) : TTF_RenderUTF8_Solid(pDefaultTTFFont, text, RenderUtility::GetColor());
         if(surf)
         {
             SDL_Rect r {screenPoint.x, screenPoint.y, surf->w, surf->h};

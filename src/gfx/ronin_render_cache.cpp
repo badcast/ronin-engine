@@ -74,7 +74,7 @@ namespace RoninEngine::Runtime
 
         for(;;)
         {
-            _cache = &switched_world->irs->render_cache;
+            _cache = &switched_world->irs->renderCache;
 
             const auto iter = _cache->find(sprite->surface);
             if(iter == std::end(*_cache))
@@ -84,7 +84,7 @@ namespace RoninEngine::Runtime
                 if(texture != nullptr)
                 {
                     _cache->insert({sprite->surface, {1, texture}});
-                    switched_world->irs->render_cache_refs.insert({texture, sprite->surface});
+                    switched_world->irs->renderCacheRefs.insert({texture, sprite->surface});
                 }
             }
             else
@@ -254,8 +254,8 @@ namespace RoninEngine::Runtime
         if(texture == nullptr)
             return;
 
-        auto &_refs = switched_world->irs->render_cache_refs;
-        auto &_cache = switched_world->irs->render_cache;
+        auto &_refs = switched_world->irs->renderCacheRefs;
+        auto &_cache = switched_world->irs->renderCache;
         const auto iter1 = _refs.find(texture);
         if(iter1 != std::end(_refs))
         {

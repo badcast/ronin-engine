@@ -59,7 +59,7 @@ namespace RoninEngine
                     if(!switched_world->isHierarchy())
                         throw std::runtime_error(">mainObject is null");
 
-                    auto mainObj = switched_world->irs->main_object;
+                    auto mainObj = switched_world->irs->mainObject;
                     auto root = mainObj->transform();
                     Transform *tr = ((GameObject *) instance)->transform();
                     root->childAdd(tr);

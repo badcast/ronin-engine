@@ -124,7 +124,8 @@ namespace RoninEngine
             Runtime::Rect data[255];
         };
 
-        extern void Render_String_ttf(const char *text, int fontSize, const Runtime::Vec2Int &screenPoint, bool alignCenter = false);
+        extern void Render_String_ttf(
+            const char *text, int fontSize, const Runtime::Vec2Int &screenPoint, bool alignCenter = false, bool blend = true);
     } // namespace UI
 
     namespace Runtime
@@ -287,8 +288,7 @@ namespace RoninEngine
             SDL_Texture *legacy_font_normal;
             SDL_Texture *legacy_font_hover;
 
-            int audio_channels;
-            int audio_reserved_channels = MIX_CHANNELS;
+            std::vector<bool> audioChannels;
 
             // destroyed queue object
             int _destroyedGameObject;
@@ -302,22 +302,22 @@ namespace RoninEngine
             // Matrix
             matrix_map_t matrix;
 
-            std::list<CameraResource *> camera_resources;
+            std::list<CameraResource *> cameraResources;
 
             // External resources
-            GidResources external_local_resources;
+            GidResources externalLocalResources;
 
             // Main UI Object
             UI::GUI *gui;
 
             // Main camera for render
-            Camera *main_camera;
+            Camera *mainCamera;
 
             // Main or Root object
-            GameObject *main_object;
+            GameObject *mainObject;
 
-            std::map<SDL_Surface *, std::pair<int, SDL_Texture *>> render_cache;
-            std::map<SDL_Texture *, SDL_Surface *> render_cache_refs;
+            std::map<SDL_Surface *, std::pair<int, SDL_Texture *>> renderCache;
+            std::map<SDL_Texture *, SDL_Surface *> renderCacheRefs;
 
             void event_camera_changed(Camera *target, CameraEvent state);
         };

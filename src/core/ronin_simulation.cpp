@@ -727,11 +727,11 @@ namespace RoninEngine
                     if(!switched_world->isHierarchy())
                     {
                         // init main object
-                        switched_world->irs->main_object = create_empty_gameobject();
-                        switched_world->irs->main_object->name("Main Object");
-                        switched_world->irs->main_object->transform()->name("Root");
+                        switched_world->irs->mainObject = create_empty_gameobject();
+                        switched_world->irs->mainObject->name("Main Object");
+                        switched_world->irs->mainObject->transform()->name("Root");
                         // pickup from renders
-                        Matrix::matrix_remove(switched_world->irs->main_object->transform());
+                        Matrix::matrix_remove(switched_world->irs->mainObject->transform());
                     }
 
                     env.internalWorldCanStart = false;

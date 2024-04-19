@@ -8,7 +8,7 @@ namespace RoninEngine::Runtime
         DESCRIBE_AS_MAIN(Camera);
 
         // using this camera as main
-        World::self()->irs->camera_resources.emplace_front(RoninMemory::alloc_self(camera_resource));
+        World::self()->irs->cameraResources.emplace_front(RoninMemory::alloc_self(camera_resource));
         camera_resource->culled = 0;
         // set focusing
         Focus();
@@ -110,7 +110,7 @@ namespace RoninEngine::Runtime
     Camera *Camera::mainCamera()
     {
         if(switched_world)
-            return switched_world->irs->main_camera;
+            return switched_world->irs->mainCamera;
         return nullptr;
     }
 

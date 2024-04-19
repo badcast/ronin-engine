@@ -51,12 +51,12 @@ namespace RoninEngine::Runtime
 
     GidResources *gid_get(bool local)
     {
-        return (local ? &(switched_world->irs->external_local_resources) : external_global_resources);
+        return (local ? &(switched_world->irs->externalLocalResources) : external_global_resources);
     }
 
     inline GidResources *get_resource(ResId id)
     {
-        return (id & RES_LOCAL_FLAG) ? &(switched_world->irs->external_local_resources) : external_global_resources;
+        return (id & RES_LOCAL_FLAG) ? &(switched_world->irs->externalLocalResources) : external_global_resources;
     }
 
     void *make_private_resource(void *memory, bool local)
@@ -70,7 +70,7 @@ namespace RoninEngine::Runtime
                 {
                     throw ronin_null_error();
                 }
-                resources = &(switched_world->irs->external_local_resources);
+                resources = &(switched_world->irs->externalLocalResources);
             }
             else
             {
@@ -95,7 +95,7 @@ namespace RoninEngine::Runtime
             {
                 throw ronin_load_world_error();
             }
-            resources = &(switched_world->irs->external_local_resources);
+            resources = &(switched_world->irs->externalLocalResources);
             (*resultId) = RES_LOCAL_FLAG;
         }
         else

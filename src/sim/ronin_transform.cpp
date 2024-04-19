@@ -31,7 +31,7 @@ namespace RoninEngine::Runtime
         }
 
         if(!newParent)
-            hierarchy_append(World::self()->irs->main_object->transform(), from); // nullptr as Root
+            hierarchy_append(World::self()->irs->mainObject->transform(), from); // nullptr as Root
         else
         {
             from->m_parent = newParent;
@@ -149,7 +149,7 @@ namespace RoninEngine::Runtime
     {
         if(switched_world == nullptr || switched_world->irs == nullptr)
             return nullptr;
-        return switched_world->irs->main_object->transform();
+        return switched_world->irs->mainObject->transform();
     }
 
     void Transform::LookAt(Transform *target)
@@ -388,7 +388,7 @@ namespace RoninEngine::Runtime
 
     Transform *Transform::parent() const
     {
-        if(m_parent == switched_world->irs->main_object->transform())
+        if(m_parent == switched_world->irs->mainObject->transform())
             return nullptr;
 
         return m_parent;
@@ -397,7 +397,7 @@ namespace RoninEngine::Runtime
     void Transform::setParent(Transform *parent, bool worldPositionStays)
     {
         if(parent == nullptr)
-            parent = switched_world->irs->main_object->transform();
+            parent = switched_world->irs->mainObject->transform();
 
         // change children of the parent
         hierarchy_parent_change(this, parent);

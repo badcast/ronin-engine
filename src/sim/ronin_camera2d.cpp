@@ -99,7 +99,7 @@ namespace RoninEngine::Runtime
         camera->camera_resource->culled = 0;
 
         params.camera_position = camera->transform()->position();
-        params.root_transform = World::self()->irs->main_object->transform();
+        params.root_transform = World::self()->irs->mainObject->transform();
         params.wpLeftTop = Vec2::RoundToInt(Camera::ScreenToWorldPoint(Vec2::zero));
         params.wpRightBottom =
             Vec2::RoundToInt(Camera::ScreenToWorldPoint(Vec2(env.activeResolution.width, env.activeResolution.height)));
