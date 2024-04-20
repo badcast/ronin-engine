@@ -18,7 +18,7 @@ namespace RoninEngine::Runtime
         int x;
         for(x = 0; x < n; ++x)
         {
-            cc.emplace_back(SDL_GetAudioDeviceName(x,0));
+            cc.emplace_back(SDL_GetAudioDeviceName(x, 0));
         }
         x = 4;
         if(Mix_OpenAudioDevice(
@@ -187,9 +187,8 @@ namespace RoninEngine::Runtime
     float RoninAudio::getChannelVolume(int channel)
     {
         float volume;
-        Mix_Chunk *ch;
-        if(HasInit() && (ch = Mix_GetChunk(channel)))
-            volume = Math::Map<std::uint8_t, float>(ch->volume, 0, MIX_MAX_VOLUME, 0.0, 1.f);
+        if(HasInit())
+            volume = Math::Map<std::uint8_t, float>(Mix_Volume(channel, SDL_QUERY), 0, MIX_MAX_VOLUME, 0.0, 1.f);
         else
             volume = -1;
         return volume;
@@ -218,11 +217,15 @@ namespace RoninEngine::Runtime
     {
         bool result;
         if(result = HasInit())
+        {
+            gscope.musicData.loops = 0; // clear loop flag
             switch(state)
             {
                 case AudioState::Play:
                     if(clip != nullptr && clip->mix_music != nullptr)
+                    {
                         result = Mix_PlayMusic(clip->mix_music, loop == true ? -1 : 0) == 0;
+                    }
                     break;
                 case AudioState::Pause:
                     Mix_PauseMusic();
@@ -234,6 +237,11 @@ namespace RoninEngine::Runtime
                     result = false;
                     break;
             }
+            if(result)
+            {
+                gscope.musicData.loops = static_cast<int>(loop);
+            }
+        }
         return result;
     }
 
@@ -247,7 +255,7 @@ namespace RoninEngine::Runtime
     {
         float volume;
         if(HasInit() && clip && clip->mix_music)
-            volume = Math::Map<int, float>(Mix_GetMusicVolume(clip->mix_music), 0, MIX_MAX_VOLUME, 0.f, 1.f);
+            volume = Math::Map<int, float>(Mix_VolumeMusic(SDL_QUERY), 0, MIX_MAX_VOLUME, 0.f, 1.f);
         else
             volume = -1;
         return volume;

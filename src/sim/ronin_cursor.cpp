@@ -40,19 +40,19 @@ namespace RoninEngine::Runtime
         if(static_cast<int>(id) < 0 || static_cast<int>(id) >= SDL_NUM_SYSTEM_CURSORS)
             return nullptr;
 
-        if(env.sysCursors.empty())
+        if(gscope.sysCursors.empty())
         {
-            env.sysCursors.resize(static_cast<int>(SDL_NUM_SYSTEM_CURSORS), nullptr);
+            gscope.sysCursors.resize(static_cast<int>(SDL_NUM_SYSTEM_CURSORS), nullptr);
         }
 
-        if(env.sysCursors[static_cast<int>(id)] == nullptr)
+        if(gscope.sysCursors[static_cast<int>(id)] == nullptr)
         {
-            if((env.sysCursors[static_cast<int>(id)] = SDL_CreateSystemCursor(static_cast<SDL_SystemCursor>(static_cast<int>(id)))) ==
+            if((gscope.sysCursors[static_cast<int>(id)] = SDL_CreateSystemCursor(static_cast<SDL_SystemCursor>(static_cast<int>(id)))) ==
                nullptr)
                 RoninSimulator::Log(SDL_GetError());
         }
 
-        return env.sysCursors[static_cast<int>(id)];
+        return gscope.sysCursors[static_cast<int>(id)];
     }
 
 } // namespace RoninEngine::Runtime

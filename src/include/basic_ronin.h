@@ -89,30 +89,6 @@ typedef RoninEngine::Runtime::Vec2Int matrix_key_t;
 typedef std::map<int, std::unordered_map<matrix_key_t, std::set<RoninEngine::Runtime::Transform *>>> matrix_map_t;
 namespace RoninEngine
 {
-    struct RoninEnvironment
-    {
-        struct
-        {
-            // this is variable for apply settings
-            int conf;
-            RenderDriverInfo::RenderBackend renderBackend = RenderDriverInfo::RenderBackend::GPU;
-        } simConfig;
-
-        SDL_Renderer *renderer = nullptr;
-
-        SDL_Window *activeWindow = nullptr;
-        Resolution activeResolution {0, 0, 0};
-        TimingWatcher lastWatcher {};
-        TimingWatcher queueWatcher {};
-        std::vector<SDL_Cursor *> sysCursors {};
-
-        bool debugMode = false;
-        bool internalWorldLoaded = false;
-        bool internalWorldCanStart = false;
-    };
-
-    extern RoninEnvironment env;
-
     namespace UI
     {
 
@@ -217,6 +193,7 @@ namespace RoninEngine
         struct MusicPlayerData
         {
             MusicClip *m_clip;
+            int loops;
         };
 
         struct GidResources
@@ -370,4 +347,29 @@ namespace RoninEngine
         void storm_cast_eq_all(Vec2Int origin, int edges, std::function<void(const Vec2Int &)> predicate);
         void storm_cast_eq_edges(Vec2Int origin, int edges, std::function<void(const Vec2Int &)> predicate);
     } // namespace Runtime
+
+    extern struct RoninEnvironment
+    {
+        struct
+        {
+            // this is variable for apply settings
+            int conf;
+            RenderDriverInfo::RenderBackend renderBackend = RenderDriverInfo::RenderBackend::GPU;
+        } simConfig;
+
+        SDL_Renderer *renderer = nullptr;
+
+        SDL_Window *activeWindow = nullptr;
+        Resolution activeResolution {0, 0, 0};
+        TimingWatcher lastWatcher {};
+        TimingWatcher queueWatcher {};
+        std::vector<SDL_Cursor *> sysCursors {};
+
+        bool debugMode = false;
+        bool internalWorldLoaded = false;
+        bool internalWorldCanStart = false;
+
+        Runtime::MusicPlayerData musicData;
+    } gscope;
+
 } // namespace RoninEngine

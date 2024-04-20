@@ -102,7 +102,7 @@ namespace RoninEngine::Runtime
         params.root_transform = World::self()->irs->mainObject->transform();
         params.wpLeftTop = Vec2::RoundToInt(Camera::ScreenToWorldPoint(Vec2::zero));
         params.wpRightBottom =
-            Vec2::RoundToInt(Camera::ScreenToWorldPoint(Vec2(env.activeResolution.width, env.activeResolution.height)));
+            Vec2::RoundToInt(Camera::ScreenToWorldPoint(Vec2(gscope.activeResolution.width, gscope.activeResolution.height)));
         params.edges =
             Math::Number(Math::Max(params.wpRightBottom.x - params.camera_position.x, params.wpRightBottom.y - params.camera_position.y)) +
             5 + camera->distanceEvcall;
@@ -111,7 +111,7 @@ namespace RoninEngine::Runtime
         if(camera->backclear)
         {
             RenderUtility::SetColor(camera->backcolor);
-            SDL_RenderClear(env.renderer);
+            SDL_RenderClear(gscope.renderer);
         }
 
         if(camera->visibleGrids)
@@ -123,7 +123,7 @@ namespace RoninEngine::Runtime
         // scale.x = Mathf::Min(Mathf::Max(scale.x, 0.f), 1000.f);
         // scale.y = Mathf::Min(Mathf::Max(scale.y, 0.f), 1000.f);
         //_scale = scale*squarePerPixels;
-        SDL_RenderSetScale(env.renderer, camera->scale.x, camera->scale.y);
+        SDL_RenderSetScale(gscope.renderer, camera->scale.x, camera->scale.y);
 
         // get from matrix selection
         /* RUN STORM CAST
@@ -207,15 +207,15 @@ namespace RoninEngine::Runtime
 
                     // Horizontal
                     params.wrapper.dst.x = arranged.x +
-                        ((env.activeResolution.width - params.wrapper.dst.w) / 2.0f -
+                        ((gscope.activeResolution.width - params.wrapper.dst.w) / 2.0f -
                          (params.camera_position.x - params.sourcePoint.x) * pixelsPerPoint);
                     // Vertical
                     params.wrapper.dst.y = arranged.y +
-                        ((env.activeResolution.height - params.wrapper.dst.h) / 2.0f +
+                        ((gscope.activeResolution.height - params.wrapper.dst.h) / 2.0f +
                          (params.camera_position.y - params.sourcePoint.y) * pixelsPerPoint);
                     // draw to backbuffer
                     SDL_RenderCopyExF(
-                        env.renderer,
+                        gscope.renderer,
                         params.wrapper.texture,
                         reinterpret_cast<SDL_Rect *>(&(params.wrapper.src)),
                         reinterpret_cast<SDL_FRect *>(&(params.wrapper.dst)),
@@ -274,36 +274,36 @@ namespace RoninEngine::Runtime
             float offset = 25 * std::max(1 - Time::deltaTime(), 0.1f);
             float height = 200 * Time::deltaTime();
 
-            params.wrapper.dst.x = ((env.activeResolution.width) / 2.0f);
-            params.wrapper.dst.y = ((env.activeResolution.height) / 2.0f);
+            params.wrapper.dst.x = ((gscope.activeResolution.width) / 2.0f);
+            params.wrapper.dst.y = ((gscope.activeResolution.height) / 2.0f);
 
-            SDL_SetRenderDrawColor(env.renderer, 0, 255, 0, 25);
+            SDL_SetRenderDrawColor(gscope.renderer, 0, 255, 0, 25);
 
             // Center dot
-            SDL_RenderDrawPointF(env.renderer, params.wrapper.dst.x, params.wrapper.dst.y);
-            SDL_RenderDrawPointF(env.renderer, params.wrapper.dst.x - offset, params.wrapper.dst.y);
-            SDL_RenderDrawPointF(env.renderer, params.wrapper.dst.x + offset, params.wrapper.dst.y);
-            SDL_RenderDrawPointF(env.renderer, params.wrapper.dst.x, params.wrapper.dst.y - offset);
-            SDL_RenderDrawPointF(env.renderer, params.wrapper.dst.x, params.wrapper.dst.y + offset);
+            SDL_RenderDrawPointF(gscope.renderer, params.wrapper.dst.x, params.wrapper.dst.y);
+            SDL_RenderDrawPointF(gscope.renderer, params.wrapper.dst.x - offset, params.wrapper.dst.y);
+            SDL_RenderDrawPointF(gscope.renderer, params.wrapper.dst.x + offset, params.wrapper.dst.y);
+            SDL_RenderDrawPointF(gscope.renderer, params.wrapper.dst.x, params.wrapper.dst.y - offset);
+            SDL_RenderDrawPointF(gscope.renderer, params.wrapper.dst.x, params.wrapper.dst.y + offset);
 
             // borders
             RenderUtility::DrawLine(Vec2(offset, offset), Vec2(offset + height, offset));
             RenderUtility::DrawLine(
-                Vec2(env.activeResolution.width - offset, offset), Vec2(env.activeResolution.width - offset - height, offset));
+                Vec2(gscope.activeResolution.width - offset, offset), Vec2(gscope.activeResolution.width - offset - height, offset));
             RenderUtility::DrawLine(
-                Vec2(offset, env.activeResolution.height - offset), Vec2(offset + height, env.activeResolution.height - offset));
+                Vec2(offset, gscope.activeResolution.height - offset), Vec2(offset + height, gscope.activeResolution.height - offset));
             RenderUtility::DrawLine(
-                Vec2(env.activeResolution.width - offset, env.activeResolution.height - offset),
-                Vec2(env.activeResolution.width - offset - height, env.activeResolution.height - offset));
+                Vec2(gscope.activeResolution.width - offset, gscope.activeResolution.height - offset),
+                Vec2(gscope.activeResolution.width - offset - height, gscope.activeResolution.height - offset));
 
             RenderUtility::DrawLine(Vec2(offset, 1 + offset), Vec2(offset, offset + height));
             RenderUtility::DrawLine(
-                Vec2(env.activeResolution.width - offset, 1 + offset), Vec2(env.activeResolution.width - offset, offset + height));
+                Vec2(gscope.activeResolution.width - offset, 1 + offset), Vec2(gscope.activeResolution.width - offset, offset + height));
             RenderUtility::DrawLine(
-                Vec2(offset, env.activeResolution.height - 1 - offset), Vec2(offset, env.activeResolution.height - offset - height));
+                Vec2(offset, gscope.activeResolution.height - 1 - offset), Vec2(offset, gscope.activeResolution.height - offset - height));
             RenderUtility::DrawLine(
-                Vec2(env.activeResolution.width - offset, env.activeResolution.height - 1 - offset),
-                Vec2(env.activeResolution.width - offset, env.activeResolution.height - offset - height));
+                Vec2(gscope.activeResolution.width - offset, gscope.activeResolution.height - 1 - offset),
+                Vec2(gscope.activeResolution.width - offset, gscope.activeResolution.height - offset - height));
         }
 
         if(camera->visibleObjects || camera->visibleNames)

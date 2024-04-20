@@ -19,10 +19,10 @@ namespace RoninEngine::UI
     {
         if(world->irs->legacy_font_normal)
             SDL_DestroyTexture(world->irs->legacy_font_normal);
-        world->irs->legacy_font_normal = SDL_CreateTextureFromSurface(env.renderer, pDefaultLegacyFont->surfNormal);
+        world->irs->legacy_font_normal = SDL_CreateTextureFromSurface(gscope.renderer, pDefaultLegacyFont->surfNormal);
         if(world->irs->legacy_font_hover)
             SDL_DestroyTexture(world->irs->legacy_font_hover);
-        world->irs->legacy_font_hover = SDL_CreateTextureFromSurface(env.renderer, pDefaultLegacyFont->surfHilight);
+        world->irs->legacy_font_hover = SDL_CreateTextureFromSurface(gscope.renderer, pDefaultLegacyFont->surfHilight);
     }
 
     void init_legacy_font(bool optimizeDeffects)

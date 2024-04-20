@@ -30,7 +30,7 @@ namespace RoninEngine::Runtime
                             rendering->dst.h = target->sprite->height();
 
                             break;
-                            target->save_texture = SDL_CreateTextureFromSurface(env.renderer, target->sprite->surface);
+                            target->save_texture = SDL_CreateTextureFromSurface(gscope.renderer, target->sprite->surface);
                             rendering->src.w = target->sprite->width();
                             rendering->src.h = target->sprite->height();
                             rendering->dst.w = target->sprite->width();
@@ -63,7 +63,7 @@ namespace RoninEngine::Runtime
                             target->save_texture = SDL_CreateTexture(
                                 // renderer, sdl_default_pixelformat, SDL_TextureAccess::SDL_TEXTUREACCESS_TARGET, rendering->src.w,
                                 // rendering->src.h);
-                                env.renderer,
+                                gscope.renderer,
                                 ronin_default_pixelformat,
                                 SDL_TextureAccess::SDL_TEXTUREACCESS_TARGET,
                                 1024,
@@ -71,7 +71,7 @@ namespace RoninEngine::Runtime
                             if(target->save_texture == nullptr)
                                 RoninSimulator::ShowMessageFail("Texture create fail");
 
-                            SDL_SetRenderTarget(env.renderer, target->save_texture);
+                            SDL_SetRenderTarget(gscope.renderer, target->save_texture);
 
                             dest.w = target->sprite->width();
                             dest.h = target->sprite->height();
@@ -79,7 +79,7 @@ namespace RoninEngine::Runtime
                             rendering->src.x = rendering->src.w / dest.w;
                             rendering->src.y = rendering->src.h / dest.h;
 
-                            SDL_Texture *temp_texture = SDL_CreateTextureFromSurface(env.renderer, target->sprite->surface);
+                            SDL_Texture *temp_texture = SDL_CreateTextureFromSurface(gscope.renderer, target->sprite->surface);
 
                             // render tile
                             switch(target->renderPresentMode)
@@ -93,7 +93,7 @@ namespace RoninEngine::Runtime
                                             dest.x = x * dest.w;
                                             dest.y = y * dest.h;
                                             SDL_RenderCopy(
-                                                env.renderer, temp_texture, (SDL_Rect *) &target->sprite->m_rect, (SDL_Rect *) &dest);
+                                                gscope.renderer, temp_texture, (SDL_Rect *) &target->sprite->m_rect, (SDL_Rect *) &dest);
                                         }
                                     }
                                     break;
@@ -108,7 +108,7 @@ namespace RoninEngine::Runtime
                                             dest.y = y * dest.h;
 
                                             SDL_RenderCopy(
-                                                env.renderer, temp_texture, (SDL_Rect *) &target->sprite->m_rect, (SDL_Rect *) &dest);
+                                                gscope.renderer, temp_texture, (SDL_Rect *) &target->sprite->m_rect, (SDL_Rect *) &dest);
                                         }
                                     }
                                     // place remained
@@ -118,7 +118,7 @@ namespace RoninEngine::Runtime
                                     {
                                         dest.x = x * dest.w;
                                         SDL_RenderCopy(
-                                            env.renderer, temp_texture, (SDL_Rect *) &target->sprite->m_rect, (SDL_Rect *) &dest);
+                                            gscope.renderer, temp_texture, (SDL_Rect *) &target->sprite->m_rect, (SDL_Rect *) &dest);
                                     }
                                     ++rendering->src.y;
                                     for(y = 0,
@@ -130,14 +130,14 @@ namespace RoninEngine::Runtime
                                     {
                                         dest.y = y * dest.h;
                                         SDL_RenderCopy(
-                                            env.renderer, temp_texture, (SDL_Rect *) &target->sprite->m_rect, (SDL_Rect *) &dest);
+                                            gscope.renderer, temp_texture, (SDL_Rect *) &target->sprite->m_rect, (SDL_Rect *) &dest);
                                     }
 
                                     break;
                                 }
                             }
                             SDL_DestroyTexture(temp_texture);
-                            SDL_SetRenderTarget(env.renderer, nullptr);
+                            SDL_SetRenderTarget(gscope.renderer, nullptr);
                             break;
                         }
                     }

@@ -32,13 +32,13 @@ void RoninEngine::Runtime::internal_free_loaded_assets()
     loaded_assets.clear();
 
     // System Cursors
-    for(Cursor *cur : env.sysCursors)
+    for(Cursor *cur : gscope.sysCursors)
     {
         if(cur)
             SDL_FreeCursor(cur);
     }
-    env.sysCursors.clear();
-    env.sysCursors.shrink_to_fit();
+    gscope.sysCursors.clear();
+    gscope.sysCursors.shrink_to_fit();
 }
 
 Cursor *AssetManager::ConvertImageToCursor(Image *imageSrc, Vec2Int cursorHotspot)

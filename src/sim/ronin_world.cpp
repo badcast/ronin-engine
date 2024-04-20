@@ -155,7 +155,7 @@ namespace RoninEngine
             scripts_lateUpdate();
 
             // end watcher
-            env.queueWatcher.delayExecScripts = Time::EndWatch();
+            gscope.queueWatcher.delayExecScripts = Time::EndWatch();
 
             Time::BeginWatch();
             // Render on main camera
@@ -165,7 +165,7 @@ namespace RoninEngine
                 // draw world in world size
                 native_render_2D(reinterpret_cast<Camera2D *>(cam));
             }
-            env.queueWatcher.delayRenderWorld = Time::EndWatch();
+            gscope.queueWatcher.delayRenderWorld = Time::EndWatch();
 
             // begin watcher
             Time::BeginWatch();
@@ -179,7 +179,7 @@ namespace RoninEngine
             }
 
             // end watcher
-            env.queueWatcher.delayRenderGizmos = Time::EndWatch();
+            gscope.queueWatcher.delayRenderGizmos = Time::EndWatch();
         }
 
     } // namespace Runtime

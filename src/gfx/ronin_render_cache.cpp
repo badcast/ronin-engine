@@ -8,7 +8,7 @@ namespace RoninEngine::Runtime
 
 // Use by SDL_CreateTextureFromSurface ...
 #if 1
-        texture = SDL_CreateTextureFromSurface(env.renderer, surface);
+        texture = SDL_CreateTextureFromSurface(gscope.renderer, surface);
         if(texture != nullptr)
             SDL_SetTextureUserData(texture, surface);
 #else
@@ -168,12 +168,12 @@ namespace RoninEngine::Runtime
                 dst.h = src.h;
             }
 
-            destTexture = SDL_CreateTextureFromSurface(env.renderer, extentSurface);
+            destTexture = SDL_CreateTextureFromSurface(gscope.renderer, extentSurface);
             if(destTexture == nullptr)
                 break;
 
             SDL_SetTextureBlendMode(destTexture, SDL_BLENDMODE_BLEND);
-            SDL_RenderCopyEx(env.renderer, destTexture, nullptr, extent, Math::rad2deg * angleRad, nullptr, SDL_FLIP_NONE);
+            SDL_RenderCopyEx(gscope.renderer, destTexture, nullptr, extent, Math::rad2deg * angleRad, nullptr, SDL_FLIP_NONE);
             SDL_DestroyTexture(destTexture);
             break;
         }
@@ -199,7 +199,7 @@ namespace RoninEngine::Runtime
         src.y = 0;
         SDL_QueryTexture(texture, nullptr, nullptr, &src.w, &src.h);
 
-        destTexture = SDL_CreateTexture(env.renderer, ronin_default_pixelformat, SDL_TEXTUREACCESS_TARGET, extent->w, extent->h);
+        destTexture = SDL_CreateTexture(gscope.renderer, ronin_default_pixelformat, SDL_TEXTUREACCESS_TARGET, extent->w, extent->h);
         if(destTexture == nullptr)
             return;
 
@@ -213,17 +213,17 @@ namespace RoninEngine::Runtime
 
         SDL_SetTextureBlendMode(destTexture, SDL_BLENDMODE_BLEND);
 
-        prevTargetTexture = SDL_GetRenderTarget(env.renderer);
-        SDL_SetRenderTarget(env.renderer, destTexture);
+        prevTargetTexture = SDL_GetRenderTarget(gscope.renderer);
+        SDL_SetRenderTarget(gscope.renderer, destTexture);
 
         // Set first draw
         dest = src;
 
-        SDL_RenderCopy(env.renderer, texture, nullptr, &dest);
+        SDL_RenderCopy(gscope.renderer, texture, nullptr, &dest);
         dest.x += src.w;
         for(; dest.x < extent->w;)
         {
-            SDL_RenderCopy(env.renderer, destTexture, &src, &dest);
+            SDL_RenderCopy(gscope.renderer, destTexture, &src, &dest);
             dest.x += src.w;
             src.w *= 2;
             dest.w = src.w;
@@ -235,14 +235,14 @@ namespace RoninEngine::Runtime
         dest.w = extent->w;
         for(; dest.y < extent->h;)
         {
-            SDL_RenderCopy(env.renderer, destTexture, &src, &dest);
+            SDL_RenderCopy(gscope.renderer, destTexture, &src, &dest);
             dest.y += src.h;
             src.h *= 2;
             dest.h = src.h;
         }
 
-        SDL_SetRenderTarget(env.renderer, prevTargetTexture);
-        SDL_RenderCopyEx(env.renderer, destTexture, nullptr, extent, Math::rad2deg * angleRad, nullptr, SDL_FLIP_NONE);
+        SDL_SetRenderTarget(gscope.renderer, prevTargetTexture);
+        SDL_RenderCopyEx(gscope.renderer, destTexture, nullptr, extent, Math::rad2deg * angleRad, nullptr, SDL_FLIP_NONE);
         SDL_DestroyTexture(destTexture);
     }
 
