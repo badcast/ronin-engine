@@ -13,14 +13,6 @@ namespace RoninEngine::Runtime
         if((lastInitResult = (Mix_Init(currentInits))) < 1)
             return -1;
 
-        std::vector<const char *> cc;
-        int n = SDL_GetNumAudioDevices(0);
-        int x;
-        for(x = 0; x < n; ++x)
-        {
-            cc.emplace_back(SDL_GetAudioDeviceName(x, 0));
-        }
-        x = 4;
         if(Mix_OpenAudioDevice(
                MIX_DEFAULT_FREQUENCY,
                MIX_DEFAULT_FORMAT,
