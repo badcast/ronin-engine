@@ -149,6 +149,8 @@ namespace RoninEngine
         struct CameraResource
         {
             int culled;
+            Vec2 offsetScaling;
+            Vec2 scale;
             std::set<Renderer *> prevs;
         };
 
@@ -266,6 +268,8 @@ namespace RoninEngine
             SDL_Texture *legacy_font_hover;
 
             std::vector<bool> audioChannels;
+
+            Vec2 metricPixelsPerPoint;
 
             // destroyed queue object
             int _destroyedGameObject;

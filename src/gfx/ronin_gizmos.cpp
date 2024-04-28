@@ -13,8 +13,7 @@ namespace RoninEngine::Runtime
         Vec2 dst;
 
         Vec2 scale;
-        SDL_RenderGetScale(gscope.renderer, &scale.x, &scale.y);
-        scale *= pixelsPerPoint;
+        scale = switched_world->irs->metricPixelsPerPoint;
 
         dst.x = gscope.activeResolution.width / 2.f;
         dst.y = gscope.activeResolution.height / 2.f;
@@ -24,10 +23,10 @@ namespace RoninEngine::Runtime
         b.x = dst.x - (p.x - b.x) * scale.x;
         b.y = dst.y + (p.y - b.y) * scale.y;
 
-        int x1 = static_cast<int>(std::round(a.x));
-        int y1 = static_cast<int>(std::round(a.y));
-        int x2 = static_cast<int>(std::round(b.x));
-        int y2 = static_cast<int>(std::round(b.y));
+        int x1 = static_cast<int>(a.x);
+        int y1 = static_cast<int>(a.y);
+        int x2 = static_cast<int>(b.x);
+        int y2 = static_cast<int>(b.y);
 
         SDL_RenderDrawLine(gscope.renderer, x1, y1, x2, y2);
     }
@@ -65,28 +64,24 @@ namespace RoninEngine::Runtime
     {
         Vec2 a, b;
 
-        a.x = pixelsPerPoint;
-        a.y = pixelsPerPoint;
-        b.x = -pixelsPerPoint;
-        b.y = pixelsPerPoint;
+        a = switched_world->irs->metricPixelsPerPoint;
+        b = a;
+        b.x *= -1;
         internal_drawLine(a, b);
 
-        a.x = pixelsPerPoint;
-        a.y = -pixelsPerPoint;
-        b.x = -pixelsPerPoint;
-        b.y = -pixelsPerPoint;
+        a = switched_world->irs->metricPixelsPerPoint;
+        a.y *= -1;
+        b = switched_world->irs->metricPixelsPerPoint * -1;
         internal_drawLine(a, b);
 
-        a.x = -pixelsPerPoint;
-        a.y = pixelsPerPoint;
-        b.x = -pixelsPerPoint;
-        b.y = -pixelsPerPoint;
+        a = switched_world->irs->metricPixelsPerPoint;
+        a.x *= -1;
+        b = switched_world->irs->metricPixelsPerPoint * -1;
         internal_drawLine(a, b);
 
-        a.x = pixelsPerPoint;
-        a.y = pixelsPerPoint;
-        b.x = pixelsPerPoint;
-        b.y = -pixelsPerPoint;
+        a = switched_world->irs->metricPixelsPerPoint;
+        b = a;
+        b.y *= -1;
         internal_drawLine(a, b);
     }
 
@@ -116,8 +111,8 @@ namespace RoninEngine::Runtime
     {
         origin = Camera::WorldToScreenPoint(origin);
         std::uint16_t x, y;
-        width *= pixelsPerPoint;
-        height *= pixelsPerPoint;
+        width *= switched_world->irs->metricPixelsPerPoint.x;
+        height *= switched_world->irs->metricPixelsPerPoint.y;
         x = origin.x - width / 2;
         y = origin.y - height / 2;
 
@@ -134,7 +129,7 @@ namespace RoninEngine::Runtime
         sin = Math::Sin(angleRadian);
 
         origin = Camera::WorldToScreenPoint(origin);
-        size *= pixelsPerPoint;
+        size = Vec2::Scale(size,switched_world->irs->metricPixelsPerPoint) ;
         cx = origin.x;
         cy = origin.y;
         origin -= size / 2;
@@ -163,8 +158,8 @@ namespace RoninEngine::Runtime
     {
         origin = Camera::WorldToScreenPoint(origin);
         std::uint16_t x, y;
-        width *= pixelsPerPoint;
-        height *= pixelsPerPoint;
+        width *= switched_world->irs->metricPixelsPerPoint.x;
+        height *= switched_world->irs->metricPixelsPerPoint.y;
         x = origin.x - width / 2;
         y = origin.y - height / 2;
 
@@ -180,15 +175,15 @@ namespace RoninEngine::Runtime
         SetColor(0xaa575757);
 
         // Draw H and V position
-        DrawPosition(std::move(origin), maxWorldScalar);
+        DrawPosition(std::move(origin), defaultMaxWorldScalar);
 
         for(i = 0; i < depth; ++i)
         {
             dest1 += Vec2::one;
-            DrawPosition(std::move(dest1), maxWorldScalar);
+            DrawPosition(std::move(dest1), defaultMaxWorldScalar);
 
             dest2 += Vec2::minusOne;
-            DrawPosition(std::move(dest2), maxWorldScalar);
+            DrawPosition(std::move(dest2), defaultMaxWorldScalar);
         }
 
         SetColor(lastColor);
@@ -324,7 +319,7 @@ namespace RoninEngine::Runtime
         std::uint16_t x, y, r;
         x = Math::Number(origin.x);
         y = Math::Number(origin.y);
-        r = static_cast<std::uint16_t>(distance * pixelsPerPoint);
+        r = static_cast<std::uint16_t>(distance * switched_world->irs->metricPixelsPerPoint.x);
         Color m_color = GetColor();
 
         circleRGBA(gscope.renderer, x, y, r, m_color.r, m_color.g, m_color.b, m_color.a);
@@ -400,8 +395,8 @@ namespace RoninEngine::Runtime
     void RenderUtility::DrawFillRect(Vec2 center, float width, float height)
     {
         center = Camera::WorldToScreenPoint(center);
-        width *= pixelsPerPoint;
-        height *= pixelsPerPoint;
+        width *= switched_world->irs->metricPixelsPerPoint.x;
+        height *= switched_world->irs->metricPixelsPerPoint.y;
         Rectf rect {center.x - width / 2, center.y - height / 2, width, height};
 
         SDL_RenderFillRectF(gscope.renderer, reinterpret_cast<SDL_FRect *>(&rect));
@@ -411,8 +406,8 @@ namespace RoninEngine::Runtime
     {
         std::uint16_t x, y;
         origin = Camera::WorldToScreenPoint(origin);
-        width *= pixelsPerPoint;
-        height *= pixelsPerPoint;
+        width *= switched_world->irs->metricPixelsPerPoint.x;
+        height *= switched_world->irs->metricPixelsPerPoint.y;
         x = origin.x - width / 2;
         y = origin.y - height / 2;
 
@@ -422,7 +417,7 @@ namespace RoninEngine::Runtime
     void RenderUtility::DrawFillSquare(Vec2 origin, float width)
     {
         origin = Camera::WorldToScreenPoint(origin);
-        width *= pixelsPerPoint;
+        width *= switched_world->irs->metricPixelsPerPoint.x;
         Rectf rect {origin.x - width / 2, origin.y - width / 2, width, width};
 
         SDL_RenderFillRectF(gscope.renderer, reinterpret_cast<SDL_FRect *>(&rect));
@@ -439,7 +434,7 @@ namespace RoninEngine::Runtime
         std::uint16_t x, y, r;
         x = Math::Number(origin.x);
         y = Math::Number(origin.y);
-        r = static_cast<std::uint16_t>(distance * pixelsPerPoint);
+        r = static_cast<std::uint16_t>(distance * switched_world->irs->metricPixelsPerPoint.x);
         Color m_color = GetColor();
 
         filledCircleColor(gscope.renderer, x, y, r, m_color);

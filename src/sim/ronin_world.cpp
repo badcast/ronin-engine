@@ -19,8 +19,9 @@ namespace RoninEngine
                     // TODO: find free Camera and set as Main
                     if(mainCamera == target)
                         mainCamera = nullptr;
-                    cameraResources.remove(target->camera_resource);
-                    RoninMemory::free(target->camera_resource);
+                    cameraResources.remove(target->res);
+
+                    RoninMemory::free(target->res);
                     break;
                 case CameraEvent::CAM_TARGET:
                     mainCamera = target;
@@ -271,10 +272,10 @@ namespace RoninEngine
 
     int World::GetCulled()
     {
-        if(irs == nullptr || irs->mainCamera == nullptr)
+        if(irs == nullptr || irs->mainCamera == nullptr || irs->mainCamera->res == nullptr)
             return -1;
 
-        return irs->mainCamera->camera_resource->culled;
+        return irs->mainCamera->res->culled;
     }
 
     int World::MatrixCacheCount()

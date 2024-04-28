@@ -419,7 +419,7 @@ namespace RoninEngine::Runtime
         }
     }
 
-    void Transform::detach()
+    void Transform::Detach()
     {
         setParent(nullptr);
     }

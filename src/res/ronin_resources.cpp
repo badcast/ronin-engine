@@ -185,9 +185,9 @@ namespace RoninEngine::Runtime
         }
 
         // Convert surface if possible.
-        if(surf->format->format != ronin_default_pixelformat)
+        if(surf->format->format != defaultPixelFormat)
         {
-            SDL_Surface *conv = SDL_ConvertSurfaceFormat(surf, ronin_default_pixelformat, 0);
+            SDL_Surface *conv = SDL_ConvertSurfaceFormat(surf, defaultPixelFormat, 0);
             SDL_FreeSurface(surf);
             if(conv == nullptr)
             {

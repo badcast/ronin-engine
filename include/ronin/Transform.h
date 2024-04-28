@@ -25,7 +25,7 @@ namespace RoninEngine::Runtime
         Transform *parent() const;
         void setParent(Transform *parent, bool worldPositionStays = true);
 
-        void detach();
+        void Detach();
 
         int childCount() const;
         Transform *childOf(int index);

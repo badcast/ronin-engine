@@ -133,7 +133,7 @@ namespace RoninEngine::Runtime
             if(surfSrc == nullptr)
                 break;
 
-            extentSurface = SDL_CreateRGBSurfaceWithFormat(0, extent->w, extent->h, 32, ronin_default_pixelformat);
+            extentSurface = SDL_CreateRGBSurfaceWithFormat(0, extent->w, extent->h, 32, defaultPixelFormat);
             if(extentSurface == nullptr)
                 break;
 
@@ -199,7 +199,7 @@ namespace RoninEngine::Runtime
         src.y = 0;
         SDL_QueryTexture(texture, nullptr, nullptr, &src.w, &src.h);
 
-        destTexture = SDL_CreateTexture(gscope.renderer, ronin_default_pixelformat, SDL_TEXTUREACCESS_TARGET, extent->w, extent->h);
+        destTexture = SDL_CreateTexture(gscope.renderer, defaultPixelFormat, SDL_TEXTUREACCESS_TARGET, extent->w, extent->h);
         if(destTexture == nullptr)
             return;
 

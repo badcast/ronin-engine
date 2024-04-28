@@ -61,10 +61,14 @@ namespace RoninEngine::Runtime
     std::uint32_t Time::EndWatch()
     {
         std::uint32_t time;
+
         if(_watcher_time.empty())
             throw std::runtime_error("begin_watch() method is not runned");
-        time = millis() - _watcher_time.back();
+
+        time = Math::Max<std::uint32_t>(0, millis() - _watcher_time.back());
+
         _watcher_time.pop_back();
+
         return time;
     }
 

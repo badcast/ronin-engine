@@ -79,24 +79,31 @@ namespace RoninEngine::Runtime
     }
 
     Camera2D::Camera2D(const std::string &name)
-        : Camera(DESCRIBE_AS_ONLY_NAME(Camera2D)), scale(Vec2::one), visibleBorders(false), visibleGrids(false), visibleObjects(false)
+        : Camera(DESCRIBE_AS_ONLY_NAME(Camera2D)), visibleBorders(false), visibleGrids(false), visibleObjects(false)
     {
         DESCRIBE_AS_MAIN(Camera2D);
         distanceEvcall = 1;
     }
 
     Camera2D::Camera2D(const Camera2D &other)
-        : Camera(other.m_name),
-          visibleBorders(other.visibleBorders),
-          visibleGrids(other.visibleGrids),
-          visibleObjects(other.visibleObjects),
-          scale(other.scale)
+        : Camera(other.m_name), visibleBorders(other.visibleBorders), visibleGrids(other.visibleGrids), visibleObjects(other.visibleObjects)
     {
+    }
+
+    void Camera2D::SetZoom(float value)
+    {
+        value = Math::Clamp<float>(value, 0, 100);
+        res->scale = Vec2::one * value;
+    }
+
+    float Camera2D::GetZoom()
+    {
+        return res->scale.magnitude();
     }
 
     void native_render_2D(Camera2D *camera)
     {
-        camera->camera_resource->culled = 0;
+        camera->res->culled = 0;
 
         params.camera_position = camera->transform()->position();
         params.root_transform = World::self()->irs->mainObject->transform();
@@ -117,13 +124,16 @@ namespace RoninEngine::Runtime
         if(camera->visibleGrids)
         {
             RenderUtility::Draw2DWorldSpace(Vec2::zero);
-            RenderUtility::DrawPosition(params.camera_position, maxWorldScalar);
+            RenderUtility::DrawPosition(params.camera_position, defaultMaxWorldScalar);
         }
 
         // scale.x = Mathf::Min(Mathf::Max(scale.x, 0.f), 1000.f);
         // scale.y = Mathf::Min(Mathf::Max(scale.y, 0.f), 1000.f);
         //_scale = scale*squarePerPixels;
-        SDL_RenderSetScale(gscope.renderer, camera->scale.x, camera->scale.y);
+
+        camera->res->offsetScaling = Vec2::Scale(Vec2::up_right,Vec2::one * defaultPixelsPerPoint);
+
+        SDL_RenderSetScale(gscope.renderer, camera->res->scale.x, camera->res->scale.y);
 
         // get from matrix selection
         /* RUN STORM CAST
@@ -192,8 +202,8 @@ namespace RoninEngine::Runtime
                 {
                     params.sourcePoint = render_transform->_position;
 
-                    params.wrapper.dst.w *= pixelsPerPoint; //_scale.x;
-                    params.wrapper.dst.h *= pixelsPerPoint; //_scale.y;
+                    params.wrapper.dst.w *= switched_world->irs->metricPixelsPerPoint.x; //_scale.x;
+                    params.wrapper.dst.h *= switched_world->irs->metricPixelsPerPoint.y; //_scale.y;
 
                     Vec2 arranged = params.wrapper.dst.GetXY();
                     //                                    if(arranged != Vec2::zero)
@@ -208,11 +218,11 @@ namespace RoninEngine::Runtime
                     // Horizontal
                     params.wrapper.dst.x = arranged.x +
                         ((gscope.activeResolution.width - params.wrapper.dst.w) / 2.0f -
-                         (params.camera_position.x - params.sourcePoint.x) * pixelsPerPoint);
+                         (params.camera_position.x - params.sourcePoint.x) * switched_world->irs->metricPixelsPerPoint.x) + camera->res->offsetScaling.x;
                     // Vertical
                     params.wrapper.dst.y = arranged.y +
                         ((gscope.activeResolution.height - params.wrapper.dst.h) / 2.0f +
-                         (params.camera_position.y - params.sourcePoint.y) * pixelsPerPoint);
+                         (params.camera_position.y - params.sourcePoint.y) * switched_world->irs->metricPixelsPerPoint.y) + camera->res->offsetScaling.y;
                     // draw to backbuffer
                     SDL_RenderCopyExF(
                         gscope.renderer,
@@ -226,7 +236,7 @@ namespace RoninEngine::Runtime
                     // Send command post render
                     render_sprite_renderer(RenderCommand::PostRender, spriteRenderer, &params.wrapper);
 
-                    ++(camera->camera_resource->culled);
+                    ++(camera->res->culled);
                 }
             }
             layer->second.clear();

@@ -56,15 +56,15 @@ namespace RoninEngine::Runtime
 
                             rendering->src.w = abs(target->m_size.x) * target->sprite->width();
                             rendering->src.h = abs(target->m_size.y) * target->sprite->width();
-                            rendering->dst.w = target->sprite->width() * abs(target->m_size.x) / pixelsPerPoint;
-                            rendering->dst.h = target->sprite->height() * abs(target->m_size.y) / pixelsPerPoint;
+                            rendering->dst.w = target->sprite->width() * abs(target->m_size.x) / switched_world->irs->metricPixelsPerPoint.x;
+                            rendering->dst.h = target->sprite->height() * abs(target->m_size.y) / switched_world->irs->metricPixelsPerPoint.y;
 
                             // generate tiles
                             target->save_texture = SDL_CreateTexture(
                                 // renderer, sdl_default_pixelformat, SDL_TextureAccess::SDL_TEXTUREACCESS_TARGET, rendering->src.w,
                                 // rendering->src.h);
                                 gscope.renderer,
-                                ronin_default_pixelformat,
+                                defaultPixelFormat,
                                 SDL_TextureAccess::SDL_TEXTUREACCESS_TARGET,
                                 1024,
                                 1024);
@@ -160,9 +160,9 @@ namespace RoninEngine::Runtime
                     SDL_SetTextureAlphaMod(target->save_texture, target->color.a);
                 }
 
-                rendering->dst.w = (rendering->dst.w * target->m_size.x / pixelsPerPoint) *
+                rendering->dst.w = (rendering->dst.w * target->m_size.x / switched_world->irs->metricPixelsPerPoint.x) *
                     ((static_cast<int>(target->flip) & static_cast<int>(SpriteRenderFlip::FlipHorizontal)) ? -1 : 1);
-                rendering->dst.h = (rendering->dst.h * target->m_size.y / pixelsPerPoint) *
+                rendering->dst.h = (rendering->dst.h * target->m_size.y / switched_world->irs->metricPixelsPerPoint.y) *
                     ((static_cast<int>(target->flip) & static_cast<int>(SpriteRenderFlip::FlipVertical)) ? -1 : 1);
 
                 rendering->texture = target->save_texture;

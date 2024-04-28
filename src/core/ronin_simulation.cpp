@@ -151,7 +151,8 @@ namespace RoninEngine
 
             // Calculate FPS and timing
             debugLabels[0].format.resize(debugLabels[0].labelLen);
-            snprintf(buffer, sizeof(buffer), "%d (%d ms)", static_cast<int>(1 / Time::deltaTime()), debugLabels[0].value);
+            snprintf(
+                buffer, sizeof(buffer), "%d (%d ms)", static_cast<int>(Math::Max<int>(0, 1 / Time::deltaTime())), debugLabels[0].value);
             debugLabels[0].format += buffer;
 
             // format text
@@ -180,7 +181,8 @@ namespace RoninEngine
         RenderUtility::SetColor(Color(0, 0, 0, 100));
 
         // Draw box
-        RenderUtility::DrawFillRect(g_pos, g_size.x / pixelsPerPoint, g_size.y / pixelsPerPoint);
+        RenderUtility::DrawFillRect(
+            g_pos, g_size.x / switched_world->irs->metricPixelsPerPoint.x, g_size.y / switched_world->irs->metricPixelsPerPoint.y);
 
         screen_point.x = 10;
         screen_point.y -= static_cast<int>(g_size.y) - debugFontSize / 2;
@@ -734,6 +736,9 @@ namespace RoninEngine
                         Matrix::matrix_remove(switched_world->irs->mainObject->transform());
                     }
 
+                    // Set Metric as default
+                    switched_world->irs->metricPixelsPerPoint = Vec2::one * defaultPixelsPerPoint;
+
                     gscope.internalWorldCanStart = false;
 
                     switched_world->OnAwake();
@@ -835,8 +840,7 @@ namespace RoninEngine
                     fps = 1 / internal_delta_time;
                     std::sprintf(
                         title,
-                        "FPS:%.1f Memory:%sMiB, "
-                        "Ronin Objects:%s, Internal Objects:%s, Frames:%s",
+                        "FPS:%.1f Memory:%sMiB, Ronin Objects:%s, Internal Objects:%s, Frames:%s",
                         fps,
                         Math::NumBeautify(Perfomances::GetMemoryUsed() / 1024 / 1024).c_str(),
                         Math::NumBeautify(RoninMemory::total_allocated()).c_str(),
@@ -1017,10 +1021,12 @@ namespace RoninEngine
             // Apply Brightness
             [&]() {
                 return (
-                    refSettings.brightness != settings->brightness && SDL_SetWindowBrightness(gscope.activeWindow, settings->brightness) == 0);
+                    refSettings.brightness != settings->brightness &&
+                    SDL_SetWindowBrightness(gscope.activeWindow, settings->brightness) == 0);
             },
             // Apply Window Opacity
-            [&]() {
+            [&]()
+            {
                 return (
                     refSettings.windowOpacity != settings->windowOpacity &&
                     SDL_SetWindowOpacity(gscope.activeWindow, settings->windowOpacity) == 0);
