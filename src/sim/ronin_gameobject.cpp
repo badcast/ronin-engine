@@ -16,6 +16,7 @@ namespace RoninEngine::Runtime
     template RONIN_API Spotlight *GameObject::AddComponent<Spotlight>();
     template RONIN_API Terrain2D *GameObject::AddComponent<Terrain2D>();
     template RONIN_API ParticleSystem *GameObject::AddComponent<ParticleSystem>();
+    template RONIN_API Collision *GameObject::AddComponent<Collision>();
     // Get Component
     template RONIN_API MoveController2D *GameObject::GetComponent<MoveController2D>() const;
     template RONIN_API SpriteRenderer *GameObject::GetComponent<SpriteRenderer>() const;
@@ -24,6 +25,7 @@ namespace RoninEngine::Runtime
     template RONIN_API Terrain2D *GameObject::GetComponent<Terrain2D>() const;
     template RONIN_API Transform *GameObject::GetComponent<Transform>() const;
     template RONIN_API ParticleSystem *GameObject::GetComponent<ParticleSystem>() const;
+    template RONIN_API Collision *GameObject::GetComponent<Collision>() const;
     // Remove Component
     template RONIN_API bool GameObject::RemoveComponent<MoveController2D>();
     template RONIN_API bool GameObject::RemoveComponent<SpriteRenderer>();
@@ -31,6 +33,7 @@ namespace RoninEngine::Runtime
     template RONIN_API bool GameObject::RemoveComponent<Spotlight>();
     template RONIN_API bool GameObject::RemoveComponent<Terrain2D>();
     template RONIN_API bool GameObject::RemoveComponent<ParticleSystem>();
+    template RONIN_API bool GameObject::RemoveComponent<Collision>();
 
     GameObject::GameObject() : GameObject(DESCRIBE_AS_MAIN_OFF(GameObject))
     {
@@ -48,6 +51,17 @@ namespace RoninEngine::Runtime
     bool GameObject::isActive()
     {
         return m_active;
+    }
+
+    bool GameObject::isActiveInHierarchy()
+    {
+        Transform *p;
+
+        p = transform();
+        for(; p && p->_owner->m_active;)
+            p = p->m_parent;
+
+        return p == nullptr;
     }
 
     void GameObject::SetActive(bool state)

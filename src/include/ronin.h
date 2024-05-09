@@ -69,6 +69,7 @@
 #include "SpriteRenderer.h"
 #include "Terrain2D.h"
 #include "ParticleSystem.h"
+#include "Collision.h"
 
 #include "Transform.h"
 #include "UI.h"

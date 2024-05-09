@@ -37,6 +37,7 @@
 #include "UI.h"
 #include "ParticleSystem.h"
 #include "Atlas.h"
+#include "Collision.h"
 
 #include "NavMesh.h"
 #include "RenderUtility.h"

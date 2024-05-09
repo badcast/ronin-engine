@@ -38,6 +38,10 @@ namespace RoninEngine
                 {
                     RoninMemory::alloc_self(cloneComponent, *instance);
                 }
+                else if constexpr(std::is_same<T, Collision>::value)
+                {
+                    RoninMemory::alloc_self(cloneComponent, *instance);
+                }
                 else if constexpr(std::is_same<T, Behaviour>::value)
                 {
                     RoninMemory::alloc_self(cloneComponent, *instance);
@@ -57,7 +61,7 @@ namespace RoninEngine
                         throw std::runtime_error("self is null");
 
                     if(!switched_world->isHierarchy())
-                        throw std::runtime_error(">mainObject is null");
+                        throw std::runtime_error("mainObject is null");
 
                     auto mainObj = switched_world->irs->mainObject;
                     auto root = mainObj->transform();
@@ -124,6 +128,10 @@ namespace RoninEngine
                     // skip transform existent component
                     continue;
                 }
+                else if(dynamic_cast<Collision *>(replacement))
+                {
+                    replacement = instance_new<Collision>(false, reinterpret_cast<Collision *>(replacement), nullptr);
+                }
                 else if(dynamic_cast<SpriteRenderer *>(replacement))
                 {
                     replacement = instance_new<SpriteRenderer>(false, reinterpret_cast<SpriteRenderer *>(replacement), nullptr);
@@ -131,6 +139,7 @@ namespace RoninEngine
                 else if(dynamic_cast<Camera2D *>(replacement))
                 {
                     replacement = instance_new<Camera2D>(false, reinterpret_cast<Camera2D *>(replacement), nullptr);
+
                     //} else if (dynamic_cast<Behaviour*>(replacement)) {
 
                     /// replacement = internal_factory_base<Behaviour>(false, reinterpret_cast<Behaviour*>(replacement),

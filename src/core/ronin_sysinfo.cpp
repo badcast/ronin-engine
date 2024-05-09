@@ -8,6 +8,7 @@
 
 #if USE_PROCFS
 #include <cstdio>
+#include <fstream>
 #endif
 
 #endif

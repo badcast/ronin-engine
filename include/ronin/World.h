@@ -51,6 +51,9 @@ namespace RoninEngine::Runtime
         int MatrixCacheCount();
         int MatrixCacheClear();
 
+        // TODO: Make function for moving out GameObject on to any World save
+        void ObjectMoveTo(GameObject *);
+
         std::string GetTreeOfHierarchy() const;
 
         static World *self();

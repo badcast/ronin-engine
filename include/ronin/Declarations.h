@@ -74,6 +74,7 @@ namespace RoninEngine
         class Component;
         class Behaviour;
         class Physics2D;
+        class Collision;
 
         // factory
         class GameObject;
