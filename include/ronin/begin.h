@@ -5,6 +5,7 @@
 #include <string>
 #include <functional>
 #include <limits>
+#include <algorithm>
 
 // standard listing includes
 #include <list>
