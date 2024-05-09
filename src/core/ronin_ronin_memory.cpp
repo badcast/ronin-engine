@@ -6,13 +6,20 @@ namespace RoninEngine::Runtime
     {
         using namespace RoninEngine;
 
+#define USE_SDL_MEM 0
+
 #if TEST_MALLOC
         std::set<void *> allocated_leaker;
 #endif
         std::uint64_t __ronin_allocated = 0;
         void *ronin_memory_alloc(std::size_t size)
         {
-            void *mem = std::malloc(size);
+            void *mem =
+#if USE_SDL_MEM
+                SDL_malloc(size);
+#else
+                std::malloc(size);
+#endif
 
             if(mem == nullptr)
                 return nullptr;
@@ -35,7 +42,12 @@ namespace RoninEngine::Runtime
             allocated_leaker.erase(memory);
 #endif
             void *prev = memory;
-            memory = std::realloc(memory, size);
+            memory =
+#if USE_SDL_MEM
+                SDL_realloc(memory, size);
+#else
+                std::realloc(memory, size);
+#endif
             if(prev == nullptr && memory != nullptr)
                 ++__ronin_allocated;
             else if(prev != nullptr && size == 0)
@@ -48,7 +60,11 @@ namespace RoninEngine::Runtime
 
         void ronin_memory_free(void *memory)
         {
+#if USE_SDL_MEM
+            SDL_free(memory);
+#else
             std::free(memory);
+#endif
             if(__ronin_allocated-- == 0)
                 RoninSimulator::ShowMessageFail("Fail on free memory");
 #if TEST_MALLOC
