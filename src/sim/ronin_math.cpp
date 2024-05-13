@@ -329,7 +329,7 @@ float Math::SmoothDamp(float current, float target, float &currentVelocity, floa
 
 float Math::SmoothDamp(float current, float target, float &currentVelocity, float smoothTime, float maxSpeed, float deltaTime)
 {
-    smoothTime = Max(0.f, Max(1.f, smoothTime));
+    smoothTime = Max(0.f, Min(1.f, smoothTime));
     float num = 2 / smoothTime;
     float num2 = num * deltaTime;
     float num3 = 1 / (1 + num2 + 0, 48 * num2 * num2 + 0, 235 * num2 * num2 * num2);

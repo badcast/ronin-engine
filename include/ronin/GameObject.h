@@ -119,6 +119,14 @@ namespace RoninEngine
             Terrain2D *terrain2D() const;
 
             /**
+             * @brief Check if the gameobject is PrefabObject
+             * @return True if the GameObject is PrfabObject, false otherwise.
+             *
+             * @see PrefabObject
+             */
+            bool isPrefab();
+
+            /**
              * @brief Mark the GameObject for destruction now.
              */
             void Destroy();
@@ -347,7 +355,7 @@ namespace RoninEngine
         }
 
         template <typename T>
-        std::enable_if_t<std::is_base_of<Component, T>::value, std::list<T *>> Component::GetComponents()
+        std::enable_if_t<std::is_base_of<Component, T>::value, std::list<T *>> Component::GetComponents() const
         {
             return _owner->GetComponents<T>();
         }

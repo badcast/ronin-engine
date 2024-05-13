@@ -17,7 +17,7 @@ namespace RoninEngine::Runtime
         std::function<bool(Collision *self, Collision *target)> onCollision;
 
         Collision();
-        Collision(const std::string& name);
+        Collision(const std::string &name);
         Collision(const Collision &);
 
         bool setSizeFrom(SpriteRenderer *spriteRenderer);

@@ -68,41 +68,45 @@ namespace RoninEngine::Runtime
         if(!onCollision)
             return;
 
-        std::vector<Transform *> result_cast =
+        std::vector<Transform *> casts =
             Physics2D::GetCircleCast<std::vector<Transform *>>(transform()->position(), (collideSize.x + collideSize.y) * 2, targetLayer);
 
         Rectf r1, r2;
-        float a, b;
-        a = transform()->angle() * Math::deg2rad;
+        float angleLhs, angleRhs;
+        std::list<Collision*> targets;
+
+        angleLhs = transform()->angle() * Math::deg2rad;
         r1.w = collideSize.x;
         r1.h = collideSize.y;
         r1.x = transform()->position().x - r1.w / 2;
         r1.y = transform()->position().y - r1.h / 2;
 
-        for(Transform *cast : result_cast)
+        for(Transform *cast : casts)
         {
-            Collision *target = cast->GetComponent<Collision>();
-
-            if(target == nullptr)
-                continue;
-            b = target->transform()->angle() * Math::deg2rad;
-            r2.w = target->collideSize.x;
-            r2.h = target->collideSize.y;
-            r2.x = target->transform()->position().x - r2.w / 2;
-            r2.y = target->transform()->position().y - r2.h / 2;
-            if(CheckCollision(r1, a, r2, b))
+            targets = cast->GetComponents<Collision>();
+            for(Collision *target : targets)
             {
-                if(!onCollision(this, target)) // awake collision
+                angleRhs = target->transform()->angle() * Math::deg2rad;
+                r2.w = target->collideSize.x;
+                r2.h = target->collideSize.y;
+                r2.x = target->transform()->position().x - r2.w / 2;
+                r2.y = target->transform()->position().y - r2.h / 2;
+                if(CheckCollision(r1, angleLhs, r2, angleRhs))
                 {
-                    break;
+                    if(!onCollision(this, target)) // awake collision
+                    {
+                        cast = nullptr;
+                        break;
+                    }
                 }
             }
+            if(cast == nullptr)
+                break;
         }
     }
 
     void Collision::OnGizmos()
     {
-
         RenderUtility::SetColor(Color::lime);
         RenderUtility::DrawRectangleRotate(transform()->position(), collideSize, transform()->angle() * Math::deg2rad);
     }

@@ -38,10 +38,6 @@ namespace RoninEngine
                 {
                     RoninMemory::alloc_self(cloneComponent, *instance);
                 }
-                else if constexpr(std::is_same<T, Collision>::value)
-                {
-                    RoninMemory::alloc_self(cloneComponent, *instance);
-                }
                 else if constexpr(std::is_same<T, Behaviour>::value)
                 {
                     RoninMemory::alloc_self(cloneComponent, *instance);
@@ -102,8 +98,11 @@ namespace RoninEngine
 
         constexpr char _cloneStr[] = " (clone)";
 
-        GameObject *__instantiate(GameObject *obj, std::vector<std::pair<Transform *, Transform *>> &postApplyProp)
+        GameObject *__instantiate(GameObject *obj)
         {
+
+            // TODO: Use Reflectable Class <Prototype> class reference for instance a new object from method <Clone>
+
             GameObject *clone;
 
             clone = create_game_object((obj->m_name.find(_cloneStr) == std::string::npos ? obj->m_name + _cloneStr : obj->m_name));
@@ -115,22 +114,25 @@ namespace RoninEngine
                 {
                     Transform *clonedTransform = clone->transform();
                     clonedTransform->_angle_ = refTransform->_angle_;
-                    //  parent->position(t->_position);
-                    postApplyProp.emplace_back(clonedTransform, refTransform);
-                    //  Clone childs recursive
+                    clonedTransform->position(refTransform->_position);
                     for(Transform *y : refTransform->hierarchy)
                     {
-                        GameObject *yClone = __instantiate(y->gameObject(), postApplyProp);
+                        // Clone childs recursive
+                        GameObject *yClone = __instantiate(y->gameObject());
                         yClone->transform()->setParent(clonedTransform, false);
-                        yClone->m_name = refTransform->gameObject()->m_name; // put " (clone)" name
+                        yClone->m_name = refTransform->gameObject()->m_name;
                         yClone->m_name.shrink_to_fit();
                     }
-                    // skip transform existent component
                     continue;
                 }
-                else if(dynamic_cast<Collision *>(replacement))
+                else if(Collision *cloneIt = dynamic_cast<Collision *>(replacement))
                 {
-                    replacement = instance_new<Collision>(false, reinterpret_cast<Collision *>(replacement), nullptr);
+                    Collision * cloneFrom = cloneIt;
+                    cloneIt = clone->AddComponent<Collision>();
+                    cloneIt->targetLayer = cloneFrom->targetLayer;
+                    cloneIt->collideSize = cloneFrom->collideSize;
+                    cloneIt->_enable = cloneFrom->_enable;
+                    continue;
                 }
                 else if(dynamic_cast<SpriteRenderer *>(replacement))
                 {
@@ -159,17 +161,11 @@ namespace RoninEngine
 
         GameObject *Instantiate(GameObject *obj)
         {
-            std::vector<std::pair<Transform *, Transform *>> postApplyProp;
-
             if(obj == nullptr)
                 return nullptr;
 
-            obj = __instantiate(obj, postApplyProp);
-            for(auto iter = std::rbegin(postApplyProp); iter != std::rend(postApplyProp); ++iter)
-            {
-                iter->first->position(iter->second->_position);
-                iter->first->angle(iter->second->_angle_);
-            }
+            obj = __instantiate(obj);
+
             return obj;
         }
 

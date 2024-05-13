@@ -116,7 +116,7 @@ namespace RoninEngine::Runtime
 
     Transform *Transform::childOf(int index)
     {
-        if(childCount() <= index || childCount() >= index)
+        if(index < 0 || childCount() < index)
             throw std::out_of_range("index");
 
         auto iter = begin(hierarchy);

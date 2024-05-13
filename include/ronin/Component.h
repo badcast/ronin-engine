@@ -177,7 +177,7 @@ namespace RoninEngine
              * @return A list of pointers to the components of the specified type.
              */
             template <typename T>
-            std::enable_if_t<std::is_base_of<Component, T>::value, std::list<T *>> GetComponents();
+            std::enable_if_t<std::is_base_of<Component, T>::value, std::list<T *>> GetComponents() const;
         };
 
     } // namespace Runtime

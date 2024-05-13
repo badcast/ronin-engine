@@ -140,6 +140,11 @@ namespace RoninEngine::Runtime
         return GetComponent<Terrain2D>();
     }
 
+    bool GameObject::isPrefab()
+    {
+        return transform()->m_parent == nullptr && switched_world->irs->mainObject != this;
+    }
+
     void GameObject::Destroy()
     {
         Runtime::Destroy(this, 0);

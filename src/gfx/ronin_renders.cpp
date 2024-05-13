@@ -26,8 +26,8 @@ namespace RoninEngine::Runtime
 
                             target->save_texture = render_cache_texture(target->sprite);
                             rendering->src = target->sprite->m_rect;
-                            rendering->dst.w = target->sprite->width();
-                            rendering->dst.h = target->sprite->height();
+                            rendering->dst.w = target->sprite->m_rect.w;
+                            rendering->dst.h = target->sprite->m_rect.h;
 
                             break;
                             target->save_texture = SDL_CreateTextureFromSurface(gscope.renderer, target->sprite->surface);
