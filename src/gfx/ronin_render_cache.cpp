@@ -16,8 +16,7 @@ namespace RoninEngine::Runtime
 
         for(;;)
         {
-            texture = SDL_CreateTexture(
-                env.renderer, ronin_default_pixelformat, SDL_TEXTUREACCESS_STREAMING, surface->clip_rect.w, surface->clip_rect.h);
+            texture = SDL_CreateTexture(env.renderer, ronin_default_pixelformat, SDL_TEXTUREACCESS_STREAMING, surface->clip_rect.w, surface->clip_rect.h);
             if(texture == nullptr)
             {
                 RoninSimulator::Log(SDL_GetError());
@@ -98,16 +97,14 @@ namespace RoninEngine::Runtime
         return texture;
     }
 
-    void render_texture_extension(
-        SDL_Texture *texture, const Vec2Int *baseSize, const SDL_Rect *srcFrom, const SDL_Rect *extent, float angleRad)
+    void render_texture_extension(SDL_Texture *texture, const Vec2Int *baseSize, const SDL_Rect *srcFrom, const SDL_Rect *extent, float angleRad)
     {
         int access;
         SDL_Rect dst, src, srcCopy;
         SDL_Texture *destTexture;
         SDL_Surface *extentSurface = nullptr, *surfSrc = nullptr;
 
-        if(texture == nullptr || srcFrom == nullptr || extent == nullptr || extent->w <= 0 || extent->h <= 0 ||
-           (baseSize && (baseSize->x < 1 || baseSize->y < 1)))
+        if(texture == nullptr || srcFrom == nullptr || extent == nullptr || extent->w <= 0 || extent->h <= 0 || (baseSize && (baseSize->x < 1 || baseSize->y < 1)))
         {
             return;
         }

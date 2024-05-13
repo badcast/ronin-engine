@@ -65,7 +65,7 @@ namespace RoninEngine::Runtime
     {
         Sprite *sprite;
 
-        size =Vec2::Scale(size,switched_world->irs->metricPixelsPerPoint);
+        size = Vec2::Scale(size, switched_world->irs->metricPixelsPerPoint);
         SDL_Surface *surface = SDL_CreateRGBSurfaceWithFormat(0, size.x, size.y, 32, defaultPixelFormat);
         if(surface == nullptr)
         {
@@ -87,7 +87,7 @@ namespace RoninEngine::Runtime
     {
         Sprite *sprite;
 
-        size = Vec2::Scale(size,switched_world->irs->metricPixelsPerPoint);
+        size = Vec2::Scale(size, switched_world->irs->metricPixelsPerPoint);
         height *= switched_world->irs->metricPixelsPerPoint.y;
         SDL_Surface *surface = SDL_CreateRGBSurfaceWithFormat(0, size.x, size.y, 32, defaultPixelFormat);
         if(surface == nullptr)

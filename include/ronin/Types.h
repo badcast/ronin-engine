@@ -43,8 +43,7 @@ namespace RoninEngine
             RRect(const oth_rect &other)
             {
                 static_assert(std::is_same<T, int>::value && std::is_same<oth_rect, native_rect_t>::value, "Rect not set from SDL_FRect");
-                static_assert(
-                    std::is_same<T, float>::value && std::is_same<oth_rect, native_frect_t>::value, "Rectf not set from SDL_Rect");
+                static_assert(std::is_same<T, float>::value && std::is_same<oth_rect, native_frect_t>::value, "Rectf not set from SDL_Rect");
                 this->x = other.x;
                 this->y = other.y;
                 this->w = other.w;

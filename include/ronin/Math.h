@@ -170,8 +170,7 @@ namespace RoninEngine::Runtime
 
         static float SmoothDampAngle(float current, float target, float &currentVelocity, float smoothTime);
 
-        static float SmoothDampAngle(
-            float current, float target, float &currentVelocity, float smoothTime, float maxSpeed, float deltaTime);
+        static float SmoothDampAngle(float current, float target, float &currentVelocity, float smoothTime, float maxSpeed, float deltaTime);
 
         static float SmoothStep(float from, float to, float t);
 

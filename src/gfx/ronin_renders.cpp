@@ -92,8 +92,7 @@ namespace RoninEngine::Runtime
                                         {
                                             dest.x = x * dest.w;
                                             dest.y = y * dest.h;
-                                            SDL_RenderCopy(
-                                                gscope.renderer, temp_texture, (SDL_Rect *) &target->sprite->m_rect, (SDL_Rect *) &dest);
+                                            SDL_RenderCopy(gscope.renderer, temp_texture, (SDL_Rect *) &target->sprite->m_rect, (SDL_Rect *) &dest);
                                         }
                                     }
                                     break;
@@ -107,30 +106,20 @@ namespace RoninEngine::Runtime
                                             dest.x = x * dest.w;
                                             dest.y = y * dest.h;
 
-                                            SDL_RenderCopy(
-                                                gscope.renderer, temp_texture, (SDL_Rect *) &target->sprite->m_rect, (SDL_Rect *) &dest);
+                                            SDL_RenderCopy(gscope.renderer, temp_texture, (SDL_Rect *) &target->sprite->m_rect, (SDL_Rect *) &dest);
                                         }
                                     }
                                     // place remained
-                                    for(x = 0, dest.y = rendering->src.h / dest.h * dest.h, dest.h = target->m_size.y - dest.y;
-                                        x < rendering->src.x;
-                                        ++x)
+                                    for(x = 0, dest.y = rendering->src.h / dest.h * dest.h, dest.h = target->m_size.y - dest.y; x < rendering->src.x; ++x)
                                     {
                                         dest.x = x * dest.w;
-                                        SDL_RenderCopy(
-                                            gscope.renderer, temp_texture, (SDL_Rect *) &target->sprite->m_rect, (SDL_Rect *) &dest);
+                                        SDL_RenderCopy(gscope.renderer, temp_texture, (SDL_Rect *) &target->sprite->m_rect, (SDL_Rect *) &dest);
                                     }
                                     ++rendering->src.y;
-                                    for(y = 0,
-                                    dest.x = rendering->src.w / dest.w * dest.w,
-                                    dest.h = target->sprite->height(),
-                                    dest.w = target->m_size.x - dest.x;
-                                        y < rendering->src.y;
-                                        ++y)
+                                    for(y = 0, dest.x = rendering->src.w / dest.w * dest.w, dest.h = target->sprite->height(), dest.w = target->m_size.x - dest.x; y < rendering->src.y; ++y)
                                     {
                                         dest.y = y * dest.h;
-                                        SDL_RenderCopy(
-                                            gscope.renderer, temp_texture, (SDL_Rect *) &target->sprite->m_rect, (SDL_Rect *) &dest);
+                                        SDL_RenderCopy(gscope.renderer, temp_texture, (SDL_Rect *) &target->sprite->m_rect, (SDL_Rect *) &dest);
                                     }
 
                                     break;
@@ -144,8 +133,7 @@ namespace RoninEngine::Runtime
                     target->save_src = rendering->src;
                     target->save_dst = rendering->dst;
 
-                    SDL_GetTextureColorMod(
-                        target->save_texture, &target->prevColorTexture.r, &target->prevColorTexture.g, &target->prevColorTexture.b);
+                    SDL_GetTextureColorMod(target->save_texture, &target->prevColorTexture.r, &target->prevColorTexture.g, &target->prevColorTexture.b);
                     SDL_GetTextureAlphaMod(target->save_texture, &target->prevColorTexture.a);
                 }
                 else
@@ -160,10 +148,8 @@ namespace RoninEngine::Runtime
                     SDL_SetTextureAlphaMod(target->save_texture, target->color.a);
                 }
 
-                rendering->dst.w = (rendering->dst.w * target->m_size.x / switched_world->irs->metricPixelsPerPoint.x) *
-                    ((static_cast<int>(target->flip) & static_cast<int>(SpriteRenderFlip::FlipHorizontal)) ? -1 : 1);
-                rendering->dst.h = (rendering->dst.h * target->m_size.y / switched_world->irs->metricPixelsPerPoint.y) *
-                    ((static_cast<int>(target->flip) & static_cast<int>(SpriteRenderFlip::FlipVertical)) ? -1 : 1);
+                rendering->dst.w = (rendering->dst.w * target->m_size.x / switched_world->irs->metricPixelsPerPoint.x) * ((static_cast<int>(target->flip) & static_cast<int>(SpriteRenderFlip::FlipHorizontal)) ? -1 : 1);
+                rendering->dst.h = (rendering->dst.h * target->m_size.y / switched_world->irs->metricPixelsPerPoint.y) * ((static_cast<int>(target->flip) & static_cast<int>(SpriteRenderFlip::FlipVertical)) ? -1 : 1);
 
                 rendering->texture = target->save_texture;
             }

@@ -169,8 +169,7 @@ namespace RoninEngine::Runtime
             Light *light;
         } _utp;
 
-        if(end(m_components) ==
-           std::find_if(begin(m_components), end(m_components), std::bind(std::equal_to<Component *>(), std::placeholders::_1, component)))
+        if(end(m_components) == std::find_if(begin(m_components), end(m_components), std::bind(std::equal_to<Component *>(), std::placeholders::_1, component)))
         {
             component->_owner = this;
             m_components.emplace_back(component);

@@ -104,20 +104,12 @@ Color Color::operator=(const native_color_t &rhs)
 
 Color Color::operator+(const Color &rhs)
 {
-    return Color(
-        Math::Min(static_cast<int>(r) + rhs.r, 0xFF),
-        Math::Min(static_cast<int>(g) + rhs.g, 0xFF),
-        Math::Min(static_cast<int>(b) + rhs.b, 0xFF),
-        Math::Min(static_cast<int>(a) + rhs.a, 0xFF));
+    return Color(Math::Min(static_cast<int>(r) + rhs.r, 0xFF), Math::Min(static_cast<int>(g) + rhs.g, 0xFF), Math::Min(static_cast<int>(b) + rhs.b, 0xFF), Math::Min(static_cast<int>(a) + rhs.a, 0xFF));
 }
 
 Color Color::operator-(const Color &rhs)
 {
-    return Color(
-        Math::Max(static_cast<int>(r) - rhs.r, 0),
-        Math::Max(static_cast<int>(g) - rhs.g, 0),
-        Math::Max(static_cast<int>(b) - rhs.b, 0),
-        Math::Max(static_cast<int>(a) - rhs.a, 0));
+    return Color(Math::Max(static_cast<int>(r) - rhs.r, 0), Math::Max(static_cast<int>(g) - rhs.g, 0), Math::Max(static_cast<int>(b) - rhs.b, 0), Math::Max(static_cast<int>(a) - rhs.a, 0));
 }
 
 bool Color::operator==(const Color &rhs)
@@ -228,8 +220,7 @@ Color Color::HSVToRGB(float h, float s, float v)
         b = x;
     }
 
-    return Color(
-        static_cast<std::uint8_t>((r + m) * 255), static_cast<std::uint8_t>((g + m) * 255), static_cast<std::uint8_t>((b + m) * 255));
+    return Color(static_cast<std::uint8_t>((r + m) * 255), static_cast<std::uint8_t>((g + m) * 255), static_cast<std::uint8_t>((b + m) * 255));
 }
 
 std::tuple<float, float, float> Color::RGBToHSV(std::uint8_t r, std::uint8_t g, std::uint8_t b)
@@ -304,23 +295,7 @@ Color Color::Lerp(Color start, Color end, float t)
 
 std::vector<Color> Color::GetBasicColors()
 {
-    return {
-        Color::red,
-        Color::green,
-        Color::blue,
-        Color::silver,
-        Color::gray,
-        Color::maroon,
-        Color::purple,
-        Color::fuchsia,
-        Color::lime,
-        Color::olive,
-        Color::yellow,
-        Color::navy,
-        Color::teal,
-        Color::aqua,
-        Color::black,
-        Color::white};
+    return {Color::red, Color::green, Color::blue, Color::silver, Color::gray, Color::maroon, Color::purple, Color::fuchsia, Color::lime, Color::olive, Color::yellow, Color::navy, Color::teal, Color::aqua, Color::black, Color::white};
 }
 
 std::vector<Color> Color::GetExtendedColors()

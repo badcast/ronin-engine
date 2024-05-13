@@ -246,8 +246,7 @@ namespace json
         }
 
         template <typename T>
-        JSON(T i, typename enable_if<is_integral<T>::value && !is_same<T, bool>::value>::type * = 0)
-            : Internal((long) i), Type(Class::Integral)
+        JSON(T i, typename enable_if<is_integral<T>::value && !is_same<T, bool>::value>::type * = 0) : Internal((long) i), Type(Class::Integral)
         {
         }
 

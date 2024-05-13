@@ -13,13 +13,7 @@ namespace RoninEngine::Runtime
         if((lastInitResult = (Mix_Init(currentInits))) < 1)
             return -1;
 
-        if(Mix_OpenAudioDevice(
-               MIX_DEFAULT_FREQUENCY,
-               MIX_DEFAULT_FORMAT,
-               MIX_DEFAULT_CHANNELS,
-               CHUNK_SIZE,
-               NULL,
-               SDL_AUDIO_ALLOW_FREQUENCY_CHANGE | SDL_AUDIO_ALLOW_CHANNELS_CHANGE) != 0)
+        if(Mix_OpenAudioDevice(MIX_DEFAULT_FREQUENCY, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS, CHUNK_SIZE, NULL, SDL_AUDIO_ALLOW_FREQUENCY_CHANGE | SDL_AUDIO_ALLOW_CHANNELS_CHANGE) != 0)
         {
             lastInitResult = 0;
             Mix_Quit();

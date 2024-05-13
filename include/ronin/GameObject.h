@@ -247,8 +247,7 @@ namespace RoninEngine
         template <typename T>
         inline std::enable_if_t<std::is_base_of<Component, T>::value, T *> GameObject::AddComponent()
         {
-            static_assert(
-                !(std::is_same<T, Transform>::value || std::is_base_of<Transform, T>::value), "Transform component can't be assigned");
+            static_assert(!(std::is_same<T, Transform>::value || std::is_base_of<Transform, T>::value), "Transform component can't be assigned");
 
             // init component
             T *component = RoninMemory::alloc<T>();
@@ -290,9 +289,7 @@ namespace RoninEngine
         template <typename T>
         inline std::enable_if_t<std::is_base_of<Component, T>::value, bool> GameObject::RemoveComponent()
         {
-            static_assert(
-                !(std::is_same<T, Transform>::value || std::is_base_of<Transform, T>::value),
-                "Transform component can't remove, basic component type");
+            static_assert(!(std::is_same<T, Transform>::value || std::is_base_of<Transform, T>::value), "Transform component can't remove, basic component type");
 
             T *target = GetComponent<T>();
             if(target == nullptr)
@@ -325,10 +322,7 @@ namespace RoninEngine
             }
             else
             {
-                auto iter = std::find_if(
-                    std::cbegin(m_components),
-                    std::cend(m_components),
-                    [](const Component *c) { return dynamic_cast<const T *>(c) != nullptr; });
+                auto iter = std::find_if(std::cbegin(m_components), std::cend(m_components), [](const Component *c) { return dynamic_cast<const T *>(c) != nullptr; });
 
                 if(iter != std::end(m_components))
                     return static_cast<T *>(*iter);

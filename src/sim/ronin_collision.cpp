@@ -68,12 +68,11 @@ namespace RoninEngine::Runtime
         if(!onCollision)
             return;
 
-        std::vector<Transform *> casts =
-            Physics2D::GetCircleCast<std::vector<Transform *>>(transform()->position(), (collideSize.x + collideSize.y) * 2, targetLayer);
+        std::vector<Transform *> casts = Physics2D::GetCircleCast<std::vector<Transform *>>(transform()->position(), (collideSize.x + collideSize.y) * 2, targetLayer);
 
         Rectf r1, r2;
         float angleLhs, angleRhs;
-        std::list<Collision*> targets;
+        std::list<Collision *> targets;
 
         angleLhs = transform()->angle() * Math::deg2rad;
         r1.w = collideSize.x;

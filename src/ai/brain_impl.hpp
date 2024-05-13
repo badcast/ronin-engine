@@ -212,10 +212,7 @@ void BRAIN_DEFINE::randomize_hardware(int flagFilter)
     do
     {
         lhs = static_cast<std::uint32_t>(_rand_() & flagFilter);
-        memcpy(
-            reinterpret_cast<void *>(reinterpret_cast<std::size_t>(neurons) + _seg_off - rhs),
-            &lhs,
-            std::min(rhs, (std::uint32_t) sizeof(std::uint32_t)));
+        memcpy(reinterpret_cast<void *>(reinterpret_cast<std::size_t>(neurons) + _seg_off - rhs), &lhs, std::min(rhs, (std::uint32_t) sizeof(std::uint32_t)));
         rhs -= std::min(rhs, static_cast<std::uint32_t>(sizeof(std::uint32_t)));
     } while(rhs > 0);
 }
@@ -372,8 +369,7 @@ INeuron *BRAIN_DEFINE::get(const ISite &range)
 {
     INeuron *result = nullptr;
     if(contains(range))
-        result =
-            reinterpret_cast<INeuron *>(reinterpret_cast<std::size_t>(neurons) + _seg_off + (range.x * _ysize + range.y) * sizeof(INeuron));
+        result = reinterpret_cast<INeuron *>(reinterpret_cast<std::size_t>(neurons) + _seg_off + (range.x * _ysize + range.y) * sizeof(INeuron));
     return result;
 }
 

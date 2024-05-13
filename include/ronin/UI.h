@@ -1,12 +1,29 @@
 #pragma once
 
-#include "begin.h"
 #include "Controls.h"
+#include "begin.h"
 
 namespace RoninEngine
 {
     namespace UI
     {
+
+#define UI
+
+        /**
+         * @brief The UID not valid ID
+         */
+        enum
+        {
+            NOPARENT = 0
+        };
+
+        enum UILayoutDirection
+        {
+            Vertical,
+            Horizontal
+        };
+
         enum Align
         {
             Left,
@@ -18,13 +35,6 @@ namespace RoninEngine
             BottomLeft,
             BottomCenter,
             BottomRight
-        };
-
-#define UI_METHOD
-
-        enum
-        {
-            NOPARENT = 0
         };
 
         enum TextRandomizer_Format
@@ -40,7 +50,7 @@ namespace RoninEngine
             MaskLowwerChar = 32
         };
 
-        static struct
+        struct
         {
             Runtime::Vec2Int dropdownSize {240, 30};
             Runtime::Vec2Int buttonSize {240, 30};
@@ -72,53 +82,41 @@ namespace RoninEngine
             struct GUIResources *handle;
 
         public:
-            UI_METHOD GUI(Runtime::World *);
-            UI_METHOD ~GUI();
+            UI GUI(Runtime::World *);
+            UI ~GUI();
 
-            UI_METHOD uid PushCustomUI(const UIOverlay *custom, const Runtime::Rect &rect, uid parent = NOPARENT);
+            UI uid PushCustomUI(const UIOverlay *custom, const Runtime::Rect &rect, uid parent = NOPARENT);
 
             // Layments
-            UI_METHOD void LayoutNew(Runtime::Rectf region, bool aspect = true);
-            UI_METHOD uid LayoutLabel(const std::string &text);
-            UI_METHOD uid LayoutButton(const std::string &text);
+            UI void LayoutNew(UILayoutDirection direction, Runtime::Rectf region = Runtime::Rectf {.0f, .0f, 1.0f, 1.0f}, bool aspectRatio = true);
 
-            UI_METHOD bool ElementContains(uid id);
+            UI uid LayoutLabel(const std::string &text);
+            UI uid LayoutButton(const std::string &text);
 
-            UI_METHOD uid PushGroup(const RoninEngine::Runtime::Rect &rect);
-            UI_METHOD uid PushGroup();
+            UI bool ElementContains(uid id);
 
-            UI_METHOD uid PushLabel(const std::string &text, const Runtime::Rect &rect, int fontWidth = 13, uid parent = NOPARENT);
-            UI_METHOD uid PushLabel(const std::string &text, const Runtime::Vec2Int &point, int fontWidth = 13, uid parent = NOPARENT);
-            UI_METHOD uid
-            PushButton(const std::string &text, const Runtime::Vec2Int &point, UIEventVoid event_callback = nullptr, uid parent = NOPARENT);
-            UI_METHOD uid
-            PushButton(const std::string &text, const Runtime::Rect &point, UIEventVoid event_callback = nullptr, uid parent = NOPARENT);
-            UI_METHOD uid PushTextEdit(const std::string &text, const Runtime::Vec2Int &point, uid parent = NOPARENT);
-            UI_METHOD uid PushTextEdit(const std::string &text, const Runtime::Rect &rect, uid parent = NOPARENT);
-            UI_METHOD uid PushPictureBox(Runtime::Sprite *sprite, const Runtime::Rect &rect, uid parent = NOPARENT);
-            UI_METHOD uid PushPictureBox(Runtime::Sprite *sprite, const Runtime::Vec2Int &point, uid parent = NOPARENT);
+            UI uid PushGroup(const RoninEngine::Runtime::Rect &rect);
+            UI uid PushGroup();
 
-            UI_METHOD uid
-            PushDropDown(const std::list<std::string> &elements, int index, const Runtime::Rect &rect, UIEventInteger changed, uid parent);
+            UI uid PushLabel(const std::string &text, const Runtime::Rect &rect, int fontWidth = 13, uid parent = NOPARENT);
+            UI uid PushLabel(const std::string &text, const Runtime::Vec2Int &point, int fontWidth = 13, uid parent = NOPARENT);
+            UI uid PushButton(const std::string &text, const Runtime::Vec2Int &point, UIEventVoid event_callback = nullptr, uid parent = NOPARENT);
+            UI uid PushButton(const std::string &text, const Runtime::Rect &point, UIEventVoid event_callback = nullptr, uid parent = NOPARENT);
+            UI uid PushTextEdit(const std::string &text, const Runtime::Vec2Int &point, uid parent = NOPARENT);
+            UI uid PushTextEdit(const std::string &text, const Runtime::Rect &rect, uid parent = NOPARENT);
+            UI uid PushPictureBox(Runtime::Sprite *sprite, const Runtime::Rect &rect, uid parent = NOPARENT);
+            UI uid PushPictureBox(Runtime::Sprite *sprite, const Runtime::Vec2Int &point, uid parent = NOPARENT);
+
+            UI uid PushDropDown(const std::list<std::string> &elements, int index, const Runtime::Rect &rect, UIEventInteger changed, uid parent);
 
             template <typename string_container>
-            UI_METHOD uid PushDropDown(
-                const string_container &container,
-                int index,
-                const Runtime::Vec2Int &point,
-                UIEventInteger changed = nullptr,
-                uid parent = NOPARENT)
+            UI uid PushDropDown(const string_container &container, int index, const Runtime::Vec2Int &point, UIEventInteger changed = nullptr, uid parent = NOPARENT)
             {
                 return PushDropDown(container, index, {point, defaultMakets.dropdownSize}, changed, parent);
             }
 
             template <typename string_container>
-            UI_METHOD uid PushDropDown(
-                const string_container &container,
-                int index,
-                const Runtime::Rect &rect,
-                UIEventInteger changed = nullptr,
-                uid parent = NOPARENT)
+            UI uid PushDropDown(const string_container &container, int index, const Runtime::Rect &rect, UIEventInteger changed = nullptr, uid parent = NOPARENT)
             {
                 using T = typename string_container::value_type;
 
@@ -137,83 +135,77 @@ namespace RoninEngine
                 return PushDropDown(__convert_string, index, rect, changed, parent);
             }
 
-            UI_METHOD uid PushSlider(float value, const Runtime::Vec2Int &point, UIEventFloat changed = nullptr, uid parent = NOPARENT)
+            UI uid PushSlider(float value, const Runtime::Vec2Int &point, UIEventFloat changed = nullptr, uid parent = NOPARENT)
             {
                 return PushSlider(value, 0.f, 1.f, point, changed, parent);
             }
 
-            UI_METHOD uid PushSlider(
-                float value, float min, float max, const Runtime::Vec2Int &point, UIEventFloat changed = nullptr, uid parent = NOPARENT)
+            UI uid PushSlider(float value, float min, float max, const Runtime::Vec2Int &point, UIEventFloat changed = nullptr, uid parent = NOPARENT)
             {
-                return PushSlider(
-                    value,
-                    min,
-                    max,
-                    Runtime::Rect(point.x, point.y, defaultMakets.sliderSize.x, defaultMakets.sliderSize.y),
-                    changed,
-                    parent);
+                return PushSlider(value, min, max, Runtime::Rect(point.x, point.y, defaultMakets.sliderSize.x, defaultMakets.sliderSize.y), changed, parent);
             }
-            UI_METHOD uid
-            PushSlider(float value, float min, float max, const Runtime::Rect &rect, UIEventFloat changed = nullptr, uid parent = NOPARENT);
+            UI uid PushSlider(float value, float min, float max, const Runtime::Rect &rect, UIEventFloat changed = nullptr, uid parent = NOPARENT);
 
-            UI_METHOD uid PushCheckBox(
-                bool checked, const std::string &text, const Runtime::Vec2Int &point, UIEventBool changed = nullptr, uid parent = NOPARENT)
+            UI uid PushCheckBox(bool checked, const std::string &text, const Runtime::Vec2Int &point, UIEventBool changed = nullptr, uid parent = NOPARENT)
             {
                 return PushCheckBox(checked, text, Runtime::Rect {point, defaultMakets.checkboxSize}, changed, parent);
             }
 
-            UI_METHOD uid PushCheckBox(
-                bool checked, const std::string &text, const Runtime::Rect &rect, UIEventBool changed = nullptr, uid parent = NOPARENT);
+            UI uid PushCheckBox(bool checked, const std::string &text, const Runtime::Rect &rect, UIEventBool changed = nullptr, uid parent = NOPARENT);
 
             // property-----------------------------------------------------------------------------------------------------------
 
-            UI_METHOD void ElementSetRect(uid id, const Runtime::Rect &rect);
-            UI_METHOD Runtime::Rect ElementGetRect(uid id);
+            UI void ElementSetRect(uid id, const Runtime::Rect &rect);
+            UI Runtime::Rect ElementGetRect(uid id);
 
-            UI_METHOD void ElementSetText(uid id, const std::string &text);
-            UI_METHOD std::string ElementGetText(uid id);
+            UI void ElementSetText(uid id, const std::string &text);
+            UI std::string ElementGetText(uid id);
 
-            UI_METHOD void ElementSetVisible(uid id, bool state);
-            UI_METHOD bool ElementGetVisible(uid id);
+            UI void ElementSetVisible(uid id, bool state);
+            UI bool ElementGetVisible(uid id);
 
-            UI_METHOD void ElementSetEnable(uid id, bool state);
-            UI_METHOD bool ElementGetEnable(uid id);
+            UI void ElementSetEnable(uid id, bool state);
+            UI bool ElementGetEnable(uid id);
 
-            UI_METHOD void SliderSetValue(uid id, float value);
-            UI_METHOD float SliderGetValue(uid id);
+            UI void SliderSetValue(uid id, float value);
+            UI float SliderGetValue(uid id);
 
-            UI_METHOD bool CheckBoxGetValue(uid id);
-            UI_METHOD void CheckBoxSetValue(uid id, bool value);
+            UI bool CheckBoxGetValue(uid id);
+            UI void CheckBoxSetValue(uid id, bool value);
 
-            UI_METHOD void SliderSetPercentage(uid id, float percentage);
-            UI_METHOD float SliderGetPercentage(uid id);
+            UI void SliderSetPercentage(uid id, float percentage);
+            UI float SliderGetPercentage(uid id);
 
-            UI_METHOD bool ButtonClicked(uid id);
+            UI bool ButtonClicked(uid id);
 
-            UI_METHOD void PictureBoxSetSprite(uid id, Runtime::Sprite *sprite);
-            UI_METHOD Runtime::Sprite *PictureBoxGetSprite(uid id);
+            UI void PictureBoxSetSprite(uid id, Runtime::Sprite *sprite);
+            UI Runtime::Sprite *PictureBoxGetSprite(uid id);
+
+            // Events
+            UI void EventRegisterClicked(uid id, UIEventVoid event);
 
             // grouping-----------------------------------------------------------------------------------------------------------
 
-            UI_METHOD bool IsGroup(uid id);
-            UI_METHOD bool GroupShowAsUnique(uid id) throw();
-            UI_METHOD bool GroupShow(uid id) throw();
-            UI_METHOD bool GroupClose(uid id) throw();
+            UI bool IsGroup(uid id);
+            UI bool GroupShowAsUnique(uid id) throw();
+            UI bool GroupShow(uid id) throw();
+            UI bool GroupClose(uid id) throw();
 
             // other--------------------------------------------------------------------------------------------------------------
 
-            UI_METHOD bool IsMouseOver();
+            UI bool IsMouseOver();
 
-            UI_METHOD void SetInteractable(bool state);
-            UI_METHOD bool GetInteractable();
+            UI void SetInteractable(bool state);
+            UI bool GetInteractable();
 
-            UI_METHOD void SetGeneralCallback(UIEventUserData callback, void *userData);
+            UI void SetGeneralCallback(UIEventUserData callback, void *userData);
 
-            UI_METHOD bool PopElement(uid id);
-            UI_METHOD void PopAllElements();
+            UI bool PopElement(uid id);
+            UI void PopAllElements();
 
-            UI_METHOD bool FocusedGUI();
+            UI bool FocusedGUI();
         };
-#undef UI_METHOD
+
+#undef UI
     } // namespace UI
 } // namespace RoninEngine

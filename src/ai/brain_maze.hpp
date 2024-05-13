@@ -244,10 +244,7 @@ namespace maze_system
         {
             // get value from random function
             lbits = static_cast<std::uint32_t>(map->random_number(0, std::numeric_limits<int>::max()));
-            memcpy(
-                reinterpret_cast<void *>(reinterpret_cast<std::size_t>(map->data()) + segbits - rbits),
-                &lbits,
-                std::min(rbits, static_cast<int>(sizeof(lbits))));
+            memcpy(reinterpret_cast<void *>(reinterpret_cast<std::size_t>(map->data()) + segbits - rbits), &lbits, std::min(rbits, static_cast<int>(sizeof(lbits))));
             rbits -= std::min(rbits, static_cast<int>(sizeof(lbits)));
         } while(rbits > 0);
 

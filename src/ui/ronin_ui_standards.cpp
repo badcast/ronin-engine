@@ -74,11 +74,7 @@ namespace RoninEngine::UI
                 // Render_String(render, element.rect, element.text.c_str(), element.text.size(), 13,
                 // TextAlign::MiddleCenter, true, uiHover);
                 RenderUtility::SetColor(Color::gray);
-                Render_String_ttf(
-                    element.text.data(),
-                    12,
-                    rect.GetXY() + (rect.GetWH() - (show_down_side ? (Vec2Int::up * 4) : Vec2Int::zero)) / 2,
-                    true);
+                Render_String_ttf(element.text.data(), 12, rect.GetXY() + (rect.GetWH() - (show_down_side ? (Vec2Int::up * 4) : Vec2Int::zero)) / 2, true);
                 if((result = uiState.ms_click))
                     uiState.gui->handle->button_clicked.insert(element.id);
                 break;
@@ -93,8 +89,7 @@ namespace RoninEngine::UI
                 rect = element.rect + thick;
 
                 // uielement background
-                RenderUtility::SetColor(
-                    (uiState.ms_hover) ? colorSpace.defaultInteraction.normalState : colorSpace.defaultInteraction.hoverState);
+                RenderUtility::SetColor((uiState.ms_hover) ? colorSpace.defaultInteraction.normalState : colorSpace.defaultInteraction.hoverState);
                 SDL_RenderFillRect(gscope.renderer, (SDL_Rect *) &rect);
                 RenderUtility::SetColor(Color::gray);
                 for(int x = 0; x < thickness; ++x)
@@ -158,29 +153,21 @@ namespace RoninEngine::UI
                 if(uiState.ms_hover && Input::GetMouseWheel())
                 {
                     // step wheel mouse = ±0.1
-                    float percentage = ((&element.resource.slider)->min + (&element.resource.slider)->max) *
-                        (&element.resource.slider)->stepPercentage * Input::GetMouseWheel();
-                    (&element.resource.slider)->value = Math::Clamp(
-                        (&element.resource.slider)->value + percentage, (&element.resource.slider)->min, (&element.resource.slider)->max);
+                    float percentage = ((&element.resource.slider)->min + (&element.resource.slider)->max) * (&element.resource.slider)->stepPercentage * Input::GetMouseWheel();
+                    (&element.resource.slider)->value = Math::Clamp((&element.resource.slider)->value + percentage, (&element.resource.slider)->min, (&element.resource.slider)->max);
                 }
                 else if(ui_focus || uiState.ms_hover)
                 {
                     if((result = Input::GetMouseDown(MouseButton::MouseLeft)))
                     {
                         // get *x* component from mouse point for set cursor point
-                        (&element.resource.slider)->value = Math::Map<float>(
-                            (float) ms.x,
-                            (float) rect.x,
-                            (float) rect.x + rect.w,
-                            (&element.resource.slider)->min,
-                            (&element.resource.slider)->max);
+                        (&element.resource.slider)->value = Math::Map<float>((float) ms.x, (float) rect.x, (float) rect.x + rect.w, (&element.resource.slider)->min, (&element.resource.slider)->max);
                     }
                 }
 
                 // Draw Slider Background
 
-                ratio = Math::Map(
-                    (&element.resource.slider)->value, (&element.resource.slider)->min, (&element.resource.slider)->max, 0.f, 1.f);
+                ratio = Math::Map((&element.resource.slider)->value, (&element.resource.slider)->min, (&element.resource.slider)->max, 0.f, 1.f);
 
                 rect.h = 4;
                 rect.y += (element.rect.h - rect.h) / 2;
@@ -256,8 +243,7 @@ namespace RoninEngine::UI
                 r += thick;
 
                 // uielement background
-                RenderUtility::SetColor(
-                    (uiState.ms_hover) ? colorSpace.defaultInteraction.normalState : colorSpace.defaultInteraction.hoverState);
+                RenderUtility::SetColor((uiState.ms_hover) ? colorSpace.defaultInteraction.normalState : colorSpace.defaultInteraction.hoverState);
                 SDL_RenderFillRect(gscope.renderer, (SDL_Rect *) &r);
                 RenderUtility::SetColor(Color::gray);
                 for(int x = 0; x < thickness; ++x)
@@ -268,8 +254,7 @@ namespace RoninEngine::UI
 
                 // draw main text
                 SDL_Texture *texture;
-                SDL_Surface *surf =
-                    TTF_RenderUTF8_Blended(pDefaultTTFFont, element.text.c_str(), *reinterpret_cast<SDL_Color *>(&colorSpace.dropdownText));
+                SDL_Surface *surf = TTF_RenderUTF8_Blended(pDefaultTTFFont, element.text.c_str(), *reinterpret_cast<SDL_Color *>(&colorSpace.dropdownText));
                 if((texture = SDL_CreateTextureFromSurface(gscope.renderer, surf)) != nullptr)
                 {
                     r = element.rect;
@@ -325,11 +310,7 @@ namespace RoninEngine::UI
 
                             RenderUtility::SetColor(colorSpace.defaultInteraction.hoverState);
                             // Draw element text
-                            surf = TTF_RenderUTF8_Blended(
-                                pDefaultTTFFont,
-                                iter->c_str(),
-                                *reinterpret_cast<SDL_Color *>(
-                                    &(link->first != index ? colorSpace.dropdownText : colorSpace.dropdownSelectedText)));
+                            surf = TTF_RenderUTF8_Blended(pDefaultTTFFont, iter->c_str(), *reinterpret_cast<SDL_Color *>(&(link->first != index ? colorSpace.dropdownText : colorSpace.dropdownSelectedText)));
                             texture = SDL_CreateTextureFromSurface(gscope.renderer, surf);
                             SDL_QueryTexture(texture, nullptr, nullptr, &r.w, &r.h);
 
@@ -541,11 +522,7 @@ namespace RoninEngine::UI
                 }
 
                 dst.w = Math::Max(0, Math::Min(deltax - dst.x, dst.w));
-                SDL_RenderCopy(
-                    gscope.renderer,
-                    (hilight ? switched_world->irs->legacy_font_hover : switched_world->irs->legacy_font_normal),
-                    reinterpret_cast<SDL_Rect *>(src),
-                    &dst);
+                SDL_RenderCopy(gscope.renderer, (hilight ? switched_world->irs->legacy_font_hover : switched_world->irs->legacy_font_normal), reinterpret_cast<SDL_Rect *>(src), &dst);
                 dst.x += src->w;
             }
             else

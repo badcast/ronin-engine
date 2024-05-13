@@ -123,4 +123,12 @@ namespace RoninEngine::Exception
         {
         }
     };
+
+    class ronin_out_of_range_error : public ronin_base_error
+    {
+    public:
+        ronin_out_of_range_error() : ronin_base_error("Out of ranges")
+        {
+        }
+    };
 } // namespace RoninEngine::Exception

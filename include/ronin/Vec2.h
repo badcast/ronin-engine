@@ -108,8 +108,7 @@ namespace RoninEngine
             static float Angle(Vec2 from, Vec2 to);
             static float SignedAngle(Vec2 from, Vec2 to);
             static Vec2 ClampMagnitude(Vec2 vector, float maxLength);
-            static Vec2 SmoothDamp(
-                const Vec2 &current, Vec2 target, Vec2 &currentVelocity, float smoothTime, float maxSpeed, float deltaTime);
+            static Vec2 SmoothDamp(const Vec2 &current, Vec2 target, Vec2 &currentVelocity, float smoothTime, float maxSpeed, float deltaTime);
             static float Dot(const Vec2 &lhs, const Vec2 &rhs);
             static float SqrMagnitude(const Vec2 &lhs);
             static Vec2 Round(Vec2 lhs);

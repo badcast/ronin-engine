@@ -49,8 +49,7 @@ static std::unordered_map<std::type_index, const char *> main_ronin_types;
 
 // this method for replacing C++ dynamic_cast
 template <typename T>
-static std::enable_if_t<std::is_base_of<RoninEngine::Runtime::Object, T>::value, const char *> runtime_define_type(
-    const char *typestr, T *self, char **_type_, const char *name)
+static std::enable_if_t<std::is_base_of<RoninEngine::Runtime::Object, T>::value, const char *> runtime_define_type(const char *typestr, T *self, char **_type_, const char *name)
 {
     // param @self not use
     if(_type_ != nullptr && *_type_ == nullptr)
@@ -100,8 +99,7 @@ namespace RoninEngine
             Runtime::Rect data[255];
         };
 
-        extern void Render_String_ttf(
-            const char *text, int fontSize, const Runtime::Vec2Int &screenPoint, bool alignCenter = false, bool blend = true);
+        extern void Render_String_ttf(const char *text, int fontSize, const Runtime::Vec2Int &screenPoint, bool alignCenter = false, bool blend = true);
     } // namespace UI
 
     namespace Runtime
@@ -211,7 +209,7 @@ namespace RoninEngine
         {
             std::unordered_map<std::size_t, ResId> bindAudioClips;
             std::unordered_map<std::size_t, ResId> bindMusicClips;
-            std::unordered_map<std::size_t, Sprite*> bindSprites;
+            std::unordered_map<std::size_t, Sprite *> bindSprites;
 
             Atlas *atlasRef;
         };

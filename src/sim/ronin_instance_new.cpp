@@ -127,7 +127,7 @@ namespace RoninEngine
                 }
                 else if(Collision *cloneIt = dynamic_cast<Collision *>(replacement))
                 {
-                    Collision * cloneFrom = cloneIt;
+                    Collision *cloneFrom = cloneIt;
                     cloneIt = clone->AddComponent<Collision>();
                     cloneIt->targetLayer = cloneFrom->targetLayer;
                     cloneIt->collideSize = cloneFrom->collideSize;

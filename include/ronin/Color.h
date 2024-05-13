@@ -213,7 +213,6 @@ namespace RoninEngine::Runtime
          */
         static std::vector<Color> GetExtendedColors();
 
-
         // Basic Colors
         COLOR_IMPL Color transparent;
         COLOR_IMPL Color black;

@@ -119,8 +119,7 @@ namespace RoninEngine::UI
                             cx = optimizedRect.x + x;
                             cy = optimizedRect.y + y;
                             // NOTE: Формула пикселей для SDL :: Y Offset * (Pitch/BytesPerPixel) + X Offset
-                            pixel = (SDL_Color *) pDefaultLegacyFont->surfNormal->pixels +
-                                (cy * (model->pitch / model->format->BytesPerPixel) + cx);
+                            pixel = (SDL_Color *) pDefaultLegacyFont->surfNormal->pixels + (cy * (model->pitch / model->format->BytesPerPixel) + cx);
                             if(pixel->a) // isn't transparent
                                 break;
                         }
@@ -137,8 +136,7 @@ namespace RoninEngine::UI
                             // Формула Y Offset * (Pitch/BytesPerPixel) + X Offset
                             cx = optimizedRect.x + pDefaultLegacyFont->data[i].w - 1 - x;
                             cy = optimizedRect.y + y;
-                            pixel = (SDL_Color *) pDefaultLegacyFont->surfNormal->pixels +
-                                (cy * (model->pitch / model->format->BytesPerPixel) + cx);
+                            pixel = (SDL_Color *) pDefaultLegacyFont->surfNormal->pixels + (cy * (model->pitch / model->format->BytesPerPixel) + cx);
                             if(pixel->a) // isn't transparent
                                 break;
                         }

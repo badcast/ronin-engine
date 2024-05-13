@@ -220,8 +220,8 @@ void ParticleSystem::OnUpdate()
     enum
     {
         M_DestroyNow = 0, // Уничтожить эту систему частиц
-        M_Execute = 1, // Выполнять в любом случаем, например частицы уже созданы и их нужно отрендерить и интерполировать
-        M_Fabricate = 2, // Создать еще частицы
+        M_Execute = 1,    // Выполнять в любом случаем, например частицы уже созданы и их нужно отрендерить и интерполировать
+        M_Fabricate = 2,  // Создать еще частицы
     };
 
     int makeFlag = (loop || !ref->activeParticles.empty()) ? M_Execute : 0;
@@ -379,9 +379,7 @@ int ParticleSystem::getActiveCount()
 
 ParticleSystemState ParticleSystem::getState()
 {
-    return ParticleSystemState(
-        ((loop || !ref->activeParticles.empty()) ? ParticleSystemState::Executable : 0) |
-        ((ref->m_maked < ref->m_limit || ref->m_maked < startWith) ? ParticleSystemState::Fabricatable : 0));
+    return ParticleSystemState(((loop || !ref->activeParticles.empty()) ? ParticleSystemState::Executable : 0) | ((ref->m_maked < ref->m_limit || ref->m_maked < startWith) ? ParticleSystemState::Fabricatable : 0));
 }
 
 void ParticleSystem::setLimitInfinitely()

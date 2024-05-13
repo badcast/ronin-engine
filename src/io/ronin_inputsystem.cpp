@@ -86,15 +86,9 @@ namespace RoninEngine::Runtime
         // TODO: Optimize here (List Key Downs)
 
         std::replace_if(
-            internal_input._mouse_state,
-            internal_input._mouse_state + sizeof(internal_input._mouse_state),
-            [](auto val) { return val == InputStateFlags::KeyUp; },
-            0);
+            internal_input._mouse_state, internal_input._mouse_state + sizeof(internal_input._mouse_state), [](auto val) { return val == InputStateFlags::KeyUp; }, 0);
         std::replace_if(
-            internal_input.prev_frame_keys,
-            internal_input.prev_frame_keys + SDL_NUM_SCANCODES,
-            [](auto val) { return val == InputStateFlags::KeyUp; },
-            0);
+            internal_input.prev_frame_keys, internal_input.prev_frame_keys + SDL_NUM_SCANCODES, [](auto val) { return val == InputStateFlags::KeyUp; }, 0);
         internal_input._mouse_wheels = 0;
 
         /* int n; const std::uint8_t *keys = SDL_GetKeyboardState(&n);  if(keys == nullptr || n == 0) return;

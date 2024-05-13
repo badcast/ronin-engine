@@ -33,8 +33,7 @@ typedef PROCESS_MEMORY_COUNTERS_EX *PPROCESS_MEMORY_COUNTERS_EX;
 extern "C"
 {
     __declspec(dllimport) void *__stdcall GetCurrentProcess(void);
-    __declspec(dllimport) int __stdcall K32GetProcessMemoryInfo(
-        void *Process, PROCESS_MEMORY_COUNTERS_EX *ppsmemCounters, unsigned long cb);
+    __declspec(dllimport) int __stdcall K32GetProcessMemoryInfo(void *Process, PROCESS_MEMORY_COUNTERS_EX *ppsmemCounters, unsigned long cb);
 }
 #elif __unix__
 #if USE_PROCFS

@@ -104,7 +104,7 @@ namespace RoninEngine::Runtime
         int zOrder() const;
         void zOrder(int value);
 
-        std::vector<Transform*> GetAllTransforms();
+        std::vector<Transform *> GetAllTransforms();
 
         static Transform *root();
     };

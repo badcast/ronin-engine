@@ -91,10 +91,11 @@ namespace RoninEngine::UI
 
     struct UILayout
     {
-        bool aspect;
+        bool aspectRatio;
         GUIResources *handle;
         Runtime::Rectf region;
         std::vector<uid> elements;
+        UILayoutDirection direction;
 
         uid addElement(uid id);
         void maketUpdate();

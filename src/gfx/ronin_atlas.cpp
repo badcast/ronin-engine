@@ -51,8 +51,7 @@ namespace RoninEngine::Runtime
 
         for(const auto &sprite : _sprites)
         {
-            if(value.x >= sprite->m_rect.x && value.x <= sprite->m_rect.x + sprite->m_rect.w && value.y >= sprite->m_rect.y &&
-               value.y <= sprite->m_rect.y + sprite->m_rect.h)
+            if(value.x >= sprite->m_rect.x && value.x <= sprite->m_rect.x + sprite->m_rect.w && value.y >= sprite->m_rect.y && value.y <= sprite->m_rect.y + sprite->m_rect.h)
             {
                 result = sprite;
                 break;

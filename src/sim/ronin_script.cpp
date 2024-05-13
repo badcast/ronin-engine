@@ -76,8 +76,7 @@ namespace RoninEngine::Runtime
 
     void scripts_unbind(Behaviour *script)
     {
-        for(auto iter = std::begin(switched_world->irs->runtimeScriptBinders); iter != std::end(switched_world->irs->runtimeScriptBinders);
-            ++iter)
+        for(auto iter = std::begin(switched_world->irs->runtimeScriptBinders); iter != std::end(switched_world->irs->runtimeScriptBinders); ++iter)
         {
             iter->second.erase(script);
         }

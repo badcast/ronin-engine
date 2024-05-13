@@ -151,8 +151,7 @@ namespace RoninEngine
 
             // Calculate FPS and timing
             debugLabels[0].format.resize(debugLabels[0].labelLen);
-            snprintf(
-                buffer, sizeof(buffer), "%d (%d ms)", static_cast<int>(Math::Max<int>(0, 1 / Time::deltaTime())), debugLabels[0].value);
+            snprintf(buffer, sizeof(buffer), "%d (%d ms)", static_cast<int>(Math::Max<int>(0, 1 / Time::deltaTime())), debugLabels[0].value);
             debugLabels[0].format += buffer;
 
             // format text
@@ -181,8 +180,7 @@ namespace RoninEngine
         RenderUtility::SetColor(Color(0, 0, 0, 100));
 
         // Draw box
-        RenderUtility::DrawFillRect(
-            g_pos, g_size.x / switched_world->irs->metricPixelsPerPoint.x, g_size.y / switched_world->irs->metricPixelsPerPoint.y);
+        RenderUtility::DrawFillRect(g_pos, g_size.x / switched_world->irs->metricPixelsPerPoint.x, g_size.y / switched_world->irs->metricPixelsPerPoint.y);
 
         screen_point.x = 10;
         screen_point.y -= static_cast<int>(g_size.y) - debugFontSize / 2;
@@ -314,8 +312,7 @@ namespace RoninEngine
         if(fullscreen)
             __flags |= SDL_WINDOW_FULLSCREEN;
 
-        gscope.activeWindow =
-            SDL_CreateWindow("Ronin Engine", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, resolution.width, resolution.height, __flags);
+        gscope.activeWindow = SDL_CreateWindow("Ronin Engine", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, resolution.width, resolution.height, __flags);
 
         if(gscope.activeWindow == nullptr)
             ShowMessageFail(SDL_GetError());
@@ -923,12 +920,7 @@ namespace RoninEngine
                 continue;
             }
 
-            drivers.emplace_back(
-                rdi.name,
-                RenderDriverInfo::RendererFlags(rdi.flags ^ SDL_RENDERER_TARGETTEXTURE),
-                (rdi.flags & SDL_RENDERER_SOFTWARE ? RenderDriverInfo::RenderBackend::CPU : RenderDriverInfo::RenderBackend::GPU),
-                rdi.max_texture_width,
-                rdi.max_texture_height);
+            drivers.emplace_back(rdi.name, RenderDriverInfo::RendererFlags(rdi.flags ^ SDL_RENDERER_TARGETTEXTURE), (rdi.flags & SDL_RENDERER_SOFTWARE ? RenderDriverInfo::RenderBackend::CPU : RenderDriverInfo::RenderBackend::GPU), rdi.max_texture_width, rdi.max_texture_height);
         }
 
         return drivers;
@@ -960,8 +952,7 @@ namespace RoninEngine
         SDL_RendererInfo info;
         if(gscope.renderer != nullptr && SDL_GetRendererInfo(gscope.renderer, &info) == 0)
         {
-            settings->selectRenderBackend =
-                (info.flags & SDL_RENDERER_SOFTWARE) ? RenderDriverInfo::RenderBackend::CPU : RenderDriverInfo::RenderBackend::GPU;
+            settings->selectRenderBackend = (info.flags & SDL_RENDERER_SOFTWARE) ? RenderDriverInfo::RenderBackend::CPU : RenderDriverInfo::RenderBackend::GPU;
         }
 
         settings->brightness = SDL_GetWindowBrightness(gscope.activeWindow);
@@ -1010,27 +1001,15 @@ namespace RoninEngine
                 return state;
             },
             [&]() // Apply Render Texture Scale Quality
-            {
-                return refSettings.selectTextureQuality != settings->selectTextureQuality &&
-                    (SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, (settings->selectTextureQuality ? "1" : "0")) == SDL_TRUE);
-            },
+            { return refSettings.selectTextureQuality != settings->selectTextureQuality && (SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, (settings->selectTextureQuality ? "1" : "0")) == SDL_TRUE); },
             // Apply Video Driver
             [&]() { return false; },
             // Apply Render Driver
             [&]() { return false; },
             // Apply Brightness
-            [&]() {
-                return (
-                    refSettings.brightness != settings->brightness &&
-                    SDL_SetWindowBrightness(gscope.activeWindow, settings->brightness) == 0);
-            },
+            [&]() { return (refSettings.brightness != settings->brightness && SDL_SetWindowBrightness(gscope.activeWindow, settings->brightness) == 0); },
             // Apply Window Opacity
-            [&]()
-            {
-                return (
-                    refSettings.windowOpacity != settings->windowOpacity &&
-                    SDL_SetWindowOpacity(gscope.activeWindow, settings->windowOpacity) == 0);
-            }};
+            [&]() { return (refSettings.windowOpacity != settings->windowOpacity && SDL_SetWindowOpacity(gscope.activeWindow, settings->windowOpacity) == 0); }};
         bool apply_any = false;
         for(auto &apply : applies)
         {

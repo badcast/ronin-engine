@@ -64,8 +64,7 @@ namespace RoninEngine::Runtime
 
     void hierarchy_append(Transform *parent, Transform *who)
     {
-        auto iter =
-            find_if(begin(parent->hierarchy), end(parent->hierarchy), std::bind(std::equal_to<Transform *>(), std::placeholders::_1, who));
+        auto iter = find_if(begin(parent->hierarchy), end(parent->hierarchy), std::bind(std::equal_to<Transform *>(), std::placeholders::_1, who));
         if(iter == end(parent->hierarchy))
         {
             who->m_parent = parent;

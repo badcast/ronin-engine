@@ -78,9 +78,7 @@ namespace RoninEngine::AI
 
     Neuron *NavMesh::get(const Vec2 &worldPoint)
     {
-        Vec2Int p {
-            Math::Number(static_cast<float>(shedule->_xsize) / 2 + worldPoint.x / worldScale.x),
-            Math::Number(static_cast<float>(shedule->_ysize) / 2 - worldPoint.y / worldScale.y)};
+        Vec2Int p {Math::Number(static_cast<float>(shedule->_xsize) / 2 + worldPoint.x / worldScale.x), Math::Number(static_cast<float>(shedule->_ysize) / 2 - worldPoint.y / worldScale.y)};
 
         return get(p);
     }

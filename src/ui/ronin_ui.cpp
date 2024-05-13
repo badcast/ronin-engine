@@ -134,23 +134,6 @@ namespace RoninEngine::UI
         return PushGroup(Rect::zero);
     }
 
-    uid UILayout::addElement(uid id)
-    {
-        UIElement &element = call_get_element(handle, id);
-        this->elements.push_back(id);
-        return id;
-    }
-
-    void UILayout::maketUpdate()
-    {
-        Rectf rect;
-        for(uid id : elements)
-        {
-            UIElement *elem = &call_get_element(handle, id);
-            elem->rect;
-        }
-    }
-
     uid GUI::PushCustomUI(const UIOverlay *custom, const Rect &rect, uid parent)
     {
         if(custom == nullptr)
@@ -168,19 +151,23 @@ namespace RoninEngine::UI
         return id;
     }
 
-    void GUI::LayoutNew(Rectf region, bool aspect)
+    void GUI::LayoutNew(UILayoutDirection direction, Rectf region, bool aspectRatio)
     {
-        if(aspect)
-        {
-            region.x = Math::Clamp01(region.x);
-            region.y = Math::Clamp01(region.y);
-            region.w = Math::Clamp01(region.w);
-            region.h = Math::Clamp01(region.h);
-        }
         UILayout &layout = handle->layouts.emplace_back();
+        layout.direction = direction;
         layout.handle = handle;
-        layout.aspect = aspect;
-        layout.region = region;
+        layout.aspectRatio = aspectRatio;
+        if(aspectRatio)
+        {
+            layout.region.x = Math::Clamp01(region.x);
+            layout.region.y = Math::Clamp01(region.y);
+            layout.region.w = Math::Clamp01(region.w);
+            layout.region.h = Math::Clamp01(region.h);
+        }
+        else
+        {
+            layout.region = region;
+        }
     }
 
     uid GUI::LayoutLabel(const std::string &text)
@@ -212,6 +199,7 @@ namespace RoninEngine::UI
         data.id = id;
         return id;
     }
+
     uid GUI::PushLabel(const std::string &text, const Vec2Int &point, int fontWidth, uid parent)
     {
         return PushLabel(text, {point.x, point.y, 0, 0}, fontWidth, parent);
@@ -265,8 +253,7 @@ namespace RoninEngine::UI
     }
 
     template <typename Container>
-    uid internal_push_dropdown(
-        GUI *guiInstance, const Container &container, int index, const Rect &rect, UIEventInteger changed, uid parent)
+    uid internal_push_dropdown(GUI *guiInstance, const Container &container, int index, const Rect &rect, UIEventInteger changed, uid parent)
     {
         using T = typename std::iterator_traits<decltype(container.cbegin())>::value_type;
 
@@ -360,8 +347,7 @@ namespace RoninEngine::UI
 
     void GUI::ElementSetVisible(uid id, bool state)
     {
-        call_get_element(this->handle, id).options =
-            (call_get_element(this->handle, id).options & ~ElementVisibleMask) | (ElementVisibleMask * (state == true));
+        call_get_element(this->handle, id).options = (call_get_element(this->handle, id).options & ~ElementVisibleMask) | (ElementVisibleMask * (state == true));
     }
 
     bool GUI::ElementGetVisible(uid id)
@@ -371,8 +357,7 @@ namespace RoninEngine::UI
 
     void GUI::ElementSetEnable(uid id, bool state)
     {
-        call_get_element(this->handle, id).options =
-            ((call_get_element(this->handle, id).options & ~ElementEnableMask)) | (ElementEnableMask * (state == true));
+        call_get_element(this->handle, id).options = ((call_get_element(this->handle, id).options & ~ElementEnableMask)) | (ElementEnableMask * (state == true));
     }
 
     bool GUI::ElementGetEnable(uid id)
@@ -467,8 +452,15 @@ namespace RoninEngine::UI
         return elem.resource.picturebox;
     }
 
+    void GUI::EventRegisterClicked(uid id, UIEventVoid event)
+    {
+    }
+
     void GUI::SliderSetValue(uid id, float value)
     {
+        if(!ElementContains(id))
+            throw RoninEngine::Exception::ronin_out_of_range_error();
+
         UIElement &elem = call_get_element(this->handle, id);
 
         if(elem.prototype != RGUI_HSLIDER && elem.prototype != RGUI_VSLIDER)
@@ -482,11 +474,17 @@ namespace RoninEngine::UI
 
     bool GUI::IsGroup(uid id)
     {
+        if(!ElementContains(id))
+            throw RoninEngine::Exception::ronin_out_of_range_error();
+
         return (call_get_element(this->handle, id).options & ElementGroupMask) == ElementGroupMask;
     }
 
     bool GUI::GroupShowAsUnique(uid id) throw()
     {
+        if(!ElementContains(id))
+            throw RoninEngine::Exception::ronin_out_of_range_error();
+
         if(!IsGroup(id))
             return false;
 
@@ -500,8 +498,7 @@ namespace RoninEngine::UI
         bool result = false;
         if(IsGroup(id))
         {
-            auto iter =
-                std::find_if(begin(handle->layers), end(handle->layers), std::bind(std::equal_to<uid>(), std::placeholders::_1, id));
+            auto iter = std::find_if(begin(handle->layers), end(handle->layers), std::bind(std::equal_to<uid>(), std::placeholders::_1, id));
 
             if(iter == std::end(handle->layers))
             {
@@ -561,6 +558,41 @@ namespace RoninEngine::UI
     bool GUI::FocusedGUI()
     {
         return handle->_focusedUI;
+    }
+
+    uid UILayout::addElement(uid id)
+    {
+        auto iter = std::find(std::begin(elements), std::end(elements), id);
+        if(iter != std::end(elements))
+            return -1;
+
+        UIElement &element = call_get_element(handle, id);
+        this->elements.push_back(id);
+        maketUpdate();
+        return id;
+    }
+
+    void UILayout::maketUpdate()
+    {
+        Rectf _reg = region;
+        for(uid id : elements)
+        {
+            UIElement *elem = &call_get_element(handle, id);
+
+            elem->rect.x = _reg.x;
+            elem->rect.y = _reg.y;
+
+            switch(direction)
+            {
+                case UILayoutDirection::Horizontal:
+                    _reg.x += elem->rect.w;
+                    break;
+                case UILayoutDirection::Vertical:
+                    _reg.y += elem->rect.h;
+                    break;
+                default:;
+            }
+        }
     }
 
     // It's main GUI drawer
