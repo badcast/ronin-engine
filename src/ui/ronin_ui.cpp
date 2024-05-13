@@ -452,10 +452,6 @@ namespace RoninEngine::UI
         return elem.resource.picturebox;
     }
 
-    void GUI::EventRegisterClicked(uid id, UIEventVoid event)
-    {
-    }
-
     void GUI::SliderSetValue(uid id, float value)
     {
         if(!ElementContains(id))
@@ -593,6 +589,15 @@ namespace RoninEngine::UI
                 default:;
             }
         }
+    }
+
+    void GUI::AddEventListener_Click(uid id, UIEventVoid event)
+    {
+        if(!ElementContains(id))
+            throw RoninEngine::Exception::ronin_out_of_range_error();
+
+        UIElement &data = call_get_element(handle, id);
+        data.event = (void *) event;
     }
 
     // It's main GUI drawer

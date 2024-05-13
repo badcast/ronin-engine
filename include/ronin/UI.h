@@ -182,7 +182,7 @@ namespace RoninEngine
             UI Runtime::Sprite *PictureBoxGetSprite(uid id);
 
             // Events
-            UI void EventRegisterClicked(uid id, UIEventVoid event);
+            UI void AddEventListener_Click(uid id, UIEventVoid event);
 
             // grouping-----------------------------------------------------------------------------------------------------------
 

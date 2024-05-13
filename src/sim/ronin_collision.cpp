@@ -106,6 +106,7 @@ namespace RoninEngine::Runtime
 
     void Collision::OnGizmos()
     {
+        return;
         RenderUtility::SetColor(Color::lime);
         RenderUtility::DrawRectangleRotate(transform()->position(), collideSize, transform()->angle() * Math::deg2rad);
     }

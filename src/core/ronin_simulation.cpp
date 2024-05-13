@@ -452,6 +452,11 @@ namespace RoninEngine
         return true;
     }
 
+    World *RoninSimulator::GetWorld()
+    {
+        return switched_world;
+    }
+
     bool RoninSimulator::CancelReload()
     {
         int last_flag = (gscope.simConfig.conf & CONF_RELOAD_WORLD);
@@ -835,14 +840,7 @@ namespace RoninEngine
                     // SDL_METHOD:
                     // fps = internal_frames / (TimeEngine::startUpTime());
                     fps = 1 / internal_delta_time;
-                    std::sprintf(
-                        title,
-                        "FPS:%.1f Memory:%sMiB, Ronin Objects:%s, Internal Objects:%s, Frames:%s",
-                        fps,
-                        Math::NumBeautify(Perfomances::GetMemoryUsed() / 1024 / 1024).c_str(),
-                        Math::NumBeautify(RoninMemory::total_allocated()).c_str(),
-                        Math::NumBeautify(SDL_GetNumAllocations()).c_str(),
-                        Math::NumBeautify(internal_frames).c_str());
+                    std::sprintf(title, "FPS:%.1f Memory:%sMiB, Ronin Objects:%s, Internal Objects:%s, Frames:%s", fps, Math::NumBeautify(Perfomances::GetMemoryUsed() / 1024 / 1024).c_str(), Math::NumBeautify(RoninMemory::total_allocated()).c_str(), Math::NumBeautify(SDL_GetNumAllocations()).c_str(), Math::NumBeautify(internal_frames).c_str());
                     SDL_SetWindowTitle(gscope.activeWindow, title);
                     fps = Time::startUpTime() + .5f; // updater per N seconds
                 }

@@ -173,6 +173,12 @@ namespace RoninEngine
         static bool ReloadWorld();
 
         /**
+         * @brief Retrive current World
+         * @return result of the current World
+         */
+        static Runtime::World * GetWorld();
+
+        /**
          * @brief Cancelation a reloading current world
          *
          * @return result of cancelled
