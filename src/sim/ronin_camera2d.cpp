@@ -144,7 +144,7 @@ namespace RoninEngine::Runtime
            + - - - - - - - - - +    /
         */
 #define MX (switched_world->irs->matrix)
-        matrix_key_t camKey = Matrix::matrix_get_key(params.camera_position);
+        Matrix::matrix_key_t camKey = Matrix::matrix_get_key(params.camera_position);
         // unordered_map<int,... <Transform*>>
         for(auto &layer : MX)
         {
@@ -195,24 +195,17 @@ namespace RoninEngine::Runtime
                 if(params.wrapper.texture)
                 {
                     params.sourcePoint = render_transform->_position;
+                    params.sourcePoint += spriteRenderer->get_offset();
 
                     params.wrapper.dst.w *= switched_world->irs->metricPixelsPerPoint.x; //_scale.x;
                     params.wrapper.dst.h *= switched_world->irs->metricPixelsPerPoint.y; //_scale.y;
 
-                    Vec2 arranged = params.wrapper.dst.GetXY();
-                    //                                    if(arranged != Vec2::zero)
-                    //                                        arranged =
-                    //                                            Vec2::RotateAround(stack.sourcePoint, arranged,
-                    //                                            render_transform->angle() * Math::deg2rad);
-
-                    params.sourcePoint += spriteRenderer->get_offset();
-
                     // convert world to screen
-
                     // Horizontal
-                    params.wrapper.dst.x = arranged.x + ((gscope.activeResolution.width - params.wrapper.dst.w) / 2.0f - (params.camera_position.x - params.sourcePoint.x) * switched_world->irs->metricPixelsPerPoint.x) + camera->res->offsetScaling.x;
+                    params.wrapper.dst.x += ((gscope.activeResolution.width - params.wrapper.dst.w) / 2.0f - (params.camera_position.x - params.sourcePoint.x) * switched_world->irs->metricPixelsPerPoint.x);
                     // Vertical
-                    params.wrapper.dst.y = arranged.y + ((gscope.activeResolution.height - params.wrapper.dst.h) / 2.0f + (params.camera_position.y - params.sourcePoint.y) * switched_world->irs->metricPixelsPerPoint.y) + camera->res->offsetScaling.y;
+                    params.wrapper.dst.y += ((gscope.activeResolution.height - params.wrapper.dst.h) / 2.0f + (params.camera_position.y - params.sourcePoint.y) * switched_world->irs->metricPixelsPerPoint.y);
+
                     // draw to backbuffer
                     SDL_RenderCopyExF(gscope.renderer, params.wrapper.texture, reinterpret_cast<SDL_Rect *>(&(params.wrapper.src)), reinterpret_cast<SDL_FRect *>(&(params.wrapper.dst)), render_transform->_angle_, nullptr, SDL_RendererFlip::SDL_FLIP_NONE);
 

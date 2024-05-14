@@ -452,6 +452,8 @@ namespace RoninEngine::Runtime
             // angle(localAngle());
             position(_position + parent->_position);
         }
+
+        parent_notify_active_state(this->_owner);
     }
 
     void Transform::Detach()

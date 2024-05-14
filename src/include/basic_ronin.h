@@ -15,16 +15,12 @@
 
 namespace std
 {
-    // this for Hashtable function
-    // Used it matrix_key
-    using fake_type = std::int64_t;
-
     template <>
     struct hash<RoninEngine::Runtime::Vec2>
     {
         std::size_t operator()(const RoninEngine::Runtime::Vec2 &val) const noexcept
         {
-            return std::hash<fake_type> {}(*reinterpret_cast<const fake_type *>(&val));
+            return std::hash<std::int64_t> {}(*reinterpret_cast<const std::int64_t *>(&val));
         }
     };
 
@@ -33,7 +29,7 @@ namespace std
     {
         std::size_t operator()(const RoninEngine::Runtime::Vec2Int &val) const noexcept
         {
-            return std::hash<fake_type> {}(*reinterpret_cast<const fake_type *>(&val));
+            return std::hash<std::int64_t> {}(*reinterpret_cast<const std::int64_t *>(&val));
         }
     };
 
@@ -84,8 +80,6 @@ void check_object(RoninEngine::Runtime::Object *obj);
 
 // using MatrixLayerComparer = std::integral_constant<decltype(&matrix_compare_layer), &matrix_compare_layer>;
 
-typedef RoninEngine::Runtime::Vec2Int matrix_key_t;
-typedef std::map<int, std::unordered_map<matrix_key_t, std::set<RoninEngine::Runtime::Transform *>>> matrix_map_t;
 namespace RoninEngine
 {
     namespace UI
@@ -102,9 +96,15 @@ namespace RoninEngine
         extern void Render_String_ttf(const char *text, int fontSize, const Runtime::Vec2Int &screenPoint, bool alignCenter = false, bool blend = true);
     } // namespace UI
 
+    namespace Runtime::Matrix
+    {
+        typedef RoninEngine::Runtime::Vec2Int matrix_key_t;
+        typedef std::map<int, std::unordered_map<matrix_key_t, std::set<RoninEngine::Runtime::Transform *>>> matrix_map_t;
+    } // namespace Runtime::Matrix
+
     namespace Runtime
     {
-        enum class CameraEvent
+        enum CameraEvent
         {
             CAM_DELETED,
             CAM_TARGET
@@ -122,7 +122,7 @@ namespace RoninEngine
             KeyUp = 2
         };
 
-        enum class RenderCommand
+        enum RenderCommand
         {
             PreRender,
             PostRender
@@ -279,7 +279,7 @@ namespace RoninEngine
             std::map<float, std::set<GameObject *>> *runtimeCollectors;
 
             // Matrix
-            matrix_map_t matrix;
+            Matrix::matrix_map_t matrix;
 
             std::list<CameraResource *> cameraResources;
 
