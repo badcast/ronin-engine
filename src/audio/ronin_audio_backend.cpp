@@ -1,5 +1,6 @@
 #include "ronin_audio.h"
 
+
 namespace RoninEngine::Runtime
 {
 
@@ -73,7 +74,13 @@ namespace RoninEngine::Runtime
         if(IRS->audioChannels.empty())
         {
             // Reserve with default channels length
-            IRS->audioChannels.resize(Mix_AllocateChannels(SDL_QUERY), false);
+            lastChannel = Mix_AllocateChannels(SDL_QUERY);
+            if(lastChannel <= 0)
+            {
+                lastChannel = MIX_CHANNELS;
+                Mix_AllocateChannels(lastChannel);
+            }
+            IRS->audioChannels.resize(lastChannel, false);
         }
 
         // find is not allocated channel in reserve

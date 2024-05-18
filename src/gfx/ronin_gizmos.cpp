@@ -12,16 +12,13 @@ namespace RoninEngine::Runtime
         Vec2 p = Camera::mainCamera()->transform()->position();
         Vec2 dst;
 
-        Vec2 scale;
-        scale = switched_world->irs->metricPixelsPerPoint;
-
         dst.x = gscope.activeResolution.width / 2.f;
         dst.y = gscope.activeResolution.height / 2.f;
 
-        a.x = dst.x - (p.x - a.x) * scale.x;
-        a.y = dst.y + (p.y - a.y) * scale.y;
-        b.x = dst.x - (p.x - b.x) * scale.x;
-        b.y = dst.y + (p.y - b.y) * scale.y;
+        a.x = dst.x - (p.x - a.x) * switched_world->irs->metricPixelsPerPoint.x;
+        a.y = dst.y + (p.y - a.y) * switched_world->irs->metricPixelsPerPoint.y;
+        b.x = dst.x - (p.x - b.x) * switched_world->irs->metricPixelsPerPoint.x;
+        b.y = dst.y + (p.y - b.y) * switched_world->irs->metricPixelsPerPoint.y;
 
         int x1 = static_cast<int>(a.x);
         int y1 = static_cast<int>(a.y);
@@ -175,15 +172,15 @@ namespace RoninEngine::Runtime
         SetColor(0xaa575757);
 
         // Draw H and V position
-        DrawPosition(std::move(origin), defaultMaxWorldScalar);
+        DrawPosition(origin, defaultMaxWorldScalar);
 
         for(i = 0; i < depth; ++i)
         {
             dest1 += Vec2::one;
-            DrawPosition(std::move(dest1), defaultMaxWorldScalar);
+            DrawPosition(dest1, defaultMaxWorldScalar);
 
             dest2 += Vec2::minusOne;
-            DrawPosition(std::move(dest2), defaultMaxWorldScalar);
+            DrawPosition(dest2, defaultMaxWorldScalar);
         }
 
         SetColor(lastColor);
@@ -266,30 +263,15 @@ namespace RoninEngine::Runtime
 
     void RenderUtility::DrawTriangle(Vec2 origin, float base, float height, bool fill)
     {
-        Vec2 a, b, pivot = origin;
-        pivot.y -= height / 2;
-        a = b = pivot;
-        a.x -= base / 2;
-        b.x += base / 2;
-        pivot.y += height;
+        Vec2 offset = Vec2(base / 2, height / 3);
 
-        // draw base
-        DrawLine(a, b);
+        Vec2 point1 = origin - offset;
+        Vec2 point2 = origin + Vec2(base, 0) - offset;
+        Vec2 point3 = origin + Vec2(base / 2, height) - offset;
 
-        // draw left side
-        DrawLine(a, pivot);
-
-        // draw right side
-        DrawLine(b, pivot);
-
-        if(fill)
-        {
-            base /= 2;
-            height /= 2;
-
-            pivot.y = a.y + height / 2;
-            DrawFillRect(pivot, base, height);
-        }
+        internal_drawLine(point1, point2);
+        internal_drawLine(point2, point3);
+        internal_drawLine(point3, point1);
     }
 
     void RenderUtility::DrawText(Vec2 origin, const std::string &text)
@@ -325,17 +307,23 @@ namespace RoninEngine::Runtime
         circleRGBA(gscope.renderer, x, y, r, m_color.r, m_color.g, m_color.b, m_color.a);
     }
 
-    void RenderUtility::DrawArrow(Vec2 origin, Vec2 dir, float tailLength)
+    void RenderUtility::DrawArrow(Vec2 origin, Vec2 dir, float tailLength, float arrowSize)
     {
-        // tail
+        // Рисуем линию
         tailLength = Math::Abs(tailLength);
         Vec2 pos2 = origin + (dir - origin) * tailLength; // world to local and set point to dir
-
         internal_drawLine(origin, pos2);
-        float angle = Vec2::Angle(pos2, dir);
 
+        // Рисуем стрелку
+        float angle = Vec2::Angle(pos2, dir);
         origin = pos2 + Vec2::RotateAround(pos2, Vec2::one * tailLength, angle);
         internal_drawLine(pos2, origin);
+
+        // Рисуем часть стрелки в форме треугольника
+        Vec2 arrowEnd1 = Vec2::RotateAround(origin, Vec2(arrowSize, 0), angle + Math::Pi / 4);
+        Vec2 arrowEnd2 = Vec2::RotateAround(origin, Vec2(arrowSize, 0), angle - Math::Pi / 4);
+        internal_drawLine(origin, arrowEnd1);
+        internal_drawLine(origin, arrowEnd2);
     }
 
     void RenderUtility::DrawSprite(Sprite *sprite, Vec2 origin, Vec2 size, float angleRadian)

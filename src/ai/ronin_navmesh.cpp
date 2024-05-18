@@ -3,7 +3,7 @@
 #ifdef OVERRIDE_LIBBRAINMAP
 #include <brain_map.hpp>
 #else
-#include "brain_map.hpp"
+#include "../3rdparty/brainmap/brain_map.hpp"
 #endif
 
 using namespace RoninEngine::Exception;

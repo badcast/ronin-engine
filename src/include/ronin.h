@@ -1,35 +1,7 @@
 #ifndef _RONIN_ENGINE_H_
 #define _RONIN_ENGINE_H_
 
-// C++ STL
-#include <iostream>
-#include <cstdio>
-#include <cstdint>
-#include <cstdlib>
-#include <cstring>
-#include <new>
-#include <typeindex>
-#include <typeinfo>
-#include <type_traits>
-#include <ctime>
-#include <limits>
-#include <cassert>
-#include <algorithm>
-#include <functional>
-#include <fstream>
-#include <random>
-
-// standard listing include
-#include <initializer_list>
-#include <map>
-#include <memory>
-#include <numeric>
-#include <deque>
-#include <queue>
-#include <set>
-#include <stdexcept>
-#include <unordered_map>
-#include <tuple>
+#include "ronin_std.h"
 
 #include "ronin_native.h"
 
@@ -39,9 +11,6 @@
 // PROTECTIVE PRIVATE MEMBERs UNLOCK
 #define private public
 #define protected public
-
-// INCLUDE MAIN HEADERS
-// #include "framework.h"
 
 #include "Time.h"
 #include "RoninSimulator.h"

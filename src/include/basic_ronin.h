@@ -187,7 +187,7 @@ namespace RoninEngine
         struct AudioSourceData
         {
             AudioClip *m_clip;
-            int target_channel;
+            int targetChannel;
         };
 
         struct MusicPlayerData

@@ -25,14 +25,14 @@ AudioSource::AudioSource(const std::string &name) : Component(DESCRIBE_AS_ONLY_N
     DESCRIBE_AS_MAIN(AudioSource);
 
     RoninMemory::alloc_self(data);
-    data->target_channel = RoninAudio::openChannel();
+    data->targetChannel = RoninAudio::openChannel();
 }
 
 AudioSource::~AudioSource()
 {
     setClip(nullptr);
     // Close opened channel
-    RoninAudio::closeChannel(data->target_channel);
+    RoninAudio::closeChannel(data->targetChannel);
     RoninMemory::free(data);
 }
 
@@ -55,12 +55,12 @@ void AudioSource::setClip(AudioClip *clip)
 
 float AudioSource::getVolume() const
 {
-    return RoninAudio::getChannelVolume(data->target_channel);
+    return RoninAudio::getChannelVolume(data->targetChannel);
 }
 
 void AudioSource::setVolume(float value)
 {
-    RoninAudio::setChannelVolume(data->target_channel, value);
+    RoninAudio::setChannelVolume(data->targetChannel, value);
 }
 
 bool AudioSource::Rewind()
@@ -77,34 +77,34 @@ bool AudioSource::Play(bool loop)
     bool result;
     if(isPaused())
     {
-        result = RoninAudio::resumeChannel(data->target_channel);
+        result = RoninAudio::resumeChannel(data->targetChannel);
     }
     else
     {
         Stop();
-        result = RoninAudio::setChannelState(data->target_channel, data->m_clip, AudioState::Play, loop);
+        result = RoninAudio::setChannelState(data->targetChannel, data->m_clip, AudioState::Play, loop);
     }
     return result;
 }
 
 void AudioSource::Pause()
 {
-    RoninAudio::setChannelState(data->target_channel, data->m_clip, AudioState::Pause, false);
+    RoninAudio::setChannelState(data->targetChannel, data->m_clip, AudioState::Pause, false);
 }
 
 void AudioSource::Stop()
 {
-    RoninAudio::setChannelState(data->target_channel, data->m_clip, AudioState::Stop, false);
+    RoninAudio::setChannelState(data->targetChannel, data->m_clip, AudioState::Stop, false);
 }
 
 bool AudioSource::isPlaying() const
 {
-    return RoninAudio::getChannelState(data->target_channel) == AudioState::Play;
+    return RoninAudio::getChannelState(data->targetChannel) == AudioState::Play;
 }
 
 bool AudioSource::isPaused() const
 {
-    return RoninAudio::getChannelState(data->target_channel) == AudioState::Pause;
+    return RoninAudio::getChannelState(data->targetChannel) == AudioState::Pause;
 }
 
 float AudioSource::getDuration()

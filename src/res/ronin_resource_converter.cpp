@@ -6,16 +6,16 @@
 
 using namespace RoninEngine::Runtime;
 
-constexpr const char resource_classes[][16] {
+constexpr const char resClass[][16] {
     "Sprite",
     "AudioClip",
     "MusicClip",
     // Atlas is Object serialize
     "Atlas"};
 
-constexpr char atlas_modes[][6] {"Rect", "Tiled"};
+constexpr char modeAtlas[][6] {"Rect", "Tiled"};
 
-constexpr char atlas_directions[][6] {"Right", "Down"};
+constexpr char atlasDirections[][6] {"Right", "Down"};
 
 std::hash<std::string> stringHasher;
 
@@ -73,13 +73,13 @@ bool AssetManager::LoadAsset(const std::string &loaderFile, Asset **asset)
         return false;
     }
 
-    num2 = sizeof(resource_classes) / sizeof(resource_classes[0]);
+    num2 = sizeof(resClass) / sizeof(resClass[0]);
 
     str1 = json["class"].ToString();
 
     for(num1 = 0; num1 < num2;)
     {
-        if(str1 == resource_classes[num1])
+        if(str1 == resClass[num1])
             break;
         ++num1;
     }
@@ -190,9 +190,9 @@ bool AssetManager::LoadAsset(const std::string &loaderFile, Asset **asset)
                     return false;
                 }
                 str1 = param1.ToString();
-                for(num3 = 0, num2 = sizeof(atlas_modes) / sizeof(atlas_modes[0]); num3 < num2;)
+                for(num3 = 0, num2 = sizeof(modeAtlas) / sizeof(modeAtlas[0]); num3 < num2;)
                 {
-                    if(atlas_modes[num3] == str1)
+                    if(modeAtlas[num3] == str1)
                         break;
                     ++num3;
                 }
@@ -236,10 +236,10 @@ bool AssetManager::LoadAsset(const std::string &loaderFile, Asset **asset)
                     if(param1.JSONType() == JSON::Class::String)
                     {
                         str1 = param1.ToString();
-                        num2 = sizeof(atlas_directions) / sizeof(atlas_directions[0]);
+                        num2 = sizeof(atlasDirections) / sizeof(atlasDirections[0]);
                         for(num1 = 0; num1 < num2;)
                         {
-                            if(str1 == atlas_directions[num1])
+                            if(str1 == atlasDirections[num1])
                                 break;
                             ++num1;
                         }
