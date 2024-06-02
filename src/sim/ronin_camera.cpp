@@ -39,7 +39,7 @@ namespace RoninEngine::Runtime
             switched_world->irs->event_camera_changed(this, CameraEvent::CAM_TARGET);
     }
 
-    const Vec2 Camera::ScreenToWorldPoint(Vec2 screenPoint)
+    Vec2 Camera::ScreenToWorldPoint(Vec2 screenPoint)
     {
         Vec2 scale;
 
@@ -64,7 +64,7 @@ namespace RoninEngine::Runtime
         return screenPoint;
     }
 
-    const Vec2 Camera::WorldToScreenPoint(Vec2 worldPoint)
+    Vec2 Camera::WorldToScreenPoint(Vec2 worldPoint)
     {
         Vec2 scale;
         // Difference at Main Camera
@@ -85,10 +85,11 @@ namespace RoninEngine::Runtime
         worldPoint.x = gscope.activeResolution.width / 2.f - worldPoint.x * scale.x;
         // Vertical position
         worldPoint.y = gscope.activeResolution.height / 2.f + worldPoint.y * scale.y;
+
         return worldPoint;
     }
 
-    const Vec2 Camera::ViewportToWorldPoint(Vec2 viewportPoint)
+    Vec2 Camera::ViewportToWorldPoint(Vec2 viewportPoint)
     {
         Vec2 scale;
 
@@ -102,14 +103,14 @@ namespace RoninEngine::Runtime
         // Horizontal position
         viewportPoint.x = (gscope.activeResolution.width / 2.f - gscope.activeResolution.width * viewportPoint.x) * -1.f / scale.x;
         // Vertical position
-        viewportPoint.y = (gscope.activeResolution.height / 2.f - gscope.activeResolution.height * viewportPoint.y) / scale.y;
+        viewportPoint.y = (gscope.activeResolution.height / 2.f - gscope.activeResolution.height * (1.0f - viewportPoint.y)) / scale.y;
         // Offset of Main Camera
         if(switched_world->irs->mainCamera)
             viewportPoint += switched_world->irs->mainCamera->transform()->_position;
         return viewportPoint;
     }
 
-    const Vec2 Camera::WorldToViewportPoint(Vec2 worldPoint)
+    Vec2 Camera::WorldToViewportPoint(Vec2 worldPoint)
     {
         Vec2 scale;
 
@@ -130,11 +131,58 @@ namespace RoninEngine::Runtime
         // Horizontal position
         worldPoint.x = (gscope.activeResolution.width / 2.0f - worldPoint.x * scale.x) / gscope.activeResolution.width;
         // Vertical position
-        worldPoint.y = (gscope.activeResolution.height / 2.0f + worldPoint.y * scale.y) / gscope.activeResolution.height;
+        worldPoint.y = 1.0f - (gscope.activeResolution.height / 2.0f + worldPoint.y * scale.y) / gscope.activeResolution.height;
         return worldPoint;
     }
 
-    const Vec2 Camera::WorldToViewportPointClamp(Vec2 worldPoint)
+    Vec2 Camera::ViewportToScreenPoint(Vec2 viewportPoint)
+    {
+        Vec2 scr;
+        if(gscope.activeWindow)
+        {
+            scr.x = gscope.activeResolution.width;
+            scr.y = gscope.activeResolution.height;
+        }
+        else
+        {
+            scr.x = 1.0f;
+            scr.y = 1.0f;
+        }
+
+        viewportPoint = Vec2::Scale(viewportPoint, scr);
+
+        return viewportPoint;
+    }
+
+    Vec2 Camera::ScreenToViewportPoint(Vec2 screenPoint)
+    {
+        Vec2 scr;
+        if(gscope.activeWindow)
+        {
+            scr.x = gscope.activeResolution.width;
+            scr.y = gscope.activeResolution.height;
+        }
+        else
+        {
+            scr.x = 1.0f;
+            scr.y = 1.0f;
+        }
+
+        screenPoint.x /= scr.x;
+        screenPoint.y /= scr.y;
+
+        return screenPoint;
+    }
+
+    Vec2 Camera::ScreenToViewportPointClamp(Vec2 screenPoint)
+    {
+        screenPoint = ScreenToViewportPoint(screenPoint);
+        screenPoint.x = Math::Clamp01(screenPoint.x);
+        screenPoint.y = Math::Clamp01(screenPoint.y);
+        return screenPoint;
+    }
+
+    Vec2 Camera::WorldToViewportPointClamp(Vec2 worldPoint)
     {
         worldPoint = WorldToViewportPoint(worldPoint);
         worldPoint.x = Math::Clamp01(worldPoint.x);

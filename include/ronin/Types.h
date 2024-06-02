@@ -93,6 +93,20 @@ namespace RoninEngine
                 return *this;
             }
 
+            template <typename _Value>
+            constexpr auto SetXY(const _Value &value)
+            {
+                this->x = static_cast<T>(value.x);
+                this->y = static_cast<T>(value.y);
+            }
+
+            template <typename _Value>
+            constexpr auto SetWH(const _Value &value)
+            {
+                this->w = static_cast<T>(value.x);
+                this->h = static_cast<T>(value.y);
+            }
+
             constexpr auto GetXY() const
             {
                 if constexpr(std::is_same<T, int>::value)
