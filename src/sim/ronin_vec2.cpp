@@ -345,7 +345,7 @@ namespace RoninEngine::Runtime
 
     const Vec2 Vec2::Perpendicular(Vec2 inDirection)
     {
-        return Vec2(0.f - inDirection.y, inDirection.x);
+        return {0.f - inDirection.y, inDirection.x};
     }
 
     bool Vec2::LookRotation(Vec2 from, Transform *to, float angleRadian)

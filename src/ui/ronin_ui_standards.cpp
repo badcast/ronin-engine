@@ -40,7 +40,7 @@ namespace RoninEngine::UI
             case RGUI_TEXT:
             {
                 RenderUtility::SetColor(Color::white);
-                Render_String_ttf(element.text.data(), 15, element.rect.GetXY(), Color::white);
+                Render_String_ttf(element.text.data(), 15, element.rect.getXY(), Color::white);
                 // Render_String(render, element.rect, element.text.c_str(), element.text.size());
                 break;
             }
@@ -74,7 +74,7 @@ namespace RoninEngine::UI
                 // Render_String(render, element.rect, element.text.c_str(), element.text.size(), 13,
                 // TextAlign::MiddleCenter, true, uiHover);
                 RenderUtility::SetColor(Color::gray);
-                Render_String_ttf(element.text.data(), 12, rect.GetXY() + (rect.GetWH() - (show_down_side ? (Vec2Int::up * 4) : Vec2Int::zero)) / 2, true);
+                Render_String_ttf(element.text.data(), 12, rect.getXY() + (rect.getWH() - (show_down_side ? (Vec2Int::up * 4) : Vec2Int::zero)) / 2, true);
                 if((result = uiState.ms_click))
                     uiState.gui->handle->button_clicked.insert(element.id);
                 break;
@@ -208,7 +208,7 @@ namespace RoninEngine::UI
                 snprintf(buffer, sizeof(buffer), "%.1f", (&element.resource.slider)->value);
                 rect.x += rect.w / 2;
                 rect.y += rect.h / 2;
-                Render_String_ttf(buffer, 9, rect.GetXY(), true);
+                Render_String_ttf(buffer, 9, rect.getXY(), true);
 
                 break;
             }
@@ -348,7 +348,7 @@ namespace RoninEngine::UI
                 rect = startRect;
 
                 RenderUtility::SetColor(uiState.ms_hover ? Color::white : Color::gray);
-                Render_String_ttf(element.text.c_str(), 14, rect.GetXY() + Vec2Int {17, 0}, false);
+                Render_String_ttf(element.text.c_str(), 14, rect.getXY() + Vec2Int {17, 0}, false);
 
                 rect.w = 14;
                 rect.h = 14;

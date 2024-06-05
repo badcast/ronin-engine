@@ -53,7 +53,7 @@ namespace RoninEngine::Runtime
             RoninSimulator::Kill();
         }
         SDL_LockSurface(surface);
-        SDL_memset4(surface->pixels, fillColor, surface->w * surface->h);
+        SDL_memset4(surface->pixels, static_cast<std::uint32_t>(fillColor), surface->w * surface->h);
         SDL_UnlockSurface(surface);
         switched_world->irs->offload_surfaces.push_back(surface);
         RoninMemory::alloc_self(sprite, surface, Rect(0, 0, size.x, size.y));

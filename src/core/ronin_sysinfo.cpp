@@ -35,8 +35,10 @@ extern "C"
     __declspec(dllimport) void *__stdcall GetCurrentProcess(void);
     __declspec(dllimport) int __stdcall K32GetProcessMemoryInfo(void *Process, PROCESS_MEMORY_COUNTERS_EX *ppsmemCounters, unsigned long cb);
 }
+
 #elif __unix__
 #if USE_PROCFS
+
 #include <sys/sysinfo.h>
 #include <sys/types.h>
 
@@ -77,6 +79,7 @@ size_t get_memory_used()
     return result;
 }
 #else // USE_PROCFS == 0
+
 #include <sys/resource.h>
 
 size_t get_memory_used()

@@ -94,20 +94,20 @@ namespace RoninEngine
             }
 
             template <typename _Value>
-            constexpr auto SetXY(const _Value &value)
+            constexpr void setXY(const _Value &value)
             {
                 this->x = static_cast<T>(value.x);
                 this->y = static_cast<T>(value.y);
             }
 
             template <typename _Value>
-            constexpr auto SetWH(const _Value &value)
+            constexpr void setWH(const _Value &value)
             {
                 this->w = static_cast<T>(value.x);
                 this->h = static_cast<T>(value.y);
             }
 
-            constexpr auto GetXY() const
+            constexpr auto getXY() const
             {
                 if constexpr(std::is_same<T, int>::value)
                 {
@@ -118,7 +118,7 @@ namespace RoninEngine
                     return Vec2(x, y);
                 }
             }
-            constexpr auto GetWH() const
+            constexpr auto getWH() const
             {
                 if constexpr(std::is_same<T, int>::value)
                 {
