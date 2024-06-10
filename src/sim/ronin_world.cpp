@@ -1,5 +1,6 @@
 #include "ronin.h"
 #include "ronin_matrix.h"
+#include "ronin_debug.h"
 
 using namespace RoninEngine;
 using namespace RoninEngine::Exception;
@@ -465,8 +466,8 @@ namespace RoninEngine
         int x;
         if(!obj)
         {
-            RoninSimulator::BreakSimulate();
-            return false;
+            //
+            return -1;
         }
         if(irs->runtimeCollectors)
         {

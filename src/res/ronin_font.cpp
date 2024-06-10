@@ -37,13 +37,15 @@ namespace RoninEngine::UI
             return;
 
         if(RoninMemory::alloc_self(pDefaultLegacyFont) == nullptr)
-            RoninSimulator::BreakSimulate();
+        {
+            throw RoninEngine::Exception::ronin_out_of_mem();
+        }
 
         if((pDefaultLegacyFont->surfNormal = private_load_surface(font_arealike_png, font_arealike_png_len)) == nullptr)
-            throw std::bad_alloc();
+            throw RoninEngine::Exception::ronin_out_of_mem();
 
         if((pDefaultLegacyFont->surfHilight = private_load_surface(font_arealike_hi_png, font_arealike_hi_png_len)) == nullptr)
-            throw std::bad_alloc();
+            throw RoninEngine::Exception::ronin_out_of_mem();
 
         pDefaultLegacyFont->fontSize = {font_arealike_width, font_arealike_height};
 

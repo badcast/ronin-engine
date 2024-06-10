@@ -262,11 +262,6 @@ namespace RoninEngine
         static void SetDebugMode(bool state);
 
         /**
-         * @brief Handles a failure during a back operation.
-         */
-        static void BreakSimulate(void);
-
-        /**
          * @brief Displays a message.
          *
          * @param message The message to display.

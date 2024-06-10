@@ -1,4 +1,5 @@
 #include "ronin.h"
+#include "ronin_std.h"
 #include "ronin_matrix.h"
 #include "ronin_audio.h"
 
@@ -891,11 +892,6 @@ namespace RoninEngine
     void RoninSimulator::Log(const char *str)
     {
         SDL_Log("%s", str);
-    }
-
-    void RoninSimulator::BreakSimulate()
-    {
-        ShowMessageFail("Out of memory!");
     }
 
     void RoninSimulator::Kill(void)

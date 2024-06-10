@@ -7,7 +7,6 @@ namespace RoninEngine::Runtime
     class RONIN_API Light : public Component
     {
     protected:
-        Texture *fieldFogTexture;
         virtual void get_light() = 0;
 
     public:

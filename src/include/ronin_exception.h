@@ -131,4 +131,12 @@ namespace RoninEngine::Exception
         {
         }
     };
+
+    class ronin_out_of_mem : public ronin_base_error
+    {
+    public:
+        ronin_out_of_mem() : ronin_base_error("Out Of Memory!")
+        {
+        }
+    };
 } // namespace RoninEngine::Exception

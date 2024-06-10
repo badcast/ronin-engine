@@ -1,3 +1,7 @@
+#include <stdlib.h>
+
+#include "ronin.h"
+#include "ronin_std.h"
 #include "ronin_audio.h"
 
 

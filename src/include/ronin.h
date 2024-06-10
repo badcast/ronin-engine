@@ -3,7 +3,7 @@
 
 #include "ronin_std.h"
 
-#include "ronin_native.h"
+#include "ronin_sdl2.h"
 
 // base headers
 #include "begin.h"
@@ -20,7 +20,6 @@
 #include "Controls.h"
 #include "Math.h"
 #include "Paths.h"
-#include "Texture.h"
 #include "InputSystem.h"
 
 // Runtime Objects

@@ -1,30 +1,45 @@
+function (custom_findpkg p1 p2)
+
+    if(PkgConfig_FOUND)
+
+        pkg_check_modules(${p1} REQUIRED ${p2})
+
+
+    else()
+
+    endif()
+
+
+
+
+endfunction()
+
 function(find_ronin_packages)
-  find_package(PkgConfig REQUIRED)
 
   set(LINK_INCL)
   set(LINK_LIBS)
 
-  pkg_check_modules(SDL2 REQUIRED sdl2)
+  find_package(PkgConfig)
+
+  custom_findpkg(SDL2 sdl2)
 
   if(RGAUDIO)
-    pkg_check_modules(SDL2_mixer REQUIRED SDL2_mixer)
+    custom_findpkg(SDL2_mixer SDL2_mixer)
 
     list(APPEND LINK_INCL ${SDL2_mixer_INCLUDE_DIRS})
     list(APPEND LINK_LIBS ${SDL2_mixer_LIBRARIES})
   endif()
 
   if(RGGRAPHICS)
-    pkg_check_modules(SDL2_image REQUIRED SDL2_image)
-    pkg_check_modules(SDL2_ttf REQUIRED SDL2_ttf)
-    pkg_check_modules(SDL2_gfx REQUIRED SDL2_gfx)
+    custom_findpkg(SDL2_image SDL2_image)
+    custom_findpkg(SDL2_ttf SDL2_ttf)
+    custom_findpkg(SDL2_gfx SDL2_gfx)
 
     list(APPEND LINK_INCL ${SDL2_mixer_INCLUDE_DIRS} ${SDL2_image_INCLUDE_DIRS}
          ${SDL2_ttf_INCLUDE_DIRS} ${SDL2_gfx_INCLUDE_DIRS})
     list(APPEND LINK_LIBS ${SDL2_gfx_LIBRARIES} ${SDL2_image_LIBRARIES}
          ${SDL2_ttf_LIBRARIES})
   endif()
-
-  pkg_check_modules(LibraryBrainMap brainmap)
 
   find_package(OpenMP)
 
@@ -48,7 +63,7 @@ set(RONIN_ENGINE_HEADERS
     "${RONIN_ENGINE_HEADERS}"
     PARENT_SCOPE)
 
-function(libdef libname path)
+function(custom_load_sources libname path)
   set(path "${CMAKE_CURRENT_SOURCE_DIR}/${path}")
   file(GLOB_RECURSE SRC "${path}/*.cpp" "${path}/*.hpp" "${path}/*.h")
 
@@ -80,37 +95,41 @@ function(libdef libname path)
 endfunction()
 
 # core sources
-libdef(ronin "core")
+custom_load_sources(RoninCore "core")
 
 file(GLOB_RECURSE SRC_INCLUDE "${CMAKE_CURRENT_SOURCE_DIR}/include/*")
 
-target_sources(ronin PRIVATE ${SRC_INCLUDE})
+target_sources(RoninCore PRIVATE ${SRC_INCLUDE})
 
 # 3rdParty sources
-libdef(ronin_3rdparty "3rdparty")
+custom_load_sources(Ronin3rdParty "3rdparty")
+
+# assign splash world
+
+
 # simulation sources
 if(RGSIMULATION)
-  libdef(ronin_sim "sim")
+  custom_load_sources(RoninSimulations "sim")
 endif()
 # res sources
 if(RGRESOURCES)
-  libdef(ronin_res "res")
+  custom_load_sources(RoninResources "res")
 endif()
 # io sources
 if(RGIO)
-  libdef(ronin_ios "io")
+  custom_load_sources(RoninInputOutputs "io")
 endif()
 # graphics sources
 if(RGGRAPHICS)
-  libdef(ronin_gfx "gfx")
+  custom_load_sources(RoninGraphics "gfx")
 endif()
 # gui sources
 if(RGGUI)
-  libdef(ronin_uif "ui")
+  custom_load_sources(RoninUserInterface "ui")
 endif()
 # ai sources
 if(RGAI)
-  libdef(ronin_aif "ai")
+  custom_load_sources(RoninArtInteleg "ai")
   if(${LibraryBrainMap_FOUND})
     target_include_directories(ronin_aif
                                PRIVATE ${LibraryBrainMap_INCLUDE_DIRS})
@@ -119,12 +138,12 @@ if(RGAI)
 endif()
 # audio sources
 if(RGAUDIO)
-  libdef(ronin_aud "audio")
+  custom_load_sources(RoninAudio "audio")
 endif()
 
 set(ronin_targets
     "${ronin_targets}"
     PARENT_SCOPE)
 
-target_compile_definitions(ronin
+target_compile_definitions(RoninCore
                            PRIVATE RGE_LINKED_TARGETS="${RGE_LINKED_NAMES}")

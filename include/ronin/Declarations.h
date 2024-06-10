@@ -78,7 +78,6 @@ namespace RoninEngine
 
         // factory
         class GameObject;
-        class Texture;
         class Atlas;
         class Sprite;
         struct Color;

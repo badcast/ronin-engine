@@ -5,7 +5,7 @@
 namespace RoninEngine::Runtime
 {
 
-#define COLOR_IMPL API_EXPORT static const
+#define COLOR_IMPL static const
 
     struct RONIN_API Color
     {
