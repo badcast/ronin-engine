@@ -4,8 +4,20 @@
 
 #include "Debug.h"
 
-void ronin_log(const char *msg);
+enum LogLevel
+{
+    Backend,
+    Frontend
+};
 
-void ronin_warn(const char *msg);
+extern LogLevel rloglevel;
 
-void ronin_err(const char *msg);
+void ronin_log(const char *fmt, ...);
+
+void ronin_warn(const char *fmt, ...);
+
+void ronin_err(const char *fmt, ...);
+
+void ronin_err_d(const char *fmt, ...);
+
+void ronin_err_sdl2();

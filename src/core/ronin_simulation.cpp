@@ -2,6 +2,7 @@
 #include "ronin_std.h"
 #include "ronin_matrix.h"
 #include "ronin_audio.h"
+#include "ronin_debug.h"
 
 #ifdef __linux__
 // For malloc_trim
@@ -205,7 +206,10 @@ namespace RoninEngine
 
         current_inits = SDL_INIT_EVENTS | SDL_INIT_TIMER;
         if(SDL_Init(current_inits) == -1)
-            ShowMessageFail("Fail init SDL2 main system.");
+        {
+            ronin_err_d("Fail init SDL2 main system.");
+            return;
+        }
 
         // init graphics
         if(flags & InitializeFlags::Graphics)
@@ -213,21 +217,27 @@ namespace RoninEngine
             current_inits = SDL_INIT_VIDEO;
 
             if(SDL_InitSubSystem(current_inits) == -1)
-                ShowMessageFail("Fail init Video system.");
+                ronin_err_d("Fail init Video system.");
 
             current_inits = IMG_InitFlags::IMG_INIT_PNG | IMG_InitFlags::IMG_INIT_JPG;
             if(IMG_Init(current_inits) != current_inits)
-                ShowMessageFail("Fail init Image library.");
+                ronin_err_d("Fail init Image library.");
 
             if(TTF_Init() == -1)
-                ShowMessageFail("Fail init Font library.");
+                ronin_err_d("Fail init Font library.");
         }
 
         // init Audio system
         if(flags & InitializeFlags::Audio)
         {
             if(Runtime::RoninAudio::Init() == -1)
-                ShowMessage("Fail init audio.");
+                ronin_err_d("Fail init audio.");
+        }
+
+        if(flags & InitializeFlags::Joystick)
+        {
+            if(SDL_InitSubSystem(SDL_INIT_JOYSTICK) == -1)
+                ronin_err_d("Fail init Joystick system.");
         }
 
         // init input system
@@ -755,7 +765,7 @@ namespace RoninEngine
             // end watcher
 
             // update level
-            if(!switched_world->irs->request_unloading)
+            if(!switched_world->irs->requestUnloading)
             {
                 // begin watcher
                 Time::BeginWatch();
@@ -766,14 +776,14 @@ namespace RoninEngine
                     gscope.internalWorldCanStart = true;
                 }
 
-                if(!switched_world->irs->request_unloading)
+                if(!switched_world->irs->requestUnloading)
                 {
                     switched_world->OnUpdate();
                 }
                 // end watcher
                 gscope.queueWatcher.delayExecWorld = Time::EndWatch();
 
-                if(switched_world->irs->request_unloading)
+                if(switched_world->irs->requestUnloading)
                 {
                     goto end_simulate; // break on unload state
                 }
@@ -785,12 +795,12 @@ namespace RoninEngine
 
             // Run Collector
             Time::BeginWatch();
-            if(!switched_world->irs->request_unloading)
-                Bushido_Tradition_Harakiri();
+            if(!switched_world->irs->requestUnloading)
+                SepukuRun();
             // end watcher
             gscope.queueWatcher.delayHarakiring = Time::EndWatch();
 
-            if(switched_world->irs->request_unloading)
+            if(switched_world->irs->requestUnloading)
                 goto end_simulate; // break on unload state
 
             // Set scale to default
@@ -802,7 +812,7 @@ namespace RoninEngine
             gscope.queueWatcher.delayRenderGUI = Time::EndWatch();
             // end watcher
 
-            if(switched_world->irs->request_unloading)
+            if(switched_world->irs->requestUnloading)
                 goto end_simulate; // break on unload state
 
             if(gscope.debugMode)
@@ -853,7 +863,7 @@ namespace RoninEngine
             // update events
             internal_input_update_after();
 
-            if(switched_world == nullptr || switched_world->irs->request_unloading && preload_world == nullptr)
+            if(switched_world == nullptr || switched_world->irs->requestUnloading && preload_world == nullptr)
                 break; // break on unload state
 
             // delaying

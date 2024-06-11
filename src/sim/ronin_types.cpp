@@ -5,14 +5,14 @@ using namespace RoninEngine::Exception;
 namespace RoninEngine::Runtime
 {
     template <>
-    const RRect<float> RRect<float>::zero = {};
+    const TRect<float> TRect<float>::zero = {};
     template <>
-    const RRect<float> RRect<float>::one = {1, 1, 1, 1};
+    const TRect<float> TRect<float>::one = {1, 1, 1, 1};
 
     template <>
-    const RRect<int> RRect<int>::zero = {};
+    const TRect<int> TRect<int>::zero = {};
     template <>
-    const RRect<int> RRect<int>::one = {1, 1, 1, 1};
+    const TRect<int> TRect<int>::one = {1, 1, 1, 1};
 
 } // namespace RoninEngine::Runtime
 

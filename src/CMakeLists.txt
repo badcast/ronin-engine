@@ -1,60 +1,79 @@
-function (custom_findpkg p1 p2)
-
-    if(PkgConfig_FOUND)
-
-        pkg_check_modules(${p1} REQUIRED ${p2})
-
-
-    else()
-
-    endif()
-
-
-
-
-endfunction()
-
-function(find_ronin_packages)
-
-  set(LINK_INCL)
-  set(LINK_LIBS)
-
-  find_package(PkgConfig)
-
-  custom_findpkg(SDL2 sdl2)
-
-  if(RGAUDIO)
-    custom_findpkg(SDL2_mixer SDL2_mixer)
-
-    list(APPEND LINK_INCL ${SDL2_mixer_INCLUDE_DIRS})
-    list(APPEND LINK_LIBS ${SDL2_mixer_LIBRARIES})
-  endif()
-
-  if(RGGRAPHICS)
-    custom_findpkg(SDL2_image SDL2_image)
-    custom_findpkg(SDL2_ttf SDL2_ttf)
-    custom_findpkg(SDL2_gfx SDL2_gfx)
-
-    list(APPEND LINK_INCL ${SDL2_mixer_INCLUDE_DIRS} ${SDL2_image_INCLUDE_DIRS}
-         ${SDL2_ttf_INCLUDE_DIRS} ${SDL2_gfx_INCLUDE_DIRS})
-    list(APPEND LINK_LIBS ${SDL2_gfx_LIBRARIES} ${SDL2_image_LIBRARIES}
-         ${SDL2_ttf_LIBRARIES})
-  endif()
-
-  find_package(OpenMP)
-
-  target_include_directories(RoninEngine PRIVATE ${SDL2_INCLUDE_DIRS}
-                                                 ${LINK_INCL})
-
-  target_link_libraries(RoninEngine PRIVATE ${SDL2_LIBRARIES} ${LINK_LIBS})
-
-  target_compile_definitions(RoninEngine PRIVATE RONIN_COMPILLING)
-
-endfunction()
 
 set(RGE_LIBS "")
 set(RGE_LINKED_NAMES "")
 set(sources "")
+
+function (custom_findpkg PKGNAME)
+
+    if(NOT MSVC AND PkgConfig_FOUND)
+
+        set(OPT_BASE_PKGNAME ${ARGV1})
+
+        if(NOT DEFINED OPT_BASE_PKGNAME)
+            set(OPT_BASE_PKGNAME ${PKGNAME})
+        endif()
+
+        pkg_check_modules(${PKGNAME} REQUIRED ${OPT_BASE_PKGNAME})
+
+    elseif(MSVC)
+
+        message(STATUS "Using Windows deps for MSVC compiller")
+
+        set(CMAKE_PREFIX_PATH "${CMAKE_CURRENT_LIST_DIR}/src/windows/deps")
+        set(SDL2_DIR ${CMAKE_PREFIX_PATH}/SDL2-2.30.1)
+        message(FATAL_ERROR ${CMAKE_PREFIX_PATH})
+
+        find_package(${PKGNAME} REQUIRED NO_DEFAULT_PATH)
+
+
+
+    else()
+
+        find_package(${PKGNAME} REQUIRED)
+
+    endif()
+
+    list(APPEND LIST_INCLUDE_PKGS "${${PKGNAME}_INCLUDE_DIRS}")
+    list(APPEND LIST_LIBS_PKGS "${${PKGNAME}_LIBRARIES}")
+
+    # Set to parent SCOPE
+    set(LIST_INCLUDE_PKGS ${LIST_INCLUDE_PKGS} PARENT_SCOPE)
+    set(LIST_LIBS_PKGS ${LIST_LIBS_PKGS} PARENT_SCOPE)
+endfunction(custom_findpkg)
+
+function(custom_find_deps MainTarget)
+
+  # LIST_INCLUDE_PKGS - There is All libs <*> from packages.
+  set(LIST_INCLUDE_PKGS)
+  # LIST_LIBS_PKGS - There is All include list <include> from packages.
+  set(LIST_LIBS_PKGS)
+
+  # Fist PkgConfig for finder
+  if(NOT MSVC)
+    find_package(PkgConfig)
+  else()
+
+  endif()
+
+  # find_package(OpenMP)
+
+  custom_findpkg(SDL2 sdl2)
+
+  if(RGAUDIO)
+    custom_findpkg(SDL2_mixer)
+  endif()
+
+  if(RGGRAPHICS)
+    custom_findpkg(SDL2_image)
+    custom_findpkg(SDL2_ttf)
+  endif()
+
+  target_compile_definitions(${MainTarget} PRIVATE RONIN_COMPILLING=1)
+  target_include_directories(${MainTarget} PRIVATE ${LIST_INCLUDE_PKGS})
+  target_link_libraries(${MainTarget} PRIVATE ${LIST_LIBS_PKGS})
+
+
+endfunction(custom_find_deps)
 
 # region: excluding and ordering (internal,external) headers
 file(GLOB_RECURSE RONIN_ENGINE_HEADERS "${PROJECT_SOURCE_DIR}/include/*")
@@ -63,11 +82,12 @@ set(RONIN_ENGINE_HEADERS
     "${RONIN_ENGINE_HEADERS}"
     PARENT_SCOPE)
 
-function(custom_load_sources libname path)
-  set(path "${CMAKE_CURRENT_SOURCE_DIR}/${path}")
-  file(GLOB_RECURSE SRC "${path}/*.cpp" "${path}/*.hpp" "${path}/*.h")
+function(custom_load_sources libname localPath)
+  set(SRC_FULL_PATH "${CMAKE_CURRENT_SOURCE_DIR}/${localPath}")
+  file(GLOB_RECURSE SRC "${SRC_FULL_PATH}/*.cpp" "${SRC_FULL_PATH}/*.c" "${SRC_FULL_PATH}/*.hpp" "${SRC_FULL_PATH}/*.h")
 
-  if("${SRC}" STREQUAL "")
+  if(SRC STREQUAL "")
+      message(WARNING "${libname} on ${localPath} has empty siyurced")
     return()
   endif()
 
@@ -91,8 +111,10 @@ function(custom_load_sources libname path)
   set(RGE_LIBS
       "${RGE_LIBS}" "${libname}"
       PARENT_SCOPE)
+
   list(APPEND RGE_LINKED_NAMES "${RGE_LINKED_NAMES}" PARENT_SCOPE)
-endfunction()
+
+endfunction(custom_load_sources)
 
 # core sources
 custom_load_sources(RoninCore "core")

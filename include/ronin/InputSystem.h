@@ -133,6 +133,13 @@ namespace RoninEngine::Runtime
         KB_RWIN = KB_RGUI
     };
 
+    struct JoystickInfo
+    {
+        std::string name;
+        std::string guid;
+        std::string devicePath;
+    };
+
     /**
      * @brief The Input class provides methods for handling user input within the RoninEngine.
      */
@@ -198,6 +205,9 @@ namespace RoninEngine::Runtime
          * @return A name of the Key
          */
         static const char *GetKeyName(int keyCode);
+
+        static std::vector<JoystickInfo> GetJoysticks();
+
     };
 
 } // namespace RoninEngine::Runtime

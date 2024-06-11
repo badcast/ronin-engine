@@ -258,9 +258,9 @@ namespace RoninEngine
             int objects;
 
             // state is unloading
-            bool request_unloading;
+            bool requestUnloading;
 
-            std::list<SDL_Surface *> offload_surfaces;
+            std::list<SDL_Surface *> preloadeSurfaces;
 
             SDL_Texture *legacy_font_normal;
             SDL_Texture *legacy_font_hover;
@@ -317,11 +317,11 @@ namespace RoninEngine
         bool object_instanced(const Object *obj);
         void native_render_2D(Camera2D *camera);
 
-        void harakiri_Component(Component *candidate);
+        void sepuku_Component(Component *candidate);
 
-        void harakiri_GameObject(GameObject *obj, std::set<GameObject *> *input);
+        void sepuku_GameObject(GameObject *obj, std::set<GameObject *> *input);
 
-        void Bushido_Tradition_Harakiri();
+        void SepukuRun();
 
         void level_render_world();
 

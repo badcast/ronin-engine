@@ -7,7 +7,7 @@ namespace RoninEngine
 {
     namespace Runtime
     {
-        void harakiri_Component(Component *candidate)
+        void sepuku_Component(Component *candidate)
         {
             union
             {
@@ -20,7 +20,7 @@ namespace RoninEngine
             if((self = dynamic_cast<Transform *>(candidate)))
             {
                 // Is Unloding world
-                if(!switched_world->irs->request_unloading)
+                if(!switched_world->irs->requestUnloading)
                 {
                     if(self->m_parent)
                     {
@@ -41,7 +41,7 @@ namespace RoninEngine
                 self->OnDestroy();
 
                 // Is Unloding world
-                if(!switched_world->irs->request_unloading)
+                if(!switched_world->irs->requestUnloading)
                 {
                     // Run last script object
                     scripts_unbind(self);
@@ -74,7 +74,7 @@ namespace RoninEngine
             --switched_world->irs->objects;
         }
 
-        void harakiri_GameObject(GameObject *target, std::set<GameObject *> *input)
+        void sepuku_GameObject(GameObject *target, std::set<GameObject *> *input)
         {
 #ifndef RONIN_USE_TYPESTR &&NDEBUG
             if(strcmp(target->_type_, "GameObject"))
@@ -91,7 +91,7 @@ namespace RoninEngine
                 for(Transform *t : target->transform()->hierarchy)
                     collects.emplace_back(t->_owner);
 
-                if(!switched_world->irs->request_unloading)
+                if(!switched_world->irs->requestUnloading)
                 {
                     if(input)
                     {
@@ -128,10 +128,10 @@ namespace RoninEngine
                 for(Component *component : next->m_components)
                 {
                     // HARAKIRI COMPONENT OBJECT
-                    harakiri_Component(component);
+                    sepuku_Component(component);
                 }
 
-                if(!switched_world->irs->request_unloading)
+                if(!switched_world->irs->requestUnloading)
                 {
                     next->CancelDestroy();
 
@@ -147,7 +147,7 @@ namespace RoninEngine
             }
         }
 
-        void Bushido_Tradition_Harakiri()
+        void SepukuRun()
         {
             switched_world->irs->_destroyedGameObject = 0;
 
@@ -175,7 +175,7 @@ namespace RoninEngine
                     COLLECTOR->erase(range_begin, range_end);
                     do
                     {
-                        harakiri_GameObject(*harakiri_candidates.begin(), &harakiri_candidates);
+                        sepuku_GameObject(*harakiri_candidates.begin(), &harakiri_candidates);
                     } while(!harakiri_candidates.empty());
                 }
 

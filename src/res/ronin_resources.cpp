@@ -1,4 +1,5 @@
 #include "ronin.h"
+#include "ronin_debug.h"
 
 using namespace RoninEngine;
 using namespace RoninEngine::Exception;
@@ -131,23 +132,28 @@ namespace RoninEngine::Runtime
         sz = stream.tellg();
         stream.seekg(0, std::ios_base::beg);
 
-        if(sz > 0)
+        if(sz == 0)
         {
             memory = static_cast<char *>(RoninMemory::ronin_memory_alloc(sz));
 
             if(memory == nullptr)
-                RoninSimulator::Kill();
+                throw Exception::ronin_out_of_mem();
 
-            stream.read((char *) memory, sz);
+            std::size_t reads = stream.read((char *) memory, sz).gcount();
+            if(reads != sz)
+            {
+                ronin_warn("peek size is not an equals reads != peekSize");
+                sz = reads;
+            }
         }
         else
         {
-            // 1 MB block/per
+            // 1 MiB block/per
             constexpr int block_size = 1024 * 1024;
             char *buffer = new char[block_size];
 
             if(buffer == nullptr)
-                RoninSimulator::Kill();
+                throw ronin_out_of_mem();
 
             sz = 0;
             while(!stream.eof())
@@ -174,30 +180,36 @@ namespace RoninEngine::Runtime
     {
         ResId id;
         GidResources *gid;
+        SDL_Surface *surf, *conv;
+        std::pair<std::size_t, void *> memory;
 
-        auto memory = stream_to_mem(stream);
-        SDL_Surface *surf = IMG_Load_RW(SDL_RWFromConstMem(memory.second, memory.first), SDL_TRUE);
+        memory = stream_to_mem(stream);
+        surf = IMG_Load_RW(SDL_RWFromConstMem(memory.second, memory.first), SDL_TRUE);
+
+        // free loaded stream buffer
         RoninMemory::ronin_memory_free(memory.second);
+
         if(surf == nullptr)
         {
-            SDL_LogError(SDL_LOG_CATEGORY_ERROR, "Surface: can not load");
+            ronin_err("image stream can not load");
             return RES_INVALID;
         }
 
         // Convert surface if possible.
         if(surf->format->format != defaultPixelFormat)
         {
-            SDL_Surface *conv = SDL_ConvertSurfaceFormat(surf, defaultPixelFormat, 0);
+            conv = SDL_ConvertSurfaceFormat(surf, defaultPixelFormat, 0);
             SDL_FreeSurface(surf);
             if(conv == nullptr)
             {
-                SDL_LogError(SDL_LOG_CATEGORY_ERROR, "Surface: invalid convert");
+                ronin_err("invalid converting surface to format");
                 return RES_INVALID;
             }
             surf = conv;
         }
 
         gid = make_resource(&id, local);
+
         id |= gid->gid_surfaces.size();
 
         gid->gid_surfaces.emplace_back(surf);
@@ -212,10 +224,13 @@ namespace RoninEngine::Runtime
         auto memory = stream_to_mem(stream);
 
         Mix_Chunk *chunk = Mix_LoadWAV_RW(SDL_RWFromMem(memory.second, memory.first), SDL_TRUE);
+
+        // free loaded stream buffer
         RoninMemory::ronin_memory_free(memory.second);
+
         if(chunk == nullptr)
         {
-            SDL_LogError(SDL_LOG_CATEGORY_ERROR, "Sound: can not load");
+            ronin_err("sound stream can not load");
             return RES_INVALID;
         }
 
@@ -269,7 +284,7 @@ namespace RoninEngine::Runtime
 
         if(!file)
         {
-            SDL_LogError(SDL_LOG_CATEGORY_ERROR, "Music: \"%s\" can not load", path.c_str());
+            ronin_err("music stream \"%s\" can not load", path.c_str());
             return RES_INVALID;
         }
 

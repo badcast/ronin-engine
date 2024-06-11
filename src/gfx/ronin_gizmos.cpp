@@ -284,8 +284,6 @@ namespace RoninEngine::Runtime
 
     void RenderUtility::DrawTextLegacy(Vec2 origin, const std::string &text, bool hilight, bool center)
     {
-        using namespace RoninEngine::UI;
-
         Rect r;
         // relative to
         origin = Camera::WorldToScreenPoint(origin);
@@ -293,6 +291,14 @@ namespace RoninEngine::Runtime
         r.y = static_cast<int>(origin.y);
 
         UI::Render_String_Legacy(r, text.c_str(), text.length(), 2, (center ? UI::Align::Center : UI::Align::Left), true, hilight);
+    }
+
+    void RenderUtility::DrawTextClassic(Vec2 origin, const std::string &text)
+    {
+        // relative to
+        origin = Camera::WorldToScreenPoint(origin);
+
+        stringColor(gscope.renderer, origin.x, origin.y, text.c_str(), GetColor());
     }
 
     void RenderUtility::DrawCircle(Vec2 origin, float distance)

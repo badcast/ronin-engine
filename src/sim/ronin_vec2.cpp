@@ -409,122 +409,149 @@ namespace RoninEngine::Runtime
 
     /*Vec2 operators*/
 
-    bool operator==(const Vec2Int &lhs, const Vec2 &rhs)
+    RONIN_API bool operator==(const Vec2Int &lhs, const Vec2 &rhs)
     {
         // return rhs.x == lhs.x && rhs.y == lhs.y;
         return Vec2 {rhs} == rhs;
     }
 
-    bool operator!=(const Vec2Int &lhs, const Vec2 &rhs)
+    RONIN_API bool operator!=(const Vec2Int &lhs, const Vec2 &rhs)
     {
         return !(lhs == rhs);
     }
 
-    Vec2 operator+(const Vec2 &lhs, const Vec2 &rhs)
+    RONIN_API Vec2 operator+(const Vec2 &lhs, const Vec2 &rhs)
     {
         return {lhs.x + rhs.x, lhs.y + rhs.y};
     }
 
-    Vec2 operator-(const Vec2 &lhs, const Vec2 &rhs)
+    RONIN_API Vec2 operator-(const Vec2 &lhs, const Vec2 &rhs)
     {
         return {lhs.x - rhs.x, lhs.y - rhs.y};
     }
 
-    bool operator==(const Vec2 &lhs, const Vec2 &rhs)
+    RONIN_API bool operator==(const Vec2 &lhs, const Vec2 &rhs)
     {
         return (lhs - rhs).sqrMagnitude() < Math::epsilon;
     }
 
-    bool operator!=(const Vec2 &lhs, const Vec2 &rhs)
+    RONIN_API bool operator!=(const Vec2 &lhs, const Vec2 &rhs)
     {
         return !(lhs == rhs);
     }
 
-    Vec2 operator*(const float d, const Vec2 &rhs)
+    RONIN_API Vec2 operator*(const float d, const Vec2 &rhs)
     {
         return {d * rhs.x, d * rhs.y};
     }
 
-    Vec2 operator*(const Vec2 &rhs, const float d)
+    RONIN_API Vec2 operator*(const Vec2 &rhs, const float d)
     {
         return {rhs.x * d, rhs.y * d};
     }
 
-    Vec2 operator/(const Vec2 &rhs, const float d)
+    RONIN_API Vec2 operator/(const Vec2 &rhs, const float d)
     {
         return {rhs.x / d, rhs.y / d};
     }
 
     /*Vec2Int operators*/
 
-    bool operator==(const Vec2Int &lhs, const Vec2Int &rhs)
+    RONIN_API bool operator==(const Vec2Int &lhs, const Vec2Int &rhs)
     {
         return memcmp(&lhs, &rhs, sizeof rhs) == 0;
     }
 
-    bool operator!=(const Vec2Int &lhs, const Vec2Int &rhs)
+    RONIN_API bool operator!=(const Vec2Int &lhs, const Vec2Int &rhs)
     {
         return memcmp(&lhs, &rhs, sizeof rhs) != 0;
     }
 
-    Vec2Int operator+(const Vec2Int &lhs, const Vec2Int &rhs)
+    RONIN_API Vec2Int operator+(const Vec2Int &lhs, const Vec2Int &rhs)
     {
         return Vec2Int {lhs.x + rhs.x, lhs.y + rhs.y};
     }
 
-    Vec2Int operator-(const Vec2Int &lhs, const Vec2Int &rhs)
+    RONIN_API Vec2Int operator-(const Vec2Int &lhs, const Vec2Int &rhs)
     {
         return Vec2Int {lhs.x - rhs.x, lhs.y - rhs.y};
     }
 
-    Vec2 operator+(const Vec2 &lhs, const Vec2Int &rhs)
+    RONIN_API Vec2 operator+(const Vec2 &lhs, const Vec2Int &rhs)
     {
         return Vec2 {lhs.x + rhs.x, lhs.y + rhs.y};
     }
 
-    Vec2 operator-(const Vec2 &lhs, const Vec2Int &rhs)
+    RONIN_API Vec2 operator-(const Vec2 &lhs, const Vec2Int &rhs)
     {
         return Vec2 {lhs.x - rhs.x, lhs.y - rhs.y};
     }
 
-    Vec2 operator+(const Vec2Int &lhs, const Vec2 &rhs)
+    RONIN_API Vec2 operator+(const Vec2Int &lhs, const Vec2 &rhs)
     {
         return Vec2 {lhs.x + rhs.x, lhs.y + rhs.y};
     }
 
-    Vec2 operator-(const Vec2Int &lhs, const Vec2 &rhs)
+    RONIN_API Vec2 operator-(const Vec2Int &lhs, const Vec2 &rhs)
     {
         return Vec2 {lhs.x - rhs.x, lhs.y - rhs.y};
     }
 
-    Vec2Int operator*(const int d, const Vec2Int &rhs)
+    RONIN_API Vec2Int operator*(const int d, const Vec2Int &rhs)
     {
         return Vec2Int {d * rhs.x, d * rhs.y};
     }
 
-    Vec2Int operator*(const Vec2Int &rhs, const int d)
+    RONIN_API Vec2Int operator*(const Vec2Int &rhs, const int d)
     {
         return Vec2Int {rhs.x * d, rhs.y * d};
     }
 
-    Vec2Int operator/(const Vec2Int &rhs, const int d)
+    RONIN_API Vec2Int operator/(const Vec2Int &rhs, const int d)
     {
         return Vec2Int {rhs.x / d, rhs.y / d};
     }
 
-    Vec2 operator*(const float d, const Vec2Int &rhs)
+    RONIN_API Vec2 operator*(const float d, const Vec2Int &rhs)
     {
         return Vec2 {rhs.x * d, rhs.y * d};
     }
 
-    Vec2 operator*(const Vec2Int &rhs, const float d)
+    RONIN_API Vec2 operator*(const Vec2Int &rhs, const float d)
     {
         return Vec2 {std::move(rhs)} * d;
     }
 
-    Vec2 operator/(const Vec2Int &rhs, const float d)
+    RONIN_API Vec2 operator/(const Vec2Int &rhs, const float d)
     {
         return Vec2 {std::move(rhs)} / d;
     }
+
+    /*Vector 2 definition*/
+
+    const Vec2 Vec2::one(1.f, 1.f);
+    const Vec2 Vec2::half(0.5f, 0.5f);
+    const Vec2 Vec2::minusOne(-1, -1);
+    const Vec2 Vec2::zero(0.f, 0.f);
+    const Vec2 Vec2::down(0.f, -1.f);
+    const Vec2 Vec2::left(-1.f, 0.f);
+    const Vec2 Vec2::right(1.f, 0.f);
+    const Vec2 Vec2::up(0.f, 1.f);
+    const Vec2 Vec2::up_right(1.f, 1.f);
+    const Vec2 Vec2::up_left(-1.f, 1.f);
+    const Vec2 Vec2::down_right(1.f, -1.f);
+    const Vec2 Vec2::down_left(-1.f, -1.f);
+    const Vec2 Vec2::infinity(Math::infinity, Math::infinity);
+    const Vec2 Vec2::negativeInfinity(Math::negativeInfinity, Math::negativeInfinity);
+
+    /*Vector 2 Integer definition*/
+
+    const Vec2Int Vec2Int::one(1, 1);
+    const Vec2Int Vec2Int::minusOne(-1, -1);
+    const Vec2Int Vec2Int::zero(0, 0);
+    const Vec2Int Vec2Int::down(0, -1);
+    const Vec2Int Vec2Int::left(-1, 0);
+    const Vec2Int Vec2Int::right(1, 0);
+    const Vec2Int Vec2Int::up(0, 1);
 
 } // namespace RoninEngine::Runtime

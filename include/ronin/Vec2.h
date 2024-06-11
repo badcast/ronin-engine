@@ -2,8 +2,6 @@
 
 #include "begin.h"
 
-#include "Math.h"
-
 namespace RoninEngine
 {
     namespace Runtime
@@ -36,13 +34,13 @@ namespace RoninEngine
 
             Vec2Int operator-() const;
 
-            RONIN_API static const Vec2Int one;
-            RONIN_API static const Vec2Int minusOne;
-            RONIN_API static const Vec2Int zero;
-            RONIN_API static const Vec2Int down;
-            RONIN_API static const Vec2Int left;
-            RONIN_API static const Vec2Int right;
-            RONIN_API static const Vec2Int up;
+            static const Vec2Int one;
+            static const Vec2Int minusOne;
+            static const Vec2Int zero;
+            static const Vec2Int down;
+            static const Vec2Int left;
+            static const Vec2Int right;
+            static const Vec2Int up;
 
             static bool HasIntersection(const Vec2Int &point, const Rect &rect);
             static bool HasIntersection(const Rect &lhs, const Rect &rhs);
@@ -124,25 +122,6 @@ namespace RoninEngine
             static bool LookRotation(Vec2 from, Transform *to, float angleRadian);
         };
 
-        /*Vector 2 definition*/
-
-        // NOTE: Я не считаю это лучшим способом инициализировать переменные статических членов.
-        // TODO: Перевести строки ниже на функий get constexpr для предотвращения пре-инициализаций, пре-проверки
-        API_EXPORT inline const Vec2 Vec2::one(1.f, 1.f);
-        API_EXPORT inline const Vec2 Vec2::half(0.5f, 0.5f);
-        API_EXPORT inline const Vec2 Vec2::minusOne(-1, -1);
-        API_EXPORT inline const Vec2 Vec2::zero(0.f, 0.f);
-        API_EXPORT inline const Vec2 Vec2::down(0.f, -1.f);
-        API_EXPORT inline const Vec2 Vec2::left(-1.f, 0.f);
-        API_EXPORT inline const Vec2 Vec2::right(1.f, 0.f);
-        API_EXPORT inline const Vec2 Vec2::up(0.f, 1.f);
-        API_EXPORT inline const Vec2 Vec2::up_right(1.f, 1.f);
-        API_EXPORT inline const Vec2 Vec2::up_left(-1.f, 1.f);
-        API_EXPORT inline const Vec2 Vec2::down_right(1.f, -1.f);
-        API_EXPORT inline const Vec2 Vec2::down_left(-1.f, -1.f);
-        API_EXPORT inline const Vec2 Vec2::infinity(Math::infinity, Math::infinity);
-        API_EXPORT inline const Vec2 Vec2::negativeInfinity(Math::negativeInfinity, Math::negativeInfinity);
-
         RONIN_API bool operator==(const Vec2 &lhs, const Vec2 &rhs);
         RONIN_API bool operator!=(const Vec2 &lhs, const Vec2 &rhs);
 
@@ -151,16 +130,6 @@ namespace RoninEngine
         RONIN_API Vec2 operator*(const float d, const Vec2 &rhs);
         RONIN_API Vec2 operator*(const Vec2 &rhs, const float d);
         RONIN_API Vec2 operator/(const Vec2 &rhs, const float d);
-
-        /*Vector 2 Integer definition*/
-
-        API_EXPORT inline const Vec2Int Vec2Int::one(1, 1);
-        API_EXPORT inline const Vec2Int Vec2Int::minusOne(-1, -1);
-        API_EXPORT inline const Vec2Int Vec2Int::zero(0, 0);
-        API_EXPORT inline const Vec2Int Vec2Int::down(0, -1);
-        API_EXPORT inline const Vec2Int Vec2Int::left(-1, 0);
-        API_EXPORT inline const Vec2Int Vec2Int::right(1, 0);
-        API_EXPORT inline const Vec2Int Vec2Int::up(0, 1);
 
         RONIN_API bool operator==(const Vec2Int &lhs, const Vec2 &rhs);
         RONIN_API bool operator!=(const Vec2Int &lhs, const Vec2 &rhs);

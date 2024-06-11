@@ -1,4 +1,5 @@
 #include "ronin.h"
+#include "ronin_debug.h"
 
 namespace RoninEngine::Runtime
 {
@@ -13,7 +14,7 @@ namespace RoninEngine::Runtime
 
         if(keys == nullptr)
         {
-            std::cerr << "ERROR: " << SDL_GetError() << std::endl;
+            ronin_err_sdl2();
             return;
         }
 
@@ -61,14 +62,28 @@ namespace RoninEngine::Runtime
 
     void internal_input_update_before()
     {
+        constexpr int JoystickDeadZone = 8000;
+
         // Update Game Axis on events
 
         const Uint8 *keys = SDL_GetKeyboardState(nullptr);
+
+        SDL_Joystick *joystick = nullptr;
+
+        if(SDL_NumJoysticks() > 0)
+        {
+            joystick = SDL_JoystickOpen(0);
+        }
 
         if(keys[SDL_SCANCODE_A] || keys[SDL_SCANCODE_LEFT])
             internal_input._movement_axis.x = -1;
         else if(keys[SDL_SCANCODE_D] || keys[SDL_SCANCODE_RIGHT])
             internal_input._movement_axis.x = 1;
+        else if(joystick)
+        {
+            Sint16 v = SDL_JoystickGetAxis(joystick, 0);
+            internal_input._movement_axis.x = v > JoystickDeadZone ? 1 : v < -JoystickDeadZone ? -1 : 0;
+        }
         else
             internal_input._movement_axis.x = 0;
 
@@ -76,8 +91,16 @@ namespace RoninEngine::Runtime
             internal_input._movement_axis.y = 1;
         else if(keys[SDL_SCANCODE_S] || keys[SDL_SCANCODE_DOWN])
             internal_input._movement_axis.y = -1;
+        else if(joystick)
+        {
+            Sint16 v = SDL_JoystickGetAxis(joystick, 1);
+            internal_input._movement_axis.y = v > JoystickDeadZone ? -1 : v < -JoystickDeadZone ? 1 : 0;
+        }
         else
             internal_input._movement_axis.y = 0;
+
+        if(joystick)
+            SDL_JoystickClose(joystick);
     }
 
     void internal_input_update_after()
@@ -406,6 +429,45 @@ namespace RoninEngine::Runtime
         }
 
         return c_key_codename.key_strings[keyCode];
+    }
+
+    std::vector<JoystickInfo> Input::GetJoysticks()
+    {
+        int nums;
+        SDL_Joystick *jsk;
+        SDL_JoystickGUID jsk_guid;
+        std::vector<JoystickInfo> joysticks;
+        JoystickInfo append;
+
+        nums = SDL_NumJoysticks();
+
+        if(nums < 0)
+            ronin_err_sdl2();
+
+        while(nums-- > 0)
+        {
+            jsk = SDL_JoystickOpen(nums);
+
+            if(!jsk)
+            {
+                ronin_err_sdl2();
+                continue;
+            }
+
+            // Entry info
+            append.name = SDL_JoystickName(jsk);
+            append.devicePath = SDL_JoystickPath(jsk);
+
+            jsk_guid = SDL_JoystickGetGUID(jsk);
+            append.guid.resize(33);
+            SDL_JoystickGetGUIDString(jsk_guid, append.guid.data(), append.guid.size());
+
+            SDL_JoystickClose(jsk);
+
+            joysticks.emplace_back(append);
+        }
+
+        return joysticks;
     }
 
 } // namespace RoninEngine::Runtime

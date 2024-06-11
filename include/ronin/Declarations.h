@@ -11,6 +11,7 @@ struct native_color_t
 {
     std::uint8_t r, g, b, a;
 };
+
 struct native_rect_t
 {
     int x, y, w, h;
@@ -20,6 +21,7 @@ struct native_frect_t
 {
     float x, y, w, h;
 };
+
 #endif
 
 // Pre declarations
@@ -57,10 +59,10 @@ namespace RoninEngine
         struct MusicClip;
 
         template <typename T>
-        class RRect;
+        class TRect;
 
-        typedef RRect<int> Rect;
-        typedef RRect<float> Rectf;
+        typedef TRect<int> Rect;
+        typedef TRect<float> Rectf;
 
         // core
         class World;

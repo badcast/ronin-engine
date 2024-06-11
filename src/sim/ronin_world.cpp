@@ -46,7 +46,7 @@ namespace RoninEngine
                 RoninMemory::alloc_self(world->irs->gui, world);
 
                 // set state load
-                world->irs->request_unloading = false;
+                world->irs->requestUnloading = false;
 
                 // update internal loaded font
                 RoninEngine::UI::update_legacy_font(world);
@@ -81,7 +81,7 @@ namespace RoninEngine
                 stacks.merge(target->hierarchy);
 
                 // destroy
-                harakiri_GameObject(target->_owner, nullptr);
+                sepuku_GameObject(target->_owner, nullptr);
 
                 if(stacks.empty())
                 {
@@ -124,7 +124,7 @@ namespace RoninEngine
             Mix_AllocateChannels(MIX_CHANNELS);
 
             // free native resources
-            for(SDL_Surface *surface : world->irs->offload_surfaces)
+            for(SDL_Surface *surface : world->irs->preloadeSurfaces)
             {
                 SDL_FreeSurface(surface);
             }
@@ -162,7 +162,7 @@ namespace RoninEngine
             Time::BeginWatch();
             // Render on main camera
             Camera *cam = Camera::mainCamera(); // Draw level from active camera (main)
-            if(!switched_world->irs->request_unloading && cam && cam->enable())
+            if(!switched_world->irs->requestUnloading && cam && cam->enable())
             {
                 // draw world in world size
                 native_render_2D(reinterpret_cast<Camera2D *>(cam));
@@ -171,7 +171,7 @@ namespace RoninEngine
 
             // begin watcher
             Time::BeginWatch();
-            if(!switched_world->irs->request_unloading && cam)
+            if(!switched_world->irs->requestUnloading && cam)
             {
                 // Reset Color
                 RenderUtility::SetColor(Color::white);
@@ -384,7 +384,7 @@ namespace RoninEngine
         if(irs == nullptr)
             throw ronin_world_notloaded_error();
 
-        this->irs->request_unloading = true;
+        this->irs->requestUnloading = true;
     }
 
     int World::GetDestroyedFrames()

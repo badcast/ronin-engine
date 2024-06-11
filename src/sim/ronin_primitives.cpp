@@ -55,7 +55,7 @@ namespace RoninEngine::Runtime
         SDL_LockSurface(surface);
         SDL_memset4(surface->pixels, static_cast<std::uint32_t>(fillColor), surface->w * surface->h);
         SDL_UnlockSurface(surface);
-        switched_world->irs->offload_surfaces.push_back(surface);
+        switched_world->irs->preloadeSurfaces.push_back(surface);
         RoninMemory::alloc_self(sprite, surface, Rect(0, 0, size.x, size.y));
         gid_get(localSprite)->gid_sprites.push_back(sprite);
         return sprite;
@@ -77,7 +77,7 @@ namespace RoninEngine::Runtime
         filledCircleColor(renderer, size.x / 2, size.y / 2, static_cast<std::uint16_t>(radius * switched_world->irs->metricPixelsPerPoint.x / 2) - 1, fillColor);
 
         SDL_DestroyRenderer(renderer);
-        switched_world->irs->offload_surfaces.push_back(surface);
+        switched_world->irs->preloadeSurfaces.push_back(surface);
         RoninMemory::alloc_self(sprite, surface, Rect(0, 0, size.x, size.y));
         gid_get(localSprite)->gid_sprites.push_back(sprite);
         return sprite;
@@ -112,7 +112,7 @@ namespace RoninEngine::Runtime
         //            }
         //        }
         //        SDL_UnlockSurface(surface);
-        switched_world->irs->offload_surfaces.push_back(surface);
+        switched_world->irs->preloadeSurfaces.push_back(surface);
         RoninMemory::alloc_self(sprite, surface, Rect {0, 0, static_cast<int>(size.x), static_cast<int>(size.y)});
         gid_get(localSprite)->gid_sprites.push_back(sprite);
         return sprite;

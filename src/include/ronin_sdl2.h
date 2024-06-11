@@ -4,12 +4,13 @@
 
 #pragma once
 
-// SDL
+// SDL2
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_mixer.h>
 #include <SDL2/SDL_ttf.h>
-#include <SDL2/SDL2_gfxPrimitives.h>
+
+#include "../3rdparty/SDL2_gfx/SDL2_gfxPrimitives.h"
 
 typedef SDL_Surface Image;            // SDL_Surface
 typedef SDL_Cursor Cursor;            // SDL_Cursor

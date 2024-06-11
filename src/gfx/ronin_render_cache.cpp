@@ -50,9 +50,13 @@ namespace RoninEngine::Runtime
             SDL_BlitSurface(surface, &rect, blitDst, nullptr);
             memcpy(pixels, blitDst->pixels, blitDst->pitch * blitDst->h);
 
-            SDL_LockSurface(surface);
+            if(SDL_MUSTLOCK(surface))
+                SDL_LockSurface(surface);
+
             SDL_UpdateTexture(texture, &surface->clip_rect, surface->pixels, surface->pitch);
-            SDL_UnlockSurface(surface);
+
+            if(SDL_MUSTLOCK(surface))
+                SDL_UnlockSurface(surface);
 
             // Apply changes
             SDL_UnlockTexture(texture);

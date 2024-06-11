@@ -634,7 +634,7 @@ namespace RoninEngine::UI
         gui->handle->any_mouse_hover = false;
         gui->handle->button_clicked.clear();
         // TODO: OPTIMIZE HERE
-        while(!ui_drains.empty() && !handle->owner->irs->request_unloading)
+        while(!ui_drains.empty() && !handle->owner->irs->requestUnloading)
         {
             id = ui_drains.front();
             ui_drains.pop_front();

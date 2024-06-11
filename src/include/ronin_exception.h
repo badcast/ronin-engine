@@ -7,9 +7,7 @@ namespace RoninEngine::Exception
     class ronin_base_error : public std::runtime_error
     {
     public:
-        ronin_base_error(const char *error_str) : std::runtime_error(error_str)
-        {
-        }
+        ronin_base_error(const char *error_str);
     };
 
     class ronin_init_error : public ronin_base_error
@@ -139,4 +137,5 @@ namespace RoninEngine::Exception
         {
         }
     };
+
 } // namespace RoninEngine::Exception

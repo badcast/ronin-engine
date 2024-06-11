@@ -205,7 +205,7 @@ namespace RoninEngine::Runtime
         for(Component::Event &event : component->ev_destroy)
             event(component);
 
-        Runtime::harakiri_Component(component);
+        Runtime::sepuku_Component(component);
         m_components.remove(component);
         return true;
     }

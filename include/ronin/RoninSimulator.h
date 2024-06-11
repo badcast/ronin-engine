@@ -8,7 +8,8 @@ namespace RoninEngine
     {
         All = -1,
         Graphics = 1,
-        Audio = 2
+        Audio = 2,
+        Joystick = 4
     };
 
     struct RenderDriverInfo
