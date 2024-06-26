@@ -522,7 +522,7 @@ namespace RoninEngine::UI
                 }
 
                 dst.w = Math::Max(0, Math::Min(deltax - dst.x, dst.w));
-                SDL_RenderCopy(gscope.renderer, (hilight ? switched_world->irs->legacy_font_hover : switched_world->irs->legacy_font_normal), reinterpret_cast<SDL_Rect *>(src), &dst);
+                SDL_RenderCopy(gscope.renderer, (hilight ? _world->irs->legacy_font_hover : _world->irs->legacy_font_normal), reinterpret_cast<SDL_Rect *>(src), &dst);
                 dst.x += src->w;
             }
             else

@@ -46,7 +46,7 @@ namespace RoninEngine::Runtime
     {
         Sprite *sprite;
 
-        size = Vec2::Scale(size, switched_world->irs->metricPixelsPerPoint);
+        size = Vec2::Scale(size, _world->irs->metricPixelsPerPoint);
         SDL_Surface *surface = SDL_CreateRGBSurfaceWithFormat(0, size.x, size.y, 32, defaultPixelFormat);
         if(surface == nullptr)
         {
@@ -55,7 +55,7 @@ namespace RoninEngine::Runtime
         SDL_LockSurface(surface);
         SDL_memset4(surface->pixels, static_cast<std::uint32_t>(fillColor), surface->w * surface->h);
         SDL_UnlockSurface(surface);
-        switched_world->irs->preloadeSurfaces.push_back(surface);
+        _world->irs->preloadeSurfaces.push_back(surface);
         RoninMemory::alloc_self(sprite, surface, Rect(0, 0, size.x, size.y));
         gid_get(localSprite)->gid_sprites.push_back(sprite);
         return sprite;
@@ -65,7 +65,7 @@ namespace RoninEngine::Runtime
     {
         Sprite *sprite;
 
-        size = Vec2::Scale(size, switched_world->irs->metricPixelsPerPoint);
+        size = Vec2::Scale(size, _world->irs->metricPixelsPerPoint);
         SDL_Surface *surface = SDL_CreateRGBSurfaceWithFormat(0, size.x, size.y, 32, defaultPixelFormat);
         if(surface == nullptr)
         {
@@ -74,10 +74,10 @@ namespace RoninEngine::Runtime
         SDL_Renderer *renderer = SDL_CreateSoftwareRenderer(surface);
 
         // draw circle
-        filledCircleColor(renderer, size.x / 2, size.y / 2, static_cast<std::uint16_t>(radius * switched_world->irs->metricPixelsPerPoint.x / 2) - 1, fillColor);
+        filledCircleColor(renderer, size.x / 2, size.y / 2, static_cast<std::uint16_t>(radius * _world->irs->metricPixelsPerPoint.x / 2) - 1, fillColor);
 
         SDL_DestroyRenderer(renderer);
-        switched_world->irs->preloadeSurfaces.push_back(surface);
+        _world->irs->preloadeSurfaces.push_back(surface);
         RoninMemory::alloc_self(sprite, surface, Rect(0, 0, size.x, size.y));
         gid_get(localSprite)->gid_sprites.push_back(sprite);
         return sprite;
@@ -87,8 +87,8 @@ namespace RoninEngine::Runtime
     {
         Sprite *sprite;
 
-        size = Vec2::Scale(size, switched_world->irs->metricPixelsPerPoint);
-        height *= switched_world->irs->metricPixelsPerPoint.y;
+        size = Vec2::Scale(size, _world->irs->metricPixelsPerPoint);
+        height *= _world->irs->metricPixelsPerPoint.y;
         SDL_Surface *surface = SDL_CreateRGBSurfaceWithFormat(0, size.x, size.y, 32, defaultPixelFormat);
         if(surface == nullptr)
         {
@@ -112,7 +112,7 @@ namespace RoninEngine::Runtime
         //            }
         //        }
         //        SDL_UnlockSurface(surface);
-        switched_world->irs->preloadeSurfaces.push_back(surface);
+        _world->irs->preloadeSurfaces.push_back(surface);
         RoninMemory::alloc_self(sprite, surface, Rect {0, 0, static_cast<int>(size.x), static_cast<int>(size.y)});
         gid_get(localSprite)->gid_sprites.push_back(sprite);
         return sprite;

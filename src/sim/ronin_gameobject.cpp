@@ -95,12 +95,12 @@ namespace RoninEngine::Runtime
 
     const bool GameObject::CancelDestroy()
     {
-        return switched_world->CancelObjectDestruction(this);
+        return _world->CancelObjectDestruction(this);
     }
 
     const bool GameObject::isDestroying()
     {
-        return switched_world->StateObjectDestruction(this);
+        return _world->StateObjectDestruction(this);
     }
 
     void GameObject::SetActiveRecursivelly(bool state)
@@ -142,7 +142,7 @@ namespace RoninEngine::Runtime
 
     bool GameObject::isPrefab()
     {
-        return transform()->m_parent == nullptr && switched_world->irs->mainObject != this;
+        return transform()->m_parent == nullptr && _world->irs->mainObject != this;
     }
 
     void GameObject::Destroy()

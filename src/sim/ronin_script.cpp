@@ -4,8 +4,8 @@
     if(bindFlags & FLAG)   \
         binder[FLAG].insert(SCRIPT);
 
-#define RUN_SCRIPTS(FLAG, METHOD)                                             \
-    for(Behaviour * script : switched_world->irs->runtimeScriptBinders[FLAG]) \
+#define RUN_SCRIPTS(FLAG, METHOD)                                     \
+    for(Behaviour * script : _world->irs->runtimeScriptBinders[FLAG]) \
         script->METHOD();
 
 namespace RoninEngine::Runtime
@@ -21,7 +21,7 @@ namespace RoninEngine::Runtime
 
     void GameObject::bind_script(BindType bindFlags, Behaviour *script)
     {
-        auto &binder = switched_world->irs->runtimeScriptBinders;
+        auto &binder = _world->irs->runtimeScriptBinders;
 
         BIND(Bind_Start, script);
         BIND(Bind_Update, script);
@@ -61,7 +61,7 @@ namespace RoninEngine::Runtime
     void scripts_start()
     {
         std::set<Behaviour *> __last;
-        __last.merge(switched_world->irs->runtimeScriptBinders[GameObject::BindType::Bind_Start]);
+        __last.merge(_world->irs->runtimeScriptBinders[GameObject::BindType::Bind_Start]);
 
         for(Behaviour *script : __last)
             script->OnStart();
@@ -84,7 +84,7 @@ namespace RoninEngine::Runtime
 
     void scripts_unbind(Behaviour *script)
     {
-        for(auto iter = std::begin(switched_world->irs->runtimeScriptBinders); iter != std::end(switched_world->irs->runtimeScriptBinders); ++iter)
+        for(auto iter = std::begin(_world->irs->runtimeScriptBinders); iter != std::end(_world->irs->runtimeScriptBinders); ++iter)
         {
             iter->second.erase(script);
         }

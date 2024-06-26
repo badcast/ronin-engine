@@ -16,7 +16,7 @@ namespace RoninEngine::Runtime
 
         for(;;)
         {
-            texture = SDL_CreateTexture(env.renderer, ronin_default_pixelformat, SDL_TEXTUREACCESS_STREAMING, surface->clip_rect.w, surface->clip_rect.h);
+            texture = SDL_CreateTexture(gscope.renderer, defaultPixelFormat, SDL_TEXTUREACCESS_STREAMING, surface->clip_rect.w, surface->clip_rect.h);
             if(texture == nullptr)
             {
                 RoninSimulator::Log(SDL_GetError());
@@ -28,7 +28,7 @@ namespace RoninEngine::Runtime
             int pitch;
             std::uint8_t r, g, b, a;
 
-            blitDst = SDL_CreateRGBSurfaceWithFormat(0, surface->clip_rect.w, surface->clip_rect.h, 32, ronin_default_pixelformat);
+            blitDst = SDL_CreateRGBSurfaceWithFormat(0, surface->clip_rect.w, surface->clip_rect.h, 32, defaultPixelFormat);
             if(blitDst == nullptr)
             {
                 RoninSimulator::Log(SDL_GetError());
@@ -77,7 +77,7 @@ namespace RoninEngine::Runtime
 
         for(;;)
         {
-            _cache = &switched_world->irs->renderCache;
+            _cache = &_world->irs->renderCache;
 
             const auto iter = _cache->find(sprite->surface);
             if(iter == std::end(*_cache))
@@ -87,7 +87,7 @@ namespace RoninEngine::Runtime
                 if(texture != nullptr)
                 {
                     _cache->insert({sprite->surface, {1, texture}});
-                    switched_world->irs->renderCacheRefs.insert({texture, sprite->surface});
+                    _world->irs->renderCacheRefs.insert({texture, sprite->surface});
                 }
             }
             else
@@ -255,8 +255,8 @@ namespace RoninEngine::Runtime
         if(texture == nullptr)
             return;
 
-        auto &_refs = switched_world->irs->renderCacheRefs;
-        auto &_cache = switched_world->irs->renderCache;
+        auto &_refs = _world->irs->renderCacheRefs;
+        auto &_cache = _world->irs->renderCache;
         const auto iter1 = _refs.find(texture);
         if(iter1 != std::end(_refs))
         {

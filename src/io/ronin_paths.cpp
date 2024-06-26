@@ -8,8 +8,10 @@ static const char seperator = '\\';
 static const char seperator = '/';
 #endif
 
-std::string __organization__ {"Ronin Engine"};
-std::string __application__ {"Framework"};
+// Set the default value for Org. App.
+
+std::string __organization__ {"RoninEngine"};
+std::string __application__ {"Owner"};
 
 void Paths::RegOrg(const std::string &organization, const std::string &application)
 {

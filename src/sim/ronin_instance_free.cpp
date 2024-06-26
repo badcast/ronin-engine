@@ -20,7 +20,7 @@ namespace RoninEngine
             if((self = dynamic_cast<Transform *>(candidate)))
             {
                 // Is Unloding world
-                if(!switched_world->irs->requestUnloading)
+                if(!_world->irs->requestUnloading)
                 {
                     if(self->m_parent)
                     {
@@ -41,7 +41,7 @@ namespace RoninEngine
                 self->OnDestroy();
 
                 // Is Unloding world
-                if(!switched_world->irs->requestUnloading)
+                if(!_world->irs->requestUnloading)
                 {
                     // Run last script object
                     scripts_unbind(self);
@@ -52,7 +52,7 @@ namespace RoninEngine
             else if((self = dynamic_cast<Camera *>(candidate)))
             {
                 // Free Camera Resources
-                switched_world->irs->event_camera_changed(self, CameraEvent::CAM_DELETED);
+                _world->irs->event_camera_changed(self, CameraEvent::CAM_DELETED);
             }
 #undef self
 #define self (_knife.renderer)
@@ -71,7 +71,7 @@ namespace RoninEngine
 
             // Free object
             RoninMemory::free(candidate);
-            --switched_world->irs->objects;
+            --_world->irs->objects;
         }
 
         void sepuku_GameObject(GameObject *target, std::set<GameObject *> *input)
@@ -91,7 +91,7 @@ namespace RoninEngine
                 for(Transform *t : target->transform()->hierarchy)
                     collects.emplace_back(t->_owner);
 
-                if(!switched_world->irs->requestUnloading)
+                if(!_world->irs->requestUnloading)
                 {
                     if(input)
                     {
@@ -131,7 +131,7 @@ namespace RoninEngine
                     sepuku_Component(component);
                 }
 
-                if(!switched_world->irs->requestUnloading)
+                if(!_world->irs->requestUnloading)
                 {
                     next->CancelDestroy();
 
@@ -142,16 +142,16 @@ namespace RoninEngine
 
                 // HARAKIRI GAME OBJECT
                 RoninMemory::free(next);
-                --switched_world->irs->objects;
-                ++switched_world->irs->_destroyedGameObject;
+                --_world->irs->objects;
+                ++_world->irs->_destroyedGameObject;
             }
         }
 
         void SepukuRun()
         {
-            switched_world->irs->_destroyedGameObject = 0;
+            _world->irs->_destroyedGameObject = 0;
 
-#define COLLECTOR (switched_world->irs->runtimeCollectors)
+#define COLLECTOR (_world->irs->runtimeCollectors)
 
             if(COLLECTOR)
             {
@@ -194,19 +194,19 @@ namespace RoninEngine
 
         void Destroy(GameObject *obj, float t)
         {
-            if(!obj || !switched_world || t < 0)
+            if(!obj || !_world || t < 0)
                 throw std::bad_exception();
 
                 // #error FIXME ____ ADD DESTROY OBJECTS TO QUEUE
 
-#define provider (switched_world->irs->runtimeCollectors)
+#define provider (_world->irs->runtimeCollectors)
             if(!provider)
             {
                 RoninMemory::alloc_self(provider);
             }
             else
             {
-                switched_world->CancelObjectDestruction(obj);
+                _world->CancelObjectDestruction(obj);
             }
             t += internal_game_time;
 

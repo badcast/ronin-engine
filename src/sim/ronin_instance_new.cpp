@@ -53,13 +53,13 @@ namespace RoninEngine
             {
                 if(initInHierarchy)
                 {
-                    if(switched_world == nullptr)
+                    if(_world == nullptr)
                         throw std::runtime_error("self is null");
 
-                    if(!switched_world->isHierarchy())
+                    if(!_world->isHierarchy())
                         throw std::runtime_error("mainObject is null");
 
-                    auto mainObj = switched_world->irs->mainObject;
+                    auto mainObj = _world->irs->mainObject;
                     auto root = mainObj->transform();
                     Transform *tr = ((GameObject *) instance)->transform();
                     root->childAdd(tr);
@@ -71,7 +71,7 @@ namespace RoninEngine
 
         bool object_instanced(const Object *obj)
         {
-            if(obj == nullptr || switched_world == nullptr)
+            if(obj == nullptr || _world == nullptr)
                 return false;
             return true;
         }

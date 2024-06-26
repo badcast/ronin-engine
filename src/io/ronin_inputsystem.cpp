@@ -402,6 +402,10 @@ namespace RoninEngine::Runtime
     {
 
         // It's unknown state
+
+        // Условие, если key <= 0, то результатом будет неизвестный ключ, ьакже и при key > lastKeyN
+        // А при других обстоятельствах,
+
         if(keyCode <= 0 || keyCode > c_key_codename.clast_keyCode)
         {
             keyCode = 0;

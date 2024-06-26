@@ -66,7 +66,7 @@ namespace RoninEngine::Runtime
         if(!HasInit())
             return -1;
 
-        auto IRS = World::self()->irs;
+        auto IRS = World::GetCurrentWorld()->irs;
 
         int channel = -1;
         int lastChannel;
@@ -113,7 +113,7 @@ namespace RoninEngine::Runtime
 
     bool RoninAudio::closeChannel(int channel)
     {
-        auto &channels = World::self()->irs->audioChannels;
+        auto &channels = World::GetCurrentWorld()->irs->audioChannels;
         if(HasInit() && channel < channels.size() && channel > -1)
         {
             // Request Close

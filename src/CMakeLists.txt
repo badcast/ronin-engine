@@ -25,8 +25,6 @@ function (custom_findpkg PKGNAME)
 
         find_package(${PKGNAME} REQUIRED NO_DEFAULT_PATH)
 
-
-
     else()
 
         find_package(${PKGNAME} REQUIRED)
@@ -47,6 +45,11 @@ function(custom_find_deps MainTarget)
   set(LIST_INCLUDE_PKGS)
   # LIST_LIBS_PKGS - There is All include list <include> from packages.
   set(LIST_LIBS_PKGS)
+
+  if(NOT TARGET ${MainTarget})
+      Message(FATAL_ERROR "Require existence target argument")
+  endif()
+
 
   # Fist PkgConfig for finder
   if(NOT MSVC)
@@ -71,7 +74,7 @@ function(custom_find_deps MainTarget)
   target_compile_definitions(${MainTarget} PRIVATE RONIN_COMPILLING=1)
   target_include_directories(${MainTarget} PRIVATE ${LIST_INCLUDE_PKGS})
   target_link_libraries(${MainTarget} PRIVATE ${LIST_LIBS_PKGS})
-
+  target_compile_options(${MainTarget} PRIVATE -mrdrnd)
 
 endfunction(custom_find_deps)
 
@@ -132,6 +135,7 @@ custom_load_sources(Ronin3rdParty "3rdparty")
 # simulation sources
 if(RGSIMULATION)
   custom_load_sources(RoninSimulations "sim")
+  target_compile_options(RoninSimulations PRIVATE -mrdrnd)
 endif()
 # res sources
 if(RGRESOURCES)

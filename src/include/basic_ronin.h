@@ -304,7 +304,7 @@ namespace RoninEngine
         /*** PIMPL (pointer to implementation) ***/
         class ParticleSystemRef;
 
-        extern World *switched_world;
+        extern World *_world;
         extern float internal_game_time;
         extern std::list<Asset> loaded_assets;
 

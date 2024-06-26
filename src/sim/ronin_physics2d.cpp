@@ -2,7 +2,7 @@
 #include "ronin_matrix.h"
 
 #define NEW_ALGORITHM_STORM 1
-#define MX (switched_world->irs->matrix)
+#define MX (_world->irs->matrix)
 
 namespace RoninEngine::Runtime
 {

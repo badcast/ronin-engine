@@ -29,7 +29,7 @@ namespace RoninEngine
             extern std::list<void *> allocated_leaker;
         }
 #endif
-        World *switched_world;
+        World *_world;
         World *preload_world;
         World *last_switched_world;
         std::set<World *> pinnedWorlds;
@@ -85,8 +85,8 @@ namespace RoninEngine
 
         if(gscope.simConfig.conf & CONF_RELOAD_WORLD)
         {
-            last_switched_world = switched_world; // Switched world first unload after load
-            preload_world = switched_world;       // Switched world as Newer is preload
+            last_switched_world = _world; // Switched world first unload after load
+            preload_world = _world;       // Switched world as Newer is preload
 
             gscope.internalWorldLoaded = false;
         }
@@ -182,7 +182,7 @@ namespace RoninEngine
         RenderUtility::SetColor(Color(0, 0, 0, 100));
 
         // Draw box
-        RenderUtility::DrawFillRect(g_pos, g_size.x / switched_world->irs->metricPixelsPerPoint.x, g_size.y / switched_world->irs->metricPixelsPerPoint.y);
+        RenderUtility::DrawFillRect(g_pos, g_size.x / _world->irs->metricPixelsPerPoint.x, g_size.y / _world->irs->metricPixelsPerPoint.y);
 
         screen_point.x = 10;
         screen_point.y -= static_cast<int>(g_size.y) - debugFontSize / 2;
@@ -244,7 +244,7 @@ namespace RoninEngine
         internal_input_init();
 
         // setup
-        switched_world = nullptr;
+        _world = nullptr;
 
         // Init legacy fonts
         UI::init_legacy_font(1);
@@ -390,8 +390,8 @@ namespace RoninEngine
 
     void RoninSimulator::RequestQuit()
     {
-        if(switched_world)
-            switched_world->RequestUnload();
+        if(_world)
+            _world->RequestUnload();
     }
 
     bool RoninSimulator::LoadWorld(World *world, bool unloadPrevious)
@@ -413,7 +413,7 @@ namespace RoninEngine
             },
             [=]() -> bool const
             {
-                bool hasError = switched_world == world || last_switched_world != nullptr || preload_world == world;
+                bool hasError = _world == world || last_switched_world != nullptr || preload_world == world;
                 if(hasError)
                     Log("Current world is loading state. Failed.");
                 return hasError;
@@ -428,9 +428,9 @@ namespace RoninEngine
             }
         }
 
-        if(unloadPrevious && switched_world)
+        if(unloadPrevious && _world)
         {
-            last_switched_world = switched_world;
+            last_switched_world = _world;
             last_switched_world->RequestUnload();
         }
 
@@ -438,8 +438,8 @@ namespace RoninEngine
         CancelReload();
 
         // switching as main
-        if(switched_world == nullptr)
-            switched_world = world;
+        if(_world == nullptr)
+            _world = world;
 
         // preload world
         preload_world = world;
@@ -452,7 +452,7 @@ namespace RoninEngine
 
     bool RoninSimulator::ReloadWorld()
     {
-        if(switched_world == nullptr || preload_world != nullptr)
+        if(_world == nullptr || preload_world != nullptr)
         {
             Log("Active world not loaded");
             return false;
@@ -465,7 +465,7 @@ namespace RoninEngine
 
     World *RoninSimulator::GetWorld()
     {
-        return switched_world;
+        return _world;
     }
 
     bool RoninSimulator::CancelReload()
@@ -641,7 +641,7 @@ namespace RoninEngine
             return;
         }
 
-        if(switched_world == nullptr)
+        if(_world == nullptr)
         {
             ShowMessage("World not loaded");
             return;
@@ -670,11 +670,11 @@ namespace RoninEngine
                     case SDL_QUIT:
                     {
                         isQuitting = true;
-                        switched_world->RequestUnload();
-                        last_switched_world = switched_world;
+                        _world->RequestUnload();
+                        last_switched_world = _world;
                         gscope.simConfig.conf = CONF_RENDER_NOCONF;
                         gscope.internalWorldLoaded = false;
-                        switched_world = nullptr;
+                        _world = nullptr;
                         break;
                     }
                 }
@@ -702,7 +702,7 @@ namespace RoninEngine
                     gscope.renderer = nullptr;
                 }
 
-                if(switched_world == nullptr)
+                if(_world == nullptr)
                 {
                     gscope.queueWatcher.delaySystem = Time::EndWatch();
                     goto end_simulate;
@@ -734,27 +734,27 @@ namespace RoninEngine
                     // on swtiched and init resources, even require
                     Runtime::internal_load_world(preload_world);
 
-                    switched_world = preload_world;
+                    _world = preload_world;
 
                     // Init Internal World Timer IIWT
                     internal_init_timer();
 
-                    if(!switched_world->isHierarchy())
+                    if(!_world->isHierarchy())
                     {
                         // init main object
-                        switched_world->irs->mainObject = create_empty_gameobject();
-                        switched_world->irs->mainObject->name("Main Object");
-                        switched_world->irs->mainObject->transform()->name("Root");
+                        _world->irs->mainObject = create_empty_gameobject();
+                        _world->irs->mainObject->name("Main Object");
+                        _world->irs->mainObject->transform()->name("Root");
                         // pickup from renders
-                        Matrix::matrix_remove(switched_world->irs->mainObject->transform());
+                        Matrix::matrix_remove(_world->irs->mainObject->transform());
                     }
 
                     // Set Metric as default
-                    switched_world->irs->metricPixelsPerPoint = Vec2::one * defaultPixelsPerPoint;
+                    _world->irs->metricPixelsPerPoint = Vec2::one * defaultPixelsPerPoint;
 
                     gscope.internalWorldCanStart = false;
 
-                    switched_world->OnAwake();
+                    _world->OnAwake();
 
                     preload_world = nullptr;
                     gscope.internalWorldLoaded = true;
@@ -765,25 +765,25 @@ namespace RoninEngine
             // end watcher
 
             // update level
-            if(!switched_world->irs->requestUnloading)
+            if(!_world->irs->requestUnloading)
             {
                 // begin watcher
                 Time::BeginWatch();
 
                 if(!gscope.internalWorldCanStart)
                 {
-                    switched_world->OnStart();
+                    _world->OnStart();
                     gscope.internalWorldCanStart = true;
                 }
 
-                if(!switched_world->irs->requestUnloading)
+                if(!_world->irs->requestUnloading)
                 {
-                    switched_world->OnUpdate();
+                    _world->OnUpdate();
                 }
                 // end watcher
                 gscope.queueWatcher.delayExecWorld = Time::EndWatch();
 
-                if(switched_world->irs->requestUnloading)
+                if(_world->irs->requestUnloading)
                 {
                     goto end_simulate; // break on unload state
                 }
@@ -795,12 +795,12 @@ namespace RoninEngine
 
             // Run Collector
             Time::BeginWatch();
-            if(!switched_world->irs->requestUnloading)
+            if(!_world->irs->requestUnloading)
                 SepukuRun();
             // end watcher
             gscope.queueWatcher.delayHarakiring = Time::EndWatch();
 
-            if(switched_world->irs->requestUnloading)
+            if(_world->irs->requestUnloading)
                 goto end_simulate; // break on unload state
 
             // Set scale to default
@@ -808,11 +808,11 @@ namespace RoninEngine
 
             // begin watcher
             Time::BeginWatch();
-            UI::native_draw_render(switched_world->irs->gui);
+            UI::native_draw_render(_world->irs->gui);
             gscope.queueWatcher.delayRenderGUI = Time::EndWatch();
             // end watcher
 
-            if(switched_world->irs->requestUnloading)
+            if(_world->irs->requestUnloading)
                 goto end_simulate; // break on unload state
 
             if(gscope.debugMode)
@@ -863,7 +863,7 @@ namespace RoninEngine
             // update events
             internal_input_update_after();
 
-            if(switched_world == nullptr || switched_world->irs->requestUnloading && preload_world == nullptr)
+            if(_world == nullptr || _world->irs->requestUnloading && preload_world == nullptr)
                 break; // break on unload state
 
             // delaying
@@ -871,10 +871,10 @@ namespace RoninEngine
         }
 
         // unload world
-        if(switched_world)
+        if(_world)
         {
-            Runtime::internal_unload_world(switched_world);
-            switched_world = nullptr;
+            Runtime::internal_unload_world(_world);
+            _world = nullptr;
         }
 
         if(gscope.renderer)

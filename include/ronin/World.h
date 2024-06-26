@@ -56,7 +56,7 @@ namespace RoninEngine::Runtime
 
         std::string GetTreeOfHierarchy() const;
 
-        static World *self();
+        static World *GetCurrentWorld();
     };
 
     template <typename T>

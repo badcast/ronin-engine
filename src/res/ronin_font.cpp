@@ -23,6 +23,9 @@ namespace RoninEngine::UI
         if(world->irs->legacy_font_hover)
             SDL_DestroyTexture(world->irs->legacy_font_hover);
         world->irs->legacy_font_hover = SDL_CreateTextureFromSurface(gscope.renderer, pDefaultLegacyFont->surfHilight);
+
+        _custom_refresh_fonts();
+
     }
 
     void init_legacy_font(bool optimizeDeffects)

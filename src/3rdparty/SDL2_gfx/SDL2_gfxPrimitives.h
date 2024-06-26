@@ -233,6 +233,9 @@ extern "C" {
 	SDL2_GFXPRIMITIVES_SCOPE int stringColor(SDL_Renderer * renderer, Sint16 x, Sint16 y, const char *s, Uint32 color);
 	SDL2_GFXPRIMITIVES_SCOPE int stringRGBA(SDL_Renderer * renderer, Sint16 x, Sint16 y, const char *s, Uint8 r, Uint8 g, Uint8 b, Uint8 a);
 
+    // REFRESH INTERNAL CACHE FONTS
+    SDL2_GFXPRIMITIVES_SCOPE void _custom_refresh_fonts();
+
 	/* Ends C function definitions when using C++ */
 #ifdef __cplusplus
 }

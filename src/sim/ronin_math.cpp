@@ -4,55 +4,7 @@ using namespace RoninEngine;
 using namespace RoninEngine::Exception;
 using namespace RoninEngine::Runtime;
 
-static std::uint32_t __seed__ = 1;
-
 constexpr double periodic_fahren = 5.0 / 9;
-constexpr auto ronin_rand_max = std::numeric_limits<decltype(__seed__)>::max();
-
-// get random value
-std::uint32_t internal_rand()
-{
-    __seed__ = (__seed__ * 73129u + 95121u) % ronin_rand_max;
-    return __seed__;
-}
-
-void Random::SRand(std::uint32_t seed)
-{
-    if(seed == 0)
-        seed = 1;
-    __seed__ = seed;
-}
-
-int Random::Range(int min, int max)
-{
-    return min + internal_rand() % (max - min + 1);
-}
-
-float Random::Range(float min, float max)
-{
-    return Value() * (max - min) + min;
-}
-
-float Random::Value()
-{
-    // const for diaz. 0.0 - 1.0
-    return static_cast<float>(static_cast<double>(internal_rand()) / ronin_rand_max);
-}
-
-Vec2 Random::RandomVector()
-{
-    return {Random::Value() * 2 - 1, Random::Value() * 2 - 1};
-}
-
-float Random::AngleDegress()
-{
-    return Value() * 360;
-}
-
-float Random::AngleRadian()
-{
-    return Value() * Math::Pi2;
-}
 
 float Math::Cos(float x)
 {

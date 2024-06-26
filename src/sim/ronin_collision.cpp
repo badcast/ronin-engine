@@ -46,7 +46,7 @@ namespace RoninEngine::Runtime
     {
         bool result;
 
-        if((result = spriteRenderer && spriteRenderer->getSprite()))
+        if((result = (spriteRenderer && spriteRenderer->getSprite())))
             collideSize = Vec2::Scale(spriteRenderer->getSprite()->size(), spriteRenderer->getSize());
 
         return result;

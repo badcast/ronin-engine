@@ -8,7 +8,7 @@
 
 using namespace RoninEngine::Exception;
 
-extern std::uint32_t internal_rand();
+extern std::function<std::uint32_t(void)> _internal_random_;
 
 namespace RoninEngine::AI
 {
@@ -21,7 +21,7 @@ namespace RoninEngine::AI
     public:
         Sheduller(int width, int height) : basic_brain_map(width, height)
         {
-            this->set_random_function(internal_rand);
+            this->set_random_function(_internal_random_);
         }
     };
 

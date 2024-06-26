@@ -19,6 +19,7 @@
 #include <fstream>
 #include <random>
 #include <cstdarg>
+#include <cstddef>
 
 // C++ STL Containers
 #include <initializer_list>
