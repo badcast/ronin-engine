@@ -66,28 +66,35 @@ namespace json
     {
         union BackingData
         {
-            BackingData(double d) : Float(d)
+            BackingData(double d)
             {
+                udata.Float = (d);
             }
-            BackingData(long l) : Int(l)
+            BackingData(long l)
             {
+                udata.Int = (l);
             }
-            BackingData(bool b) : Bool(b)
+            BackingData(bool b)
             {
+                udata.Bool = (b);
             }
-            BackingData(string s) : String(new string(s))
+            BackingData(string s)
             {
+                udata.String = (new string(s));
             }
-            BackingData() : Int(0)
+            BackingData()
             {
+                udata.Int = (0);
             }
-
-            deque<JSON> *List;
-            map<string, JSON> *Map;
-            string *String;
-            double Float;
-            long Int;
-            bool Bool;
+            union
+            {
+                deque<JSON> *List;
+                map<string, JSON> *Map;
+                string *String;
+                double Float;
+                long Int;
+                bool Bool;
+            } udata;
         } Internal;
 
     public:
@@ -170,7 +177,7 @@ namespace json
         JSON(JSON &&other) : Internal(other.Internal), Type(other.Type)
         {
             other.Type = Class::Null;
-            other.Internal.Map = nullptr;
+            other.Internal.udata.Map = nullptr;
         }
 
         JSON &operator=(JSON &&other)
@@ -178,7 +185,7 @@ namespace json
             ClearInternal();
             Internal = other.Internal;
             Type = other.Type;
-            other.Internal.Map = nullptr;
+            other.Internal.udata.Map = nullptr;
             other.Type = Class::Null;
             return *this;
         }
@@ -188,13 +195,13 @@ namespace json
             switch(other.Type)
             {
                 case Class::Object:
-                    Internal.Map = new map<string, JSON>(other.Internal.Map->begin(), other.Internal.Map->end());
+                    Internal.udata.Map = new map<string, JSON>(other.Internal.udata.Map->begin(), other.Internal.udata.Map->end());
                     break;
                 case Class::Array:
-                    Internal.List = new deque<JSON>(other.Internal.List->begin(), other.Internal.List->end());
+                    Internal.udata.List = new deque<JSON>(other.Internal.udata.List->begin(), other.Internal.udata.List->end());
                     break;
                 case Class::String:
-                    Internal.String = new string(*other.Internal.String);
+                    Internal.udata.String = new string(*other.Internal.udata.String);
                     break;
                 default:
                     Internal = other.Internal;
@@ -208,13 +215,13 @@ namespace json
             switch(other.Type)
             {
                 case Class::Object:
-                    Internal.Map = new map<string, JSON>(other.Internal.Map->begin(), other.Internal.Map->end());
+                    Internal.udata.Map = new map<string, JSON>(other.Internal.udata.Map->begin(), other.Internal.udata.Map->end());
                     break;
                 case Class::Array:
-                    Internal.List = new deque<JSON>(other.Internal.List->begin(), other.Internal.List->end());
+                    Internal.udata.List = new deque<JSON>(other.Internal.udata.List->begin(), other.Internal.udata.List->end());
                     break;
                 case Class::String:
-                    Internal.String = new string(*other.Internal.String);
+                    Internal.udata.String = new string(*other.Internal.udata.String);
                     break;
                 default:
                     Internal = other.Internal;
@@ -228,13 +235,13 @@ namespace json
             switch(Type)
             {
                 case Class::Array:
-                    delete Internal.List;
+                    delete Internal.udata.List;
                     break;
                 case Class::Object:
-                    delete Internal.Map;
+                    delete Internal.udata.Map;
                     break;
                 case Class::String:
-                    delete Internal.String;
+                    delete Internal.udata.String;
                     break;
                 default:;
             }
@@ -277,7 +284,7 @@ namespace json
         void append(T arg)
         {
             SetType(Class::Array);
-            Internal.List->emplace_back(arg);
+            Internal.udata.List->emplace_back(arg);
         }
 
         template <typename T, typename... U>
@@ -291,7 +298,7 @@ namespace json
         typename enable_if<is_same<T, bool>::value, JSON &>::type operator=(T b)
         {
             SetType(Class::Boolean);
-            Internal.Bool = b;
+            Internal.udata.Bool = b;
             return *this;
         }
 
@@ -299,7 +306,7 @@ namespace json
         typename enable_if<is_integral<T>::value && !is_same<T, bool>::value, JSON &>::type operator=(T i)
         {
             SetType(Class::Integral);
-            Internal.Int = i;
+            Internal.udata.Int = i;
             return *this;
         }
 
@@ -307,7 +314,7 @@ namespace json
         typename enable_if<is_floating_point<T>::value, JSON &>::type operator=(T f)
         {
             SetType(Class::Floating);
-            Internal.Float = f;
+            Internal.udata.Float = f;
             return *this;
         }
 
@@ -315,22 +322,22 @@ namespace json
         typename enable_if<is_convertible<T, string>::value, JSON &>::type operator=(T s)
         {
             SetType(Class::String);
-            *Internal.String = string(s);
+            *Internal.udata.String = string(s);
             return *this;
         }
 
         JSON &operator[](const string &key)
         {
             SetType(Class::Object);
-            return Internal.Map->operator[](key);
+            return Internal.udata.Map->operator[](key);
         }
 
         JSON &operator[](unsigned index)
         {
             SetType(Class::Array);
-            if(index >= Internal.List->size())
-                Internal.List->resize(index + 1);
-            return Internal.List->operator[](index);
+            if(index >= Internal.udata.List->size())
+                Internal.udata.List->resize(index + 1);
+            return Internal.udata.List->operator[](index);
         }
 
         JSON &at(const string &key)
@@ -340,7 +347,7 @@ namespace json
 
         const JSON &at(const string &key) const
         {
-            return Internal.Map->at(key);
+            return Internal.udata.Map->at(key);
         }
 
         JSON &at(unsigned index)
@@ -350,13 +357,13 @@ namespace json
 
         const JSON &at(unsigned index) const
         {
-            return Internal.List->at(index);
+            return Internal.udata.List->at(index);
         }
 
         int length() const
         {
             if(Type == Class::Array)
-                return Internal.List->size();
+                return Internal.udata.List->size();
             else
                 return -1;
         }
@@ -364,16 +371,16 @@ namespace json
         bool hasKey(const string &key) const
         {
             if(Type == Class::Object)
-                return Internal.Map->find(key) != Internal.Map->end();
+                return Internal.udata.Map->find(key) != Internal.udata.Map->end();
             return false;
         }
 
         int size() const
         {
             if(Type == Class::Object)
-                return Internal.Map->size();
+                return Internal.udata.Map->size();
             else if(Type == Class::Array)
-                return Internal.List->size();
+                return Internal.udata.List->size();
             else
                 return -1;
         }
@@ -397,7 +404,7 @@ namespace json
         string ToString(bool &ok) const
         {
             ok = (Type == Class::String);
-            return ok ? std::move(json_escape(*Internal.String)) : string("");
+            return ok ? std::move(json_escape(*Internal.udata.String)) : string("");
         }
 
         double ToFloat() const
@@ -408,7 +415,7 @@ namespace json
         double ToFloat(bool &ok) const
         {
             ok = (Type == Class::Floating);
-            return ok ? Internal.Float : 0.0;
+            return ok ? Internal.udata.Float : 0.0;
         }
 
         long ToInt() const
@@ -419,7 +426,7 @@ namespace json
         long ToInt(bool &ok) const
         {
             ok = (Type == Class::Integral);
-            return ok ? Internal.Int : 0;
+            return ok ? Internal.udata.Int : 0;
         }
 
         bool ToBool() const
@@ -430,34 +437,34 @@ namespace json
         bool ToBool(bool &ok) const
         {
             ok = (Type == Class::Boolean);
-            return ok ? Internal.Bool : false;
+            return ok ? Internal.udata.Bool : false;
         }
 
         JSONWrapper<map<string, JSON>> ObjectRange()
         {
             if(Type == Class::Object)
-                return JSONWrapper<map<string, JSON>>(Internal.Map);
+                return JSONWrapper<map<string, JSON>>(Internal.udata.Map);
             return JSONWrapper<map<string, JSON>>(nullptr);
         }
 
         JSONWrapper<deque<JSON>> ArrayRange()
         {
             if(Type == Class::Array)
-                return JSONWrapper<deque<JSON>>(Internal.List);
+                return JSONWrapper<deque<JSON>>(Internal.udata.List);
             return JSONWrapper<deque<JSON>>(nullptr);
         }
 
         JSONConstWrapper<map<string, JSON>> ObjectRange() const
         {
             if(Type == Class::Object)
-                return JSONConstWrapper<map<string, JSON>>(Internal.Map);
+                return JSONConstWrapper<map<string, JSON>>(Internal.udata.Map);
             return JSONConstWrapper<map<string, JSON>>(nullptr);
         }
 
         JSONConstWrapper<deque<JSON>> ArrayRange() const
         {
             if(Type == Class::Array)
-                return JSONConstWrapper<deque<JSON>>(Internal.List);
+                return JSONConstWrapper<deque<JSON>>(Internal.udata.List);
             return JSONConstWrapper<deque<JSON>>(nullptr);
         }
 
@@ -475,7 +482,7 @@ namespace json
                 {
                     string s = "{\n";
                     bool skip = true;
-                    for(auto &p : *Internal.Map)
+                    for(auto &p : *Internal.udata.Map)
                     {
                         if(!skip)
                             s += ",\n";
@@ -489,7 +496,7 @@ namespace json
                 {
                     string s = "[";
                     bool skip = true;
-                    for(auto &p : *Internal.List)
+                    for(auto &p : *Internal.udata.List)
                     {
                         if(!skip)
                             s += ", ";
@@ -500,13 +507,13 @@ namespace json
                     return s;
                 }
                 case Class::String:
-                    return "\"" + json_escape(*Internal.String) + "\"";
+                    return "\"" + json_escape(*Internal.udata.String) + "\"";
                 case Class::Floating:
-                    return std::to_string(Internal.Float);
+                    return std::to_string(Internal.udata.Float);
                 case Class::Integral:
-                    return std::to_string(Internal.Int);
+                    return std::to_string(Internal.udata.Int);
                 case Class::Boolean:
-                    return Internal.Bool ? "true" : "false";
+                    return Internal.udata.Bool ? "true" : "false";
                 default:
                     return "";
             }
@@ -526,25 +533,25 @@ namespace json
             switch(type)
             {
                 case Class::Null:
-                    Internal.Map = nullptr;
+                    Internal.udata.Map = nullptr;
                     break;
                 case Class::Object:
-                    Internal.Map = new map<string, JSON>();
+                    Internal.udata.Map = new map<string, JSON>();
                     break;
                 case Class::Array:
-                    Internal.List = new deque<JSON>();
+                    Internal.udata.List = new deque<JSON>();
                     break;
                 case Class::String:
-                    Internal.String = new string();
+                    Internal.udata.String = new string();
                     break;
                 case Class::Floating:
-                    Internal.Float = 0.0;
+                    Internal.udata.Float = 0.0;
                     break;
                 case Class::Integral:
-                    Internal.Int = 0;
+                    Internal.udata.Int = 0;
                     break;
                 case Class::Boolean:
-                    Internal.Bool = false;
+                    Internal.udata.Bool = false;
                     break;
             }
 
@@ -561,13 +568,13 @@ namespace json
             switch(Type)
             {
                 case Class::Object:
-                    delete Internal.Map;
+                    delete Internal.udata.Map;
                     break;
                 case Class::Array:
-                    delete Internal.List;
+                    delete Internal.udata.List;
                     break;
                 case Class::String:
-                    delete Internal.String;
+                    delete Internal.udata.String;
                     break;
                 default:;
             }
