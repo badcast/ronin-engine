@@ -459,7 +459,7 @@ namespace RoninEngine::UI
         return width;
     }
 
-    void Render_String_Legacy(Rect rect, const char *text, int len, int fontWidth, Align textAlign, bool textWrap, bool hilight)
+    void font2d_string(Rect rect, const char *text, int len, int fontWidth, Align textAlign, bool textWrap, bool hilight)
     {
         if(text == nullptr || len <= 0)
             return;

@@ -33,7 +33,6 @@ enum
     NEURON_CAPTURE_CLOSED_LIST = 2,
     // Captured, capitalize Neuron for MAZE
     NEURON_CAPTURE_CAPITALIZED = 4
-
 };
 
 // site state

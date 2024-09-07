@@ -148,8 +148,8 @@ namespace RoninEngine::Runtime
         }
         else
         {
-            // 1 MiB block/per
-            constexpr int block_size = 1024 * 1024;
+            // 4 KiB block/per
+            constexpr int block_size = 1024 * 4;
             char *buffer = new char[block_size];
 
             if(buffer == nullptr)

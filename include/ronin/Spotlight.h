@@ -6,9 +6,9 @@ namespace RoninEngine::Runtime
     class RONIN_API Spotlight final : public Light
     {
     public:
-        // Диапозон
+        // Range of the light (world space)
         float range;
-        // Интенсивность света
+        // Intensity light
         float intensity;
 
         Spotlight();

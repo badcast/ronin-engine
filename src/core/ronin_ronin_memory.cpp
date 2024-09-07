@@ -6,7 +6,9 @@ namespace RoninEngine::Runtime
     {
         using namespace RoninEngine;
 
+#ifndef USE_SDL_MEM
 #define USE_SDL_MEM 0
+#endif
 
 #if TEST_MALLOC
         std::set<void *> allocated_leaker;
@@ -14,26 +16,27 @@ namespace RoninEngine::Runtime
         std::uint64_t __ronin_allocated = 0;
         void *ronin_memory_alloc(std::size_t size)
         {
-            void *mem =
+            void *memory;
+
 #if USE_SDL_MEM
-                SDL_malloc(size);
+            memory = SDL_malloc(size);
 #else
-                std::malloc(size);
+            memory = std::malloc(size);
 #endif
 
-            if(mem == nullptr)
+            if(memory == nullptr)
                 return nullptr;
 
             ++__ronin_allocated;
 
             // Set up controls memory pointer. Set to zero.
-            memset(mem, 0, size);
+            memset(memory, 0, size);
 
 #if TEST_MALLOC
-            allocated_leaker.insert(mem);
+            allocated_leaker.insert(memory);
 #endif
 
-            return mem;
+            return memory;
         }
 
         void *ronin_memory_realloc(void *memory, std::size_t size)
@@ -42,11 +45,11 @@ namespace RoninEngine::Runtime
             allocated_leaker.erase(memory);
 #endif
             void *prev = memory;
-            memory =
+
 #if USE_SDL_MEM
-                SDL_realloc(memory, size);
+            memory = SDL_realloc(memory, size);
 #else
-                std::realloc(memory, size);
+            memory = std::realloc(memory, size);
 #endif
             if(prev == nullptr && memory != nullptr)
                 ++__ronin_allocated;

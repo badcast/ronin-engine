@@ -5,6 +5,10 @@
 using namespace RoninEngine;
 using namespace RoninEngine::Runtime;
 
+#ifdef __linux__
+std::fstream _fileDevRand;
+#endif
+
 static std::uint32_t __seed__ = 1;
 constexpr auto ronin_rand_max = std::numeric_limits<decltype(__seed__)>::max();
 

@@ -49,7 +49,7 @@ namespace RoninEngine
                 world->irs->requestUnloading = false;
 
                 // update internal loaded font
-                RoninEngine::UI::update_legacy_font(world);
+                RoninEngine::UI::font2d_update(world);
 
                 pinnedWorlds.insert(world);
             }

@@ -5,7 +5,7 @@
 
 class bitlist
 {
-    constexpr static int BITS = 8;
+    constexpr static int BITS = 0xF;
 
 protected:
     using bigsize = std::uint64_t;

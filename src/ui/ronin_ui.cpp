@@ -40,7 +40,7 @@ namespace RoninEngine::UI
 
     inline UIElement &call_get_element(GUIResources *resources, uid id)
     {
-        return resources->elements[id];
+        return resources->elements.at(id);
     }
 
     inline UILayout *call_get_last_layout(GUIResources *resources)
@@ -365,18 +365,6 @@ namespace RoninEngine::UI
         return (call_get_element(this->handle, id).options & ElementEnableMask) != 0;
     }
 
-    float GUI::SliderGetValue(uid id)
-    {
-        UIElement &elem = call_get_element(this->handle, id);
-
-        if(elem.prototype != RGUI_HSLIDER && elem.prototype != RGUI_VSLIDER)
-        {
-            throw ronin_uid_nocast_error();
-        }
-
-        return elem.resource.slider.value;
-    }
-
     bool GUI::CheckBoxGetValue(uid id)
     {
         UIElement &elem = call_get_element(this->handle, id);
@@ -463,7 +451,19 @@ namespace RoninEngine::UI
         {
             throw ronin_uid_nocast_error();
         }
-        elem.resource.slider.value = Math::Clamp(elem.resource.slider.value, elem.resource.slider.min, elem.resource.slider.max);
+        elem.resource.slider.value = Math::Clamp(value, elem.resource.slider.min, elem.resource.slider.max);
+    }
+
+    float GUI::SliderGetValue(uid id)
+    {
+        UIElement &elem = call_get_element(this->handle, id);
+
+        if(elem.prototype != RGUI_HSLIDER && elem.prototype != RGUI_VSLIDER)
+        {
+            throw ronin_uid_nocast_error();
+        }
+
+        return elem.resource.slider.value;
     }
 
     // grouping-----------------------------------------------------------------------------------------------------------

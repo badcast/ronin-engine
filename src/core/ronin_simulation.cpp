@@ -247,7 +247,7 @@ namespace RoninEngine
         _world = nullptr;
 
         // Init legacy fonts
-        UI::init_legacy_font(1);
+        UI::font2d_init(1);
     }
 
     void RoninSimulator::Finalize()

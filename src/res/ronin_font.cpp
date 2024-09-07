@@ -15,7 +15,7 @@ namespace RoninEngine::UI
     TTF_Font *pDefaultTTFFont = nullptr;
     LegacyFont_t *pDefaultLegacyFont = nullptr;
 
-    void update_legacy_font(RoninEngine::Runtime::World *world)
+    void font2d_update(RoninEngine::Runtime::World *world)
     {
         if(world->irs->legacy_font_normal)
             SDL_DestroyTexture(world->irs->legacy_font_normal);
@@ -28,7 +28,7 @@ namespace RoninEngine::UI
 
     }
 
-    void init_legacy_font(bool optimizeDeffects)
+    void font2d_init(bool optimizeDeffects)
     {
         if(!pDefaultTTFFont)
         {
