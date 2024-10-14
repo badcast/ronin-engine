@@ -214,14 +214,11 @@ constexpr const Param &InterpolationValue(int state, const Param &begin, const P
 
 void ParticleSystem::OnUpdate()
 {
-    // Create new particles if the "timing" time has come, or its creation has reached the end (maxParticles)
-    // Update existing particles and perform interpolation for them
-
     enum
     {
-        M_DestroyNow = 0, // Уничтожить эту систему частиц
-        M_Execute = 1,    // Выполнять в любом случае, например частицы уже созданы и их нужно отрендерить и интерполировать
-        M_Fabricate = 2,  // Создать еще частицы
+        M_DestroyNow = 0,
+        M_Execute = 1,
+        M_Fabricate = 2,
     };
 
     int makeFlag = (loop || !ref->activeParticles.empty()) ? M_Execute : 0;
@@ -234,7 +231,6 @@ void ParticleSystem::OnUpdate()
     if(makeFlag)
     {
         float t = Time::time();
-        // Make new particle (interval)
         if(emit && ref->m_timing <= t && (makeFlag & M_Fabricate))
         {
             int make_n = ref->m_limit == 0 ? startWith : Math::Min(startWith, static_cast<int>(ref->m_limit - ref->activeParticles.size()));

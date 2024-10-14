@@ -75,7 +75,7 @@ float Random::Range(float min, float max)
 
 float Random::Value()
 {
-    // const for diaz. 0.0 - 1.0
+    // const for diaz. 0.0 - 1.0F
     return static_cast<float>(static_cast<double>(_internal_random_()) / ronin_rand_max);
 }
 

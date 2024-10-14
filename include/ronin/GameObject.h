@@ -260,7 +260,7 @@ namespace RoninEngine
 #if 1
 #ifdef __clang__ // it's work only Clang
 #define CHECK_BASE_OVERRIDDEN(BASE, BINDER, METHOD) \
-    if constexpr((&BASE::METHOD) != (&T::METHOD))   \
+    if ((&BASE::METHOD) != (&T::METHOD))   \
         flags |= BINDER;
 #else // it's work on GCC
 #define CHECK_BASE_OVERRIDDEN(BASE, BINDER, METHOD)                                               \

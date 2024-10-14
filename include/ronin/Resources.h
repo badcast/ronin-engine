@@ -12,7 +12,11 @@ namespace RoninEngine
         public:
             static ResId LoadImage(const std::string &path, bool local);
 
+            static Image *LoadImageRight(const std::string &path, bool local);
+
             static ResId LoadImageFromStream(std::istream &stream, bool local);
+
+            static Image *LoadImageFromStreamRight(std::istream &stream, bool local);
 
             static ResId LoadAudioClip(const std::string &path, bool local);
 
@@ -45,6 +49,7 @@ namespace RoninEngine
         public:
             static bool LoadAsset(const std::string &assetFile, Asset **asset);
             static Cursor *ConvertImageToCursor(Image *imageSrc, Vec2Int cursorHotspot);
+            static void DeleteAsset(Asset *asset);
         };
     } // namespace Runtime
 } // namespace RoninEngine

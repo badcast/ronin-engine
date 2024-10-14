@@ -47,6 +47,11 @@ Cursor *AssetManager::ConvertImageToCursor(Image *imageSrc, Vec2Int cursorHotspo
     return cursor;
 }
 
+void AssetManager::DeleteAsset(Asset *asset)
+{
+
+}
+
 bool AssetManager::LoadAsset(const std::string &loaderFile, Asset **asset)
 {
     using namespace json;

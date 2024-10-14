@@ -216,6 +216,11 @@ namespace RoninEngine::Runtime
         return id;
     }
 
+    Image *Resources::LoadImageFromStreamRight(std::istream &stream, bool local)
+    {
+        return GetImageSource(LoadImageFromStream(stream, local));
+    }
+
     ResId Resources::LoadAudioClipFromStream(std::istream &stream, bool local)
     {
         ResId id;
@@ -276,6 +281,11 @@ namespace RoninEngine::Runtime
         }
 
         return LoadImageFromStream(file, local);
+    }
+
+    Image *Resources::LoadImageRight(const std::string &path, bool local)
+    {
+        return GetImageSource(LoadImage(path, local));
     }
 
     ResId Resources::LoadAudioClip(const std::string &path, bool local)
