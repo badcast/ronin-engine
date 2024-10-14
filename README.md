@@ -1,7 +1,7 @@
 # ronin-engine
 
 <h1 align="center">
-	<img width="500" src="media/logo.svg" alt="ronin-engine-logo">
+	<img width="500" src="media/RoninEngine-logo.png" alt="ronin-engine-logo">
 </h1>
 
 RoninEngine is a powerful game engine for developing games and user interfaces in the C++ programming language. It provides a wide range of features to create high-quality applications with ease and performance in mind.
