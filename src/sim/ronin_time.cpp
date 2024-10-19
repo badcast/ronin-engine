@@ -5,7 +5,6 @@ namespace RoninEngine::Runtime
 
     extern float internal_time_scale, internal_game_time, internal_delta_time;
     extern std::uint32_t internal_frames; // framecounter
-    extern std::uint32_t internal_start_engine_time;
     extern std::vector<std::uint32_t> _watcher_time;
 
     float Time::time()
@@ -23,12 +22,12 @@ namespace RoninEngine::Runtime
         return internal_delta_time;
     }
 
-    bool Time::IsPaused()
+    bool Time::isPaused()
     {
         return internal_time_scale == 0;
     }
 
-    bool Time::IsPlaying()
+    bool Time::isPlaying()
     {
         return internal_time_scale != 0;
     }

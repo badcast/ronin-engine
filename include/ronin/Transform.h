@@ -46,6 +46,8 @@ namespace RoninEngine::Runtime
         void childAdd(Transform *child);
         void childRemove(Transform *child);
 
+        std::list<Transform *> GetChilds() const;
+
         // look forward axis from world coordinates
         const Vec2 forward() const;
         // look backward axis from world coordinates

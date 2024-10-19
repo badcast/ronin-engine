@@ -72,6 +72,8 @@ namespace RoninEngine
         std::uint8_t selectRenderDriver;
         std::uint8_t selectVideoDriver;
 
+        bool verticalSync;
+
         float brightness;
         float windowOpacity;
     };
@@ -109,9 +111,10 @@ namespace RoninEngine
 
     struct TimingWatcher
     {
+        std::uint32_t fps;
         std::uint32_t delayExecWorld;
         std::uint32_t delayExecScripts;
-        std::uint32_t delayRenderWorld;
+        std::uint32_t delayPresent;
         std::uint32_t delayRenderGUI;
         std::uint32_t delayRenderGizmos;
         std::uint32_t delayHarakiring;
@@ -275,12 +278,6 @@ namespace RoninEngine
          * @param message The error message.
          */
         static void ShowMessageFail(const std::string &message);
-
-        /**
-         * @brief Write log
-         * @param str The message string
-         */
-        static void Log(const char *str);
 
         /**
          * @brief Handles an out-of-memory failure by terminating the application.

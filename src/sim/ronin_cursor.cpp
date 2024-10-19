@@ -1,4 +1,5 @@
 #include "ronin.h"
+#include "ronin_debug.h"
 #include "RoninCursor.h"
 
 namespace RoninEngine::Runtime
@@ -48,7 +49,7 @@ namespace RoninEngine::Runtime
         if(gscope.sysCursors[static_cast<int>(id)] == nullptr)
         {
             if((gscope.sysCursors[static_cast<int>(id)] = SDL_CreateSystemCursor(static_cast<SDL_SystemCursor>(static_cast<int>(id)))) == nullptr)
-                RoninSimulator::Log(SDL_GetError());
+                Debug::Log(SDL_GetError());
         }
 
         return gscope.sysCursors[static_cast<int>(id)];

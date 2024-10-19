@@ -4,7 +4,7 @@
 
 #ifdef __linux__
 
-#define USE_PROCFS 0
+#define USE_PROCFS 1
 
 #if USE_PROCFS
 #include <cstdio>
@@ -97,21 +97,6 @@ size_t get_memory_used()
 #endif
 
 #endif
-
-/*
-
-TODO: Общая доступная виртуальная память
-TODO: Используемая в настоящее время виртуальная память
-TODO: Виртуальная память, используемая в данный момент моим процессом
-
-TODO: Всего доступно RAM
-TODO: RAM в настоящее время используется
-TODO: RAM в настоящее время используется этим процессом
-
-TODO: % CPU используется в настоящее время
-TODO: % CPU в настоящее время используется этим процессом
-
-*/
 
 namespace RoninEngine::Perfomances
 {

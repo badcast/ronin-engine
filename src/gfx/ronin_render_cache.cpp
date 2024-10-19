@@ -105,7 +105,7 @@ namespace RoninEngine::Runtime
     {
         int access;
         SDL_Rect dst, src, srcCopy;
-        SDL_Texture *destTexture;
+        SDL_Texture *destTexture, *extentTexture;
         SDL_Surface *extentSurface = nullptr, *surfSrc = nullptr;
 
         if(texture == nullptr || srcFrom == nullptr || extent == nullptr || extent->w <= 0 || extent->h <= 0 || (baseSize && (baseSize->x < 1 || baseSize->y < 1)))
@@ -134,6 +134,8 @@ namespace RoninEngine::Runtime
             if(surfSrc == nullptr)
                 break;
 
+#define SOFTWARE_SURFACE 1
+#if SOFTWARE_SURFACE
             extentSurface = SDL_CreateRGBSurfaceWithFormat(0, extent->w, extent->h, 32, defaultPixelFormat);
             if(extentSurface == nullptr)
                 break;
@@ -176,13 +178,71 @@ namespace RoninEngine::Runtime
             SDL_SetTextureBlendMode(destTexture, SDL_BLENDMODE_BLEND);
             SDL_RenderCopyEx(gscope.renderer, destTexture, nullptr, extent, Math::rad2deg * angleRad, nullptr, SDL_FLIP_NONE);
             SDL_DestroyTexture(destTexture);
+#else
+            extentTexture = SDL_CreateTexture(gscope.renderer, defaultPixelFormat, SDL_TEXTUREACCESS_TARGET, extent->w, extent->h);
+
+            if(extentTexture == nullptr)
+                break;
+
+            SDL_Texture * prevTarget = SDL_GetRenderTarget(gscope.renderer);
+            SDL_SetTextureBlendMode(extentTexture, SDL_BLENDMODE_BLEND);
+            SDL_SetRenderTarget(gscope.renderer, extentTexture);
+            SDL_SetRenderDrawColor(gscope.renderer, 0, 0, 0, 255);
+            SDL_RenderClear(gscope.renderer);
+
+            if(baseSize != nullptr)
+            {
+                src.w = baseSize->x;
+                src.h = baseSize->y;
+            }
+
+            SDL_Texture* textureSRC;
+
+            srcCopy = src;
+            textureSRC = SDL_CreateTextureFromSurface(gscope.renderer, surfSrc);
+
+            // First Render
+            SDL_RenderCopy(gscope.renderer, textureSRC, srcFrom, &srcCopy);
+
+            dst = src;
+            dst.x += src.w;
+            for(; dst.x < extent->w;)
+            {
+                SDL_RenderCopy(gscope.renderer, extentTexture,  &src, &dst);
+                dst.x += src.w;
+                src.w *= 2;
+                dst.w = src.w;
+            }
+
+            dst.x = 0;
+            dst.y = src.h;
+            for(; dst.y < extent->h;)
+            {
+                // Recover width
+                dst.w = extent->w;
+                SDL_RenderCopy(gscope.renderer, extentTexture, &src, &dst);
+                dst.y += src.h;
+                src.h *= 2;
+                dst.h = src.h;
+            }
+
+            // Recover previuos target
+            SDL_SetRenderTarget(gscope.renderer, prevTarget);
+            SDL_RenderCopyEx(gscope.renderer, extentTexture, nullptr, extent, Math::rad2deg * angleRad, nullptr, SDL_FLIP_NONE);
+
+            SDL_DestroyTexture(textureSRC);
+            SDL_DestroyTexture(extentTexture);
+
+
+#endif
             break;
         }
 
         if(access != SDL_TEXTUREACCESS_STATIC)
             SDL_UnlockTexture(texture);
-
+#if SOFTWARE_SURFACE
         SDL_FreeSurface(extentSurface);
+#endif
     }
 
     void render_texture_extension2(SDL_Texture *texture, const Vec2Int *baseSize, const SDL_Rect *extent, float angleRad)

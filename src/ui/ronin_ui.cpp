@@ -1,5 +1,6 @@
 #include "ronin.h"
 #include "ronin_ui_resources.h"
+#include "ronin_debug.h"
 
 enum
 {
@@ -138,7 +139,7 @@ namespace RoninEngine::UI
     {
         if(custom == nullptr)
         {
-            RoninSimulator::Log("overlay can not be null");
+            ronin_log("overlay can not be null");
             return -1;
         }
 

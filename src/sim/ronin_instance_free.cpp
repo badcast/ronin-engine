@@ -122,7 +122,9 @@ namespace RoninEngine
                     target = nullptr;
             }
 
-            // HARAKIRI --------------------------------------------------------------------------------------------------------------------
+            //////////////////////////
+            /// HARAKIRI COMPONENT ///
+            //////////////////////////
             for(GameObject *next : collects)
             {
                 for(Component *component : next->m_components)
@@ -185,6 +187,7 @@ namespace RoninEngine
                     COLLECTOR = nullptr;
                 }
             }
+#undef COLLECTOR
         }
 
         void Destroy(GameObject *obj)

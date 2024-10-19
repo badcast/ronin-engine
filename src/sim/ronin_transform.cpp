@@ -146,6 +146,11 @@ namespace RoninEngine::Runtime
         hierarchy_child_remove(this, child);
     }
 
+    std::list<Transform *> Transform::GetChilds() const
+    {
+        return hierarchy;
+    }
+
     Transform *Transform::root()
     {
         if(_world == nullptr || _world->irs == nullptr)

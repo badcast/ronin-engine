@@ -14,6 +14,19 @@ using namespace RoninEngine::Exception;
 
 namespace RoninEngine
 {
+    enum ConfigState : int
+    {
+        CONF_RENDER_NOCONF = 0,
+
+        CONF_RENDER_CHANGED = 1,
+        CONF_RELOAD_WORLD = 2,
+        CONF_RESERVED2 = 4,
+        CONF_RENDER_SOFTWARE = CONF_RENDER_CHANGED | 8,
+    };
+
+    ////////////////////////
+    /// GLOBAL VARIABLES ///
+    ////////////////////////
     namespace UI
     {
         extern void free_legacy_font();
@@ -40,7 +53,6 @@ namespace RoninEngine
 
         float internal_time_scale, internal_game_time, internal_delta_time;
 
-        std::uint32_t internal_start_engine_time;
         std::uint32_t internal_frames; // framecounter
         int _matrix_pack_ = 1;
         RoninInput internal_input;
@@ -57,27 +69,34 @@ namespace RoninEngine
         extern void internal_load_world(World *world);
         extern bool internal_unload_world(World *world);
     } // namespace Runtime
-
-    enum ConfigState : int
-    {
-        CONF_RENDER_NOCONF = 0,
-
-        CONF_RENDER_CHANGED = 1,
-        CONF_RELOAD_WORLD = 2,
-        CONF_RESERVED2 = 4,
-        CONF_RENDER_SOFTWARE = CONF_RENDER_CHANGED | 8,
-    };
-
     RoninEnvironment gscope;
 
+    struct _TDebugLabel
+    {
+        int labelLen;
+
+        std::uint32_t value;
+        std::string format;
+        Color format_color;
+
+        _TDebugLabel(const char *label, std::uint32_t value) : format(label)
+        {
+            this->labelLen = this->format.length();
+            this->value = value;
+        }
+    } debugLabels[] = {{"FPS: ", 0}, {" > GUI: ", 0}, {" > Scripts: ", 0}, {" > Render: ", 0}, {" > Gizmos: ", 0}, {" > Memory: ", 0}};
+
+    //////////////////////////////////
+    /// PRIVATE INTERNAL FUNCTIONS ///
+    //////////////////////////////////
     void internal_apply_settings()
     {
-        if(gscope.simConfig.conf == CONF_RENDER_NOCONF)
+        if(!gscope.simConfig.conf)
             return;
 
         if(gscope.simConfig.conf & CONF_RENDER_CHANGED)
         {
-            if(gscope.simConfig.conf & CONF_RENDER_SOFTWARE == CONF_RENDER_SOFTWARE)
+            if((gscope.simConfig.conf & CONF_RENDER_SOFTWARE) == CONF_RENDER_SOFTWARE)
                 gscope.simConfig.renderBackend = RenderDriverInfo::RenderBackend::CPU;
             else
                 gscope.simConfig.renderBackend = RenderDriverInfo::RenderBackend::GPU;
@@ -98,48 +117,36 @@ namespace RoninEngine
     {
         internal_game_time = 0;
         internal_time_scale = 1;
-        internal_start_engine_time = 0;
-        internal_start_engine_time = Time::startUpTime();
     }
 
     void internal_draw_debug()
     {
         constexpr int debugFontSize = 11;
 
-        static struct __INFOLABEL__
-        {
-            int labelLen;
-
-            std::uint32_t value;
-            std::string format;
-            Color format_color;
-
-            __INFOLABEL__(const char *label, std::uint32_t value) : format(label)
-            {
-                this->labelLen = this->format.length();
-                this->value = value;
-            }
-        } debugLabels[] = {{"FPS: ", 0}, {" > GUI: ", 0}, {" > Scripts: ", 0}, {" > Render: ", 0}, {" > Gizmos: ", 0}, {" > Memory: ", 0}};
-
         static std::uint32_t max_elements = sizeof(debugLabels) / sizeof(debugLabels[0]);
         static std::uint32_t max;
         static std::uint32_t averrage;
+        static std::uint32_t updateTick;
 
         int x;
         char buffer[32];
+        float fps;
         Vec2 g_size {138, static_cast<float>(debugFontSize * (max_elements + 2))};
         Vec2Int screen_point = Vec2::RoundToInt({g_size.x, static_cast<float>(gscope.activeResolution.height)});
         Vec2 g_pos = Camera::ScreenToWorldPoint({screen_point.x / 2.f, screen_point.y - g_size.y / 2});
 
-        if(Time::frame() % 10 == 0)
+        if(updateTick < Time::millis())
         {
+            // Refresh tick
+            updateTick = Time::millis() + 200;
+
             // Update data
-            debugLabels[0].value = gscope.lastWatcher.delayFrameRate;
+            debugLabels[0].value = Math::Max(1u,gscope.lastWatcher.delayFrameRate);
             debugLabels[1].value = gscope.lastWatcher.delayRenderGUI;
             debugLabels[2].value = gscope.lastWatcher.delayExecScripts + gscope.lastWatcher.delayExecWorld;
-            debugLabels[3].value = gscope.lastWatcher.delayRenderWorld;
+            debugLabels[3].value = gscope.lastWatcher.delayPresent;
             debugLabels[4].value = gscope.lastWatcher.delayRenderGizmos;
-            debugLabels[5].value = Perfomances::GetMemoryUsed() / 1024 / 1024; // convert Bytes to MB
+            debugLabels[5].value = Perfomances::GetMemoryUsed() / 1024 / 1024; // convert Bytes to MiB
 
             // calculate averrage and max
             max = 10;
@@ -153,7 +160,8 @@ namespace RoninEngine
 
             // Calculate FPS and timing
             debugLabels[0].format.resize(debugLabels[0].labelLen);
-            snprintf(buffer, sizeof(buffer), "%d (%d ms)", static_cast<int>(Math::Max<int>(0, 1 / Time::deltaTime())), debugLabels[0].value);
+
+            snprintf(buffer, sizeof(buffer), "%u (%u ms)", gscope.lastWatcher.fps, debugLabels[0].value);
             debugLabels[0].format += buffer;
 
             // format text
@@ -243,6 +251,14 @@ namespace RoninEngine
         // init input system
         internal_input_init();
 
+        // Set VSync as default
+        const char * vshint;
+        vshint = SDL_GetHint(SDL_HINT_RENDER_VSYNC);
+        if(vshint == nullptr)
+        {
+            SDL_SetHint(SDL_HINT_RENDER_VSYNC, "1");
+        }
+
         // setup
         _world = nullptr;
 
@@ -313,6 +329,267 @@ namespace RoninEngine
 #endif
     }
 
+    //////////////////////
+    /// SIMULATE WORLD ///
+    //////////////////////
+    void RoninSimulator::Simulate()
+    {
+        SDL_Event event;
+        SDL_DisplayMode displayMode;
+
+        bool isQuitting = false;
+        char title[96];
+
+        if(gscope.activeWindow == nullptr)
+        {
+            ShowMessage("Engine not inited");
+            return;
+        }
+
+        if(_world == nullptr)
+        {
+            ShowMessage("World not loaded");
+            return;
+        }
+
+        Resolution current_resolution = RoninSimulator::GetCurrentResolution();
+        gscope.queueWatcher = {};
+        internal_frames = 1;
+
+        float ticksPrev2 = 0;
+        std::uint32_t ticksPrev = 0;
+        std::uint32_t lastFrames = 0;
+        while(!isQuitting)
+        {
+            gscope.queueWatcher.delayFrameRate = Time::millis();
+
+            // Timing for System delay
+            Time::BeginWatch();
+
+            while(SDL_PollEvent(&event))
+            {
+                internal_input_update(event);
+                switch(event.type)
+                {
+                    case SDL_QUIT:
+                    {
+                        isQuitting = true;
+                        _world->RequestUnload();
+                        last_switched_world = _world;
+                        gscope.simConfig.conf = CONF_RENDER_NOCONF;
+                        gscope.internalWorldLoaded = false;
+                        _world = nullptr;
+                        break;
+                    }
+                }
+            }
+
+            // Update Before Input (Axis)
+            internal_input_update_before();
+
+            // Apply changed settings
+            internal_apply_settings();
+
+            if(!gscope.internalWorldLoaded)
+            {
+                // Unload old World
+                if(last_switched_world)
+                {
+                    internal_unload_world(last_switched_world);
+                    last_switched_world = nullptr;
+                }
+
+                if(gscope.renderer != nullptr)
+                {
+                    // Destroy last renderer
+                    SDL_DestroyRenderer(gscope.renderer);
+                    gscope.renderer = nullptr;
+                }
+
+                if(_world == nullptr)
+                {
+                    gscope.queueWatcher.delaySystem = Time::EndWatch();
+                    goto end_simulate;
+                }
+                else
+                {
+                    // On Runtime Loading world
+
+                    std::uint32_t renderFlags = SDL_RENDERER_TARGETTEXTURE;
+
+                    if(gscope.simConfig.renderBackend == RenderDriverInfo::RenderBackend::CPU)
+                    {
+                        renderFlags |= SDL_RENDERER_SOFTWARE;
+                    }
+                    else
+                    {
+                        renderFlags |= SDL_RENDERER_ACCELERATED;
+                    }
+
+                    // on first load level
+                    gscope.renderer = SDL_CreateRenderer(gscope.activeWindow, -1, renderFlags);
+
+                    if(gscope.renderer == nullptr)
+                        ShowMessageFail(SDL_GetError());
+
+                    // Set blendmode
+                    SDL_SetRenderDrawBlendMode(gscope.renderer, SDL_BLENDMODE_BLEND);
+
+                    // on swtiched and init resources, even require
+                    Runtime::internal_load_world(preload_world);
+
+                    _world = preload_world;
+
+                    // Init Internal World Timer IIWT
+                    internal_init_timer();
+
+                    if(!_world->isHierarchy())
+                    {
+                        // init main object
+                        _world->irs->mainObject = create_empty_gameobject();
+                        _world->irs->mainObject->name("Main Object");
+                        _world->irs->mainObject->transform()->name("Root");
+                        // pickup from renders
+                        Matrix::matrix_remove(_world->irs->mainObject->transform());
+                    }
+
+                    // Set Metric as default
+                    _world->irs->metricPixelsPerPoint = Vec2::one * defaultPixelsPerPoint;
+
+                    gscope.internalWorldCanStart = false;
+
+                    _world->OnAwake();
+
+                    preload_world = nullptr;
+                    gscope.internalWorldLoaded = true;
+                }
+            }
+
+            // end watcher
+            gscope.queueWatcher.delaySystem = Time::EndWatch();
+
+            // update level
+            if(!_world->irs->requestUnloading)
+            {
+                // begin watcher
+                Time::BeginWatch();
+
+                if(!gscope.internalWorldCanStart)
+                {
+                    _world->OnStart();
+                    gscope.internalWorldCanStart = true;
+                }
+
+                if(!_world->irs->requestUnloading)
+                {
+                    _world->OnUpdate();
+                }
+                // end watcher
+                gscope.queueWatcher.delayExecWorld = Time::EndWatch();
+
+                if(_world->irs->requestUnloading)
+                {
+                    goto end_simulate; // break on unload state
+                }
+            }
+            else
+                goto end_simulate; // break on unload state
+
+            // Render World objects
+            level_render_world();
+
+            // Run Collector
+            Time::BeginWatch();
+
+            if(!_world->irs->requestUnloading)
+                SepukuRun();
+
+            // end watcher
+            gscope.queueWatcher.delayHarakiring = Time::EndWatch();
+
+            if(_world->irs->requestUnloading)
+                goto end_simulate; // break on unload state
+
+            // begin watcher
+            Time::BeginWatch();
+            UI::native_draw_render(_world->irs->gui);
+            // end watcher
+            gscope.queueWatcher.delayRenderGUI = Time::EndWatch();
+
+            if(_world->irs->requestUnloading)
+                goto end_simulate; // break on unload state
+
+            // begin watcher
+            Time::BeginWatch();
+
+            if(gscope.debugMode)
+                internal_draw_debug();
+
+            if(!last_switched_world)
+            {
+                SDL_RenderPresent(gscope.renderer);
+            }
+
+            // end watcher
+            gscope.queueWatcher.delayPresent += Time::EndWatch();
+
+        end_simulate:
+
+            // Capture delayed at last screen time
+            gscope.queueWatcher.delayFrameRate = Time::millis() - gscope.queueWatcher.delayFrameRate;
+
+            if(++internal_frames == 0)
+                 internal_frames = 1;
+
+            std::uint32_t ticksf = Time::millis();
+            if(ticksf - ticksPrev >= 1000)
+            {
+                gscope.queueWatcher.fps = internal_frames - lastFrames;
+                lastFrames = internal_frames;
+                ticksPrev=ticksf;
+            }
+
+            // update watcher
+            gscope.lastWatcher = gscope.queueWatcher;
+
+            if(!_watcher_time.empty())
+                throw ronin_watcher_error();
+
+            internal_delta_time = Math::Clamp01(gscope.queueWatcher.delayFrameRate / 1000.f) * internal_time_scale;
+            internal_game_time += internal_delta_time;
+
+            if(gscope.debugMode)
+            {
+                if(Time::startUpTime() > ticksPrev2)
+                {
+                    std::sprintf(title, "FPS:%u Memory:%sMiB, Ronin Objects:%s, Internal Objects:%s, Frames:%s", gscope.queueWatcher.fps, Math::NumBeautify(Perfomances::GetMemoryUsed() / 1024 / 1024).c_str(), Math::NumBeautify(RoninMemory::total_allocated()).c_str(), Math::NumBeautify(SDL_GetNumAllocations()).c_str(), Math::NumBeautify(internal_frames).c_str());
+                    SDL_SetWindowTitle(gscope.activeWindow, title);
+                    ticksPrev2 = Time::startUpTime() + .5f; // updater per N seconds
+                }
+            }
+
+            // update events
+            internal_input_update_after();
+
+            if(_world == nullptr || _world->irs->requestUnloading && preload_world == nullptr)
+                break; // break on unload state
+        }
+
+        // unload world
+        if(_world)
+        {
+            Runtime::internal_unload_world(_world);
+            _world = nullptr;
+        }
+
+        if(gscope.renderer)
+        {
+            SDL_DestroyRenderer(gscope.renderer);
+            gscope.renderer = nullptr;
+        }
+    }
+
+
     void RoninSimulator::Show(const RoninEngine::Resolution &resolution, bool fullscreen)
     {
         if(gscope.activeWindow)
@@ -331,7 +608,6 @@ namespace RoninEngine
         // Get valid resolution size
         SDL_DisplayMode mode;
         SDL_GetWindowDisplayMode(gscope.activeWindow, &mode);
-        // SDL_SetWindowSize(active_window, mode.w, mode.h);
 
         SDL_ShowWindow(gscope.activeWindow);
 
@@ -364,7 +640,7 @@ namespace RoninEngine
             _lstrs[s - 1] += "x";
 
             _lstrs[s - 1] += std::to_string(__templs[s - 1].height);
-            _lstrs[s - 1] += "x";
+            _lstrs[s - 1] += " ";
 
             _lstrs[s - 1] += std::to_string(__templs[s - 1].hz);
 
@@ -397,29 +673,29 @@ namespace RoninEngine
     bool RoninSimulator::LoadWorld(World *world, bool unloadPrevious)
     {
         const std::function<bool(void)> checks_queue[] {
-            [=]() -> bool const
-            {
-                bool hasError = gscope.activeWindow == nullptr;
-                if(hasError)
-                    Log("Engine not inited");
-                return hasError;
-            },
-            [=]() -> bool const
-            {
-                bool hasError = world == nullptr;
-                if(hasError)
-                    Log("World is not defined");
-                return hasError;
-            },
-            [=]() -> bool const
-            {
-                bool hasError = _world == world || last_switched_world != nullptr || preload_world == world;
-                if(hasError)
-                    Log("Current world is loading state. Failed.");
-                return hasError;
-            }};
+                                                        [=]() -> bool const
+                                                        {
+                                                            bool hasError = gscope.activeWindow == nullptr;
+                                                            if(hasError)
+                                                                ronin_log("Engine not inited");
+                                                            return hasError;
+                                                        },
+                                                        [=]() -> bool const
+                                                        {
+                                                            bool hasError = world == nullptr;
+                                                            if(hasError)
+                                                                ronin_log("World is not defined");
+                                                            return hasError;
+                                                        },
+                                                        [=]() -> bool const
+                                                        {
+                                                            bool hasError = _world == world || last_switched_world != nullptr || preload_world == world;
+                                                            if(hasError)
+                                                                ronin_log("Current world is loading state. Failed.");
+                                                            return hasError;
+                                                        }};
 
-        // Run checks
+               // Run checks
         for(const auto &err : checks_queue)
         {
             if(err())
@@ -434,14 +710,14 @@ namespace RoninEngine
             last_switched_world->RequestUnload();
         }
 
-        // cancelation of reload
+               // cancelation of reload
         CancelReload();
 
-        // switching as main
+               // switching as main
         if(_world == nullptr)
             _world = world;
 
-        // preload world
+               // preload world
         preload_world = world;
 
         gscope.internalWorldCanStart = false;
@@ -454,11 +730,11 @@ namespace RoninEngine
     {
         if(_world == nullptr || preload_world != nullptr)
         {
-            Log("Active world not loaded");
+            ronin_log("Active world not loaded");
             return false;
         }
 
-        // set config for reload
+               // set config for reload
         gscope.simConfig.conf |= CONF_RELOAD_WORLD;
         return true;
     }
@@ -486,7 +762,7 @@ namespace RoninEngine
         SDL_DisplayMode displayMode;
 
         int dpIndex = SDL_GetWindowDisplayIndex(gscope.activeWindow);
-        int mdIndex = SDL_GetNumDisplayModes(dpIndex);
+        //int mdIndex = SDL_GetNumDisplayModes(dpIndex);
 
         if(SDL_GetDisplayMode(dpIndex, 0, &displayMode) == -1)
         {
@@ -624,266 +900,6 @@ namespace RoninEngine
         gscope.debugMode = state;
     }
 
-    void RoninSimulator::Simulate()
-    {
-        SDL_Event event;
-        SDL_DisplayMode displayMode;
-
-        bool isQuitting = false;
-        char title[96];
-        float fps = 0;
-        float secPerFrame, game_time_score;
-        std::uint64_t delayed = 0;
-
-        if(gscope.activeWindow == nullptr)
-        {
-            ShowMessage("Engine not inited");
-            return;
-        }
-
-        if(_world == nullptr)
-        {
-            ShowMessage("World not loaded");
-            return;
-        }
-
-        Resolution current_resolution = RoninSimulator::GetCurrentResolution();
-        gscope.queueWatcher = {};
-
-        secPerFrame = 1000.f / (current_resolution.hz / 1); // refresh screen from Monitor Settings
-        game_time_score = secPerFrame / 1000;
-        while(!isQuitting)
-        {
-            // TODO: m_level->request_unloading use as WNILE block (list proc)
-            delayed = Time::millis();
-
-            // Timing for FrameTime
-            Time::BeginWatch();
-            // Timing for System delay
-            Time::BeginWatch();
-
-            while(SDL_PollEvent(&event))
-            {
-                internal_input_update(event);
-                switch(event.type)
-                {
-                    case SDL_QUIT:
-                    {
-                        isQuitting = true;
-                        _world->RequestUnload();
-                        last_switched_world = _world;
-                        gscope.simConfig.conf = CONF_RENDER_NOCONF;
-                        gscope.internalWorldLoaded = false;
-                        _world = nullptr;
-                        break;
-                    }
-                }
-            }
-
-            // Update Before Input (Axis)
-            internal_input_update_before();
-
-            // Apply changed settings
-            internal_apply_settings();
-
-            if(!gscope.internalWorldLoaded)
-            {
-                // Unload old World
-                if(last_switched_world)
-                {
-                    internal_unload_world(last_switched_world);
-                    last_switched_world = nullptr;
-                }
-
-                if(gscope.renderer != nullptr)
-                {
-                    // Destroy last renderer
-                    SDL_DestroyRenderer(gscope.renderer);
-                    gscope.renderer = nullptr;
-                }
-
-                if(_world == nullptr)
-                {
-                    gscope.queueWatcher.delaySystem = Time::EndWatch();
-                    goto end_simulate;
-                }
-                else
-                {
-                    // On Runtime Loading world
-
-                    std::uint32_t renderFlags = SDL_RENDERER_TARGETTEXTURE;
-
-                    if(gscope.simConfig.renderBackend == RenderDriverInfo::RenderBackend::CPU)
-                    {
-                        renderFlags |= SDL_RENDERER_SOFTWARE;
-                    }
-                    else
-                    {
-                        renderFlags |= SDL_RENDERER_ACCELERATED;
-                    }
-
-                    // on first load level
-                    gscope.renderer = SDL_CreateRenderer(gscope.activeWindow, -1, renderFlags);
-
-                    if(gscope.renderer == nullptr)
-                        ShowMessageFail(SDL_GetError());
-
-                    // Set blendmode
-                    SDL_SetRenderDrawBlendMode(gscope.renderer, SDL_BLENDMODE_BLEND);
-
-                    // on swtiched and init resources, even require
-                    Runtime::internal_load_world(preload_world);
-
-                    _world = preload_world;
-
-                    // Init Internal World Timer IIWT
-                    internal_init_timer();
-
-                    if(!_world->isHierarchy())
-                    {
-                        // init main object
-                        _world->irs->mainObject = create_empty_gameobject();
-                        _world->irs->mainObject->name("Main Object");
-                        _world->irs->mainObject->transform()->name("Root");
-                        // pickup from renders
-                        Matrix::matrix_remove(_world->irs->mainObject->transform());
-                    }
-
-                    // Set Metric as default
-                    _world->irs->metricPixelsPerPoint = Vec2::one * defaultPixelsPerPoint;
-
-                    gscope.internalWorldCanStart = false;
-
-                    _world->OnAwake();
-
-                    preload_world = nullptr;
-                    gscope.internalWorldLoaded = true;
-                }
-            }
-
-            gscope.queueWatcher.delaySystem = Time::EndWatch();
-            // end watcher
-
-            // update level
-            if(!_world->irs->requestUnloading)
-            {
-                // begin watcher
-                Time::BeginWatch();
-
-                if(!gscope.internalWorldCanStart)
-                {
-                    _world->OnStart();
-                    gscope.internalWorldCanStart = true;
-                }
-
-                if(!_world->irs->requestUnloading)
-                {
-                    _world->OnUpdate();
-                }
-                // end watcher
-                gscope.queueWatcher.delayExecWorld = Time::EndWatch();
-
-                if(_world->irs->requestUnloading)
-                {
-                    goto end_simulate; // break on unload state
-                }
-            }
-            else
-                goto end_simulate; // break on unload state
-
-            level_render_world();
-
-            // Run Collector
-            Time::BeginWatch();
-            if(!_world->irs->requestUnloading)
-                SepukuRun();
-            // end watcher
-            gscope.queueWatcher.delayHarakiring = Time::EndWatch();
-
-            if(_world->irs->requestUnloading)
-                goto end_simulate; // break on unload state
-
-            // Set scale to default
-            SDL_RenderSetScale(gscope.renderer, 1.f, 1.f);
-
-            // begin watcher
-            Time::BeginWatch();
-            UI::native_draw_render(_world->irs->gui);
-            gscope.queueWatcher.delayRenderGUI = Time::EndWatch();
-            // end watcher
-
-            if(_world->irs->requestUnloading)
-                goto end_simulate; // break on unload state
-
-            if(gscope.debugMode)
-                internal_draw_debug();
-
-            if(!last_switched_world)
-            {
-                // begin watcher
-                Time::BeginWatch();
-                SDL_RenderPresent(gscope.renderer);
-                gscope.queueWatcher.delayRenderWorld += Time::EndWatch();
-                // end watcher
-            }
-
-        end_simulate:
-
-            delayed = Time::millis() - delayed;
-
-            gscope.queueWatcher.delayFrameRate = Time::EndWatch();
-
-            // update watcher
-            gscope.lastWatcher = gscope.queueWatcher;
-
-            ++internal_frames;
-
-            if(!_watcher_time.empty())
-                throw ronin_watcher_error();
-
-            internal_delta_time = Math::Min<float>(1.f, Math::Max<float>(delayed / 1000.f, game_time_score));
-            internal_game_time += internal_delta_time;
-
-            if(gscope.debugMode)
-            {
-                if(Time::startUpTime() > fps)
-                {
-                    // SDL_METHOD:
-                    // fps = internal_frames / (TimeEngine::startUpTime());
-                    fps = 1 / internal_delta_time;
-                    std::sprintf(title, "FPS:%.1f Memory:%sMiB, Ronin Objects:%s, Internal Objects:%s, Frames:%s", fps, Math::NumBeautify(Perfomances::GetMemoryUsed() / 1024 / 1024).c_str(), Math::NumBeautify(RoninMemory::total_allocated()).c_str(), Math::NumBeautify(SDL_GetNumAllocations()).c_str(), Math::NumBeautify(internal_frames).c_str());
-                    SDL_SetWindowTitle(gscope.activeWindow, title);
-                    fps = Time::startUpTime() + .5f; // updater per N seconds
-                }
-            }
-
-            // delay elapsed
-            delayed = Math::Max(0, static_cast<int>(Math::Ceil(secPerFrame) - delayed));
-
-            // update events
-            internal_input_update_after();
-
-            if(_world == nullptr || _world->irs->requestUnloading && preload_world == nullptr)
-                break; // break on unload state
-
-            // delaying
-            SDL_Delay(delayed);
-        }
-
-        // unload world
-        if(_world)
-        {
-            Runtime::internal_unload_world(_world);
-            _world = nullptr;
-        }
-
-        if(gscope.renderer)
-        {
-            SDL_DestroyRenderer(gscope.renderer);
-            gscope.renderer = nullptr;
-        }
-    }
-
     void RoninSimulator::ShowMessage(const std::string &message)
     {
         SDL_LogMessage(SDL_LogCategory::SDL_LOG_CATEGORY_APPLICATION, SDL_LogPriority::SDL_LOG_PRIORITY_VERBOSE, "%s", message.c_str());
@@ -897,11 +913,6 @@ namespace RoninEngine
         SDL_LogMessage(SDL_LogCategory::SDL_LOG_CATEGORY_APPLICATION, SDL_LogPriority::SDL_LOG_PRIORITY_CRITICAL, "%s", message.c_str());
         SDL_ShowSimpleMessageBox(SDL_MessageBoxFlags::SDL_MESSAGEBOX_ERROR, "Ronin Engine: failed", message.c_str(), gscope.activeWindow);
         Kill();
-    }
-
-    void RoninSimulator::Log(const char *str)
-    {
-        SDL_Log("%s", str);
     }
 
     void RoninSimulator::Kill(void)
@@ -920,7 +931,7 @@ namespace RoninEngine
         {
             if(SDL_GetRenderDriverInfo(num, &rdi))
             {
-                Log(SDL_GetError());
+                ronin_log(SDL_GetError());
                 continue;
             }
 
@@ -938,7 +949,7 @@ namespace RoninEngine
         SDL_ClearError();
 
         if(num < 1)
-            Log(SDL_GetError());
+            ronin_log(SDL_GetError());
 
         for(; num-- > 0;)
             vids.emplace_back(SDL_GetVideoDriver(num));
@@ -969,6 +980,9 @@ namespace RoninEngine
         {
             settings->selectTextureQuality = RoninSettings::RenderTextureScaleQuality::Nearest;
         }
+
+        const char * vsyncVal;
+        settings->verticalSync = ((vsyncVal = SDL_GetHint(SDL_HINT_RENDER_VSYNC)) != nullptr && !std::strcmp(vsyncVal, "1"));
 
         SDL_GetWindowOpacity(gscope.activeWindow, &settings->windowOpacity);
     }
@@ -1013,7 +1027,10 @@ namespace RoninEngine
             // Apply Brightness
             [&]() { return (refSettings.brightness != settings->brightness && SDL_SetWindowBrightness(gscope.activeWindow, settings->brightness) == 0); },
             // Apply Window Opacity
-            [&]() { return (refSettings.windowOpacity != settings->windowOpacity && SDL_SetWindowOpacity(gscope.activeWindow, settings->windowOpacity) == 0); }};
+            [&]() { return (refSettings.windowOpacity != settings->windowOpacity && SDL_SetWindowOpacity(gscope.activeWindow, settings->windowOpacity) == 0); },
+            // Apply VSync
+            [&]() { return (refSettings.verticalSync != settings->verticalSync && SDL_SetHint(SDL_HINT_RENDER_VSYNC, ((settings->verticalSync) ? "1" : "0"))); }
+        };
         bool apply_any = false;
         for(auto &apply : applies)
         {
@@ -1022,7 +1039,7 @@ namespace RoninEngine
 
         if(apply_any)
         {
-            Log("Settings apply");
+            ronin_log("Settings applied!");
         }
 
         return apply_any;

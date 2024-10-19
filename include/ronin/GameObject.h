@@ -225,6 +225,19 @@ namespace RoninEngine
             std::enable_if_t<std::is_base_of<Component, T>::value, std::list<T *>> GetComponents() const;
 
             /**
+             * @brief Retrieves a list of all components of the specified type from the GameObject an childs.
+             *
+             * This function collects all instances of the specified component type that are attached
+             * to the GameObject and returns them in a list with childrens.
+             * The component type must be derived from the base class Component.
+             *
+             * @tparam T The type of components to retrieve. Must be derived from Component.
+             * @return A list containing pointers to the found components.
+             */
+            template <typename T>
+            std::enable_if_t<std::is_base_of<Component, T>::value, std::list<T *>> GetComponentsAnChilds() const;
+
+            /**
              * @brief Register a callback for the GameObject's "destroy" event.
              *
              * This function allows you to register a callback for a GameObject object,
@@ -260,7 +273,7 @@ namespace RoninEngine
 #if 1
 #ifdef __clang__ // it's work only Clang
 #define CHECK_BASE_OVERRIDDEN(BASE, BINDER, METHOD) \
-    if ((&BASE::METHOD) != (&T::METHOD))   \
+    if((&BASE::METHOD) != (&T::METHOD))             \
         flags |= BINDER;
 #else // it's work on GCC
 #define CHECK_BASE_OVERRIDDEN(BASE, BINDER, METHOD)                                               \
@@ -300,8 +313,8 @@ namespace RoninEngine
         template <typename T>
         inline std::enable_if_t<std::is_base_of<Component, T>::value, std::list<T *>> GameObject::GetComponents() const
         {
-            std::list<T *> types;
             T *cast;
+            std::list<T *> types;
             for(auto iter = std::begin(m_components); iter != std::end(m_components); ++iter)
             {
                 if((cast = dynamic_cast<T *>(*iter)) != nullptr)
@@ -310,6 +323,25 @@ namespace RoninEngine
                 }
             }
 
+            return types;
+        }
+
+        template <typename T>
+        inline std::enable_if_t<std::is_base_of<Component, T>::value, std::list<T *>> GameObject::GetComponentsAnChilds() const
+        {
+            std::list<T *> types;
+            std::list<const GameObject *> stacks;
+            stacks.push_back(this);
+
+            while(!stacks.empty())
+            {
+                types.merge(stacks.front()->GetComponents<T>());
+                for(const Transform *c : stacks.front()->transform()->GetChilds())
+                {
+                    stacks.push_back(c->gameObject());
+                }
+                stacks.pop_front();
+            }
             return types;
         }
 

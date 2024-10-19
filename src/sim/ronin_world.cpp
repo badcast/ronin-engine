@@ -97,7 +97,7 @@ namespace RoninEngine
 
             if(world->irs->objects != 0)
             {
-                RoninSimulator::Log(("World is have leak objects: " + std::to_string(world->irs->objects)).c_str());
+                ronin_log(("World is have leak objects: " + std::to_string(world->irs->objects)).c_str());
             }
 
             if(world->irs->runtimeCollectors)
@@ -145,10 +145,14 @@ namespace RoninEngine
 
         void level_render_world()
         {
+            Time::BeginWatch();
+
             // set default color
             RenderUtility::SetColor(Color::white);
 
-            Time::BeginWatch();
+            // Set scale to default
+            SDL_RenderSetScale(gscope.renderer, 1.f, 1.f);
+
 
             scripts_start();
 
@@ -166,8 +170,11 @@ namespace RoninEngine
             {
                 // draw world in world size
                 native_render_2D(reinterpret_cast<Camera2D *>(cam));
+
+                // Set scale to default
+                SDL_RenderSetScale(gscope.renderer, 1.f, 1.f);
             }
-            gscope.queueWatcher.delayRenderWorld = Time::EndWatch();
+            gscope.queueWatcher.delayPresent = Time::EndWatch();
 
             // begin watcher
             Time::BeginWatch();
@@ -175,8 +182,9 @@ namespace RoninEngine
             {
                 // Reset Color
                 RenderUtility::SetColor(Color::white);
-                _world->OnGizmos(); // Draw gizmos
 
+                // Draw gizmos
+                _world->OnGizmos();
                 scripts_gizmos();
             }
 
