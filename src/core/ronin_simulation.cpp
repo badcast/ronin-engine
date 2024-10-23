@@ -29,13 +29,12 @@ namespace RoninEngine
     ////////////////////////
     namespace UI
     {
-        extern void free_legacy_font();
-        extern void ui_reset_controls();
         extern void native_draw_render(GUI *);
-    } // namespace UI
+    } // namespace Runtime
 
     namespace Runtime
     {
+
 #if TEST_MALLOC
         namespace RoninMemory
         {
@@ -59,7 +58,8 @@ namespace RoninEngine
         bool text_inputState;
 
         extern GameObject *create_empty_gameobject();
-
+        extern void free_legacy_font();
+        extern void ui_reset_controls();
         extern void text_get(std::string &text);
         extern void internal_input_init();
         extern void internal_input_update(const SDL_Event &e);
@@ -263,7 +263,7 @@ namespace RoninEngine
         _world = nullptr;
 
         // Init legacy fonts
-        UI::font2d_init(1);
+        font2d_init(1);
     }
 
     void RoninSimulator::Finalize()
@@ -282,7 +282,7 @@ namespace RoninEngine
         SDL_DestroyWindow(gscope.activeWindow);
         gscope.activeWindow = nullptr;
 
-        UI::free_legacy_font();
+        Runtime::free_legacy_font();
 
         // NOTE: Free Global Resources
         if(external_global_resources)

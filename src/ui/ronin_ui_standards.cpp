@@ -5,17 +5,16 @@
 
 namespace RoninEngine::Runtime
 {
+    extern TTF_Font *pDefaultTTFFont;
+    extern font2d_t *f2d_default;
+
     extern void text_get(std::string &text);
+
 } // namespace RoninEngine::Runtime
 
 namespace RoninEngine::UI
 {
     using namespace RoninEngine::Runtime;
-
-    std::uint8_t legacyVH[] {0, 32, 16, 2, 34, 18, 1, 33, 17};
-
-    extern TTF_Font *pDefaultTTFFont;
-    extern LegacyFont_t *pDefaultLegacyFont;
 
     bool general_ui_render(UIElement &element, const UIState &uiState, bool &ui_focus)
     {
@@ -454,83 +453,8 @@ namespace RoninEngine::UI
         int width = 0;
         for(auto iter = begin(text); iter != end(text); ++iter)
         {
-            width += pDefaultLegacyFont->data[(unsigned char) *iter].w;
+            width += f2d_default->data[(unsigned char) *iter].w;
         }
         return width;
     }
-
-    void font2d_string(Rect rect, const char *text, int len, int fontWidth, Align textAlign, bool textWrap, bool hilight)
-    {
-        if(text == nullptr || len <= 0)
-            return;
-
-        std::uint8_t temp;
-        Rect *src;
-        std::uint16_t pos;
-        SDL_Rect dst = *reinterpret_cast<SDL_Rect *>(&rect);
-
-        Vec2Int fontSize = pDefaultLegacyFont->fontSize + Vec2Int::one * (fontWidth - pDefaultLegacyFont->fontSize.x);
-        int textWidth = Single_TextWidth_WithCyrilic(text, fontWidth);
-
-        if(!rect.w)
-            rect.w = textWidth;
-        if(!rect.h)
-            rect.h = pDefaultLegacyFont->fontSize.y;
-
-        // x
-        temp = (legacyVH[textAlign] >> 4 & 15);
-        if(temp)
-        {
-            dst.x += rect.w / temp;
-            if(temp == 2)
-                dst.x += -textWidth / 2;
-            else if(temp == 1)
-                dst.x += -textWidth;
-        }
-        // y
-        temp = (legacyVH[textAlign] & 15);
-        if(temp)
-        {
-            dst.y += rect.h / temp - fontSize.y / 2;
-            if(temp == 1)
-                dst.y += -textWidth / 2;
-        }
-
-        Vec2Int begin = *reinterpret_cast<Vec2Int *>(&dst);
-        int deltax;
-        for(pos = 0; pos < len; ++pos)
-        {
-            memcpy(&temp, text + pos, 1);
-            src = (pDefaultLegacyFont->data + temp);
-            if(temp != '\n')
-            {
-                dst.w = src->w;
-                dst.h = src->h;
-                deltax = rect.x + rect.w;
-
-                if(dst.x >= deltax)
-                {
-                    for(++pos; pos < len;)
-                    {
-                        temp = *(text + pos);
-                        if(temp != '\n')
-                            ++pos;
-                        else
-                            break;
-                    }
-                    continue;
-                }
-
-                dst.w = Math::Max(0, Math::Min(deltax - dst.x, dst.w));
-                SDL_RenderCopy(gscope.renderer, (hilight ? _world->irs->legacy_font_hover : _world->irs->legacy_font_normal), reinterpret_cast<SDL_Rect *>(src), &dst);
-                dst.x += src->w;
-            }
-            else
-            {
-                dst.x = begin.x;
-                dst.y += src->h;
-            }
-        }
-    }
-
 } // namespace RoninEngine::UI

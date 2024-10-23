@@ -93,6 +93,30 @@ namespace RoninEngine::Runtime
         m_zOrder = value;
     }
 
+    void GameObject::SetZOrderAll(int value, ZOrderBy orderBy)
+    {
+        std::list<GameObject *> __stack;
+        __stack.emplace_back(this);
+        while(__stack.size())
+        {
+            switch(orderBy)
+            {
+                case LinearAdd:
+                    ++value;
+                    break;
+                case Inherit:;
+                default:;
+            }
+
+            for(Transform *h : __stack.front()->transform()->hierarchy)
+            {
+                __stack.emplace_back(h->gameObject());
+                h->_owner->m_zOrder = value;
+            }
+            __stack.pop_front();
+        }
+    }
+
     const bool GameObject::CancelDestroy()
     {
         return _world->CancelObjectDestruction(this);

@@ -17,12 +17,11 @@ namespace RoninEngine::Runtime
         Camera2D(const Camera2D &other);
 
         /**
-         * @brief Set the Zoom in scales.
-         * @param value of the zooming.
-         * @see GetZoom, SetScale, GetScale
+         * @brief Set the out zoom in scales.
+         * @param zoomLevel of the outzooming. The param default zoomLevel is 100.0 (Range from 0.0 to 100.0).
          */
-        void SetZoom(float value);
-        float GetZoom();
+        void SetZoomOut(float zoomLevel);
+        float GetZoomOut();
     };
 
 } // namespace RoninEngine::Runtime
