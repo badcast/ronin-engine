@@ -14,7 +14,7 @@ namespace RoninEngine::Runtime
         Vec2Int wpLeftTop;
         Vec2Int wpRightBottom;
         std::map<int, std::vector<Renderer *>> orders;
-        int edges;
+        std::int64_t edges;
     } params;
 
     void native_render_2D(Camera2D *camera);
@@ -89,7 +89,7 @@ namespace RoninEngine::Runtime
 
     void Camera2D::SetZoomOut(float zoomLevel)
     {
-        zoomLevel = Math::Clamp<float>(zoomLevel, 0, 5);
+        zoomLevel = Math::Clamp<float>(zoomLevel, 0.01f, 3);
         res->scale = Vec2::one * zoomLevel;
     }
 
@@ -106,7 +106,8 @@ namespace RoninEngine::Runtime
         params.root_transform = World::GetCurrentWorld()->irs->mainObject->transform();
         params.wpLeftTop = Vec2::RoundToInt(Camera::ScreenToWorldPoint(Vec2::zero));
         params.wpRightBottom = Vec2::RoundToInt(Camera::ScreenToWorldPoint(Vec2(gscope.activeResolution.width, gscope.activeResolution.height)));
-        params.edges = Math::Number(Math::Max(params.wpRightBottom.x - params.camera_position.x, params.wpRightBottom.y - params.camera_position.y)) + 5 + camera->distanceEvcall;
+        params.edges = 5 + camera->distanceEvcall + Math::Max<std::int64_t>(static_cast<std::int64_t>(params.wpRightBottom.x) - params.camera_position.x,
+                                 static_cast<std::int64_t>(params.wpRightBottom.y) - params.camera_position.y);
 
         // Clearing
         if(camera->backclear)

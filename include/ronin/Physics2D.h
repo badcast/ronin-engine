@@ -9,7 +9,7 @@ namespace RoninEngine::Runtime
     {
     public:
         template <typename container_result = std::list<Transform *>>
-        static container_result GetStormCast(Vec2 origin, int edges, int layer = -1);
+        static container_result GetStormCast(Vec2 origin, std::int64_t edges, int layer = -1);
         template <typename container_result = std::list<Transform *>>
         static container_result GetRectangleCast(Vec2 center, Vec2 size, int layer = -1);
         template <typename container_result = std::list<Transform *>>

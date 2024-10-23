@@ -181,7 +181,7 @@ namespace RoninEngine::Runtime
              + - - - - - - - - - +
     */
     template <bool foreach>
-    inline void storm_cast_eq_t(Vec2Int origin, int edges, std::function<void(const Vec2Int &)> predicate)
+    inline void storm_cast_eq_t(Vec2Int origin, std::int64_t edges, std::function<void(const Vec2Int &)> predicate)
     {
         constexpr std::int8_t storm_vec[][2] {
             /*X  Y*/
@@ -192,7 +192,7 @@ namespace RoninEngine::Runtime
         };
         constexpr int nvec = sizeof(storm_vec) / sizeof(storm_vec[0]);
 
-        int section, iv;
+        std::int64_t section, iv;
 
         predicate(origin);
 
@@ -208,7 +208,7 @@ namespace RoninEngine::Runtime
 
                 if constexpr(foreach)
                 {
-                    int s = 0;
+                    std::int64_t s = 0;
                     do
                     {
                         origin.x += storm_vec[iv][0];
@@ -226,18 +226,18 @@ namespace RoninEngine::Runtime
         }
     }
 
-    void storm_cast_eq_all(Vec2Int origin, int edges, std::function<void(const Vec2Int &)> predicate)
+    void storm_cast_eq_all(Vec2Int origin, std::int64_t edges, std::function<void(const Vec2Int &)> predicate)
     {
         storm_cast_eq_t<true>(origin, edges, predicate);
     }
 
-    void storm_cast_eq_edges(Vec2Int origin, int edges, std::function<void(const Vec2Int &)> predicate)
+    void storm_cast_eq_edges(Vec2Int origin, std::int64_t edges, std::function<void(const Vec2Int &)> predicate)
     {
         storm_cast_eq_t<false>(origin, edges, predicate);
     }
 
     template <typename container_result, typename Pred>
-    container_result storm_cast_vec_eq(Vec2 origin, int edges, int layer, Pred predicate)
+    container_result storm_cast_vec_eq(Vec2 origin, std::int64_t edges, int layer, Pred predicate)
     {
         container_result container;
 
@@ -278,7 +278,7 @@ namespace RoninEngine::Runtime
 #endif
 
     template <typename container_result>
-    container_result Physics2D::GetStormCast(Vec2 origin, int edges, int layer)
+    container_result Physics2D::GetStormCast(Vec2 origin, std::int64_t edges, int layer)
     {
 #if NEW_ALGORITHM_STORM
         return storm_cast_vec_eq<container_result>(origin, edges, layer, nullptr);
@@ -346,15 +346,15 @@ namespace RoninEngine::Runtime
         return result;
     }
 
-    template RONIN_API std::list<Transform *> Physics2D::GetStormCast(Vec2, int, int);
+    template RONIN_API std::list<Transform *> Physics2D::GetStormCast(Vec2, std::int64_t, int);
     template RONIN_API std::list<Transform *> Physics2D::GetRectangleCast(Vec2, Vec2, int);
     template RONIN_API std::list<Transform *> Physics2D::GetCircleCast(Vec2, float, int);
 
-    template RONIN_API std::vector<Transform *> Physics2D::GetStormCast(Vec2, int, int);
+    template RONIN_API std::vector<Transform *> Physics2D::GetStormCast(Vec2, std::int64_t, int);
     template RONIN_API std::vector<Transform *> Physics2D::GetRectangleCast(Vec2, Vec2, int);
     template RONIN_API std::vector<Transform *> Physics2D::GetCircleCast(Vec2, float, int);
 
-    template RONIN_API std::set<Transform *> Physics2D::GetStormCast(Vec2, int, int);
+    template RONIN_API std::set<Transform *> Physics2D::GetStormCast(Vec2, std::int64_t, int);
     template RONIN_API std::set<Transform *> Physics2D::GetRectangleCast(Vec2, Vec2, int);
     template RONIN_API std::set<Transform *> Physics2D::GetCircleCast(Vec2, float, int);
 

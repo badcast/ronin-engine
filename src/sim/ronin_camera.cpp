@@ -44,13 +44,9 @@ namespace RoninEngine::Runtime
         Vec2 scale;
 
         if(_world->irs->mainCamera)
-        {
             scale = _world->irs->mainCamera->res->scale;
-        }
         else
-        {
             scale = Vec2::one;
-        }
 
         scale = Vec2::Scale(scale, _world->irs->metricPixelsPerPoint);
 
