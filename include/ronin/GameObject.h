@@ -6,6 +6,12 @@ namespace RoninEngine
 {
     namespace Runtime
     {
+        enum ZOrderBy
+        {
+            Inherit,
+            LinearAdd
+        };
+
         class RONIN_API GameObject final : public Object, public IComponents, public IRoninBaseEvents<GameObject>
         {
         public:
@@ -87,6 +93,12 @@ namespace RoninEngine
              * @param value The new Z-Order for set
              */
             void SetZOrder(int value);
+
+            /**
+             * @brief Set Z-Order for draw all oreders on children.
+             * @param value The new Z-Order for set all childrens.
+             */
+            void SetZOrderAll(int value, ZOrderBy orderBy);
 
             /**
              * @brief Set the active state recursively for the GameObject and its children.

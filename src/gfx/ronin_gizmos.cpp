@@ -290,7 +290,7 @@ namespace RoninEngine::Runtime
         r.x = static_cast<int>(origin.x);
         r.y = static_cast<int>(origin.y);
 
-        UI::font2d_string(r, text.c_str(), text.length(), 2, (center ? UI::Align::Center : UI::Align::Left), true, hilight);
+        font2d_string(r, text.c_str(), text.length(), 2, (center ? UI::UIAlign::Center : UI::UIAlign::Left), true, hilight);
     }
 
     void RenderUtility::DrawTextClassic(Vec2 origin, const std::string &text)

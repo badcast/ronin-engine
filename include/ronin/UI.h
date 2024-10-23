@@ -24,7 +24,7 @@ namespace RoninEngine
             Horizontal
         };
 
-        enum Align
+        enum UIAlign
         {
             Left,
             Center,

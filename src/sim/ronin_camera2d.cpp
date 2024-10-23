@@ -87,15 +87,15 @@ namespace RoninEngine::Runtime
     {
     }
 
-    void Camera2D::SetZoom(float value)
+    void Camera2D::SetZoomOut(float zoomLevel)
     {
-        value = Math::Clamp<float>(value, 0, 100);
-        res->scale = Vec2::one * value;
+        zoomLevel = Math::Clamp<float>(zoomLevel, 0, 5);
+        res->scale = Vec2::one * zoomLevel;
     }
 
-    float Camera2D::GetZoom()
+    float Camera2D::GetZoomOut()
     {
-        return res->scale.magnitude();
+        return res->scale.x;
     }
 
     void native_render_2D(Camera2D *camera)
@@ -127,7 +127,7 @@ namespace RoninEngine::Runtime
 
         // camera->res->offsetScaling = Vec2::Scale(Vec2::up_right,Vec2::one * defaultPixelsPerPoint);
 
-        SDL_RenderSetScale(gscope.renderer, camera->res->scale.x, camera->res->scale.y);
+        // SDL_RenderSetScale(gscope.renderer, camera->res->scale.x, camera->res->scale.y);
 
         // get from matrix selection
         /* RUN STORM CAST
@@ -186,7 +186,7 @@ namespace RoninEngine::Runtime
 
                 // draw
                 SpriteRenderer *spriteRenderer;
-                if((spriteRenderer = dynamic_cast<SpriteRenderer *>(renderRef)) == nullptr)
+                if((spriteRenderer = reinterpret_cast<SpriteRenderer *>(renderRef)) == nullptr)
                     continue;
 
                 // Render
@@ -197,14 +197,23 @@ namespace RoninEngine::Runtime
                     params.sourcePoint = render_transform->_position;
                     params.sourcePoint += spriteRenderer->get_offset();
 
-                    params.wrapper.dst.w *= _world->irs->metricPixelsPerPoint.x; //_scale.x;
-                    params.wrapper.dst.h *= _world->irs->metricPixelsPerPoint.y; //_scale.y;
+                    params.wrapper.dst.w *= _world->irs->metricPixelsPerPoint.x * camera->res->scale.x;
+                    params.wrapper.dst.h *= _world->irs->metricPixelsPerPoint.y * camera->res->scale.y;
 
                     // convert world to screen
                     // Horizontal
-                    params.wrapper.dst.x += ((gscope.activeResolution.width - params.wrapper.dst.w) / 2.0f - (params.camera_position.x - params.sourcePoint.x) * _world->irs->metricPixelsPerPoint.x);
+                    params.wrapper.dst.x += ((gscope.activeResolution.width - params.wrapper.dst.w) / 2.0f - (params.camera_position.x - params.sourcePoint.x) * _world->irs->metricPixelsPerPoint.x * camera->res->scale.x);
                     // Vertical
-                    params.wrapper.dst.y += ((gscope.activeResolution.height - params.wrapper.dst.h) / 2.0f + (params.camera_position.y - params.sourcePoint.y) * _world->irs->metricPixelsPerPoint.y);
+                    params.wrapper.dst.y += ((gscope.activeResolution.height - params.wrapper.dst.h) / 2.0f + (params.camera_position.y - params.sourcePoint.y) * _world->irs->metricPixelsPerPoint.y * camera->res->scale.y);
+
+                    // Formulas (x - (w * sw - w) / 2, y - (h * sh - h) / 2, w * sw, h * sh);
+
+                    //params.wrapper.dst.x = params.wrapper.dst.x - (params.wrapper.dst.w * camera->res->scale.x - params.wrapper.dst.w) / 2;
+                    //params.wrapper.dst.x = params.wrapper.dst.y - (params.wrapper.dst.h * camera->res->scale.y - params.wrapper.dst.h) / 2;
+
+                    // params.wrapper.dst.w = params.wrapper.dst.w * camera->res->scale.x;
+                    // params.wrapper.dst.h = params.wrapper.dst.h * camera->res->scale.y;
+
 
                     // draw to backbuffer
                     SDL_RenderCopyExF(gscope.renderer, params.wrapper.texture, reinterpret_cast<SDL_Rect *>(&(params.wrapper.src)), reinterpret_cast<SDL_FRect *>(&(params.wrapper.dst)), render_transform->_angle_, nullptr, SDL_RendererFlip::SDL_FLIP_NONE);

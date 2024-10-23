@@ -84,15 +84,6 @@ namespace RoninEngine
 {
     namespace UI
     {
-        struct LegacyFont_t
-        {
-            int compressed;
-            SDL_Surface *surfNormal;
-            SDL_Surface *surfHilight;
-            Runtime::Vec2Int fontSize;
-            Runtime::Rect data[255];
-        };
-
         extern void Render_String_ttf(const char *text, int fontSize, const Runtime::Vec2Int &screenPoint, bool alignCenter = false, bool blend = true);
     } // namespace UI
 
@@ -182,6 +173,15 @@ namespace RoninEngine
 #endif
             {
             }
+        };
+
+        struct font2d_t
+        {
+            int compressed;
+            SDL_Surface *surfNormal;
+            SDL_Surface *surfHilight;
+            Runtime::Vec2Int fontSize;
+            Runtime::Rect data[255];
         };
 
         struct AudioSourceData
