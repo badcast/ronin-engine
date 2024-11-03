@@ -205,13 +205,23 @@ namespace RoninEngine
             std::vector<void *> gid_privates;
         };
 
+        enum AssetIndex
+        {
+            AS_SPRITE,
+            AS_AUDIO,
+            AS_MUSIC,
+            AS_ATLAS
+        };
+
         struct AssetRef
         {
-            std::unordered_map<std::size_t, ResId> bindAudioClips;
-            std::unordered_map<std::size_t, ResId> bindMusicClips;
-            std::unordered_map<std::size_t, Sprite *> bindSprites;
-
-            Atlas *atlasRef;
+            int index;
+            union {
+                std::unordered_map<std::size_t, std::vector<ResId>>* _audioclips;
+                std::unordered_map<std::size_t, std::vector<ResId>>* _mus;
+                std::unordered_map<std::size_t, std::vector<Sprite *>>* _sprites;
+                Atlas *_atlas;
+            } udata;
         };
 
         struct ParticleDrain
@@ -321,7 +331,7 @@ namespace RoninEngine
 
         void sepuku_GameObject(GameObject *obj, std::set<GameObject *> *input);
 
-        void SepukuRun();
+        int SepukuRun();
 
         void level_render_world();
 

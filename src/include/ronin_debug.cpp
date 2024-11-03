@@ -13,7 +13,6 @@ void ronin_warn(const char *fmt, ...)
 {
     std::va_list args;
     // std::va_start(args, )
-
     SDL_LogWarn(SDL_LOG_PRIORITY_WARN, fmt);
 }
 
@@ -39,14 +38,14 @@ void Debug::Log(const std::string &message)
 void Debug::Warn(const std::string &message)
 {
     rloglevel = LogLevel::Frontend;
-    ronin_warn(message.c_str(), LogLevel::Frontend);
+    ronin_warn(message.c_str());
     rloglevel = LogLevel::Backend;
 }
 
 void Debug::Error(const std::string &message)
 {
     rloglevel = LogLevel::Frontend;
-    ronin_err(message.c_str(), LogLevel::Frontend);
+    ronin_err(message.c_str());
     rloglevel = LogLevel::Backend;
 }
 

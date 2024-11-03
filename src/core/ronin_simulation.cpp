@@ -45,6 +45,7 @@ namespace RoninEngine
         World *preload_world;
         World *last_switched_world;
         std::set<World *> pinnedWorlds;
+        std::set<World *> privateWorlds;
         std::vector<std::uint32_t> _watcher_time;
 
         std::list<Asset> loaded_assets;
@@ -205,6 +206,11 @@ namespace RoninEngine
         }
     }
 
+    void RoninSimulator::makePrivate(Runtime::World *world)
+    {
+        privateWorlds.insert(world);
+    }
+
     void RoninSimulator::Init(InitializeFlags flags)
     {
         std::uint32_t current_inits;
@@ -272,12 +278,16 @@ namespace RoninEngine
             return;
 
         // unload existence worlds
-        for(auto &pinned : Runtime::pinnedWorlds)
+        for(World* pinned : Runtime::pinnedWorlds)
         {
             Runtime::internal_unload_world(pinned);
         }
 
         Runtime::pinnedWorlds.clear();
+        if(!privateWorlds.empty())
+        {
+            ronin_warn("private resource is detected, leak is counted.");
+        }
 
         SDL_DestroyWindow(gscope.activeWindow);
         gscope.activeWindow = nullptr;
@@ -291,8 +301,11 @@ namespace RoninEngine
             RoninMemory::free(external_global_resources);
             external_global_resources = nullptr;
         }
+
         Runtime::internal_free_loaded_assets();
+
         internal_input_release();
+
         Mix_Quit();
         IMG_Quit();
         SDL_Quit();
@@ -352,7 +365,6 @@ namespace RoninEngine
             return;
         }
 
-        Resolution current_resolution = RoninSimulator::GetCurrentResolution();
         gscope.queueWatcher = {};
         internal_frames = 1;
 
@@ -589,7 +601,6 @@ namespace RoninEngine
         }
     }
 
-
     void RoninSimulator::Show(const RoninEngine::Resolution &resolution, bool fullscreen)
     {
         if(gscope.activeWindow)
@@ -677,21 +688,21 @@ namespace RoninEngine
                                                         {
                                                             bool hasError = gscope.activeWindow == nullptr;
                                                             if(hasError)
-                                                                ronin_log("Engine not inited");
+                                                                ronin_err("Engine not inited");
                                                             return hasError;
                                                         },
                                                         [=]() -> bool const
                                                         {
                                                             bool hasError = world == nullptr;
                                                             if(hasError)
-                                                                ronin_log("World is not defined");
+                                                                ronin_err("World is not defined");
                                                             return hasError;
                                                         },
                                                         [=]() -> bool const
                                                         {
                                                             bool hasError = _world == world || last_switched_world != nullptr || preload_world == world;
                                                             if(hasError)
-                                                                ronin_log("Current world is loading state. Failed.");
+                                                                ronin_err("Current world is loading state. Failed.");
                                                             return hasError;
                                                         }};
 
@@ -957,54 +968,59 @@ namespace RoninEngine
         return vids;
     }
 
-    void RoninSimulator::GetSettings(RoninSettings *settings)
+    RoninSettings RoninSimulator::GetSettings()
     {
-        if(gscope.activeWindow == nullptr)
+        RoninSettings * settings = reinterpret_cast<RoninSettings*>(alloca(sizeof(RoninSettings)));
+
+        memset(settings, 0, sizeof(RoninSettings));
+
+        if(!SDL_WasInit(SDL_INIT_VIDEO))
         {
-            return;
+            return *settings;
         }
 
         SDL_RendererInfo info;
         if(gscope.renderer != nullptr && SDL_GetRendererInfo(gscope.renderer, &info) == 0)
         {
-            settings->selectRenderBackend = (info.flags & SDL_RENDERER_SOFTWARE) ? RenderDriverInfo::RenderBackend::CPU : RenderDriverInfo::RenderBackend::GPU;
+            settings->renderBackend = (info.flags & SDL_RENDERER_SOFTWARE) ? RenderDriverInfo::RenderBackend::CPU : RenderDriverInfo::RenderBackend::GPU;
         }
 
         settings->brightness = SDL_GetWindowBrightness(gscope.activeWindow);
 
         if(SDL_GetHint(SDL_HINT_RENDER_SCALE_QUALITY) != nullptr && !SDL_strcmp(SDL_GetHint(SDL_HINT_RENDER_SCALE_QUALITY), "1"))
         {
-            settings->selectTextureQuality = RoninSettings::RenderTextureScaleQuality::Linear;
+            settings->textureQuality = RoninSettings::RenderTextureScaleQuality::Linear;
         }
         else
         {
-            settings->selectTextureQuality = RoninSettings::RenderTextureScaleQuality::Nearest;
+            settings->textureQuality = RoninSettings::RenderTextureScaleQuality::Nearest;
         }
 
         const char * vsyncVal;
         settings->verticalSync = ((vsyncVal = SDL_GetHint(SDL_HINT_RENDER_VSYNC)) != nullptr && !std::strcmp(vsyncVal, "1"));
 
         SDL_GetWindowOpacity(gscope.activeWindow, &settings->windowOpacity);
+
+        return *settings;
     }
 
-    bool RoninSimulator::SetSettings(const RoninSettings *settings)
+    bool RoninSimulator::SetSettings(const RoninSettings &settings)
     {
         if(!SDL_WasInit(SDL_INIT_VIDEO))
         {
             return false;
         }
 
-        RoninSettings refSettings;
-        GetSettings(&refSettings);
+        RoninSettings refSettings = GetSettings();
 
-        std::function<bool(void)> applies[] {
+        std::function<bool(void)> params[] {
 
             [&]() // Apply Render Backend
             {
                 bool state = false;
-                if(refSettings.selectRenderBackend != settings->selectRenderBackend)
+                if(refSettings.renderBackend != settings.renderBackend)
                 {
-                    switch(settings->selectRenderBackend)
+                    switch(settings.renderBackend)
                     {
                         case RenderDriverInfo::RenderBackend::CPU:
                             gscope.simConfig.conf |= CONF_RENDER_SOFTWARE;
@@ -1019,20 +1035,21 @@ namespace RoninEngine
                 return state;
             },
             [&]() // Apply Render Texture Scale Quality
-            { return refSettings.selectTextureQuality != settings->selectTextureQuality && (SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, (settings->selectTextureQuality ? "1" : "0")) == SDL_TRUE); },
+            { return refSettings.textureQuality != settings.textureQuality && (SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, (settings.textureQuality ? "1" : "0")) == SDL_TRUE); },
             // Apply Video Driver
             [&]() { return false; },
             // Apply Render Driver
             [&]() { return false; },
             // Apply Brightness
-            [&]() { return (refSettings.brightness != settings->brightness && SDL_SetWindowBrightness(gscope.activeWindow, settings->brightness) == 0); },
+            [&]() { return (refSettings.brightness != settings.brightness && SDL_SetWindowBrightness(gscope.activeWindow, settings.brightness) == 0); },
             // Apply Window Opacity
-            [&]() { return (refSettings.windowOpacity != settings->windowOpacity && SDL_SetWindowOpacity(gscope.activeWindow, settings->windowOpacity) == 0); },
+            [&]() { return (refSettings.windowOpacity != settings.windowOpacity && SDL_SetWindowOpacity(gscope.activeWindow, settings.windowOpacity) == 0); },
             // Apply VSync
-            [&]() { return (refSettings.verticalSync != settings->verticalSync && SDL_SetHint(SDL_HINT_RENDER_VSYNC, ((settings->verticalSync) ? "1" : "0"))); }
+            [&]() { return (refSettings.verticalSync != settings.verticalSync && SDL_SetHint(SDL_HINT_RENDER_VSYNC, ((settings.verticalSync) ? "1" : "0"))); }
         };
+
         bool apply_any = false;
-        for(auto &apply : applies)
+        for(auto &apply : params)
         {
             apply() && !apply_any && (apply_any = true);
         }

@@ -52,6 +52,7 @@ namespace RoninEngine::Runtime
     {
         return m_rect.w;
     }
+
     int Sprite::height() const
     {
         return m_rect.h;

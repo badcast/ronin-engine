@@ -7,13 +7,12 @@
 #endif
 
 using namespace RoninEngine::Exception;
+using namespace RoninEngine::Runtime;
 
 extern std::function<std::uint32_t(void)> _internal_random_;
 
 namespace RoninEngine::AI
 {
-    using namespace RoninEngine::Runtime;
-
     class Sheduller : public brain::basic_brain_map<Vec2Int, Neuron>
     {
         friend class NavMesh;

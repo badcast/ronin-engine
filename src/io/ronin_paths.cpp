@@ -1,5 +1,7 @@
 #include "ronin.h"
 
+#include "ronin_debug.h"
+
 using namespace RoninEngine;
 
 #ifdef WIN32
@@ -26,7 +28,7 @@ const std::string Paths::GetRuntimeDir()
 
     if(baseDir == nullptr)
     {
-        RoninSimulator::ShowMessageFail(SDL_GetError());
+        ronin_err_sdl2();
     }
 
     std::string str {baseDir};
@@ -41,7 +43,7 @@ const std::string Paths::GetPrefDir()
 
     if(prefPath == nullptr)
     {
-        RoninSimulator::ShowMessageFail(SDL_GetError());
+        ronin_err_sdl2();
     }
 
     std::string str {prefPath};
@@ -53,4 +55,22 @@ const std::string Paths::GetPrefDir()
 char Paths::GetPathSeperatorOS()
 {
     return seperator;
+}
+
+std::string Paths::MakePathValid(std::string path)
+{
+    for( int x = 0; x < path.length(); ++x)
+    {
+        char * left = &path[x];
+#ifdef WIN32
+        if(*left == '/')
+#elif __unix__ || __linux__
+        if(*left == '\\')
+#endif
+        {
+            *left = seperator;
+        }
+    }
+
+    return path;
 }

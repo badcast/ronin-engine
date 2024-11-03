@@ -153,6 +153,10 @@ namespace RoninEngine
 
             UI uid PushCheckBox(bool checked, const std::string &text, const Runtime::Rect &rect, UIEventBool changed = nullptr, uid parent = NOPARENT);
 
+            UI uid PushSpriteButton(const std::vector<Runtime::Sprite *> &states, const Runtime::Rect &rect, UIEventVoid click = nullptr, uid parent = NOPARENT);
+
+            UI void SpriteButtonSetIcon(uid id, Runtime::Sprite* icon);
+
             // property-----------------------------------------------------------------------------------------------------------
 
             UI void ElementSetRect(uid id, const Runtime::Rect &rect);

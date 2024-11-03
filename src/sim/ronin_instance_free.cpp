@@ -149,7 +149,7 @@ namespace RoninEngine
             }
         }
 
-        void SepukuRun()
+        int SepukuRun()
         {
             _world->irs->_destroyedGameObject = 0;
 
@@ -188,6 +188,8 @@ namespace RoninEngine
                 }
             }
 #undef COLLECTOR
+
+            return _world->irs->_destroyedGameObject;
         }
 
         void Destroy(GameObject *obj)

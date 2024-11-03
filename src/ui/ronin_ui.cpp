@@ -324,6 +324,51 @@ namespace RoninEngine::UI
         return id;
     }
 
+    uid GUI::PushSpriteButton(const std::vector<Sprite*>& states, const Runtime::Rect &rect, UIEventVoid click, uid parent)
+    {
+        uid id = push_new_element(this, parent);
+
+        UIElement &element = call_get_element(this->handle, id);
+        element.prototype = RGUI_SPRITE_BUTTON;
+        element.rect = rect;
+        element.event = (void *) click;
+        memset(&element.resource.spriteButton, 0, sizeof(element.resource.spriteButton));
+
+        int n = states.size()-1;
+        Sprite* src;
+        if(n > -1){
+
+            if(n >= 2)
+                src = states[2];
+            else
+                src = states[0];
+
+            element.resource.spriteButton.disable = src;
+
+            if(n >= 1)
+                src = states[1];
+            else
+                src = states[0];
+
+            element.resource.spriteButton.hover = src;
+
+            element.resource.spriteButton.normal = states[0];
+        }
+        return id;
+    }
+
+    void GUI::SpriteButtonSetIcon(uid id, Sprite *icon)
+    {
+        UIElement &elem = call_get_element(this->handle, id);
+
+        if(elem.prototype != RGUI_SPRITE_BUTTON)
+        {
+            throw ronin_uid_nocast_error();
+        }
+
+        elem.resource.spriteButton.icon = icon;
+    }
+
     // property --------------------------------------------------------------------------------------------------------
 
     void GUI::ElementSetRect(uid id, const Rect &rect)

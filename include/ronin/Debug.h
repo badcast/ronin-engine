@@ -11,7 +11,7 @@ namespace RoninEngine::Runtime
         Error
     };
 
-    class Debug final
+    class RONIN_API Debug final
     {
     public:
         static void Log(const std::string &message);

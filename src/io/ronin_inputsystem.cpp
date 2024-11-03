@@ -400,19 +400,14 @@ namespace RoninEngine::Runtime
 
     const char *Input::GetKeyName(int keyCode)
     {
-
-        // It's unknown state
-
-        // Условие, если key <= 0, то результатом будет неизвестный ключ, ьакже и при key > lastKeyN
-        // А при других обстоятельствах,
-
         if(keyCode <= 0 || keyCode > c_key_codename.clast_keyCode)
         {
             keyCode = 0;
         }
         else
         {
-            for(int i = 0, x, y, key = keyCode; i < c_dz_len; ++i)
+            int i,x,y,key;
+            for(i = 0, key = keyCode; i < c_dz_len; ++i)
             {
                 x = VLO(c_key_codename.dead_zones[i]);
                 if(key < x)

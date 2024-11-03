@@ -1,5 +1,6 @@
 #include "ronin.h"
 #include "ronin_ui_resources.h"
+#include "ronin_render_cache.h"
 
 // TODO: Make UI Cache
 
@@ -20,7 +21,6 @@ namespace RoninEngine::UI
     {
         // TODO: OPTIMIZE HERE (HIGH PRIORITY)
         static float dropDownLinear = 0;
-        static Color colors[3];
         bool result = false;
         SDL_Texture *texture;
         SDL_Surface *surface;
@@ -380,6 +380,28 @@ namespace RoninEngine::UI
                 break;
             }
 
+            case RGUI_SPRITE_BUTTON:
+            {
+                Sprite * sprite = uiState.ms_hover ? element.resource.spriteButton.hover : element.resource.spriteButton.normal;
+
+                SDL_Texture* texture = render_cache_texture(sprite);
+
+                Vec2Int baseSize = element.rect.getWH();
+                render_texture_extension(texture, &baseSize, reinterpret_cast<SDL_Rect*>(&sprite->m_rect), reinterpret_cast<SDL_Rect*>(&element.rect), 0.0F);
+                render_cache_unref(texture);
+
+                sprite = element.resource.spriteButton.icon;
+                if(sprite == nullptr)
+                    break;
+
+                texture = render_cache_texture(sprite);
+                render_texture_extension(texture, &baseSize, reinterpret_cast<SDL_Rect*>(&sprite->m_rect), reinterpret_cast<SDL_Rect*>(&element.rect), 0.0F);
+                render_cache_unref(texture);
+
+                result = uiState.ms_click;
+
+                break;
+            }
             case RGUI_CUSTOM_OVERLAY:
                 UIData data {};
                 data.id = element.id;
@@ -407,6 +429,7 @@ namespace RoninEngine::UI
         switch(element->prototype)
         {
             case RGUI_BUTTON:
+            case RGUI_SPRITE_BUTTON:
                 (reinterpret_cast<UIEventVoid>(element->event))(element->id);
                 break;
             case RGUI_DROPDOWN:

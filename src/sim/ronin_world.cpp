@@ -11,6 +11,7 @@ namespace RoninEngine
     namespace Runtime
     {
         extern std::set<World *> pinnedWorlds;
+        extern std::set<World*> privateWorlds;
 
         void WorldResources::event_camera_changed(Camera *target, CameraEvent state)
         {
@@ -140,6 +141,7 @@ namespace RoninEngine
             pinnedWorlds.erase(world);
 
             _world = lastWorld;
+
             return true;
         }
 

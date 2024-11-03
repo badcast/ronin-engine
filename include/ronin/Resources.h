@@ -42,12 +42,15 @@ namespace RoninEngine
             Sprite *GetSprite(const std::string &name);
             AudioClip *GetAudioClip(const std::string &name);
             Atlas *GetAtlasObject();
+
+            std::vector<Sprite *> GetSprites(const std::string &name);
+            std::vector<AudioClip*> GetAudioClips(const std::string &name);
         };
 
         class RONIN_API AssetManager
         {
         public:
-            static bool LoadAsset(const std::string &assetFile, Asset **asset);
+            static bool LoadAsset(const std::string &filename, Asset **asset);
             static Cursor *ConvertImageToCursor(Image *imageSrc, Vec2Int cursorHotspot);
             static void DeleteAsset(Asset *asset);
         };

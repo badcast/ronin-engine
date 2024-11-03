@@ -10,6 +10,8 @@ namespace RoninEngine::Runtime
 #define USE_SDL_MEM 0
 #endif
 
+        // TODO: Make Mutex lock for escape race-condition state.
+
 #if TEST_MALLOC
         std::set<void *> allocated_leaker;
 #endif

@@ -16,5 +16,7 @@ namespace RoninEngine
         // Result on Linux "/"
         // Result on Windows "\"
         static char GetPathSeperatorOS();
+        // Make valid paths
+        static std::string MakePathValid(std::string path);
     };
 } // namespace RoninEngine

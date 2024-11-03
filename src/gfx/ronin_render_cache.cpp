@@ -70,7 +70,7 @@ namespace RoninEngine::Runtime
 
     SDL_Texture *render_cache_texture(Sprite *sprite)
     {
-        SDL_Texture *texture;
+        SDL_Texture *texture = nullptr;
         std::map<SDL_Surface *, std::pair<int, SDL_Texture *>> *_cache;
 
         if(sprite == nullptr || sprite->surface == nullptr)
@@ -104,23 +104,30 @@ namespace RoninEngine::Runtime
 
     void render_texture_extension(SDL_Texture *texture, const Vec2Int *baseSize, const SDL_Rect *srcFrom, const SDL_Rect *extent, float angleRad)
     {
-
         int access;
-        SDL_Rect dst, src, srcCopy;
+        SDL_Rect dst, src, srcCopy, overrideSrc;
         SDL_Texture *extentTexture;
         SDL_Surface *extentSurface;
 
-        if(texture == nullptr || srcFrom == nullptr || extent == nullptr || extent->w <= 0 || extent->h <= 0 || (baseSize && (baseSize->x < 1 || baseSize->y < 1)))
+        if(texture == nullptr || extent == nullptr || extent->w <= 0 || extent->h <= 0 || (baseSize && (baseSize->x < 1 || baseSize->y < 1)))
         {
             return;
+        }
+
+        if(srcFrom == nullptr)
+        {
+            srcFrom = &overrideSrc;
+            overrideSrc.x = 0;
+            overrideSrc.y = 0;
+            SDL_QueryTexture(texture, nullptr, nullptr, &overrideSrc.w, &overrideSrc.h);
         }
 
         for(;;)
         {
             src.x = 0;
             src.y = 0;
-            src.h = srcFrom->h;
             src.w = srcFrom->w;
+            src.h = srcFrom->h;
 
 #define SOFTWARE_SURFACE 0
 #if SOFTWARE_SURFACE
@@ -277,6 +284,8 @@ namespace RoninEngine::Runtime
 
         prevTargetTexture = SDL_GetRenderTarget(gscope.renderer);
         SDL_SetRenderTarget(gscope.renderer, destTexture);
+        SDL_SetRenderDrawColor(gscope.renderer, 0, 0, 0, 0);
+        SDL_RenderClear(gscope.renderer);
 
         // Set first draw
         dest = src;

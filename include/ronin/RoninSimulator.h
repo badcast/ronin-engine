@@ -1,6 +1,7 @@
 #pragma once
 
 #include "begin.h"
+#include "RoninMemory.h"
 
 namespace RoninEngine
 {
@@ -59,7 +60,7 @@ namespace RoninEngine
         Version SDL_GFX_Version;
     };
 
-    struct RoninSettings
+    struct RONIN_API RoninSettings
     {
         enum RenderTextureScaleQuality
         {
@@ -67,15 +68,21 @@ namespace RoninEngine
             Linear
         };
 
-        RenderDriverInfo::RenderBackend selectRenderBackend;
-        std::uint8_t selectTextureQuality;
-        std::uint8_t selectRenderDriver;
-        std::uint8_t selectVideoDriver;
+        RenderDriverInfo::RenderBackend renderBackend;
+        std::uint8_t textureQuality;
+        std::uint8_t renderDriver;
+        std::uint8_t videoDriver;
 
         bool verticalSync;
 
         float brightness;
         float windowOpacity;
+
+        RoninSettings() = delete;
+
+        bool Apply();
+
+        static RoninSettings GetCurrent();
     };
 
     struct RONIN_API Resolution
@@ -92,6 +99,8 @@ namespace RoninEngine
         Resolution(int Width, int Height, int HZ = 0) : width(Width), height(Height), hz(HZ)
         {
         }
+
+        Runtime::Vec2Int GetSize() const;
 
         // Get maximum resolution of the display
         static Resolution GetMaxResolution();
@@ -124,6 +133,9 @@ namespace RoninEngine
 
     class RONIN_API RoninSimulator
     {
+    protected:
+        static void makePrivate(Runtime::World* world);
+
     public:
         /**
          * @brief Initializes the RoninEngine library.
@@ -166,6 +178,14 @@ namespace RoninEngine
          * @return result of loaded
          */
         static bool LoadWorld(Runtime::World *world, bool unloadPrevious = true);
+
+        /**
+         * @brief Loads a simulation world for simulation.
+         *
+         * @return result of loaded world, otherwise nullptr.
+         */
+        template<typename W>
+        static std::enable_if_t<std::is_base_of<RoninEngine::Runtime::World,W>::value, W*> LoadWorld();
 
         /**
          * @brief Reload current world
@@ -299,10 +319,10 @@ namespace RoninEngine
 
         /**
          * @brief Get installed settings
-         * @param settings
+         * @return Settings fields
          * @see SetSettings, GetRenderDrivers
          */
-        static void GetSettings(RoninSettings *settings);
+        static RoninSettings GetSettings();
 
         /**
          * @brief Set the settings as new
@@ -310,7 +330,28 @@ namespace RoninEngine
          * @return Result of the set
          * @see GetSettings, GetRenderDrivers
          */
-        static bool SetSettings(const RoninSettings *settings);
+        static bool SetSettings(const RoninSettings &settings);
     };
+
+    template<typename W>
+    inline std::enable_if_t<std::is_base_of<RoninEngine::Runtime::World,W>::value, W*> RoninSimulator::LoadWorld()
+    {
+        W* world;
+
+        Runtime::RoninMemory::alloc_self(world);
+
+        // Load
+        if(LoadWorld(world, true) == false)
+        {
+            Runtime::RoninMemory::free(world);
+            world = nullptr;
+        }
+        else
+        {
+            // Make Private
+            makePrivate(world);
+        }
+        return world;
+    }
 
 } // namespace RoninEngine

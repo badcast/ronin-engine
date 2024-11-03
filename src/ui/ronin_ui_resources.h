@@ -53,6 +53,7 @@ namespace RoninEngine::UI
         RGUI_PICTURE_BOX,
         RGUI_DROPDOWN,
         RGUI_CHECKBOX,
+        RGUI_SPRITE_BUTTON,
         RGUI_CUSTOM_OVERLAY
     };
 
@@ -80,6 +81,18 @@ namespace RoninEngine::UI
             Sprite *picturebox;
             DropDownResource *dropdown;
             bool checkbox;
+            struct
+            {
+                Sprite* normal;
+                Sprite* hover;
+                Sprite* disable;
+
+                Sprite* icon;
+
+                char state;
+
+            } spriteButton;
+
             struct
             {
                 bool isInit;
