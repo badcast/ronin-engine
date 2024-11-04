@@ -1,9 +1,12 @@
 cmake_minimum_required(VERSION 3.10 FATAL_ERROR)
 
-set(RONINENGINE_VERSION_MIN 1.0.0)
+set(RONINENGINE_VERSION_MIN 0.0.1)
 
 # SET PROJECT NAME, VERSION
-project(RoninEngine VERSION ${RONINENGINE_VERSION_MIN} LANGUAGES C CXX)
+project(
+  RoninEngine
+  VERSION ${RONINENGINE_VERSION_MIN}
+  LANGUAGES C CXX)
 
 set(RUNTIME_OUTPUT_NAME "RoninEngine")
 
@@ -66,7 +69,8 @@ if(WIN32)
   configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config/RoninEngine.rc.in
                  ${CMAKE_CURRENT_BINARY_DIR}/RoninEngine.rc @ONLY)
 
-  add_custom_target(RoninWin32RC SOURCES ${CMAKE_CURRENT_BINARY_DIR}/RoninEngine.rc)
+  add_custom_target(RoninWin32RC
+                    SOURCES ${CMAKE_CURRENT_BINARY_DIR}/RoninEngine.rc)
   add_dependencies(RoninEngine RoninWin32RC)
   target_sources(RoninEngine PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/RoninEngine.rc)
 endif()

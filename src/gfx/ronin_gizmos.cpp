@@ -315,17 +315,14 @@ namespace RoninEngine::Runtime
 
     void RenderUtility::DrawArrow(Vec2 origin, Vec2 dir, float tailLength, float arrowSize)
     {
-        // Рисуем линию
         tailLength = Math::Abs(tailLength);
         Vec2 pos2 = origin + (dir - origin) * tailLength; // world to local and set point to dir
         internal_drawLine(origin, pos2);
 
-        // Рисуем стрелку
         float angle = Vec2::Angle(pos2, dir);
         origin = pos2 + Vec2::RotateAround(pos2, Vec2::one * tailLength, angle);
         internal_drawLine(pos2, origin);
 
-        // Рисуем часть стрелки в форме треугольника
         Vec2 arrowEnd1 = Vec2::RotateAround(origin, Vec2(arrowSize, 0), angle + Math::Pi / 4);
         Vec2 arrowEnd2 = Vec2::RotateAround(origin, Vec2(arrowSize, 0), angle - Math::Pi / 4);
         internal_drawLine(origin, arrowEnd1);
