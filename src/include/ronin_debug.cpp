@@ -1,31 +1,30 @@
+#include <cstdarg>
+
 #include "ronin_debug.h"
 
 using namespace RoninEngine::Runtime;
 
 LogLevel rloglevel = LogLevel::Backend;
 
-void ronin_log(const char *fmt, ...)
+void ronin_log(const char * msg)
 {
-    SDL_Log("log: %s", fmt);
+    SDL_Log("%s", msg);
 }
 
-void ronin_warn(const char *fmt, ...)
+void ronin_warn(const char *msg)
 {
-    std::va_list args;
-    // std::va_start(args, )
-    SDL_LogWarn(SDL_LOG_PRIORITY_WARN, fmt);
+    SDL_LogWarn(SDL_LOG_PRIORITY_WARN, "%s", msg);
 }
 
-void ronin_err(const char *fmt, ...)
+void ronin_err(const char *msg)
 {
-    SDL_LogError(SDL_LOG_PRIORITY_ERROR, fmt);
+    SDL_LogError(SDL_LOG_PRIORITY_ERROR, "%s", msg);
 }
 
-void ronin_err_d(const char *fmt, ...)
+void ronin_err_d(const char * msg)
 {
-    SDL_LogError(SDL_LOG_PRIORITY_ERROR, fmt);
-
-    Debug::ShowDisplay("Exception", fmt, DisplayType::Error);
+    return;
+    Debug::ShowDisplay("Exception", msg, DisplayType::Error);
 }
 
 void Debug::Log(const std::string &message)

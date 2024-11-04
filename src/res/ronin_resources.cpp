@@ -276,7 +276,7 @@ namespace RoninEngine::Runtime
 
         if(!file)
         {
-            SDL_LogError(SDL_LOG_CATEGORY_ERROR, "Music: \"%s\" can not load", path.c_str());
+            ronin_err(std::string("Music: \""+path+"\" can not load").c_str());
             return RES_INVALID;
         }
 
@@ -294,7 +294,7 @@ namespace RoninEngine::Runtime
 
         if(!file)
         {
-            ronin_err("music stream \"%s\" can not load", path.c_str());
+            ronin_err(std::string("music stream \""+path+"\" can not load").c_str());
             return RES_INVALID;
         }
 
@@ -307,7 +307,7 @@ namespace RoninEngine::Runtime
 
         if(!file)
         {
-            SDL_LogError(SDL_LOG_CATEGORY_ERROR, "Music: \"%s\" can not load", path.c_str());
+            ronin_err(std::string("Music: \""+path+"\" can not load").c_str());
             return RES_INVALID;
         }
 
