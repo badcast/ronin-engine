@@ -111,13 +111,13 @@ namespace RoninEngine::Runtime
         return resources;
     }
 
-    SDL_Surface *private_load_surface(const void *memres, int length)
+    SDL_Surface *private_load_surface(const void *memres, int length, bool local)
     {
         ResId __result;
         SDL_Surface *surf = IMG_Load_RW(SDL_RWFromConstMem(memres, length), SDL_TRUE);
         if(surf != nullptr)
         {
-            make_resource(&__result, false)->gid_surfaces.emplace_back(surf);
+            make_resource(&__result, local)->gid_surfaces.emplace_back(surf);
         }
 
         return surf;

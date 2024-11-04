@@ -4,6 +4,8 @@
 #include "ronin_audio.h"
 #include "ronin_debug.h"
 
+#include "ronin_splash_world.h"
+
 #ifdef __linux__
 // For malloc_trim
 #include <malloc.h>
@@ -735,6 +737,25 @@ namespace RoninEngine
         gscope.internalWorldLoaded = false;
 
         return true;
+    }
+
+    bool RoninSimulator::LoadWorldAfterSplash(Runtime::World *world)
+    {
+        RoninSplashWorld * splashScreen;
+
+        if(world == nullptr)
+            return false;
+
+        RoninMemory::alloc_self(splashScreen);
+
+        LoadWorld(splashScreen);
+
+        if(splashScreen)
+        {
+            splashScreen->nextWorld = world;
+        }
+
+        return splashScreen != nullptr;
     }
 
     bool RoninSimulator::ReloadWorld()

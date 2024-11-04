@@ -179,6 +179,8 @@ namespace RoninEngine
          */
         static bool LoadWorld(Runtime::World *world, bool unloadPrevious = true);
 
+        static bool LoadWorldAfterSplash(Runtime::World * world);
+
         /**
          * @brief Loads a simulation world for simulation.
          *
@@ -186,6 +188,9 @@ namespace RoninEngine
          */
         template<typename W>
         static std::enable_if_t<std::is_base_of<RoninEngine::Runtime::World,W>::value, W*> LoadWorld();
+
+        template<typename W>
+        static std::enable_if_t<std::is_base_of<RoninEngine::Runtime::World,W>::value, W*> LoadWorldAfterSplash();
 
         /**
          * @brief Reload current world
@@ -341,17 +346,40 @@ namespace RoninEngine
         Runtime::RoninMemory::alloc_self(world);
 
         // Load
-        if(LoadWorld(world, true) == false)
-        {
-            Runtime::RoninMemory::free(world);
-            world = nullptr;
-        }
-        else
+        if(LoadWorld(world, true))
         {
             // Make Private
             makePrivate(world);
         }
+        else
+        {
+            Runtime::RoninMemory::free(world);
+            world = nullptr;
+        }
+
         return world;
     }
+
+    template<typename W>
+    inline std::enable_if_t<std::is_base_of<RoninEngine::Runtime::World,W>::value, W*> RoninSimulator::LoadWorldAfterSplash()
+    {
+        W* world;
+
+        Runtime::RoninMemory::alloc_self(world);
+
+        if(LoadWorldAfterSplash(world))
+        {
+            // Make Private
+            makePrivate(world);
+        }
+        else
+        {
+            Runtime::RoninMemory::free(world);
+            world = nullptr;
+        }
+
+        return world;
+    }
+
 
 } // namespace RoninEngine
