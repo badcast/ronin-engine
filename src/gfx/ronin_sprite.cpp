@@ -60,7 +60,7 @@ namespace RoninEngine::Runtime
 
     const Vec2 Sprite::size() const
     {
-        return {width() / _world->irs->metricPixelsPerPoint.x, height() / _world->irs->metricPixelsPerPoint.y};
+        return {width() / currentWorld->irs->metricPixelsPerPoint.x, height() / currentWorld->irs->metricPixelsPerPoint.y};
     }
 
     Rect Sprite::realityRect(float opaque)

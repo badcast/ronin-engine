@@ -314,7 +314,7 @@ namespace RoninEngine
         /*** PIMPL (pointer to implementation) ***/
         class ParticleSystemRef;
 
-        extern World *_world;
+        extern World *currentWorld;
         extern float internal_game_time;
         extern std::list<Asset> loaded_assets;
 
@@ -367,7 +367,7 @@ namespace RoninEngine
             // this is variable for apply settings
             int conf;
             RenderDriverInfo::RenderBackend renderBackend = RenderDriverInfo::RenderBackend::GPU;
-        } simConfig;
+        } config;
 
         SDL_Renderer *renderer = nullptr;
 

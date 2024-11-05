@@ -153,9 +153,9 @@ namespace RoninEngine::Runtime
 
     Transform *Transform::root()
     {
-        if(_world == nullptr || _world->irs == nullptr)
+        if(currentWorld == nullptr || currentWorld->irs == nullptr)
             return nullptr;
-        return _world->irs->mainObject->transform();
+        return currentWorld->irs->mainObject->transform();
     }
 
     void Transform::LookAt(Transform *target)
@@ -428,7 +428,7 @@ namespace RoninEngine::Runtime
 
     Transform *Transform::parent() const
     {
-        if(m_parent == _world->irs->mainObject->transform())
+        if(m_parent == currentWorld->irs->mainObject->transform())
             return nullptr;
 
         return m_parent;
@@ -437,7 +437,7 @@ namespace RoninEngine::Runtime
     void Transform::setParent(Transform *parent, bool worldPositionStays)
     {
         if(parent == nullptr)
-            parent = _world->irs->mainObject->transform();
+            parent = currentWorld->irs->mainObject->transform();
 
         // change children of the parent
         hierarchy_parent_change(this, parent);

@@ -43,9 +43,9 @@ namespace RoninEngine
             extern std::list<void *> allocated_leaker;
         }
 #endif
-        World *_world;
-        World *preload_world;
-        World *last_switched_world;
+        World *currentWorld;
+        World *preloadWorld;
+        World *lastWorld;
         std::set<World *> pinnedWorlds;
         std::set<World *> privateWorlds;
         std::vector<std::uint32_t> _watcher_time;
@@ -72,6 +72,7 @@ namespace RoninEngine
         extern void internal_load_world(World *world);
         extern bool internal_unload_world(World *world);
     } // namespace Runtime
+
     RoninEnvironment gscope;
 
     struct _TDebugLabel
@@ -94,26 +95,26 @@ namespace RoninEngine
     //////////////////////////////////
     void internal_apply_settings()
     {
-        if(!gscope.simConfig.conf)
+        if(!gscope.config.conf)
             return;
 
-        if(gscope.simConfig.conf & CONF_RENDER_CHANGED)
+        if(gscope.config.conf & CONF_RENDER_CHANGED)
         {
-            if((gscope.simConfig.conf & CONF_RENDER_SOFTWARE) == CONF_RENDER_SOFTWARE)
-                gscope.simConfig.renderBackend = RenderDriverInfo::RenderBackend::CPU;
+            if((gscope.config.conf & CONF_RENDER_SOFTWARE) == CONF_RENDER_SOFTWARE)
+                gscope.config.renderBackend = RenderDriverInfo::RenderBackend::CPU;
             else
-                gscope.simConfig.renderBackend = RenderDriverInfo::RenderBackend::GPU;
+                gscope.config.renderBackend = RenderDriverInfo::RenderBackend::GPU;
         }
 
-        if(gscope.simConfig.conf & CONF_RELOAD_WORLD)
+        if(gscope.config.conf & CONF_RELOAD_WORLD)
         {
-            last_switched_world = _world; // Switched world first unload after load
-            preload_world = _world;       // Switched world as Newer is preload
+            lastWorld = currentWorld; // Switched world first unload after load
+            preloadWorld = currentWorld;       // Switched world as Newer is preload
 
             gscope.internalWorldLoaded = false;
         }
 
-        gscope.simConfig.conf = CONF_RENDER_NOCONF;
+        gscope.config.conf = CONF_RENDER_NOCONF;
     }
 
     void internal_init_timer()
@@ -193,7 +194,7 @@ namespace RoninEngine
         RenderUtility::SetColor(Color(0, 0, 0, 100));
 
         // Draw box
-        RenderUtility::DrawFillRect(g_pos, g_size.x / _world->irs->metricPixelsPerPoint.x, g_size.y / _world->irs->metricPixelsPerPoint.y);
+        RenderUtility::DrawFillRect(g_pos, g_size.x / currentWorld->irs->metricPixelsPerPoint.x, g_size.y / currentWorld->irs->metricPixelsPerPoint.y);
 
         screen_point.x = 10;
         screen_point.y -= static_cast<int>(g_size.y) - debugFontSize / 2;
@@ -268,7 +269,7 @@ namespace RoninEngine
         }
 
         // setup
-        _world = nullptr;
+        currentWorld = nullptr;
 
         // Init legacy fonts
         font2d_init(1);
@@ -284,12 +285,14 @@ namespace RoninEngine
         {
             Runtime::internal_unload_world(pinned);
         }
-
         Runtime::pinnedWorlds.clear();
-        if(!privateWorlds.empty())
+
+        for(World* pinned : Runtime::privateWorlds)
         {
-            ronin_warn("private resource is detected, leak is counted.");
+            Runtime::internal_unload_world(pinned);
+            RoninMemory::free(pinned);
         }
+        Runtime::privateWorlds.clear();
 
         SDL_DestroyWindow(gscope.activeWindow);
         gscope.activeWindow = nullptr;
@@ -361,7 +364,7 @@ namespace RoninEngine
             return;
         }
 
-        if(_world == nullptr)
+        if(currentWorld == nullptr)
         {
             ShowMessage("World not loaded");
             return;
@@ -388,11 +391,11 @@ namespace RoninEngine
                     case SDL_QUIT:
                     {
                         isQuitting = true;
-                        _world->RequestUnload();
-                        last_switched_world = _world;
-                        gscope.simConfig.conf = CONF_RENDER_NOCONF;
+                        currentWorld->RequestUnload();
+                        lastWorld = currentWorld;
+                        gscope.config.conf = CONF_RENDER_NOCONF;
                         gscope.internalWorldLoaded = false;
-                        _world = nullptr;
+                        currentWorld = nullptr;
                         break;
                     }
                 }
@@ -407,10 +410,19 @@ namespace RoninEngine
             if(!gscope.internalWorldLoaded)
             {
                 // Unload old World
-                if(last_switched_world)
+                if(lastWorld)
                 {
-                    internal_unload_world(last_switched_world);
-                    last_switched_world = nullptr;
+                    internal_unload_world(lastWorld);
+
+                    // Free Private World
+                    auto worldIter = privateWorlds.find(lastWorld);
+                    if(worldIter != privateWorlds.end())
+                    {
+                        RoninMemory::free(lastWorld);
+                        privateWorlds.erase(worldIter);
+                    }
+
+                    lastWorld = nullptr;
                 }
 
                 if(gscope.renderer != nullptr)
@@ -420,7 +432,7 @@ namespace RoninEngine
                     gscope.renderer = nullptr;
                 }
 
-                if(_world == nullptr)
+                if(currentWorld == nullptr)
                 {
                     gscope.queueWatcher.delaySystem = Time::EndWatch();
                     goto end_simulate;
@@ -431,14 +443,10 @@ namespace RoninEngine
 
                     std::uint32_t renderFlags = SDL_RENDERER_TARGETTEXTURE;
 
-                    if(gscope.simConfig.renderBackend == RenderDriverInfo::RenderBackend::CPU)
-                    {
+                    if(gscope.config.renderBackend == RenderDriverInfo::RenderBackend::CPU)
                         renderFlags |= SDL_RENDERER_SOFTWARE;
-                    }
                     else
-                    {
                         renderFlags |= SDL_RENDERER_ACCELERATED;
-                    }
 
                     // on first load level
                     gscope.renderer = SDL_CreateRenderer(gscope.activeWindow, -1, renderFlags);
@@ -450,31 +458,31 @@ namespace RoninEngine
                     SDL_SetRenderDrawBlendMode(gscope.renderer, SDL_BLENDMODE_BLEND);
 
                     // on swtiched and init resources, even require
-                    Runtime::internal_load_world(preload_world);
+                    Runtime::internal_load_world(preloadWorld);
 
-                    _world = preload_world;
+                    currentWorld = preloadWorld;
 
                     // Init Internal World Timer IIWT
                     internal_init_timer();
 
-                    if(!_world->isHierarchy())
+                    if(!currentWorld->isHierarchy())
                     {
                         // init main object
-                        _world->irs->mainObject = create_empty_gameobject();
-                        _world->irs->mainObject->name("Main Object");
-                        _world->irs->mainObject->transform()->name("Root");
+                        currentWorld->irs->mainObject = create_empty_gameobject();
+                        currentWorld->irs->mainObject->name("Main Object");
+                        currentWorld->irs->mainObject->transform()->name("Root");
                         // pickup from renders
-                        Matrix::matrix_remove(_world->irs->mainObject->transform());
+                        Matrix::matrix_remove(currentWorld->irs->mainObject->transform());
                     }
 
                     // Set Metric as default
-                    _world->irs->metricPixelsPerPoint = Vec2::one * defaultPixelsPerPoint;
+                    currentWorld->irs->metricPixelsPerPoint = Vec2::one * defaultPixelsPerPoint;
 
                     gscope.internalWorldCanStart = false;
 
-                    _world->OnAwake();
+                    currentWorld->OnAwake();
 
-                    preload_world = nullptr;
+                    preloadWorld = nullptr;
                     gscope.internalWorldLoaded = true;
                 }
             }
@@ -483,25 +491,25 @@ namespace RoninEngine
             gscope.queueWatcher.delaySystem = Time::EndWatch();
 
             // update level
-            if(!_world->irs->requestUnloading)
+            if(!currentWorld->irs->requestUnloading)
             {
                 // begin watcher
                 Time::BeginWatch();
 
                 if(!gscope.internalWorldCanStart)
                 {
-                    _world->OnStart();
+                    currentWorld->OnStart();
                     gscope.internalWorldCanStart = true;
                 }
 
-                if(!_world->irs->requestUnloading)
+                if(!currentWorld->irs->requestUnloading)
                 {
-                    _world->OnUpdate();
+                    currentWorld->OnUpdate();
                 }
                 // end watcher
                 gscope.queueWatcher.delayExecWorld = Time::EndWatch();
 
-                if(_world->irs->requestUnloading)
+                if(currentWorld->irs->requestUnloading)
                 {
                     goto end_simulate; // break on unload state
                 }
@@ -515,22 +523,22 @@ namespace RoninEngine
             // Run Collector
             Time::BeginWatch();
 
-            if(!_world->irs->requestUnloading)
+            if(!currentWorld->irs->requestUnloading)
                 SepukuRun();
 
             // end watcher
             gscope.queueWatcher.delayHarakiring = Time::EndWatch();
 
-            if(_world->irs->requestUnloading)
+            if(currentWorld->irs->requestUnloading)
                 goto end_simulate; // break on unload state
 
             // begin watcher
             Time::BeginWatch();
-            UI::native_draw_render(_world->irs->gui);
+            UI::native_draw_render(currentWorld->irs->gui);
             // end watcher
             gscope.queueWatcher.delayRenderGUI = Time::EndWatch();
 
-            if(_world->irs->requestUnloading)
+            if(currentWorld->irs->requestUnloading)
                 goto end_simulate; // break on unload state
 
             // begin watcher
@@ -539,7 +547,7 @@ namespace RoninEngine
             if(gscope.debugMode)
                 internal_draw_debug();
 
-            if(!last_switched_world)
+            if(!lastWorld)
             {
                 SDL_RenderPresent(gscope.renderer);
             }
@@ -585,15 +593,15 @@ namespace RoninEngine
             // update events
             internal_input_update_after();
 
-            if(_world == nullptr || _world->irs->requestUnloading && preload_world == nullptr)
+            if(currentWorld == nullptr || currentWorld->irs->requestUnloading && preloadWorld == nullptr)
                 break; // break on unload state
         }
 
         // unload world
-        if(_world)
+        if(currentWorld)
         {
-            Runtime::internal_unload_world(_world);
-            _world = nullptr;
+            Runtime::internal_unload_world(currentWorld);
+            currentWorld = nullptr;
         }
 
         if(gscope.renderer)
@@ -679,8 +687,8 @@ namespace RoninEngine
 
     void RoninSimulator::RequestQuit()
     {
-        if(_world)
-            _world->RequestUnload();
+        if(currentWorld)
+            currentWorld->RequestUnload();
     }
 
     bool RoninSimulator::LoadWorld(World *world, bool unloadPrevious)
@@ -702,7 +710,7 @@ namespace RoninEngine
                                                         },
                                                         [=]() -> bool const
                                                         {
-                                                            bool hasError = _world == world || last_switched_world != nullptr || preload_world == world;
+                                                            bool hasError = currentWorld == world || lastWorld != nullptr || preloadWorld == world;
                                                             if(hasError)
                                                                 ronin_err("Current world is loading state. Failed.");
                                                             return hasError;
@@ -717,21 +725,21 @@ namespace RoninEngine
             }
         }
 
-        if(unloadPrevious && _world)
+        if(unloadPrevious && currentWorld)
         {
-            last_switched_world = _world;
-            last_switched_world->RequestUnload();
+            lastWorld = currentWorld;
+            lastWorld->RequestUnload();
         }
 
                // cancelation of reload
         CancelReload();
 
                // switching as main
-        if(_world == nullptr)
-            _world = world;
+        if(currentWorld == nullptr)
+            currentWorld = world;
 
                // preload world
-        preload_world = world;
+        preloadWorld = world;
 
         gscope.internalWorldCanStart = false;
         gscope.internalWorldLoaded = false;
@@ -747,40 +755,34 @@ namespace RoninEngine
             return false;
 
         RoninMemory::alloc_self(splashScreen);
-
-        LoadWorld(splashScreen);
-
-        if(splashScreen)
-        {
-            splashScreen->nextWorld = world;
-        }
-
-        return splashScreen != nullptr;
+        splashScreen->nextWorld = world;
+        makePrivate(splashScreen);
+        return LoadWorld(splashScreen);
     }
 
     bool RoninSimulator::ReloadWorld()
     {
-        if(_world == nullptr || preload_world != nullptr)
+        if(currentWorld == nullptr || preloadWorld != nullptr)
         {
             ronin_log("Active world not loaded");
             return false;
         }
 
-               // set config for reload
-        gscope.simConfig.conf |= CONF_RELOAD_WORLD;
+        // set config for reload
+        gscope.config.conf |= CONF_RELOAD_WORLD;
         return true;
     }
 
     World *RoninSimulator::GetWorld()
     {
-        return _world;
+        return currentWorld;
     }
 
     bool RoninSimulator::CancelReload()
     {
-        int last_flag = (gscope.simConfig.conf & CONF_RELOAD_WORLD);
+        int last_flag = (gscope.config.conf & CONF_RELOAD_WORLD);
         // clear reload flag
-        gscope.simConfig.conf &= ~CONF_RELOAD_WORLD;
+        gscope.config.conf &= ~CONF_RELOAD_WORLD;
         return last_flag != 0;
     }
 
@@ -1044,10 +1046,10 @@ namespace RoninEngine
                     switch(settings.renderBackend)
                     {
                         case RenderDriverInfo::RenderBackend::CPU:
-                            gscope.simConfig.conf |= CONF_RENDER_SOFTWARE;
+                            gscope.config.conf |= CONF_RENDER_SOFTWARE;
                             break;
                         case RenderDriverInfo::RenderBackend::GPU:
-                            gscope.simConfig.conf |= CONF_RENDER_CHANGED; // set as HARDWARE
+                            gscope.config.conf |= CONF_RENDER_CHANGED; // set as HARDWARE
                             break;
                     }
                     state = true;

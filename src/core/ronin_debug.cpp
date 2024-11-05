@@ -23,7 +23,6 @@ void ronin_err(const char *msg)
 
 void ronin_err_d(const char * msg)
 {
-    return;
     Debug::ShowDisplay("Exception", msg, DisplayType::Error);
 }
 

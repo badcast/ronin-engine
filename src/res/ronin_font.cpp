@@ -166,7 +166,6 @@ namespace RoninEngine::Runtime
         f2d_default->compressed = static_cast<int>(optimizeDeffects);
     }
 
-
     void font2d_string(Rect rect, const char *text, int len, int fontWidth, RoninEngine::UI::UIAlign textAlign, bool textWrap, bool hilight)
     {
         if(text == nullptr || len <= 0)
@@ -230,7 +229,7 @@ namespace RoninEngine::Runtime
                 }
 
                 dst.w = Math::Max(0, Math::Min(deltax - dst.x, dst.w));
-                SDL_RenderCopy(gscope.renderer, (hilight ? _world->irs->legacy_font_hover : _world->irs->legacy_font_normal), reinterpret_cast<SDL_Rect *>(src), &dst);
+                SDL_RenderCopy(gscope.renderer, (hilight ? currentWorld->irs->legacy_font_hover : currentWorld->irs->legacy_font_normal), reinterpret_cast<SDL_Rect *>(src), &dst);
                 dst.x += src->w;
             }
             else

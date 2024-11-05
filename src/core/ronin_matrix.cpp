@@ -39,8 +39,8 @@ namespace RoninEngine::Runtime
                 return;
 
             // Delete last point source
-            auto findIter = _world->irs->matrix.find(target->_owner->m_layer);
-            if(std::end(_world->irs->matrix) != findIter)
+            auto findIter = currentWorld->irs->matrix.find(target->_owner->m_layer);
+            if(std::end(currentWorld->irs->matrix) != findIter)
             {
                 auto layer = findIter->second.find(lastPoint);
                 if(layer != std::end(findIter->second))
@@ -52,14 +52,14 @@ namespace RoninEngine::Runtime
             }
 
             // Add point to new source
-            _world->irs->matrix[target->_owner->m_layer][newPoint].insert(target);
+            currentWorld->irs->matrix[target->_owner->m_layer][newPoint].insert(target);
         }
 
         bool matrix_remove(Transform *target)
         {
             bool result = false;
-            auto findIter = _world->irs->matrix.find(target->_owner->m_layer);
-            if(std::end(_world->irs->matrix) != findIter)
+            auto findIter = currentWorld->irs->matrix.find(target->_owner->m_layer);
+            if(std::end(currentWorld->irs->matrix) != findIter)
             {
                 auto layer = findIter->second.find(matrix_get_key(target->_position));
                 if(layer != std::end(findIter->second))

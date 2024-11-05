@@ -15,10 +15,10 @@ namespace RoninEngine::Runtime
         dst.x = gscope.activeResolution.width / 2.f;
         dst.y = gscope.activeResolution.height / 2.f;
 
-        a.x = dst.x - (p.x - a.x) * _world->irs->metricPixelsPerPoint.x;
-        a.y = dst.y + (p.y - a.y) * _world->irs->metricPixelsPerPoint.y;
-        b.x = dst.x - (p.x - b.x) * _world->irs->metricPixelsPerPoint.x;
-        b.y = dst.y + (p.y - b.y) * _world->irs->metricPixelsPerPoint.y;
+        a.x = dst.x - (p.x - a.x) * currentWorld->irs->metricPixelsPerPoint.x;
+        a.y = dst.y + (p.y - a.y) * currentWorld->irs->metricPixelsPerPoint.y;
+        b.x = dst.x - (p.x - b.x) * currentWorld->irs->metricPixelsPerPoint.x;
+        b.y = dst.y + (p.y - b.y) * currentWorld->irs->metricPixelsPerPoint.y;
 
         int x1 = static_cast<int>(a.x);
         int y1 = static_cast<int>(a.y);
@@ -61,22 +61,22 @@ namespace RoninEngine::Runtime
     {
         Vec2 a, b;
 
-        a = _world->irs->metricPixelsPerPoint;
+        a = currentWorld->irs->metricPixelsPerPoint;
         b = a;
         b.x *= -1;
         internal_drawLine(a, b);
 
-        a = _world->irs->metricPixelsPerPoint;
+        a = currentWorld->irs->metricPixelsPerPoint;
         a.y *= -1;
-        b = _world->irs->metricPixelsPerPoint * -1;
+        b = currentWorld->irs->metricPixelsPerPoint * -1;
         internal_drawLine(a, b);
 
-        a = _world->irs->metricPixelsPerPoint;
+        a = currentWorld->irs->metricPixelsPerPoint;
         a.x *= -1;
-        b = _world->irs->metricPixelsPerPoint * -1;
+        b = currentWorld->irs->metricPixelsPerPoint * -1;
         internal_drawLine(a, b);
 
-        a = _world->irs->metricPixelsPerPoint;
+        a = currentWorld->irs->metricPixelsPerPoint;
         b = a;
         b.y *= -1;
         internal_drawLine(a, b);
@@ -108,8 +108,8 @@ namespace RoninEngine::Runtime
     {
         origin = Camera::WorldToScreenPoint(origin);
         std::uint16_t x, y;
-        width *= _world->irs->metricPixelsPerPoint.x;
-        height *= _world->irs->metricPixelsPerPoint.y;
+        width *= currentWorld->irs->metricPixelsPerPoint.x;
+        height *= currentWorld->irs->metricPixelsPerPoint.y;
         x = origin.x - width / 2;
         y = origin.y - height / 2;
 
@@ -126,7 +126,7 @@ namespace RoninEngine::Runtime
         sin = Math::Sin(angleRadian);
 
         origin = Camera::WorldToScreenPoint(origin);
-        size = Vec2::Scale(size, _world->irs->metricPixelsPerPoint);
+        size = Vec2::Scale(size, currentWorld->irs->metricPixelsPerPoint);
         cx = origin.x;
         cy = origin.y;
         origin -= size / 2;
@@ -155,8 +155,8 @@ namespace RoninEngine::Runtime
     {
         origin = Camera::WorldToScreenPoint(origin);
         std::uint16_t x, y;
-        width *= _world->irs->metricPixelsPerPoint.x;
-        height *= _world->irs->metricPixelsPerPoint.y;
+        width *= currentWorld->irs->metricPixelsPerPoint.x;
+        height *= currentWorld->irs->metricPixelsPerPoint.y;
         x = origin.x - width / 2;
         y = origin.y - height / 2;
 
@@ -307,7 +307,7 @@ namespace RoninEngine::Runtime
         std::uint16_t x, y, r;
         x = Math::Number(origin.x);
         y = Math::Number(origin.y);
-        r = static_cast<std::uint16_t>(distance * _world->irs->metricPixelsPerPoint.x);
+        r = static_cast<std::uint16_t>(distance * currentWorld->irs->metricPixelsPerPoint.x);
         Color m_color = GetColor();
 
         circleRGBA(gscope.renderer, x, y, r, m_color.r, m_color.g, m_color.b, m_color.a);
@@ -377,8 +377,8 @@ namespace RoninEngine::Runtime
     void RenderUtility::DrawFillRect(Vec2 center, float width, float height)
     {
         center = Camera::WorldToScreenPoint(center);
-        width *= _world->irs->metricPixelsPerPoint.x;
-        height *= _world->irs->metricPixelsPerPoint.y;
+        width *= currentWorld->irs->metricPixelsPerPoint.x;
+        height *= currentWorld->irs->metricPixelsPerPoint.y;
         Rectf rect {center.x - width / 2, center.y - height / 2, width, height};
 
         SDL_RenderFillRectF(gscope.renderer, reinterpret_cast<SDL_FRect *>(&rect));
@@ -388,8 +388,8 @@ namespace RoninEngine::Runtime
     {
         std::uint16_t x, y;
         origin = Camera::WorldToScreenPoint(origin);
-        width *= _world->irs->metricPixelsPerPoint.x;
-        height *= _world->irs->metricPixelsPerPoint.y;
+        width *= currentWorld->irs->metricPixelsPerPoint.x;
+        height *= currentWorld->irs->metricPixelsPerPoint.y;
         x = origin.x - width / 2;
         y = origin.y - height / 2;
 
@@ -399,7 +399,7 @@ namespace RoninEngine::Runtime
     void RenderUtility::DrawFillSquare(Vec2 origin, float width)
     {
         origin = Camera::WorldToScreenPoint(origin);
-        width *= _world->irs->metricPixelsPerPoint.x;
+        width *= currentWorld->irs->metricPixelsPerPoint.x;
         Rectf rect {origin.x - width / 2, origin.y - width / 2, width, width};
 
         SDL_RenderFillRectF(gscope.renderer, reinterpret_cast<SDL_FRect *>(&rect));
@@ -416,7 +416,7 @@ namespace RoninEngine::Runtime
         std::uint16_t x, y, r;
         x = Math::Number(origin.x);
         y = Math::Number(origin.y);
-        r = static_cast<std::uint16_t>(distance * _world->irs->metricPixelsPerPoint.x);
+        r = static_cast<std::uint16_t>(distance * currentWorld->irs->metricPixelsPerPoint.x);
         Color m_color = GetColor();
 
         filledCircleColor(gscope.renderer, x, y, r, m_color);

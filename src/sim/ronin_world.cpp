@@ -66,8 +66,8 @@ namespace RoninEngine
             if(world->irs == nullptr)
                 return false;
 
-            World *lastWorld = _world;
-            _world = world;
+            World *lastWorld = currentWorld;
+            currentWorld = world;
 
             world->RequestUnload();
 
@@ -140,7 +140,7 @@ namespace RoninEngine
 
             pinnedWorlds.erase(world);
 
-            _world = lastWorld;
+            currentWorld = lastWorld;
 
             return true;
         }
@@ -168,7 +168,7 @@ namespace RoninEngine
             Time::BeginWatch();
             // Render on main camera
             Camera *cam = Camera::mainCamera(); // Draw level from active camera (main)
-            if(!_world->irs->requestUnloading && cam && cam->enable())
+            if(!currentWorld->irs->requestUnloading && cam && cam->enable())
             {
                 // draw world in world size
                 native_render_2D(reinterpret_cast<Camera2D *>(cam));
@@ -180,13 +180,13 @@ namespace RoninEngine
 
             // begin watcher
             Time::BeginWatch();
-            if(!_world->irs->requestUnloading && cam)
+            if(!currentWorld->irs->requestUnloading && cam)
             {
                 // Reset Color
                 RenderUtility::SetColor(Color::white);
 
                 // Draw gizmos
-                _world->OnGizmos();
+                currentWorld->OnGizmos();
                 scripts_gizmos();
             }
 
@@ -214,7 +214,7 @@ namespace RoninEngine
 
         std::list<Transform *> damaged;
 
-        for(auto x = std::begin(_world->irs->matrix); x != end(_world->irs->matrix); ++x)
+        for(auto x = std::begin(currentWorld->irs->matrix); x != end(currentWorld->irs->matrix); ++x)
         {
             // unordered_map<Vec2Int,... <Transform*>>
             for(auto &layerObject : x->second)
@@ -250,7 +250,7 @@ namespace RoninEngine
         {
             Matrix::matrix_key_t key = Matrix::matrix_get_key(dam->_position);
             // unordered_map<int, ...>
-            for(auto &findIter : _world->irs->matrix)
+            for(auto &findIter : currentWorld->irs->matrix)
                 // unordered_map<Vec2Int,...>
                 for(auto &layer : findIter.second)
                     // set<Transform*>
@@ -267,7 +267,7 @@ namespace RoninEngine
                             if(object_instanced(dam))
                             {
                                 // Restore
-                                _world->irs->matrix[dam->_owner->m_layer][key].insert(dam);
+                                currentWorld->irs->matrix[dam->_owner->m_layer][key].insert(dam);
                             }
                             ++restored;
                             goto next;
@@ -541,6 +541,6 @@ namespace RoninEngine
 
     World *World::GetCurrentWorld()
     {
-        return _world;
+        return currentWorld;
     }
 } // namespace RoninEngine

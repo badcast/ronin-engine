@@ -11,7 +11,7 @@ namespace RoninEngine
 
         Object::Object(const std::string &name) : m_name(name)
         {
-            if(_world != nullptr)
+            if(currentWorld != nullptr)
             {
                 DESCRIBE_AS_MAIN(Object);
 
@@ -19,7 +19,7 @@ namespace RoninEngine
                 ::check_object(this);
 #endif
 
-                ++_world->irs->objects;
+                ++currentWorld->irs->objects;
             }
         }
 
