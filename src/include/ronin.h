@@ -12,6 +12,9 @@
 #define private public
 #define protected public
 
+#include "SharedPointer.h"
+#include "SharedDefines.h"
+
 #include "Time.h"
 #include "RoninSimulator.h"
 #include "Resources.h"
@@ -50,6 +53,7 @@
 
 #include "GameObject.h"
 
+
 #undef private
 #undef protected
 
@@ -58,4 +62,5 @@
 
 #include "static.h"
 #include "font.h"
+
 #endif

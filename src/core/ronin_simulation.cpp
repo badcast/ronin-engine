@@ -524,7 +524,7 @@ namespace RoninEngine
             Time::BeginWatch();
 
             if(!currentWorld->irs->requestUnloading)
-                SepukuRun();
+                sepuku_run();
 
             // end watcher
             gscope.queueWatcher.delayHarakiring = Time::EndWatch();

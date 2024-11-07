@@ -29,9 +29,9 @@ namespace RoninEngine::Runtime
         return sz;
     }
 
-    Sprite *Atlas::GetSpriteFromIndex(int value)
+    SpriteRef Atlas::GetSpriteFromIndex(int value)
     {
-        Sprite *result;
+        SpriteRef result = nullptr;
 
         if(value >= 0 && value < GetCount())
         {

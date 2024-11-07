@@ -12,11 +12,13 @@ namespace RoninEngine::Runtime
     SpriteRenderer::SpriteRenderer(const std::string &name)
         : Renderer(DESCRIBE_AS_ONLY_NAME(SpriteRenderer)), sprite(nullptr), save_texture(nullptr), renderType(SpriteRenderType::Simple), renderOut(SpriteRenderOut::Centering), flip(SpriteRenderFlip::FlipNone), renderPresentMode(SpriteRenderPresentMode::Fixed), color(Color::white)
     {
+        _class = render_getclass<SpriteRenderer>();
         DESCRIBE_AS_MAIN(SpriteRenderer);
     }
 
     SpriteRenderer::SpriteRenderer(const SpriteRenderer &proto) : Renderer(proto.m_name), sprite(proto.sprite), save_texture(nullptr), m_size(proto.m_size), renderType(proto.renderType), renderOut(proto.renderOut), flip(proto.flip), renderPresentMode(proto.renderPresentMode), color(proto.color)
     {
+        _class = render_getclass<SpriteRenderer>();
     }
 
     SpriteRenderer::~SpriteRenderer()

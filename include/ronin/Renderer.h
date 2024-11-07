@@ -8,6 +8,8 @@ namespace RoninEngine::Runtime
 
     class RONIN_API Renderer : public Component
     {
+    private:
+        int _class;
     public:
         Renderer();
         Renderer(const std::string &name);

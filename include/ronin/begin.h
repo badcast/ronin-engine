@@ -6,6 +6,7 @@
 #include <functional>
 #include <limits>
 #include <algorithm>
+#include <type_traits>
 
 // standard listing includes
 #include <list>
@@ -19,3 +20,5 @@
 #include "Color.h"
 #include "Vec2.h"
 #include "Types.h"
+#include "SharedPointer.h"
+#include "SharedDefines.h"

@@ -29,22 +29,22 @@ namespace RoninEngine
             return _owner != nullptr;
         }
 
-        Transform *Component::transform() const
+        TransformRef Component::transform() const
         {
-            return static_cast<Transform *>(_owner->m_components.front());
+            return static_cast<TransformRef>(_owner->m_components.front());
         }
 
-        GameObject *Component::gameObject() const
+        GameObjectRef Component::gameObject() const
         {
             return _owner;
         }
 
-        Camera2D *Component::camera2D() const
+        Camera2DRef Component::camera2D() const
         {
             return _owner->camera2D();
         }
 
-        SpriteRenderer *Component::spriteRenderer() const
+        SpriteRendererRef Component::spriteRenderer() const
         {
             return _owner->spriteRenderer();
         }
@@ -54,12 +54,12 @@ namespace RoninEngine
             return _owner->terrain2D();
         }
 
-        Component *Component::AddComponent(Component *component)
+        ComponentRef Component::AddComponent(ComponentRef component)
         {
             return gameObject()->AddComponent(component);
         }
 
-        bool Component::RemoveComponent(Component *component)
+        bool Component::RemoveComponent(ComponentRef component)
         {
             return gameObject()->RemoveComponent(component);
         }

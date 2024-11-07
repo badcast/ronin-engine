@@ -5,11 +5,11 @@
 namespace RoninEngine::Runtime
 {
     // TODO: Make atlas object (Collection sprite)
-    class RONIN_API Atlas
+    class RONIN_API Atlas : public RoninPointer
     {
     protected:
         Image *src;
-        std::vector<Sprite *> _sprites;
+        std::vector<SpriteRef> _sprites;
 
     public:
         Atlas();
@@ -21,11 +21,11 @@ namespace RoninEngine::Runtime
 
         Vec2Int GetSize();
 
-        Sprite *GetSpriteFromIndex(int value);
-        Sprite *GetSpriteFromPoint(const Vec2Int &value);
-        Sprite *GetSpriteFromName(const std::string &value);
+        SpriteRef GetSpriteFromIndex(int value);
+        SpriteRef GetSpriteFromPoint(const Vec2Int &value);
+        SpriteRef GetSpriteFromName(const std::string &value);
 
-        std::vector<Sprite *> GetSprites();
+        std::vector<SpriteRef> GetSprites();
     };
 
 } // namespace RoninEngine::Runtime

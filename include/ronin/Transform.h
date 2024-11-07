@@ -9,44 +9,44 @@ namespace RoninEngine::Runtime
     class RONIN_API Transform : public Component
     {
     private:
-        Transform *m_parent;
+        TransformRef m_parent;
         Vec2 _position;
         float _angle_;
 
     protected:
-        std::list<Transform *> hierarchy;
+        std::list<TransformRef> hierarchy;
 
-        void parent_notify_active_state(GameObject *from);
+        void parent_notify_active_state(GameObjectRef from);
 
     public:
         Transform();
         Transform(const std::string &name);
 
-        Transform *parent() const;
-        void setParent(Transform *parent, bool worldPositionStays = true);
+        TransformRef parent() const;
+        void setParent(TransformRef parent, bool worldPositionStays = true);
 
         void Detach();
 
         int childCount() const;
-        Transform *childOf(int index);
+        TransformRef childOf(int index);
 
         void LookAt(Vec2 target, Vec2 axis);
         void LookAt(Vec2 target);
-        void LookAt(Transform *target, Vec2 axis);
-        void LookAt(Transform *target);
+        void LookAt(TransformRef target, Vec2 axis);
+        void LookAt(TransformRef arget);
         void LookAtLerp(Vec2 target, float t);
         void LookAtLerp(Vec2 target, Vec2 axis, float t);
-        void LookAtLerp(Transform *target, float t);
-        void LookAtLerp(Transform *target, Vec2 axis, float t);
+        void LookAtLerp(TransformRef target, float t);
+        void LookAtLerp(TransformRef target, Vec2 axis, float t);
 
         void AsFirstChild();
         void AsLastChild();
 
-        bool childContain(Transform *child);
-        void childAdd(Transform *child);
-        void childRemove(Transform *child);
+        bool childContain(TransformRef child);
+        void childAdd(TransformRef child);
+        void childRemove(TransformRef child);
 
-        std::list<Transform *> GetChilds() const;
+        std::list<TransformRef> GetChilds() const;
 
         // look forward axis from world coordinates
         const Vec2 forward() const;
@@ -106,9 +106,9 @@ namespace RoninEngine::Runtime
         int zOrder() const;
         void zOrder(int value);
 
-        std::vector<Transform *> GetAllTransforms();
+        std::vector<TransformRef> GetAllTransforms();
 
-        static Transform *root();
+        static TransformRef root();
     };
 
 } // namespace RoninEngine::Runtime

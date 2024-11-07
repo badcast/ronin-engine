@@ -10,7 +10,6 @@ namespace RoninEngine::Runtime
         World * nextWorld;
         Sprite * logo;
         SpriteRenderer * objCenter;
-        UI::uid loadBar;
 
         float delay = 5.0f;
 

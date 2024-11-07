@@ -34,7 +34,7 @@ namespace RoninEngine::Runtime
     class RONIN_API ParticleSystem : public Behaviour
     {
     private:
-        struct ParticleSystemRef *ref;
+        struct ParticleSystemImpl *ref;
 
         // Source for set
         std::vector<Sprite *> m_sources;

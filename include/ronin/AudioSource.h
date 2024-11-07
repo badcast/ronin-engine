@@ -91,7 +91,7 @@ namespace RoninEngine::Runtime
          * @param volume (Optional) The volume for the audio source, within the range [0.0, 1.0]. Default is 1.0.
          * @return A pointer to the created AudioSource, or nullptr if creation failed.
          */
-        static AudioSource *PlayClipAtPoint(AudioClip *clip, Vec2 position, float volume = 1.F);
+        static AudioSourceRef PlayClipAtPoint(AudioClip *clip, Vec2 position, float volume = 1.F);
     };
 
 } // namespace RoninEngine::Runtime

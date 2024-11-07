@@ -7,7 +7,7 @@ namespace RoninEngine::Runtime
 {
     class Atlas;
 
-    class RONIN_API Sprite
+    class RONIN_API Sprite : public RoninPointer
     {
     protected:
         Vec2 m_center;

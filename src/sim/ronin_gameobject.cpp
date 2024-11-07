@@ -142,24 +142,24 @@ namespace RoninEngine::Runtime
         }
     }
 
-    Transform *GameObject::transform() const
+    TransformRef GameObject::transform() const
     {
         // NOTE: Transform всегда первый объект из контейнера m_components
-        return static_cast<Transform *>(m_components.front());
+        return BushidoConv<TransformRef>(m_components.front());
         // return GetComponent<Transform>();
     }
 
-    SpriteRenderer *GameObject::spriteRenderer() const
+    SpriteRendererRef GameObject::spriteRenderer() const
     {
         return GetComponent<SpriteRenderer>();
     }
 
-    Camera2D *GameObject::camera2D() const
+    Camera2DRef GameObject::camera2D() const
     {
         return GetComponent<Camera2D>();
     }
 
-    Terrain2D *GameObject::terrain2D() const
+    Terrain2DRef GameObject::terrain2D() const
     {
         return GetComponent<Terrain2D>();
     }
@@ -179,7 +179,7 @@ namespace RoninEngine::Runtime
         Runtime::Destroy(this, t);
     }
 
-    Component *GameObject::AddComponent(Component *component)
+    ComponentRef GameObject::AddComponent(ComponentRef component)
     {
         if(!component)
             throw ronin_null_error();
@@ -215,7 +215,7 @@ namespace RoninEngine::Runtime
         return component;
     }
 
-    bool GameObject::RemoveComponent(Component *component)
+    bool GameObject::RemoveComponent(ComponentRef component)
     {
         if(component == nullptr)
             throw ronin_null_error();

@@ -1,3 +1,5 @@
+#ifndef _RONIN_DEFINES_H_
+#define _RONIN_DEFINES_H_ 1
 
 // MSVC/MinGW Compiller
 #if _MSC_VER || WIN32
@@ -20,4 +22,6 @@
 #define RONIN_API API_EXPORT
 #else
 #define RONIN_API API_IMPORT
+#endif
+
 #endif

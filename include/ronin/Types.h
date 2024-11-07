@@ -1,6 +1,8 @@
 #pragma once
 
 #include "begin.h"
+#include "Declarations.h"
+#include "SharedDefines.h"
 
 namespace RoninEngine
 {
@@ -161,12 +163,12 @@ namespace RoninEngine
 
         struct IComponents
         {
-            virtual Transform *transform() const = 0;
-            virtual SpriteRenderer *spriteRenderer() const = 0;
-            virtual Camera2D *camera2D() const = 0;
-            virtual Terrain2D *terrain2D() const = 0;
-            virtual Component *AddComponent(Component *component) = 0;
-            virtual bool RemoveComponent(Component *component) = 0;
+            virtual TransformRef transform() const = 0;
+            virtual SpriteRendererRef spriteRenderer() const = 0;
+            virtual Camera2DRef camera2D() const = 0;
+            virtual Terrain2DRef terrain2D() const = 0;
+            virtual ComponentRef AddComponent(ComponentRef component) = 0;
+            virtual bool RemoveComponent(ComponentRef component) = 0;
         };
 
         template <typename T>

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "begin.h"
+#include <cstdint>
 
 #ifndef RONIN_COMPILLING
 typedef struct SDL_Surface Image;

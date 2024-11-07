@@ -112,7 +112,7 @@ float AudioSource::getDuration()
     return static_cast<float>(RoninAudio::getAudioClipDuration(this->data->m_clip));
 }
 
-AudioSource *AudioSource::PlayClipAtPoint(AudioClip *clip, Vec2 position, float volume)
+AudioSourceRef AudioSource::PlayClipAtPoint(AudioClip *clip, Vec2 position, float volume)
 {
     if(clip == nullptr)
         return nullptr;

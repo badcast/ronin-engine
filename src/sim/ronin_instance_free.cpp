@@ -149,7 +149,7 @@ namespace RoninEngine
             }
         }
 
-        int SepukuRun()
+        int sepuku_run()
         {
             currentWorld->irs->_destroyedGameObject = 0;
 

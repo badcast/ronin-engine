@@ -5,6 +5,7 @@
 #pragma once
 
 #include "ronin.h"
+#include "ronin_pimpl.h"
 
 #ifndef NDEBUG
 #define TEST_MALLOC 0
@@ -311,8 +312,9 @@ namespace RoninEngine
             void event_camera_changed(Camera *target, CameraEvent state);
         };
 
-        /*** PIMPL (pointer to implementation) ***/
-        class ParticleSystemRef;
+        struct T2Data;
+
+        struct ParticleSystemRef;
 
         extern World *currentWorld;
         extern float internal_game_time;
@@ -327,11 +329,13 @@ namespace RoninEngine
         bool object_instanced(const Object *obj);
         void native_render_2D(Camera2D *camera);
 
+        int sepuku_run();
         void sepuku_Component(Component *candidate);
-
         void sepuku_GameObject(GameObject *obj, std::set<GameObject *> *input);
 
-        int SepukuRun();
+        template<typename T>
+        int render_getclass();
+        std::function<void(RenderCommand,Renderer*,Rendering *)> render_getfunc(int _class);
 
         void level_render_world();
 

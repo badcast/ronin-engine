@@ -18,7 +18,7 @@ namespace RoninEngine
             using Event = RoninBaseEvent<GameObject>;
 
         private:
-            std::list<Component *> m_components;
+            std::list<ComponentRef> m_components;
             std::list<Event> ev_destroy;
             int m_layer;
             int m_zOrder;
@@ -110,25 +110,25 @@ namespace RoninEngine
              * @brief Get the Transform component of the GameObject.
              * @return A pointer to the Transform component.
              */
-            Transform *transform() const;
+            TransformRef transform() const;
 
             /**
              * @brief Get the SpriteRenderer component of the GameObject.
              * @return A pointer to the SpriteRenderer component, or nullptr if not found.
              */
-            SpriteRenderer *spriteRenderer() const;
+            SpriteRendererRef spriteRenderer() const;
 
             /**
              * @brief Get the Camera2D component of the GameObject.
              * @return A pointer to the Camera2D component, or nullptr if not found.
              */
-            Camera2D *camera2D() const;
+            Camera2DRef camera2D() const;
 
             /**
              * @brief Get the Terrain2D component of the GameObject.
              * @return A pointer to the Terrain2D component, or nullptr if not found.
              */
-            Terrain2D *terrain2D() const;
+            Terrain2DRef terrain2D() const;
 
             /**
              * @brief Check if the gameobject is PrefabObject
@@ -174,7 +174,7 @@ namespace RoninEngine
              * @param component A pointer to the component to be added.
              * @return A pointer to the added component, or nullptr if adding failed.
              */
-            Component *AddComponent(Component *component);
+            ComponentRef AddComponent(ComponentRef component);
 
             /**
              * @brief Removes a specific component from the GameObject.
@@ -185,7 +185,7 @@ namespace RoninEngine
              * @param component A pointer to the component to be removed.
              * @return True if the component was successfully removed, false if it was not found.
              */
-            bool RemoveComponent(Component *component);
+            bool RemoveComponent(ComponentRef component);
 
             /**
              * @brief Adds a new component of the specified type to the GameObject.
@@ -197,7 +197,7 @@ namespace RoninEngine
              * @return A pointer to the newly added component, or nullptr if adding failed.
              */
             template <typename T>
-            std::enable_if_t<std::is_base_of<Component, T>::value, T *> AddComponent();
+            std::enable_if_t<std::is_base_of_v<Component, T>, Bushido<T>> AddComponent();
 
             /**
              * @brief Retrieves the first component of the specified type from the GameObject.
@@ -209,7 +209,7 @@ namespace RoninEngine
              * @return A pointer to the found component, or nullptr if the component was not found.
              */
             template <typename T>
-            std::enable_if_t<std::is_base_of<Component, T>::value, T *> GetComponent() const;
+            std::enable_if_t<std::is_base_of_v<Component, T>, Bushido<T>> GetComponent() const;
 
             /**
              * @brief Removes the first component of the specified type from the GameObject.
@@ -221,7 +221,7 @@ namespace RoninEngine
              * @return True if the component was successfully removed, false if it was not found.
              */
             template <typename T>
-            std::enable_if_t<std::is_base_of<Component, T>::value, bool> RemoveComponent();
+            std::enable_if_t<std::is_base_of_v<Component, T>, bool> RemoveComponent();
 
             /**
              * @brief Retrieves a list of all components of the specified type from the GameObject.
@@ -234,7 +234,7 @@ namespace RoninEngine
              * @return A list containing pointers to the found components.
              */
             template <typename T>
-            std::enable_if_t<std::is_base_of<Component, T>::value, std::list<T *>> GetComponents() const;
+            std::enable_if_t<std::is_base_of_v<Component, T>, std::list<Bushido<T>>> GetComponents() const;
 
             /**
              * @brief Retrieves a list of all components of the specified type from the GameObject an childs.
@@ -247,7 +247,7 @@ namespace RoninEngine
              * @return A list containing pointers to the found components.
              */
             template <typename T>
-            std::enable_if_t<std::is_base_of<Component, T>::value, std::list<T *>> GetComponentsAnChilds() const;
+            std::enable_if_t<std::is_base_of_v<Component, T>, std::list<Bushido<T>>> GetComponentsAnChilds() const;
 
             /**
              * @brief Register a callback for the GameObject's "destroy" event.
@@ -270,15 +270,15 @@ namespace RoninEngine
         };
 
         template <typename T>
-        inline std::enable_if_t<std::is_base_of<Component, T>::value, T *> GameObject::AddComponent()
+        inline std::enable_if_t<std::is_base_of_v<Component, T>, Bushido<T>> GameObject::AddComponent()
         {
-            static_assert(!(std::is_same<T, Transform>::value || std::is_base_of<Transform, T>::value), "Transform component can't be assigned");
+            static_assert(!(std::is_same_v<T, Transform> || std::is_base_of_v<Transform, T>), "Transform component can't be assigned");
 
             // init component
-            T *component = RoninMemory::alloc<T>();
-            this->AddComponent(static_cast<Component *>(component));
+            ComponentRef component = RoninMemory::alloc<T>();
+            this->AddComponent(component);
 
-            if constexpr(std::is_base_of<Behaviour, T>::value)
+            if constexpr(std::is_base_of_v<Behaviour, T>)
             {
                 int flags = 0;
 
@@ -305,17 +305,16 @@ namespace RoninEngine
                 CHECK_BASE_OVERRIDDEN(Behaviour, Bind_Gizmos, OnGizmos);
 #undef CHECK_BASE_OVERRIDDEN
 
-                bind_script(static_cast<BindType>(flags), static_cast<Behaviour *>(component));
+                bind_script(static_cast<BindType>(flags), reinterpret_cast<Behaviour *>(component.get()));
             }
 
             return component;
         } // namespace Runtime
 
         template <typename T>
-        inline std::enable_if_t<std::is_base_of<Component, T>::value, bool> GameObject::RemoveComponent()
+        inline std::enable_if_t<std::is_base_of_v<Component, T>, bool> GameObject::RemoveComponent()
         {
-            static_assert(!(std::is_same<T, Transform>::value || std::is_base_of<Transform, T>::value), "Transform component can't remove, basic component type");
-
+            static_assert(!(std::is_same_v<T, Transform> || std::is_base_of_v<Transform, T>), "Transform component can't remove, basic component type");
             T *target = GetComponent<T>();
             if(target == nullptr)
                 return false;
@@ -323,13 +322,13 @@ namespace RoninEngine
         }
 
         template <typename T>
-        inline std::enable_if_t<std::is_base_of<Component, T>::value, std::list<T *>> GameObject::GetComponents() const
+        inline std::enable_if_t<std::is_base_of_v<Component, T>, std::list<Bushido<T>>> GameObject::GetComponents() const
         {
-            T *cast;
-            std::list<T *> types;
-            for(auto iter = std::begin(m_components); iter != std::end(m_components); ++iter)
+            Bushido<T> cast {};
+            std::list<Bushido<T>> types;
+            for(const ComponentRef & comp : m_components)
             {
-                if((cast = dynamic_cast<T *>(*iter)) != nullptr)
+                if(!(cast = comp.DynamicCast<T>()).isNull())
                 {
                     types.emplace_back(cast);
                 }
@@ -339,18 +338,17 @@ namespace RoninEngine
         }
 
         template <typename T>
-        inline std::enable_if_t<std::is_base_of<Component, T>::value, std::list<T *>> GameObject::GetComponentsAnChilds() const
+        inline std::enable_if_t<std::is_base_of_v<Component, T>, std::list<Bushido<T>>> GameObject::GetComponentsAnChilds() const
         {
-            std::list<T *> types;
-            std::list<const GameObject *> stacks;
-            stacks.push_back(this);
-
+            std::list<Bushido<T>> types {};
+            std::list<GameObjectRef> stacks {};
+            stacks.push_back(std::move(Bushido<GameObject>{this}));
             while(!stacks.empty())
             {
-                types.merge(stacks.front()->GetComponents<T>());
-                for(const Transform *c : stacks.front()->transform()->GetChilds())
+                //types.merge(stacks.front()->GetComponents<T>());
+                for(TransformRef& t : stacks.front()->transform()->GetChilds())
                 {
-                    stacks.push_back(c->gameObject());
+                    stacks.push_back(t->gameObject());
                 }
                 stacks.pop_front();
             }
@@ -358,44 +356,20 @@ namespace RoninEngine
         }
 
         template <typename T>
-        inline std::enable_if_t<std::is_base_of<Component, T>::value, T *> GameObject::GetComponent() const
+        inline std::enable_if_t<std::is_base_of_v<Component, T>, Bushido<T>> GameObject::GetComponent() const
         {
-            if constexpr(std::is_same<T, Transform>::value)
+            if constexpr(std::is_same_v<T, Transform>)
             {
-                return reinterpret_cast<Transform *>(m_components.front());
+                return reinterpret_cast<TransformRef>(m_components.front());
             }
             else
             {
-                auto iter = std::find_if(std::cbegin(m_components), std::cend(m_components), [](const Component *c) { return dynamic_cast<const T *>(c) != nullptr; });
+                auto iter = std::find_if(std::cbegin(m_components), std::cend(m_components), [](const ComponentRef &c) { return dynamic_cast<const T *>(c.get()) != nullptr; });
 
                 if(iter != std::end(m_components))
-                    return static_cast<T *>(*iter);
+                    return (*iter);
             }
             return nullptr;
-        }
-
-        template <typename T>
-        std::enable_if_t<std::is_base_of<Component, T>::value, T *> Component::AddComponent()
-        {
-            return _owner->AddComponent<T>();
-        }
-
-        template <typename T>
-        std::enable_if_t<std::is_base_of<Component, T>::value, T *> Component::GetComponent() const
-        {
-            return _owner->GetComponent<T>();
-        }
-
-        template <typename T>
-        std::enable_if_t<std::is_base_of<Component, T>::value, bool> Component::RemoveComponent()
-        {
-            return _owner->RemoveComponent<T>();
-        }
-
-        template <typename T>
-        std::enable_if_t<std::is_base_of<Component, T>::value, std::list<T *>> Component::GetComponents() const
-        {
-            return _owner->GetComponents<T>();
         }
     } // namespace Runtime
 } // namespace RoninEngine
