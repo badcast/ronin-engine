@@ -6,7 +6,7 @@ using namespace RoninEngine::Runtime;
 class AudioSourceAutoDestr : public Behaviour
 {
 public:
-    AudioSource *_audio;
+    AudioSourceRef _audio;
     void OnUpdate()
     {
         if(Time::frame() % 10 == 0 && !_audio->isPlaying())
@@ -117,7 +117,7 @@ AudioSourceRef AudioSource::PlayClipAtPoint(AudioClip *clip, Vec2 position, floa
     if(clip == nullptr)
         return nullptr;
 
-    AudioSource *audio = Primitive::CreateEmptyGameObject(position)->AddComponent<AudioSource>();
+    AudioSourceRef audio = Primitive::CreateEmptyGameObject(position)->AddComponent<AudioSource>();
     audio->setClip(clip);
     audio->setVolume(volume);
     audio->Play(false);

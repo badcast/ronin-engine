@@ -6,7 +6,7 @@ using namespace RoninEngine::Runtime;
 
 GameObjectRef Primitive::CreateEmptyGameObject(Vec2 position, float angle)
 {
-    GameObject *obj = create_game_object();
+    GameObjectRef obj = create_game_object();
     obj->transform()->position(position);
     obj->transform()->angle(angle);
     return obj;
@@ -14,16 +14,16 @@ GameObjectRef Primitive::CreateEmptyGameObject(Vec2 position, float angle)
 
 GameObjectRef Primitive::CreateEmptyGameObject(const std::string &name, Vec2 position, float angle)
 {
-    GameObject *obj = create_game_object();
+    GameObjectRef obj = create_game_object();
     obj->transform()->position(position);
     obj->transform()->angle(angle);
     obj->name(name);
     return obj;
 }
 
-GameObject *Primitive::CreateBox2D(Vec2 position, float angle, Vec2 size, Color fillColor)
+GameObjectRef Primitive::CreateBox2D(Vec2 position, float angle, Vec2 size, Color fillColor)
 {
-    GameObject *obj = CreateEmptyGameObject(position);
+    GameObjectRef obj = CreateEmptyGameObject(position);
     obj->AddComponent<SpriteRenderer>()->setSprite(CreateSpriteRectangle(true, Vec2::one, fillColor));
     obj->GetComponent<SpriteRenderer>()->setSize(size);
     obj->transform()->angle(angle);
@@ -35,15 +35,15 @@ Camera2DRef Primitive::CreateCamera2D(Vec2 position)
     return CreateEmptyGameObject(position)->AddComponent<Camera2D>();
 }
 
-Sprite *Primitive::CreateEmptySprite(bool localSprite)
+SpriteRef Primitive::CreateEmptySprite(bool localSprite)
 {
     Sprite *sprite;
     RoninMemory::alloc_self(sprite);
     gid_get(localSprite)->gid_sprites.push_back(sprite);
-    return sprite;
+    return {sprite};
 }
 
-Sprite *Primitive::CreateSpriteRectangle(bool localSprite, Vec2 size, Color fillColor)
+SpriteRef Primitive::CreateSpriteRectangle(bool localSprite, Vec2 size, Color fillColor)
 {
     Sprite *sprite;
 
@@ -59,10 +59,10 @@ Sprite *Primitive::CreateSpriteRectangle(bool localSprite, Vec2 size, Color fill
     currentWorld->irs->preloadeSurfaces.push_back(surface);
     RoninMemory::alloc_self(sprite, surface, Rect(0, 0, size.x, size.y));
     gid_get(localSprite)->gid_sprites.push_back(sprite);
-    return sprite;
+    return {sprite};
 }
 
-Sprite *Primitive::CreateSpriteCircle(bool localSprite, Vec2 size, float radius, Color fillColor)
+SpriteRef Primitive::CreateSpriteCircle(bool localSprite, Vec2 size, float radius, Color fillColor)
 {
     Sprite *sprite;
 
@@ -81,10 +81,10 @@ Sprite *Primitive::CreateSpriteCircle(bool localSprite, Vec2 size, float radius,
     currentWorld->irs->preloadeSurfaces.push_back(surface);
     RoninMemory::alloc_self(sprite, surface, Rect(0, 0, size.x, size.y));
     gid_get(localSprite)->gid_sprites.push_back(sprite);
-    return sprite;
+    return {sprite};
 }
 
-Sprite *Primitive::CreateSpriteTriangle(bool localSprite, Vec2 size, float height, Color fillColor)
+SpriteRef Primitive::CreateSpriteTriangle(bool localSprite, Vec2 size, float height, Color fillColor)
 {
     Sprite *sprite;
 
@@ -116,12 +116,12 @@ Sprite *Primitive::CreateSpriteTriangle(bool localSprite, Vec2 size, float heigh
     currentWorld->irs->preloadeSurfaces.push_back(surface);
     RoninMemory::alloc_self(sprite, surface, Rect {0, 0, static_cast<int>(size.x), static_cast<int>(size.y)});
     gid_get(localSprite)->gid_sprites.push_back(sprite);
-    return sprite;
+    return {sprite};
 }
 
 SpriteRef Primitive::CreateSpriteFrom(Image *surface, bool localSprite)
 {
     Sprite *sprite = CreateEmptySprite(localSprite);
     sprite->setSurface(surface);
-    return sprite;
+    return {sprite};
 }

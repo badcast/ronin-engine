@@ -8,7 +8,7 @@ RoninSplashWorld::RoninSplashWorld() : World("Ronin Splash World") {}
 
 void RoninSplashWorld::OnAwake()
 {
-    Camera2D * cam = Primitive::CreateCamera2D();
+    Camera2DRef cam = Primitive::CreateCamera2D();
     cam->backcolor = Color::black;
     logo = Primitive::CreateSpriteFrom(private_load_surface(RoninEngine_logo_png, RoninEngine_logo_png_len, false));
     objCenter = Primitive::CreateEmptyGameObject()->AddComponent<SpriteRenderer>();
@@ -30,8 +30,8 @@ void RoninSplashWorld::OnUpdate()
 
     if(t < 2)
     {
-       perc = Math::Clamp01(t / 2);
-       static_cast<Camera2D*>(Camera2D::mainCamera())->SetZoomOut(20 * perc-20 + 150);
+        perc = Math::Clamp01(t / 2);
+        Camera2D::mainCamera().StaticCast<Camera2DRef>()->SetZoomOut(20 * perc-20 + 150);
     }
     else if(t < 4)
     {

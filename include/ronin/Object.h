@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Declarations.h"
 #include "Vec2.h"
+#include "Declarations.h"
 #include "SharedPointer.h"
 
 namespace RoninEngine
@@ -9,17 +9,17 @@ namespace RoninEngine
     namespace Runtime
     {
         // Уничтожает объект после рендера.
-        extern RONIN_API void Destroy(GameObject *obj);
+        extern RONIN_API void Destroy(GameObjectRef obj);
 
         // Уничтожает объект после прошедшего времени.
-        extern RONIN_API void Destroy(GameObject *obj, float t);
+        extern RONIN_API void Destroy(GameObjectRef obj, float t);
 
         // Клонирует объект
-        extern RONIN_API GameObject *Instantiate(GameObject *obj);
+        extern RONIN_API GameObjectRef Instantiate(GameObjectRef obj);
         // Клонирует объект
-        extern RONIN_API GameObject *Instantiate(GameObject *obj, Vec2 position, float angle = 0);
+        extern RONIN_API GameObjectRef Instantiate(GameObjectRef obj, Vec2 position, float angle = 0);
         // Клонирует объект
-        extern RONIN_API GameObject *Instantiate(GameObject *obj, Vec2 position, Transform *parent, bool worldPositionStay = true);
+        extern RONIN_API GameObjectRef Instantiate(GameObjectRef obj, Vec2 position, TransformRef parent, bool worldPositionStay = true);
 
         class RONIN_API Object : public RoninPointer
         {
@@ -46,12 +46,12 @@ namespace RoninEngine
         public:
             static GameObjectRef CreateEmptyGameObject(Vec2 position = Vec2::zero, float angle = 0);
             static GameObjectRef CreateEmptyGameObject(const std::string &name, Vec2 position = Vec2::zero, float angle = 0);
-            static GameObject *CreateBox2D(Vec2 position = Vec2::zero, float angle = 0, Vec2 size = Vec2::one, Color fillColor = Color::white);
+            static GameObjectRef CreateBox2D(Vec2 position = Vec2::zero, float angle = 0, Vec2 size = Vec2::one, Color fillColor = Color::white);
             static Camera2DRef CreateCamera2D(Vec2 position = Vec2::zero);
-            static Sprite *CreateEmptySprite(bool localSprite = true);
-            static Sprite *CreateSpriteRectangle(bool localSprite = true, Vec2 size = Vec2::one, Color fillColor = Color::white);
-            static Sprite *CreateSpriteCircle(bool localSprite = true, Vec2 size = Vec2::one, float radius = 1.f, Color fillColor = Color::white);
-            static Sprite *CreateSpriteTriangle(bool local = true, Vec2 size = Vec2::one, float height = 1.f, Color fillColor = Color::white);
+            static SpriteRef CreateEmptySprite(bool localSprite = true);
+            static SpriteRef CreateSpriteRectangle(bool localSprite = true, Vec2 size = Vec2::one, Color fillColor = Color::white);
+            static SpriteRef CreateSpriteCircle(bool localSprite = true, Vec2 size = Vec2::one, float radius = 1.f, Color fillColor = Color::white);
+            static SpriteRef CreateSpriteTriangle(bool local = true, Vec2 size = Vec2::one, float height = 1.f, Color fillColor = Color::white);
             static SpriteRef CreateSpriteFrom(Image *surface, bool localSprite = true);
         };
     } // namespace Runtime

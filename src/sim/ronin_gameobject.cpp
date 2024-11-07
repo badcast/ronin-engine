@@ -7,33 +7,33 @@ using namespace RoninEngine::Exception;
 
 namespace RoninEngine::Runtime
 {
-    extern Transform *create_empty_transform();
+    extern TransformRef create_empty_transform();
 
     // Add Component
-    template RONIN_API MoveController2D *GameObject::AddComponent<MoveController2D>();
-    template RONIN_API SpriteRenderer *GameObject::AddComponent<SpriteRenderer>();
-    template RONIN_API Camera2D *GameObject::AddComponent<Camera2D>();
-    template RONIN_API Spotlight *GameObject::AddComponent<Spotlight>();
-    template RONIN_API Terrain2D *GameObject::AddComponent<Terrain2D>();
-    template RONIN_API ParticleSystem *GameObject::AddComponent<ParticleSystem>();
-    template RONIN_API Collision *GameObject::AddComponent<Collision>();
-    // Get Component
-    template RONIN_API MoveController2D *GameObject::GetComponent<MoveController2D>() const;
-    template RONIN_API SpriteRenderer *GameObject::GetComponent<SpriteRenderer>() const;
-    template RONIN_API Camera2D *GameObject::GetComponent<Camera2D>() const;
-    template RONIN_API Spotlight *GameObject::GetComponent<Spotlight>() const;
-    template RONIN_API Terrain2D *GameObject::GetComponent<Terrain2D>() const;
-    template RONIN_API Transform *GameObject::GetComponent<Transform>() const;
-    template RONIN_API ParticleSystem *GameObject::GetComponent<ParticleSystem>() const;
-    template RONIN_API Collision *GameObject::GetComponent<Collision>() const;
-    // Remove Component
-    template RONIN_API bool GameObject::RemoveComponent<MoveController2D>();
-    template RONIN_API bool GameObject::RemoveComponent<SpriteRenderer>();
-    template RONIN_API bool GameObject::RemoveComponent<Camera2D>();
-    template RONIN_API bool GameObject::RemoveComponent<Spotlight>();
-    template RONIN_API bool GameObject::RemoveComponent<Terrain2D>();
-    template RONIN_API bool GameObject::RemoveComponent<ParticleSystem>();
-    template RONIN_API bool GameObject::RemoveComponent<Collision>();
+  // template RONIN_API MoveController2DRef GameObject::AddComponent<MoveController2D>();
+  // template RONIN_API SpriteRendererRef GameObject::AddComponent<SpriteRenderer>();
+  // template RONIN_API Camera2DRef GameObject::AddComponent<Camera2D>();
+  // template RONIN_API SpotlightRef GameObject::AddComponent<Spotlight>();
+  // template RONIN_API Terrain2DRef GameObject::AddComponent<Terrain2D>();
+  // template RONIN_API ParticleSystemRef GameObject::AddComponent<ParticleSystem>();
+  // template RONIN_API CollisionRef GameObject::AddComponent<Collision>();
+  // // Get Component
+  // template RONIN_API MoveController2DRef GameObject::GetComponent<MoveController2D>() const;
+  // template RONIN_API SpriteRendererRef GameObject::GetComponent<SpriteRenderer>() const;
+  // template RONIN_API Camera2DRef GameObject::GetComponent<Camera2D>() const;
+  // template RONIN_API SpotlightRef GameObject::GetComponent<Spotlight>() const;
+  // template RONIN_API Terrain2DRef GameObject::GetComponent<Terrain2D>() const;
+  // template RONIN_API TransformRef GameObject::GetComponent<Transform>() const;
+  // template RONIN_API ParticleSystemRef GameObject::GetComponent<ParticleSystem>() const;
+  // template RONIN_API CollisionRef GameObject::GetComponent<Collision>() const;
+  // // Remove Component
+  // template RONIN_API bool GameObject::RemoveComponent<MoveController2D>();
+  // template RONIN_API bool GameObject::RemoveComponent<SpriteRenderer>();
+  // template RONIN_API bool GameObject::RemoveComponent<Camera2D>();
+  // template RONIN_API bool GameObject::RemoveComponent<Spotlight>();
+  // template RONIN_API bool GameObject::RemoveComponent<Terrain2D>();
+  // template RONIN_API bool GameObject::RemoveComponent<ParticleSystem>();
+  // template RONIN_API bool GameObject::RemoveComponent<Collision>();
 
     GameObject::GameObject() : GameObject(DESCRIBE_AS_MAIN_OFF(GameObject))
     {
@@ -45,7 +45,7 @@ namespace RoninEngine::Runtime
         m_components.push_back(create_empty_transform());
         m_components.front()->_owner = this;
         // create matrix-slot for transform object
-        Matrix::matrix_update(transform(), Matrix::matrix_get_key(Vec2::infinity));
+        Matrix::matrix_update(transform().get(), Matrix::matrix_get_key(Vec2::infinity));
     }
 
     bool GameObject::isActive()
@@ -133,7 +133,7 @@ namespace RoninEngine::Runtime
         __stack.emplace_back(this);
         while(__stack.size())
         {
-            for(Transform *h : __stack.front()->transform()->hierarchy)
+            for(TransformRef &h : __stack.front()->transform()->hierarchy)
             {
                 __stack.emplace_back(h->gameObject());
             }
@@ -145,8 +145,7 @@ namespace RoninEngine::Runtime
     TransformRef GameObject::transform() const
     {
         // NOTE: Transform всегда первый объект из контейнера m_components
-        return BushidoConv<TransformRef>(m_components.front());
-        // return GetComponent<Transform>();
+        return m_components.front().StaticCast<Transform>();
     }
 
     SpriteRendererRef GameObject::spriteRenderer() const
@@ -217,13 +216,13 @@ namespace RoninEngine::Runtime
 
     bool GameObject::RemoveComponent(ComponentRef component)
     {
-        if(component == nullptr)
-            throw ronin_null_error();
+        if(component.isNull())
+            return false;
 
         if(component->_owner != this)
-            throw ronin_conflict_component_error();
+            return false;
 
-        if(dynamic_cast<Transform *>(component) != nullptr)
+        if(!component.DynamicCast<Transform>().isNull())
             return false;
 
         for(Component::Event &event : component->ev_destroy)

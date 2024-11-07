@@ -68,6 +68,7 @@ namespace RoninEngine
         class World;
         class Resources;
         class Time;
+        struct Color;
 
         // base
         class Math;
@@ -82,7 +83,6 @@ namespace RoninEngine
         class GameObject;
         class Atlas;
         class Sprite;
-        struct Color;
 
         // derived component
         class Transform;

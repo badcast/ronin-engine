@@ -472,7 +472,7 @@ namespace RoninEngine
                         currentWorld->irs->mainObject->name("Main Object");
                         currentWorld->irs->mainObject->transform()->name("Root");
                         // pickup from renders
-                        Matrix::matrix_remove(currentWorld->irs->mainObject->transform());
+                        Matrix::matrix_remove(currentWorld->irs->mainObject->transform().get());
                     }
 
                     // Set Metric as default

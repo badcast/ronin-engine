@@ -31,7 +31,7 @@ namespace RoninEngine
 
         TransformRef Component::transform() const
         {
-            return static_cast<TransformRef>(_owner->m_components.front());
+            return _owner->m_components.front().StaticCast<Transform>();
         }
 
         GameObjectRef Component::gameObject() const
@@ -49,7 +49,7 @@ namespace RoninEngine
             return _owner->spriteRenderer();
         }
 
-        Terrain2D *Component::terrain2D() const
+        Terrain2DRef Component::terrain2D() const
         {
             return _owner->terrain2D();
         }

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef _RONIN_COMPONENT_H_
+#define _RONIN_COMPONENT_H_ 1
 
 #include "Object.h"
 
@@ -71,8 +72,6 @@ namespace RoninEngine
              */
             GameObjectRef gameObject() const;
 
-            // Other member functions for adding, removing, and accessing components...
-
             /**
              * @brief Register a callback function to be called when the component is destroyed.
              * @param callback The callback function to register.
@@ -130,6 +129,7 @@ namespace RoninEngine
              * @return True if the component was successfully removed, false otherwise.
              */
             bool RemoveComponent(ComponentRef component);
+
             /**
              * @brief Add a component of the specified type to the GameObject.
              *
@@ -140,7 +140,7 @@ namespace RoninEngine
              * @return A pointer to the added component.
              */
             template <typename T>
-            std::enable_if_t<std::is_base_of_v<Component, T>, Bushido<T>> AddComponent();
+            std::enable_if_t<std::is_base_of<Component, T>::value, Bushido<T>> AddComponent();
 
             /**
              * @brief Get a component of the specified type from the GameObject.
@@ -152,7 +152,7 @@ namespace RoninEngine
              * @return A pointer to the component if found, nullptr if not found.
              */
             template <typename T>
-            std::enable_if_t<std::is_base_of_v<Component, T>, Bushido<T>> GetComponent() const;
+            std::enable_if_t<std::is_base_of<Component, T>::value, Bushido<T>> GetComponent() ;
 
             /**
              * @brief Remove a component of the specified type from the GameObject.
@@ -164,7 +164,7 @@ namespace RoninEngine
              * @return True if the component was successfully removed, false otherwise.
              */
             template <typename T>
-            std::enable_if_t<std::is_base_of_v<Component, T>, bool> RemoveComponent();
+            std::enable_if_t<std::is_base_of<Component, T>::value, bool> RemoveComponent();
 
             /**
              * @brief Get a list of components of the specified type from the GameObject.
@@ -177,31 +177,33 @@ namespace RoninEngine
              * @return A list of pointers to the components of the specified type.
              */
             template <typename T>
-            std::enable_if_t<std::is_base_of_v<Component, T>, std::list<Bushido<T>>> GetComponents() const;
+            std::enable_if_t<std::is_base_of<Component, T>::value, std::list<Bushido<T>>> GetComponents() ;
         };
 
         template <typename T>
-        std::enable_if_t<std::is_base_of_v<Component, T>, Bushido<T>> Component::AddComponent()
+        std::enable_if_t<std::is_base_of<Component, T>::value, Bushido<T>> Component::AddComponent()
         {
             return _owner->AddComponent<T>();
         }
 
         template <typename T>
-        std::enable_if_t<std::is_base_of_v<Component, T>, Bushido<T>> Component::GetComponent() const
+        std::enable_if_t<std::is_base_of<Component, T>::value, Bushido<T>> Component::GetComponent()
         {
             return _owner->GetComponent<T>();
         }
 
         template <typename T>
-        std::enable_if_t<std::is_base_of_v<Component, T>, bool> Component::RemoveComponent()
+        std::enable_if_t<std::is_base_of<Component, T>::value, bool> Component::RemoveComponent()
         {
             return _owner->RemoveComponent<T>();
         }
 
         template <typename T>
-        std::enable_if_t<std::is_base_of_v<Component, T>, std::list<Bushido<T>>> Component::GetComponents() const
+        std::enable_if_t<std::is_base_of<Component, T>::value, std::list<Bushido<T>>> Component::GetComponents()
         {
             return _owner->GetComponents<T>();
         }
     } // namespace Runtime
 } // namespace RoninEngine
+
+#endif

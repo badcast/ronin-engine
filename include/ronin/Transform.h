@@ -1,7 +1,5 @@
 #pragma once
 
-// #define USE_TRANSFORM_HIERARCHY
-
 #include "Component.h"
 
 namespace RoninEngine::Runtime

@@ -304,7 +304,7 @@ namespace RoninEngine
             Camera *mainCamera;
 
             // Main or Root object
-            GameObject *mainObject;
+            GameObjectRef mainObject;
 
             std::map<SDL_Surface *, std::pair<int, SDL_Texture *>> renderCache;
             std::map<SDL_Texture *, SDL_Surface *> renderCacheRefs;
@@ -323,14 +323,14 @@ namespace RoninEngine
         // using LowerParticleDrain = std::integral_constant<decltype(&IsLowerParticleDrain), &IsLowerParticleDrain>;
         bool operator<(const ParticleDrain &lhs, const ParticleDrain &rhs);
 
-        GameObject *create_game_object();
-        GameObject *create_game_object(const std::string &name);
+        GameObjectRef create_game_object();
+        GameObjectRef create_game_object(const std::string &name);
 
         bool object_instanced(const Object *obj);
         void native_render_2D(Camera2D *camera);
 
         int sepuku_run();
-        void sepuku_Component(Component *candidate);
+        void sepuku_Component(ComponentRef candidate);
         void sepuku_GameObject(GameObject *obj, std::set<GameObject *> *input);
 
         template<typename T>

@@ -50,7 +50,7 @@ namespace RoninEngine::Runtime
     class RONIN_API SharedRoninObject : public SharedPointer<T>
     {
     public:
-        //static_assert(std::is_base_of_v<RoninPointer, std::remove_pointer_t<T>>, "T is must be RoninPointer");
+        // static_assert(std::is_base_of<RoninPointer, std::remove_pointer_t<T>>::value, "T is must be RoninPointer");
 
         // C++ owner by Base Constructor
         using SharedPointer<T>::SharedPointer;
@@ -63,6 +63,9 @@ namespace RoninEngine::Runtime
 
         template<typename X>
         SharedRoninObject<X> DynamicCast();
+
+        template<typename X>
+        SharedRoninObject<X> ReinterpretCast();
     };
 
     template<typename T>
@@ -93,16 +96,20 @@ namespace RoninEngine::Runtime
     }
 
     template<typename T>
-    struct Bushido_t
+    template<typename X>
+    inline SharedRoninObject<X> SharedRoninObject<T>::ReinterpretCast()
     {
-        using type = SharedRoninObject<std::conditional<std::is_pointer_v<T>, std::remove_pointer_t<T>, T>>;
-    };
+        SharedRoninObject<X> result {};
+        if((result.ptr_ = reinterpret_cast<X*>(this->ptr_)))
+        {
+            result.ref_count_ = this->ref_count_;
+            (*result.ref_count_)++;
+        }
+        return result;
+    }
 
     template<typename T>
-    using Bushido = typename Bushido_t<T>::type;
-
-           //template <typename _Base, typename _Derived>
-           //inline constexpr bool is_base_of_v = __is_base_of(_Base, _Derived);
+    using Bushido = SharedRoninObject<std::remove_pointer_t<T>>;
 
 }
 

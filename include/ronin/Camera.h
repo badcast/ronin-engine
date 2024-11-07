@@ -102,7 +102,7 @@ namespace RoninEngine::Runtime
         static Vec2 ScreenToViewportPointClamp(Vec2 screenPoint);
 
 
-        static Camera *mainCamera();
+        static CameraRef mainCamera();
     };
 
 } // namespace RoninEngine::Runtime

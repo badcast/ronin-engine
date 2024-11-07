@@ -1,6 +1,8 @@
 #pragma once
 
+#include "Declarations.h"
 #include "Behaviour.h"
+#include "Transform.h"
 
 namespace RoninEngine
 {
@@ -209,7 +211,7 @@ namespace RoninEngine
              * @return A pointer to the found component, or nullptr if the component was not found.
              */
             template <typename T>
-            std::enable_if_t<std::is_base_of_v<Component, T>, Bushido<T>> GetComponent() const;
+            std::enable_if_t<std::is_base_of_v<Component, T>, Bushido<T>> GetComponent() ;
 
             /**
              * @brief Removes the first component of the specified type from the GameObject.
@@ -234,7 +236,7 @@ namespace RoninEngine
              * @return A list containing pointers to the found components.
              */
             template <typename T>
-            std::enable_if_t<std::is_base_of_v<Component, T>, std::list<Bushido<T>>> GetComponents() const;
+            std::enable_if_t<std::is_base_of<Component, T>::value, std::list<Bushido<T>>> GetComponents() ;
 
             /**
              * @brief Retrieves a list of all components of the specified type from the GameObject an childs.
@@ -247,7 +249,7 @@ namespace RoninEngine
              * @return A list containing pointers to the found components.
              */
             template <typename T>
-            std::enable_if_t<std::is_base_of_v<Component, T>, std::list<Bushido<T>>> GetComponentsAnChilds() const;
+            std::enable_if_t<std::is_base_of_v<Component, T>, std::list<Bushido<T>>> GetComponentsAnChilds() ;
 
             /**
              * @brief Register a callback for the GameObject's "destroy" event.
@@ -322,7 +324,7 @@ namespace RoninEngine
         }
 
         template <typename T>
-        inline std::enable_if_t<std::is_base_of_v<Component, T>, std::list<Bushido<T>>> GameObject::GetComponents() const
+        inline std::enable_if_t<std::is_base_of<Component, T>::value, std::list<Bushido<T>>> GameObject::GetComponents()
         {
             Bushido<T> cast {};
             std::list<Bushido<T>> types;
@@ -338,14 +340,14 @@ namespace RoninEngine
         }
 
         template <typename T>
-        inline std::enable_if_t<std::is_base_of_v<Component, T>, std::list<Bushido<T>>> GameObject::GetComponentsAnChilds() const
+        inline std::enable_if_t<std::is_base_of_v<Component, T>, std::list<Bushido<T>>> GameObject::GetComponentsAnChilds()
         {
             std::list<Bushido<T>> types {};
             std::list<GameObjectRef> stacks {};
             stacks.push_back(std::move(Bushido<GameObject>{this}));
             while(!stacks.empty())
             {
-                //types.merge(stacks.front()->GetComponents<T>());
+                types.merge(stacks.front()->GetComponents<T>());
                 for(TransformRef& t : stacks.front()->transform()->GetChilds())
                 {
                     stacks.push_back(t->gameObject());
@@ -356,11 +358,11 @@ namespace RoninEngine
         }
 
         template <typename T>
-        inline std::enable_if_t<std::is_base_of_v<Component, T>, Bushido<T>> GameObject::GetComponent() const
+        inline std::enable_if_t<std::is_base_of_v<Component, T>, Bushido<T>> GameObject::GetComponent()
         {
             if constexpr(std::is_same_v<T, Transform>)
             {
-                return reinterpret_cast<TransformRef>(m_components.front());
+                return m_components.front().ReinterpretCast<Transform>();
             }
             else
             {

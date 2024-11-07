@@ -8,7 +8,7 @@ namespace RoninEngine
     namespace Runtime
     {
         template <typename T>
-        T *instance_new(bool initInHierarchy, T *instance, const char *name)
+        Bushido<T> instance_new(bool initInHierarchy, T *instance, const char *name)
         {
             if(instance == nullptr)
             {
@@ -76,71 +76,71 @@ namespace RoninEngine
             return true;
         }
 
-        Transform *create_empty_transform()
+        TransformRef create_empty_transform()
         {
             return instance_new<Transform>(false, nullptr, nullptr);
         }
 
-        GameObject *create_empty_gameobject()
+        GameObjectRef create_empty_gameobject()
         {
             return instance_new<GameObject>(false, nullptr, nullptr);
         }
 
-        RONIN_API GameObject *create_game_object()
+        RONIN_API GameObjectRef create_game_object()
         {
             return instance_new<GameObject>(true, nullptr, nullptr);
         }
 
-        RONIN_API GameObject *create_game_object(const std::string &name)
+        RONIN_API GameObjectRef create_game_object(const std::string &name)
         {
             return instance_new<GameObject>(true, nullptr, name.data());
         }
 
         constexpr char _cloneStr[] = " (clone)";
 
-        GameObject *__instantiate(GameObject *obj)
+        GameObjectRef __instantiate(GameObjectRef &obj)
         {
 
             // TODO: Use Reflectable Class <Prototype> class reference for instance a new object from method <Clone>
 
-            GameObject *clone;
+            GameObjectRef clone;
 
             clone = create_game_object((obj->m_name.find(_cloneStr) == std::string::npos ? obj->m_name + _cloneStr : obj->m_name));
 
             for(auto iter = begin(obj->m_components); iter != end(obj->m_components); ++iter)
             {
-                Component *replacement = *iter;
-                if(Transform *refTransform = dynamic_cast<Transform *>(replacement))
+                ComponentRef &replacement = *iter;
+                if(TransformRef &refTransform = replacement.DynamicCast<Transform>())
                 {
-                    Transform *clonedTransform = clone->transform();
+                    TransformRef clonedTransform = clone->transform();
                     clonedTransform->_angle_ = refTransform->_angle_;
                     clonedTransform->position(refTransform->_position);
-                    for(Transform *y : refTransform->hierarchy)
+                    for(TransformRef &y : refTransform->hierarchy)
                     {
                         // Clone childs recursive
-                        GameObject *yClone = __instantiate(y->gameObject());
+                        GameObjectRef yClone = __instantiate(y->gameObject());
                         yClone->transform()->setParent(clonedTransform, false);
                         yClone->m_name = refTransform->gameObject()->m_name;
                         yClone->m_name.shrink_to_fit();
                     }
                     continue;
                 }
-                else if(Collision *cloneIt = dynamic_cast<Collision *>(replacement))
+                else if(CollisionRef cloneIt = replacement.DynamicCast<Collision>()))
                 {
-                    Collision *cloneFrom = cloneIt;
+                    CollisionRef cloneFrom = cloneIt;
                     cloneIt = clone->AddComponent<Collision>();
                     cloneIt->targetLayer = cloneFrom->targetLayer;
                     cloneIt->collideSize = cloneFrom->collideSize;
                     cloneIt->_enable = cloneFrom->_enable;
                     continue;
                 }
-                else if(dynamic_cast<SpriteRenderer *>(replacement))
+                else if(!replacement.DynamicCast<SpriteRenderer>().isNull())
                 {
                     replacement = instance_new<SpriteRenderer>(false, reinterpret_cast<SpriteRenderer *>(replacement), nullptr);
                 }
-                else if(dynamic_cast<Camera2D *>(replacement))
+                else if(!replacement.DynamicCast<Camera2D>().isNull())
                 {
-                    replacement = instance_new<Camera2D>(false, reinterpret_cast<Camera2D *>(replacement), nullptr);
+                    replacement = instance_new<Camera2D>(false, replacement.StaticCast<Camera2D(), nullptr);
 
                     //} else if (dynamic_cast<Behaviour*>(replacement)) {
 
@@ -159,9 +159,9 @@ namespace RoninEngine
             return clone;
         }
 
-        GameObject *Instantiate(GameObject *obj)
+        GameObjectRef Instantiate(GameObjectRef obj)
         {
-            if(obj == nullptr)
+            if(obj.isNull())
                 return nullptr;
 
             obj = __instantiate(obj);
@@ -169,7 +169,7 @@ namespace RoninEngine
             return obj;
         }
 
-        GameObject *Instantiate(GameObject *obj, Vec2 position, float angle)
+        GameObjectRef Instantiate(GameObjectRef obj, Vec2 position, float angle)
         {
             obj = Instantiate(obj);
             if(obj != nullptr)
@@ -180,7 +180,7 @@ namespace RoninEngine
             return obj;
         }
 
-        GameObject *Instantiate(GameObject *obj, Vec2 position, Transform *parent, bool worldPositionStay)
+        GameObjectRef Instantiate(GameObjectRef obj, Vec2 position, TransformRef parent, bool worldPositionStay)
         {
             obj = Instantiate(obj);
             if(obj != nullptr)

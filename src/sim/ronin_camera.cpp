@@ -190,7 +190,7 @@ namespace RoninEngine::Runtime
         return worldPoint;
     }
 
-    Camera *Camera::mainCamera()
+    CameraRef Camera::mainCamera()
     {
         if(currentWorld)
             return currentWorld->irs->mainCamera;

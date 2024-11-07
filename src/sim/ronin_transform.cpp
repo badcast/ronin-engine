@@ -11,7 +11,7 @@ namespace RoninEngine::Runtime
         if(oldParent == newParent)
             return;
 
-        for(Transform *child : oldParent->hierarchy)
+        for(TransformRef child : oldParent->hierarchy)
         {
             child->m_parent = newParent;
         }

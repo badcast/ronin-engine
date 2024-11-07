@@ -7,7 +7,7 @@ namespace RoninEngine::Runtime
     {
     public:
         float speed;
-        Camera2D *playerCamera;
+        Camera2DRef playerCamera;
 
         MoveController2D();
         MoveController2D(const std::string &name);

@@ -7,7 +7,7 @@ namespace RoninEngine
 {
     namespace Runtime
     {
-        void sepuku_Component(Component *candidate)
+        void sepuku_Component(ComponentRef candidate)
         {
             union
             {
@@ -70,19 +70,19 @@ namespace RoninEngine
 #endif
 
             // Free object
-            RoninMemory::free(candidate);
+            RoninMemory::free(candidate.get());
             --currentWorld->irs->objects;
         }
 
         void sepuku_GameObject(GameObject *target, std::set<GameObject *> *input)
         {
-#ifndef RONIN_USE_TYPESTR &&NDEBUG
+#ifndef RONIN_USE_TYPESTR && NDEBUG
             if(strcmp(target->_type_, "GameObject"))
             {
                 throw ronin_type_error();
             }
 #endif
-            // COLLECT +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+            // COLLECT
             std::vector<GameObject *> collects {target};
             int cursor = 0;
 
@@ -192,17 +192,15 @@ namespace RoninEngine
             return currentWorld->irs->_destroyedGameObject;
         }
 
-        void Destroy(GameObject *obj)
+        void Destroy(GameObjectRef obj)
         {
             Destroy(obj, 0);
         }
 
-        void Destroy(GameObject *obj, float t)
+        void Destroy(GameObjectRef obj, float t)
         {
-            if(!obj || !currentWorld || t < 0)
+            if(obj.isNull() || !currentWorld || t < 0)
                 throw std::bad_exception();
-
-                // #error FIXME ____ ADD DESTROY OBJECTS TO QUEUE
 
 #define provider (currentWorld->irs->runtimeCollectors)
             if(!provider)
@@ -217,7 +215,6 @@ namespace RoninEngine
 
             // So, destroy childrens of the object
             provider->operator[](t).insert(obj);
-
 #undef provider
         }
 
