@@ -40,7 +40,7 @@ SpriteRef Primitive::CreateEmptySprite(bool localSprite)
     Sprite *sprite;
     RoninMemory::alloc_self(sprite);
     gid_get(localSprite)->gid_sprites.push_back(sprite);
-    return {sprite};
+    return SpriteRef{sprite};
 }
 
 SpriteRef Primitive::CreateSpriteRectangle(bool localSprite, Vec2 size, Color fillColor)
@@ -59,7 +59,7 @@ SpriteRef Primitive::CreateSpriteRectangle(bool localSprite, Vec2 size, Color fi
     currentWorld->irs->preloadeSurfaces.push_back(surface);
     RoninMemory::alloc_self(sprite, surface, Rect(0, 0, size.x, size.y));
     gid_get(localSprite)->gid_sprites.push_back(sprite);
-    return {sprite};
+    return SpriteRef{sprite};
 }
 
 SpriteRef Primitive::CreateSpriteCircle(bool localSprite, Vec2 size, float radius, Color fillColor)
@@ -74,14 +74,14 @@ SpriteRef Primitive::CreateSpriteCircle(bool localSprite, Vec2 size, float radiu
     }
     SDL_Renderer *renderer = SDL_CreateSoftwareRenderer(surface);
 
-           // draw circle
+    // draw circle
     filledCircleColor(renderer, size.x / 2, size.y / 2, static_cast<std::uint16_t>(radius * currentWorld->irs->metricPixelsPerPoint.x / 2) - 1, fillColor);
 
     SDL_DestroyRenderer(renderer);
     currentWorld->irs->preloadeSurfaces.push_back(surface);
     RoninMemory::alloc_self(sprite, surface, Rect(0, 0, size.x, size.y));
     gid_get(localSprite)->gid_sprites.push_back(sprite);
-    return {sprite};
+    return Ref<Sprite>{sprite};
 }
 
 SpriteRef Primitive::CreateSpriteTriangle(bool localSprite, Vec2 size, float height, Color fillColor)
@@ -96,32 +96,32 @@ SpriteRef Primitive::CreateSpriteTriangle(bool localSprite, Vec2 size, float hei
         RoninSimulator::Kill();
     }
 
-           // drawing triangle
+    // drawing triangle
     SDL_Renderer *renderer = SDL_CreateSoftwareRenderer(surface);
     filledTrigonColor(renderer, 0, size.y, size.x, size.y, size.x / 2, 0, fillColor);
     SDL_DestroyRenderer(renderer);
 
-           //        SDL_LockSurface(surface);
-           //        height *= pixelsPerPoint;
-           //        int minHeight = Math::min<int>(height, surface->h);
-           //        for (int y = minHeight; y >= 0; --y) {
-           //            int z = (surface->w);
-           //            for (int x = 0; x < z; ++x) {
-           //                // NOTE: Формула пикселей для SDL :: Y Offset * (Pitch/BytesPerPixel) + X Offset
-           //                SDL_memset4(surface->pixels + (y * (surface->pitch / surface->format->BytesPerPixel) + x),
-           //                fillColor, sizeof(fillColor));
-           //            }
-           //        }
-           //        SDL_UnlockSurface(surface);
+    //        SDL_LockSurface(surface);
+    //        height *= pixelsPerPoint;
+    //        int minHeight = Math::min<int>(height, surface->h);
+    //        for (int y = minHeight; y >= 0; --y) {
+    //            int z = (surface->w);
+    //            for (int x = 0; x < z; ++x) {
+    //                // NOTE: Формула пикселей для SDL :: Y Offset * (Pitch/BytesPerPixel) + X Offset
+    //                SDL_memset4(surface->pixels + (y * (surface->pitch / surface->format->BytesPerPixel) + x),
+    //                fillColor, sizeof(fillColor));
+    //            }
+    //        }
+    //        SDL_UnlockSurface(surface);
     currentWorld->irs->preloadeSurfaces.push_back(surface);
     RoninMemory::alloc_self(sprite, surface, Rect {0, 0, static_cast<int>(size.x), static_cast<int>(size.y)});
     gid_get(localSprite)->gid_sprites.push_back(sprite);
-    return {sprite};
+    return Ref<Sprite>{sprite};
 }
 
 SpriteRef Primitive::CreateSpriteFrom(Image *surface, bool localSprite)
 {
-    Sprite *sprite = CreateEmptySprite(localSprite);
+    SpriteRef sprite = CreateEmptySprite(localSprite);
     sprite->setSurface(surface);
-    return {sprite};
+    return sprite;
 }

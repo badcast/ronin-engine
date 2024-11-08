@@ -7,9 +7,9 @@ namespace RoninEngine::Runtime
     class RoninSplashWorld : public World
     {
     public:
-        World * nextWorld;
-        Sprite * logo;
-        SpriteRenderer * objCenter;
+        World *nextWorld;
+        SpriteRef logo;
+        SpriteRendererRef objCenter;
 
         float delay = 5.0f;
 
@@ -20,4 +20,4 @@ namespace RoninEngine::Runtime
         void OnUpdate();
     };
 
-}
+} // namespace RoninEngine::Runtime

@@ -35,15 +35,15 @@ namespace RoninEngine::Runtime
         int GetCulled();
         int GetDestroyedFrames();
 
-        std::list<GameObject *> GetAllGameObjects();
-        std::list<Component *> GetAllComponents();
+        std::list<GameObjectRef> GetAllGameObjects();
+        std::list<ComponentRef> GetAllComponents();
 
         template <typename T>
         std::list<T *> FindObjectsWithType();
 
-        const bool CancelObjectDestruction(GameObject *obj);
-        const int CostObjectDestruction(GameObject *obj);
-        const bool StateObjectDestruction(GameObject *obj);
+        const bool CancelObjectDestruction(GameObjectRef obj);
+        const int CostObjectDestruction(GameObjectRef obj);
+        const bool StateObjectDestruction(GameObjectRef obj);
         const int CountObjectDestruction();
 
         std::list<Transform *> MatrixCheckDamage();

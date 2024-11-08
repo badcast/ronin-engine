@@ -35,8 +35,9 @@ namespace RoninEngine
         return result;
     }
 
-    Vec2Int Resolution::GetSize() const{
-        return Vec2Int { width, height };
+    Vec2Int Resolution::GetSize() const
+    {
+        return Vec2Int {width, height};
     }
 
     Resolution Resolution::GetMaxResolution()

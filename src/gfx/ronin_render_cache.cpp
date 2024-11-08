@@ -149,7 +149,6 @@ namespace RoninEngine::Runtime
             if(surfSrc == nullptr)
                 break;
 
-
             extentSurface = SDL_CreateRGBSurfaceWithFormat(0, extent->w, extent->h, 32, defaultPixelFormat);
             if(extentSurface == nullptr)
                 break;
@@ -198,7 +197,7 @@ namespace RoninEngine::Runtime
             if(extentTexture == nullptr)
                 break;
 
-            SDL_Texture * prevTarget = SDL_GetRenderTarget(gscope.renderer);
+            SDL_Texture *prevTarget = SDL_GetRenderTarget(gscope.renderer);
             SDL_SetTextureBlendMode(extentTexture, SDL_BLENDMODE_BLEND);
             SDL_SetRenderTarget(gscope.renderer, extentTexture);
             SDL_SetRenderDrawColor(gscope.renderer, 0, 0, 255, 0);
@@ -218,7 +217,7 @@ namespace RoninEngine::Runtime
             dst.x += src.w;
             for(; dst.x < extent->w;)
             {
-                SDL_RenderCopy(gscope.renderer, extentTexture,  &src, &dst);
+                SDL_RenderCopy(gscope.renderer, extentTexture, &src, &dst);
                 dst.x += src.w;
                 src.w *= 2;
                 dst.w = src.w;
@@ -240,7 +239,7 @@ namespace RoninEngine::Runtime
             SDL_SetRenderTarget(gscope.renderer, prevTarget);
             SDL_RenderCopyEx(gscope.renderer, extentTexture, nullptr, extent, Math::rad2deg * angleRad, nullptr, SDL_FLIP_NONE);
 
-            //SDL_DestroyTexture(texture);
+            // SDL_DestroyTexture(texture);
             SDL_DestroyTexture(extentTexture);
 #endif
             break;

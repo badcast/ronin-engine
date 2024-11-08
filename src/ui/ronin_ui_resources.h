@@ -83,11 +83,11 @@ namespace RoninEngine::UI
             bool checkbox;
             struct
             {
-                Sprite* normal;
-                Sprite* hover;
-                Sprite* disable;
+                Sprite *normal;
+                Sprite *hover;
+                Sprite *disable;
 
-                Sprite* icon;
+                Sprite *icon;
 
                 char state;
 

@@ -2,10 +2,12 @@
 
 using namespace RoninEngine;
 
-bool RoninSettings::Apply(){
+bool RoninSettings::Apply()
+{
     return RoninSimulator::SetSettings(*this);
 }
 
-RoninSettings RoninSettings::GetCurrent(){
+RoninSettings RoninSettings::GetCurrent()
+{
     return RoninSimulator::GetSettings();
 }

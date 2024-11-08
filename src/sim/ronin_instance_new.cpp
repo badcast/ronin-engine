@@ -8,8 +8,10 @@ namespace RoninEngine
     namespace Runtime
     {
         template <typename T>
-        Bushido<T> instance_new(bool initInHierarchy, T *instance, const char *name)
+        Ref<T> instance_new(bool initInHierarchy, T *instance, const char *name)
         {
+            static_assert(std::is_base_of_v<RoninPointer, T>, "T is not an derived RoninPointer");
+
             if(instance == nullptr)
             {
                 if(name == nullptr)
@@ -19,38 +21,50 @@ namespace RoninEngine
             }
             else
             {
-                T *cloneComponent;
-                if constexpr(std::is_same<T, GameObject>::value)
-                    cloneComponent = Instantiate(instance);
-                else if constexpr(std::is_same<T, Transform>::value)
+                T *cloning;
+                if constexpr(std::is_same_v<T, GameObject>)
                 {
-                    RoninMemory::alloc_self(cloneComponent);
+                    throw std::exception();
+                    //cloning = Instantiate(instance->ref<T>()).ptr_;
                 }
-                else if constexpr(std::is_same<T, SpriteRenderer>::value)
+                else if constexpr(std::is_same_v<T, Transform>)
                 {
-                    RoninMemory::alloc_self(cloneComponent, *instance);
+                    RoninMemory::alloc_self(cloning);
                 }
-                else if constexpr(std::is_same<T, Camera2D>::value)
+                else if constexpr(std::is_same_v<T, SpriteRenderer>)
                 {
-                    RoninMemory::alloc_self(cloneComponent, *instance);
+                    RoninMemory::alloc_self(cloning, *instance);
                 }
-                else if constexpr(std::is_same<T, Terrain2D>::value)
+                else if constexpr(std::is_same_v<T, Camera2D>)
                 {
-                    RoninMemory::alloc_self(cloneComponent, *instance);
+                    RoninMemory::alloc_self(cloning, *instance);
                 }
-                else if constexpr(std::is_same<T, Behaviour>::value)
+                else if constexpr(std::is_same_v<T, Terrain2D>)
                 {
-                    RoninMemory::alloc_self(cloneComponent, *instance);
+                    RoninMemory::alloc_self(cloning, *instance);
+                }
+                else if constexpr(std::is_same_v<T, Behaviour>)
+                {
+                    RoninMemory::alloc_self(cloning, *instance);
                 }
                 else
                 {
-                    cloneComponent = nullptr;
+                    cloning = nullptr;
                 }
-                instance = cloneComponent;
+                instance = cloning;
             }
 
-            if constexpr(std::is_same<T, GameObject>::value)
+            Ref<T> result { instance };
+            if(instance)
             {
+                currentWorld->irs->refPointers[static_cast<RoninPointer*>(instance)] = std::move(StaticCast<RoninPointer>(result));
+            }
+
+            if constexpr(std::is_same_v<T, GameObject>)
+            {
+                instance->m_components.front()->_owner = result;
+                Matrix::matrix_update(result->transform().get(), Matrix::matrix_get_key(Vec2::infinity));
+
                 if(initInHierarchy)
                 {
                     if(currentWorld == nullptr)
@@ -59,14 +73,11 @@ namespace RoninEngine
                     if(!currentWorld->isHierarchy())
                         throw std::runtime_error("mainObject is null");
 
-                    auto mainObj = currentWorld->irs->mainObject;
-                    auto root = mainObj->transform();
-                    Transform *tr = ((GameObject *) instance)->transform();
-                    root->childAdd(tr);
+                    currentWorld->irs->mainObject->transform()->childAdd(instance->transform());
                 }
             }
 
-            return instance;
+            return result;
         }
 
         bool object_instanced(const Object *obj)
@@ -86,19 +97,19 @@ namespace RoninEngine
             return instance_new<GameObject>(false, nullptr, nullptr);
         }
 
-        RONIN_API GameObjectRef create_game_object()
+        GameObjectRef create_game_object()
         {
             return instance_new<GameObject>(true, nullptr, nullptr);
         }
 
-        RONIN_API GameObjectRef create_game_object(const std::string &name)
+        GameObjectRef create_game_object(const std::string &name)
         {
             return instance_new<GameObject>(true, nullptr, name.data());
         }
 
         constexpr char _cloneStr[] = " (clone)";
 
-        GameObjectRef __instantiate(GameObjectRef &obj)
+        GameObjectRef __instantiate(GameObjectRef obj)
         {
 
             // TODO: Use Reflectable Class <Prototype> class reference for instance a new object from method <Clone>
@@ -110,7 +121,8 @@ namespace RoninEngine
             for(auto iter = begin(obj->m_components); iter != end(obj->m_components); ++iter)
             {
                 ComponentRef &replacement = *iter;
-                if(TransformRef &refTransform = replacement.DynamicCast<Transform>())
+                TransformRef refTransform = DynamicCast<Transform>(replacement);
+                if(refTransform)
                 {
                     TransformRef clonedTransform = clone->transform();
                     clonedTransform->_angle_ = refTransform->_angle_;
@@ -125,7 +137,7 @@ namespace RoninEngine
                     }
                     continue;
                 }
-                else if(CollisionRef cloneIt = replacement.DynamicCast<Collision>()))
+                else if(CollisionRef cloneIt = DynamicCast<Collision>(replacement))
                 {
                     CollisionRef cloneFrom = cloneIt;
                     cloneIt = clone->AddComponent<Collision>();
@@ -134,13 +146,13 @@ namespace RoninEngine
                     cloneIt->_enable = cloneFrom->_enable;
                     continue;
                 }
-                else if(!replacement.DynamicCast<SpriteRenderer>().isNull())
+                else if(!DynamicCast<SpriteRenderer>(replacement).isNull())
                 {
-                    replacement = instance_new<SpriteRenderer>(false, reinterpret_cast<SpriteRenderer *>(replacement), nullptr);
+                    replacement = StaticCast<Component>(instance_new<SpriteRenderer>(false, reinterpret_cast<SpriteRenderer *>(replacement.ptr_), nullptr));
                 }
-                else if(!replacement.DynamicCast<Camera2D>().isNull())
+                else if(!DynamicCast<Camera2D>(replacement).isNull())
                 {
-                    replacement = instance_new<Camera2D>(false, replacement.StaticCast<Camera2D(), nullptr);
+                    replacement = StaticCast<Component>(instance_new<Camera2D>(false, reinterpret_cast<Camera2D*>(replacement.ptr_), nullptr));
 
                     //} else if (dynamic_cast<Behaviour*>(replacement)) {
 

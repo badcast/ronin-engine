@@ -11,7 +11,7 @@ namespace RoninEngine
     namespace Runtime
     {
         extern std::set<World *> pinnedWorlds;
-        extern std::set<World*> privateWorlds;
+        extern std::set<World *> privateWorlds;
 
         void WorldResources::event_camera_changed(Camera *target, CameraEvent state)
         {
@@ -19,14 +19,15 @@ namespace RoninEngine
             {
                 case CameraEvent::CAM_DELETED:
                     // TODO: find free Camera and set as Main
-                    if(mainCamera == target)
+                    if(mainCamera.ptr_ == target)
                         mainCamera = nullptr;
+                    // BUG: MEMORY LEAK CAM RESOURCES
                     cameraResources.remove(target->res);
 
                     RoninMemory::free(target->res);
                     break;
                 case CameraEvent::CAM_TARGET:
-                    mainCamera = target;
+                    mainCamera = CameraRef{target};
                     break;
             }
         }
@@ -75,14 +76,14 @@ namespace RoninEngine
             world->OnUnloading();
 
             // Free Game Objects
-            Transform *target = world->irs->mainObject->transform();
-            std::list<Transform *> stacks;
+            TransformRef target = world->irs->mainObject->transform();
+            std::list<TransformRef> stacks;
             while(target)
             {
                 stacks.merge(target->hierarchy);
 
                 // destroy
-                sepuku_GameObject(target->_owner, nullptr);
+                sepuku_GameObject(target->_owner.ptr_, nullptr);
 
                 if(stacks.empty())
                 {
@@ -155,7 +156,6 @@ namespace RoninEngine
             // Set scale to default
             SDL_RenderSetScale(gscope.renderer, 1.f, 1.f);
 
-
             scripts_start();
 
             scripts_update();
@@ -167,7 +167,7 @@ namespace RoninEngine
 
             Time::BeginWatch();
             // Render on main camera
-            Camera *cam = Camera::mainCamera(); // Draw level from active camera (main)
+            Camera* cam = Camera::mainCamera().ptr_; // Draw level from active camera (main)
             if(!currentWorld->irs->requestUnloading && cam && cam->enable())
             {
                 // draw world in world size
@@ -342,14 +342,14 @@ namespace RoninEngine
         static char delim = 0x32;
         std::string delims;
         std::string result;
-        std::list<Runtime::Transform *> stack;
-        Transform *target = this->irs->mainObject->transform();
+        std::list<TransformRef> stack;
+        TransformRef target = this->irs->mainObject->transform();
 
         while(target)
         {
-            for(auto c : target->hierarchy)
+            for(TransformRef& current : target->hierarchy)
             {
-                stack.emplace_back(c);
+                stack.emplace_back(current);
             }
 
             result += delims;
@@ -405,17 +405,17 @@ namespace RoninEngine
         return irs->_destroyedGameObject;
     }
 
-    std::list<GameObject *> World::GetAllGameObjects()
+    std::list<GameObjectRef> World::GetAllGameObjects()
     {
         if(irs == nullptr)
             throw ronin_world_notloaded_error();
 
-        std::list<GameObject *> all_gobjects;
-        GameObject *next = irs->mainObject;
+        std::list<GameObjectRef> all_gobjects;
+        GameObjectRef next = irs->mainObject;
 
         while(next)
         {
-            for(Transform *e : next->transform()->hierarchy)
+            for(TransformRef& e : next->transform()->hierarchy)
             {
                 all_gobjects.emplace_front(e->gameObject());
             }
@@ -427,17 +427,17 @@ namespace RoninEngine
         return all_gobjects;
     }
 
-    std::list<Component *> World::GetAllComponents()
+    std::list<ComponentRef> World::GetAllComponents()
     {
         if(irs == nullptr)
             throw ronin_world_notloaded_error();
 
-        std::list<Component *> components;
-        std::list<GameObject *> all_objects = GetAllGameObjects();
+        std::list<ComponentRef> components;
+        std::list<GameObjectRef> all_objects = GetAllGameObjects();
 
-        for(GameObject *curObject : all_objects)
+        for(GameObjectRef& curObject : all_objects)
         {
-            for(Component *self_component : curObject->m_components)
+            for(ComponentRef & self_component : curObject->m_components)
             {
                 components.emplace_back(self_component);
             }
@@ -445,7 +445,7 @@ namespace RoninEngine
         return components;
     }
 
-    const bool World::CancelObjectDestruction(GameObject *obj)
+    const bool World::CancelObjectDestruction(GameObjectRef obj)
     {
         if(irs == nullptr)
             throw ronin_world_notloaded_error();
@@ -455,7 +455,7 @@ namespace RoninEngine
             // std::pair<const float, std::set<GameObject *>>
             for(auto mapIter = std::begin(*irs->runtimeCollectors); mapIter != std::end(*irs->runtimeCollectors); ++mapIter)
             {
-                std::set<GameObject *>::iterator iter = mapIter->second.find(obj);
+                std::set<GameObject *>::iterator iter = mapIter->second.find(obj.ptr_);
                 if(iter != std::end(mapIter->second))
                 {
                     mapIter->second.erase(iter);
@@ -468,7 +468,7 @@ namespace RoninEngine
         return false;
     }
 
-    const int World::CostObjectDestruction(GameObject *obj)
+    const int World::CostObjectDestruction(GameObjectRef obj)
     {
         if(irs == nullptr)
             throw ronin_world_notloaded_error();
@@ -484,7 +484,7 @@ namespace RoninEngine
             x = 0;
             for(std::pair<const float, std::set<GameObject *>> &mapIter : *irs->runtimeCollectors)
             {
-                if(mapIter.second.find(obj) != std::end(mapIter.second))
+                if(mapIter.second.find(obj.ptr_) != std::end(mapIter.second))
                 {
                     return x;
                 }
@@ -495,7 +495,7 @@ namespace RoninEngine
         return -1;
     }
 
-    const bool World::StateObjectDestruction(GameObject *obj)
+    const bool World::StateObjectDestruction(GameObjectRef obj)
     {
         if(irs == nullptr)
             throw ronin_world_notloaded_error();

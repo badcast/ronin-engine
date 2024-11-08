@@ -1,11 +1,88 @@
 #include "ronin.h"
-#include "SharedPointer.h"
 
 using namespace RoninEngine::Runtime;
 
+namespace RoninEngine::Runtime
+{
+#if 0
+#define INSTANCEA( T, U )\
+        template Ref<U> AReinterpretCast(Ref<T>);\
+        template Ref<U> AStaticCast(Ref<T>);\
+        template Ref<U> ADynamicCast(Ref<T>)
+
+#define INSTANCE(U,T)\
+    INSTANCEA(T,U); \
+    INSTANCEA(U,T);
+
+    INSTANCE(Object, Component);
+    INSTANCE(Renderer, Component);
+    INSTANCE(Transform, Component);
+    INSTANCE(Behaviour, Component);
+    INSTANCE(Collision, Component);
+    INSTANCE(Light, Component);
+    INSTANCE(Spotlight, Component);
+    INSTANCE(SpriteRenderer, Component);
+    INSTANCE(Terrain2D, Component);
+    INSTANCE(Camera, Component);
+    INSTANCE(Camera2D, Component);
+    INSTANCE(MoveController2D, Component);
+    INSTANCE(AudioSource, Component);
+    INSTANCE(ParticleSystem, Component);
+    INSTANCE(GameObject, RoninPointer);
+    INSTANCE(Sprite, RoninPointer);
+    INSTANCE(Atlas, RoninPointer);
+
+#undef INSTANCE
+#undef INSTANCEA
+#endif
+}
+
+////////////////
+// Destroys
+////////////////
+
+void ReleasePointer(RoninPointer* object)
+{
+    if(object == nullptr || object->isNull())
+        return;
+
+    object->_handle = nullptr;
+    RoninMemory::_cut_oop_from(object);
+}
+
+void ReleaseRef(ComponentRef& object){
+
+
+    // ReleasePointer(static_cast<RoninPointer*>(object.ptr_));
+}
+void ReleaseRef(GameObjectRef& object){
+
+
+      //ReleasePointer(static_cast<RoninPointer*>(object.ptr_));
+}
+void ReleaseRef(AtlasRef& object){
+
+
+      //ReleasePointer(static_cast<RoninPointer*>(object.ptr_));
+}
+void ReleaseRef(SpriteRef& object){
+
+
+      //ReleasePointer(static_cast<RoninPointer*>(object.ptr_));
+}
+
+RoninPointer::RoninPointer()
+{
+}
+
+RoninPointer::~RoninPointer()
+{
+    ReleasePointer(this);
+}
+
 bool RoninPointer::isNull() const
 {
-    return true;
+    return _handle == nullptr;
 }
 
 RoninPointer::operator bool() const
@@ -13,130 +90,12 @@ RoninPointer::operator bool() const
     return !isNull();
 }
 
-template<typename T>
-SharedPointer<T>::SharedPointer() : ptr_(nullptr), ref_count_(nullptr)
-{}
-
-template<typename T>
-SharedPointer<T>::SharedPointer(const T *ptr)
+template<>
+Ref<RoninPointer> RoninPointer::GetRef()
 {
-    if(ptr != nullptr)
-    {
-        ref_count_ = new size_t(1u);
-        ptr_ = ptr;
-    }
-    else
-    {
-        ref_count_ = nullptr;
-        ptr_ = nullptr;
-    }
+    std::unordered_map<RoninPointer*, Ref<RoninPointer>>::iterator iter = currentWorld->irs->refPointers.find(this);
+    if(iter != currentWorld->irs->refPointers.end())
+        return iter->second;
+    return Ref<RoninPointer>{nullptr};
 }
 
-template<typename T>
-SharedPointer<T>::SharedPointer(const SharedPointer &other) : ptr_(other.ptr_), ref_count_(other.ref_count_)
-{
-    (*ref_count_)++;
-}
-
-template<typename T>
-SharedPointer<T>::SharedPointer(SharedPointer &&other) noexcept : ptr_(other.ptr_), ref_count_(other.ref_count_)
-{
-    other.ptr_ = nullptr;
-    other.ref_count_ = nullptr;
-}
-
-template<typename T>
-SharedPointer<T>::~SharedPointer()
-{
-    release();
-}
-
-template<typename T>
-T *SharedPointer<T>::get() const
-{
-    return ptr_;
-}
-
-template<typename T>
-SharedPointer<T>& SharedPointer<T>::operator =(const SharedPointer<T>& other)
-{
-    if(this != &other)
-    {
-        release();
-
-        ptr_ = other.ptr_;
-        ref_count_ = other.ref_count_;
-
-        ++(*ref_count_);
-    }
-
-    return *this;
-}
-
-template<typename T>
-bool SharedPointer<T>::operator ==(const SharedPointer &rhs)
-{
-    return this->ptr_ == rhs.ptr_;
-}
-
-template<typename T>
-bool SharedPointer<T>::operator !=(const SharedPointer &rhs)
-{
-    return !(*this == rhs);
-}
-
-template<typename T>
-SharedPointer<T>& SharedPointer<T>::operator =(SharedPointer<T>&& other)
-{
-    if(this != &other)
-    {
-        release();
-
-        ptr_ = other.ptr_;
-        ref_count_ = other.ref_count_;
-        other.ptr_ = nullptr;
-        other.ref_count_ = nullptr;
-
-        ++(*ref_count_);
-    }
-
-    return *this;
-}
-
-template<typename T>
-T *SharedPointer<T>::operator->() const
-{
-    return ptr_;
-}
-
-template<typename T>
-T &SharedPointer<T>::operator*() const
-{
-    return *ptr_;
-}
-
-template<typename T>
-SharedPointer<T>::operator bool() const
-{
-    return ptr_ != nullptr;
-}
-
-template<typename T>
-void SharedPointer<T>::release()
-{
-    if(ref_count_ && --ref_count_ == 0)
-    {
-        // TODO: Destroy
-
-        delete ref_count_;
-    }
-
-    ptr_ = nullptr;
-    ref_count_ = nullptr;
-}
-
-template<typename T>
-bool SharedRoninObject<T>::isNull() const
-{
-    return this->ptr_ == nullptr || this->ptr_->isNull();
-}

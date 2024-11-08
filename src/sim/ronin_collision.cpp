@@ -42,7 +42,7 @@ namespace RoninEngine::Runtime
     {
     }
 
-    bool Collision::setSizeFrom(SpriteRenderer *spriteRenderer)
+    bool Collision::setSizeFrom(SpriteRendererRef spriteRenderer)
     {
         bool result;
 
@@ -72,7 +72,7 @@ namespace RoninEngine::Runtime
 
         Rectf r1, r2;
         float angleLhs, angleRhs;
-        std::list<Collision *> targets;
+        std::list<CollisionRef> targets;
 
         angleLhs = transform()->angle() * Math::deg2rad;
         r1.w = collideSize.x;
@@ -83,7 +83,7 @@ namespace RoninEngine::Runtime
         for(Transform *cast : casts)
         {
             targets = cast->GetComponents<Collision>();
-            for(Collision *target : targets)
+            for(CollisionRef &target : targets)
             {
                 angleRhs = target->transform()->angle() * Math::deg2rad;
                 r2.w = target->collideSize.x;
@@ -92,7 +92,7 @@ namespace RoninEngine::Runtime
                 r2.y = target->transform()->position().y - r2.h / 2;
                 if(CheckCollision(r1, angleLhs, r2, angleRhs))
                 {
-                    if(!onCollision(this, target)) // awake collision
+                    if(!onCollision(this->GetRef<Collision>(), target)) // awake collision
                     {
                         cast = nullptr;
                         break;

@@ -3,7 +3,6 @@
 #include "ronin_matrix.h"
 #include "ronin_audio.h"
 #include "ronin_debug.h"
-
 #include "ronin_splash_world.h"
 
 #ifdef __linux__
@@ -32,11 +31,10 @@ namespace RoninEngine
     namespace UI
     {
         extern void native_draw_render(GUI *);
-    } // namespace Runtime
+    } // namespace UI
 
     namespace Runtime
     {
-
 #if TEST_MALLOC
         namespace RoninMemory
         {
@@ -56,11 +54,11 @@ namespace RoninEngine
         float internal_time_scale, internal_game_time, internal_delta_time;
 
         std::uint32_t internal_frames; // framecounter
-        int _matrix_pack_ = 1;
+        int _matrix_dimensity_ = 1;
         RoninInput internal_input;
         bool text_inputState;
 
-        extern GameObject *create_empty_gameobject();
+        extern GameObjectRef create_empty_gameobject();
         extern void free_legacy_font();
         extern void ui_reset_controls();
         extern void text_get(std::string &text);
@@ -108,8 +106,8 @@ namespace RoninEngine
 
         if(gscope.config.conf & CONF_RELOAD_WORLD)
         {
-            lastWorld = currentWorld; // Switched world first unload after load
-            preloadWorld = currentWorld;       // Switched world as Newer is preload
+            lastWorld = currentWorld;    // Switched world first unload after load
+            preloadWorld = currentWorld; // Switched world as Newer is preload
 
             gscope.internalWorldLoaded = false;
         }
@@ -145,7 +143,7 @@ namespace RoninEngine
             updateTick = Time::millis() + 200;
 
             // Update data
-            debugLabels[0].value = Math::Max(1u,gscope.lastWatcher.delayFrameRate);
+            debugLabels[0].value = Math::Max(1u, gscope.lastWatcher.delayFrameRate);
             debugLabels[1].value = gscope.lastWatcher.delayRenderGUI;
             debugLabels[2].value = gscope.lastWatcher.delayExecScripts + gscope.lastWatcher.delayExecWorld;
             debugLabels[3].value = gscope.lastWatcher.delayPresent;
@@ -261,7 +259,7 @@ namespace RoninEngine
         internal_input_init();
 
         // Set VSync as default
-        const char * vshint;
+        const char *vshint;
         vshint = SDL_GetHint(SDL_HINT_RENDER_VSYNC);
         if(vshint == nullptr)
         {
@@ -281,13 +279,13 @@ namespace RoninEngine
             return;
 
         // unload existence worlds
-        for(World* pinned : Runtime::pinnedWorlds)
+        for(World *pinned : Runtime::pinnedWorlds)
         {
             Runtime::internal_unload_world(pinned);
         }
         Runtime::pinnedWorlds.clear();
 
-        for(World* pinned : Runtime::privateWorlds)
+        for(World *pinned : Runtime::privateWorlds)
         {
             Runtime::internal_unload_world(pinned);
             RoninMemory::free(pinned);
@@ -561,14 +559,14 @@ namespace RoninEngine
             gscope.queueWatcher.delayFrameRate = Time::millis() - gscope.queueWatcher.delayFrameRate;
 
             if(++internal_frames == 0)
-                 internal_frames = 1;
+                internal_frames = 1;
 
             std::uint32_t ticksf = Time::millis();
             if(ticksf - ticksPrev >= 1000)
             {
                 gscope.queueWatcher.fps = internal_frames - lastFrames;
                 lastFrames = internal_frames;
-                ticksPrev=ticksf;
+                ticksPrev = ticksf;
             }
 
             // update watcher
@@ -584,7 +582,14 @@ namespace RoninEngine
             {
                 if(Time::startUpTime() > ticksPrev2)
                 {
-                    std::sprintf(title, "FPS:%u Memory:%sMiB, Ronin Objects:%s, Internal Objects:%s, Frames:%s", gscope.queueWatcher.fps, Math::NumBeautify(Perfomances::GetMemoryUsed() / 1024 / 1024).c_str(), Math::NumBeautify(RoninMemory::total_allocated()).c_str(), Math::NumBeautify(SDL_GetNumAllocations()).c_str(), Math::NumBeautify(internal_frames).c_str());
+                    std::sprintf(
+                        title,
+                        "FPS:%u Memory:%sMiB, Ronin Objects:%s, Internal Objects:%s, Frames:%s",
+                        gscope.queueWatcher.fps,
+                        Math::NumBeautify(Perfomances::GetMemoryUsed() / 1024 / 1024).c_str(),
+                        Math::NumBeautify(RoninMemory::total_allocated()).c_str(),
+                        Math::NumBeautify(SDL_GetNumAllocations()).c_str(),
+                        Math::NumBeautify(internal_frames).c_str());
                     SDL_SetWindowTitle(gscope.activeWindow, title);
                     ticksPrev2 = Time::startUpTime() + .5f; // updater per N seconds
                 }
@@ -694,29 +699,29 @@ namespace RoninEngine
     bool RoninSimulator::LoadWorld(World *world, bool unloadPrevious)
     {
         const std::function<bool(void)> checks_queue[] {
-                                                        [=]() -> bool const
-                                                        {
-                                                            bool hasError = gscope.activeWindow == nullptr;
-                                                            if(hasError)
-                                                                ronin_err("Engine not inited");
-                                                            return hasError;
-                                                        },
-                                                        [=]() -> bool const
-                                                        {
-                                                            bool hasError = world == nullptr;
-                                                            if(hasError)
-                                                                ronin_err("World is not defined");
-                                                            return hasError;
-                                                        },
-                                                        [=]() -> bool const
-                                                        {
-                                                            bool hasError = currentWorld == world || lastWorld != nullptr || preloadWorld == world;
-                                                            if(hasError)
-                                                                ronin_err("Current world is loading state. Failed.");
-                                                            return hasError;
-                                                        }};
+            [=]() -> bool const
+            {
+                bool hasError = gscope.activeWindow == nullptr;
+                if(hasError)
+                    ronin_err("Engine not inited");
+                return hasError;
+            },
+            [=]() -> bool const
+            {
+                bool hasError = world == nullptr;
+                if(hasError)
+                    ronin_err("World is not defined");
+                return hasError;
+            },
+            [=]() -> bool const
+            {
+                bool hasError = currentWorld == world || lastWorld != nullptr || preloadWorld == world;
+                if(hasError)
+                    ronin_err("Current world is loading state. Failed.");
+                return hasError;
+            }};
 
-               // Run checks
+        // Run checks
         for(const auto &err : checks_queue)
         {
             if(err())
@@ -731,14 +736,14 @@ namespace RoninEngine
             lastWorld->RequestUnload();
         }
 
-               // cancelation of reload
+        // cancelation of reload
         CancelReload();
 
-               // switching as main
+        // switching as main
         if(currentWorld == nullptr)
             currentWorld = world;
 
-               // preload world
+        // preload world
         preloadWorld = world;
 
         gscope.internalWorldCanStart = false;
@@ -749,7 +754,7 @@ namespace RoninEngine
 
     bool RoninSimulator::LoadWorldAfterSplash(Runtime::World *world)
     {
-        RoninSplashWorld * splashScreen;
+        RoninSplashWorld *splashScreen;
 
         if(world == nullptr)
             return false;
@@ -796,7 +801,7 @@ namespace RoninEngine
         SDL_DisplayMode displayMode;
 
         int dpIndex = SDL_GetWindowDisplayIndex(gscope.activeWindow);
-        //int mdIndex = SDL_GetNumDisplayModes(dpIndex);
+        // int mdIndex = SDL_GetNumDisplayModes(dpIndex);
 
         if(SDL_GetDisplayMode(dpIndex, 0, &displayMode) == -1)
         {
@@ -993,7 +998,7 @@ namespace RoninEngine
 
     RoninSettings RoninSimulator::GetSettings()
     {
-        RoninSettings * settings = reinterpret_cast<RoninSettings*>(alloca(sizeof(RoninSettings)));
+        RoninSettings *settings = reinterpret_cast<RoninSettings *>(alloca(sizeof(RoninSettings)));
 
         memset(settings, 0, sizeof(RoninSettings));
 
@@ -1019,7 +1024,7 @@ namespace RoninEngine
             settings->textureQuality = RoninSettings::RenderTextureScaleQuality::Nearest;
         }
 
-        const char * vsyncVal;
+        const char *vsyncVal;
         settings->verticalSync = ((vsyncVal = SDL_GetHint(SDL_HINT_RENDER_VSYNC)) != nullptr && !std::strcmp(vsyncVal, "1"));
 
         SDL_GetWindowOpacity(gscope.activeWindow, &settings->windowOpacity);
@@ -1068,8 +1073,7 @@ namespace RoninEngine
             // Apply Window Opacity
             [&]() { return (refSettings.windowOpacity != settings.windowOpacity && SDL_SetWindowOpacity(gscope.activeWindow, settings.windowOpacity) == 0); },
             // Apply VSync
-            [&]() { return (refSettings.verticalSync != settings.verticalSync && SDL_SetHint(SDL_HINT_RENDER_VSYNC, ((settings.verticalSync) ? "1" : "0"))); }
-        };
+            [&]() { return (refSettings.verticalSync != settings.verticalSync && SDL_SetHint(SDL_HINT_RENDER_VSYNC, ((settings.verticalSync) ? "1" : "0"))); }};
 
         bool apply_any = false;
         for(auto &apply : params)

@@ -26,11 +26,11 @@ namespace RoninEngine::Runtime
         static void DrawCircle(Vec2 origin, float distance);
         static void DrawArrow(Vec2 origin, Vec2 dir, float tailLength = 1.0f, float arrowSize = 0.1f);
 
-        static void DrawSprite(Sprite *sprite, Vec2 origin, Vec2 size = Vec2::one, float angleRadian = 0);
-        static void DrawSpriteToScreen(Sprite *sprite, const Rect &rect, float angleRadian = 0);
+        static void DrawSprite(SpriteRef sprite, Vec2 origin, Vec2 size = Vec2::one, float angleRadian = 0);
+        static void DrawSpriteToScreen(SpriteRef sprite, const Rect &rect, float angleRadian = 0);
 
-        static void DrawSpriteExtent(Sprite *sprite, const Rect &rect, float angleRadian = 0);
-        static void DrawSpriteExtent(Sprite *sprite, Vec2Int baseSize, const Rect &rect, float angleRadian = 0);
+        static void DrawSpriteExtent(SpriteRef sprite, const Rect &rect, float angleRadian = 0);
+        static void DrawSpriteExtent(SpriteRef sprite, Vec2Int baseSize, const Rect &rect, float angleRadian = 0);
 
         static void DrawFillRect(Vec2 origin, float width, float height);
         static void DrawFillRectRounded(Vec2 origin, float width, float height, std::uint16_t radius);

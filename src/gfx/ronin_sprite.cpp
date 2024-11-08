@@ -69,17 +69,17 @@ namespace RoninEngine::Runtime
         return m_rect;
     }
 
-    Sprite *Sprite::CreateEmptySprite()
+    SpriteRef Sprite::CreateEmptySprite()
     {
         return Primitive::CreateEmptySprite();
     }
 
-    Sprite *Sprite::CreateBlackSprite()
+    SpriteRef Sprite::CreateBlackSprite()
     {
         return Primitive::CreateSpriteRectangle(true, Vec2::one, Color::black);
     }
 
-    Sprite *Sprite::CreateWhiteSprite()
+    SpriteRef Sprite::CreateWhiteSprite()
     {
         return Primitive::CreateSpriteRectangle(true, Vec2::one, Color::white);
     }

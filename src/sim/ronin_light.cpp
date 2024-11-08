@@ -16,6 +16,5 @@ namespace RoninEngine::Runtime
 
     void Light::get_light_source(Rendering *render)
     {
-
     }
 } // namespace RoninEngine::Runtime

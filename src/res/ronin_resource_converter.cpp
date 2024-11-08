@@ -40,8 +40,11 @@ void RoninEngine::Runtime::internal_free_loaded_assets()
                     RoninMemory::free(asset.ref->udata._mus);
                 break;
             case AssetIndex::AS_ATLAS:
-                if(asset.ref->udata._atlas)
-                    RoninMemory::free(asset.ref->udata._atlas);
+                if(asset.ref->_atlas)
+                {
+                    // ReleaseRef(asset.ref->_atlas);
+                    asset.ref->_atlas = nullptr;
+                }
                 break;
         }
 
@@ -136,14 +139,9 @@ bool AssetManager::LoadAsset(const std::string &filename, Asset **asset)
                 // #1. Check Resources
                 param1 = source0["name"];
                 param2 = source0["ref"];
-                num2=0;
+                num2 = 0;
                 if(param1.JSONType() != JSON::Class::String ||
-                   (param2.JSONType() == JSON::Class::Array && (++num2) && std::any_of(param2.ArrayRange().begin(), param2.ArrayRange().end(),
-                                                                    [](const auto& test) -> bool const
-                                                                    {
-                                                                        return test.JSONType() != JSON::Class::String;
-                                                                    }) || !num2 && param2.JSONType() != JSON::Class::String)
-                )
+                   (param2.JSONType() == JSON::Class::Array && (++num2) && std::any_of(param2.ArrayRange().begin(), param2.ArrayRange().end(), [](const auto &test) -> bool const { return test.JSONType() != JSON::Class::String; }) || !num2 && param2.JSONType() != JSON::Class::String))
                 {
                     ronin_err(("Invalid resource \"" + param1.ToString() + "\" in Asset file " + filename).c_str());
                     continue;
@@ -160,7 +158,7 @@ bool AssetManager::LoadAsset(const std::string &filename, Asset **asset)
                 std::vector<std::string> _strings;
                 if(param2.JSONType() == JSON::Class::Array)
                 {
-                    for(JSON & arv : param2.ArrayRange())
+                    for(JSON &arv : param2.ArrayRange())
                     {
                         _strings.emplace_back((dir_of_asset / arv.ToString()).string());
                     }
@@ -239,8 +237,8 @@ bool AssetManager::LoadAsset(const std::string &filename, Asset **asset)
         case 3:
             // ATLAS RESOURCE TYPE
             std::string _src;
-            Atlas *atlas;
-            Sprite *spr;
+            AtlasRef atlas;
+            SpriteRef spr;
             Rect rect;
 
             param1 = json["mode"];
@@ -348,7 +346,8 @@ bool AssetManager::LoadAsset(const std::string &filename, Asset **asset)
             RoninMemory::alloc_self((*asset)->ref);
 
             (*asset)->ref->index = AssetIndex::AS_ATLAS;
-            atlas = (*asset)->ref->udata._atlas = RoninMemory::alloc<Atlas>();
+            (*asset)->ref->_atlas = std::move(AtlasRef{RoninMemory::alloc<Atlas>()});
+            atlas = (*asset)->ref->_atlas;
             atlas->src = Resources::GetImageSource(rsid);
 
             // Post settings Tiled Mode
@@ -443,7 +442,7 @@ bool AssetManager::LoadAsset(const std::string &filename, Asset **asset)
     return true;
 }
 
-Sprite *Asset::GetSprite(const std::string &name)
+SpriteRef Asset::GetSprite(const std::string &name)
 {
     if(ref->index != AssetIndex::AS_SPRITE || ref->udata._sprites == nullptr)
         return nullptr;
@@ -469,15 +468,15 @@ AudioClip *Asset::GetAudioClip(const std::string &name)
     return Resources::GetAudioClipSource(test->second.front());
 }
 
-Atlas *Asset::GetAtlasObject()
+AtlasRef Asset::GetAtlasObject()
 {
     if(ref->index != AssetIndex::AS_ATLAS)
         return nullptr;
 
-    return ref->udata._atlas;
+    return ref->_atlas;
 }
 
-std::vector<Sprite *> Asset::GetSprites(const std::string &name)
+std::vector<SpriteRef> Asset::GetSprites(const std::string &name)
 {
     if(ref->index != AssetIndex::AS_SPRITE || ref->udata._sprites == nullptr)
         return {};
@@ -500,9 +499,9 @@ std::vector<AudioClip *> Asset::GetAudioClips(const std::string &name)
     if(test == std::end(*ref->udata._audioclips))
         return {};
 
-    std::vector<AudioClip*> sources {};
+    std::vector<AudioClip *> sources {};
 
-    for( ResId id : test->second)
+    for(ResId id : test->second)
     {
         sources.push_back(Resources::GetAudioClipSource(id));
     }

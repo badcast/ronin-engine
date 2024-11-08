@@ -298,7 +298,7 @@ namespace RoninEngine::Runtime
         // relative to
         origin = Camera::WorldToScreenPoint(origin);
 
-        stringColor(gscope.renderer, origin.x, origin.y, text.c_str(), GetColor());        
+        stringColor(gscope.renderer, origin.x, origin.y, text.c_str(), GetColor());
     }
 
     void RenderUtility::DrawCircle(Vec2 origin, float distance)
@@ -329,7 +329,7 @@ namespace RoninEngine::Runtime
         internal_drawLine(origin, arrowEnd2);
     }
 
-    void RenderUtility::DrawSprite(Sprite *sprite, Vec2 origin, Vec2 size, float angleRadian)
+    void RenderUtility::DrawSprite(SpriteRef sprite, Vec2 origin, Vec2 size, float angleRadian)
     {
         Rect rect;
         origin = Camera::WorldToScreenPoint(origin);
@@ -345,14 +345,14 @@ namespace RoninEngine::Runtime
         DrawSpriteToScreen(sprite, rect, angleRadian);
     }
 
-    void RenderUtility::DrawSpriteToScreen(Sprite *sprite, const Rect &rect, float angleRadian)
+    void RenderUtility::DrawSpriteToScreen(SpriteRef sprite, const Rect &rect, float angleRadian)
     {
         SDL_Texture *texture;
 
         if(sprite == nullptr || sprite->surface == nullptr)
             return;
 
-        texture = render_cache_texture(sprite);
+        texture = render_cache_texture(sprite.ptr_);
         if(texture)
         {
             // TODO: Move SDL_RenderCopyEx to Go
@@ -360,16 +360,16 @@ namespace RoninEngine::Runtime
         }
     }
 
-    void RenderUtility::DrawSpriteExtent(Sprite *sprite, const Rect &rect, float angleRadian)
+    void RenderUtility::DrawSpriteExtent(SpriteRef sprite, const Rect &rect, float angleRadian)
     {
-        SDL_Texture *texture = render_cache_texture(sprite);
+        SDL_Texture *texture = render_cache_texture(sprite.ptr_);
 
         render_texture_extension(texture, nullptr, reinterpret_cast<SDL_Rect *>(&sprite->m_rect), reinterpret_cast<const SDL_Rect *>(&rect), angleRadian);
     }
 
-    void RenderUtility::DrawSpriteExtent(Sprite *sprite, Vec2Int baseSize, const Rect &rect, float angleRadian)
+    void RenderUtility::DrawSpriteExtent(SpriteRef sprite, Vec2Int baseSize, const Rect &rect, float angleRadian)
     {
-        SDL_Texture *texture = render_cache_texture(sprite);
+        SDL_Texture *texture = render_cache_texture(sprite.ptr_);
 
         render_texture_extension(texture, &baseSize, reinterpret_cast<SDL_Rect *>(&sprite->m_rect), reinterpret_cast<const SDL_Rect *>(&rect), angleRadian);
     }

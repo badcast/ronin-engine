@@ -7,7 +7,7 @@ namespace RoninEngine
 {
     namespace Runtime
     {
-        void sepuku_Component(ComponentRef candidate)
+        void sepuku_Component(ComponentRef& CND)
         {
             union
             {
@@ -16,6 +16,9 @@ namespace RoninEngine
                 Behaviour *script;
                 Camera *camera;
             } _knife;
+
+            Component* candidate = CND.get();
+
 #define self (_knife.transform)
             if((self = dynamic_cast<Transform *>(candidate)))
             {
@@ -24,7 +27,7 @@ namespace RoninEngine
                 {
                     if(self->m_parent)
                     {
-                        hierarchy_child_remove(self->m_parent, self);
+                        hierarchy_child_remove(self->m_parent.get(), self);
                     }
                     // Parent is off for self Transform
                     hierarchy_childs_remove(self);
@@ -70,13 +73,17 @@ namespace RoninEngine
 #endif
 
             // Free object
-            RoninMemory::free(candidate.get());
+            //RoninMemory::free(candidate);
+            // ReleaseRef(CND);
+            candidate->m_name = "null";
+            candidate->_type_ = nullptr;
+
             --currentWorld->irs->objects;
         }
 
         void sepuku_GameObject(GameObject *target, std::set<GameObject *> *input)
         {
-#ifndef RONIN_USE_TYPESTR && NDEBUG
+#ifndef RONIN_USE_TYPESTR &&NDEBUG
             if(strcmp(target->_type_, "GameObject"))
             {
                 throw ronin_type_error();
@@ -88,8 +95,8 @@ namespace RoninEngine
 
             while(target)
             {
-                for(Transform *t : target->transform()->hierarchy)
-                    collects.emplace_back(t->_owner);
+                for(TransformRef &t : target->transform()->hierarchy)
+                    collects.emplace_back(t->_owner.ptr_);
 
                 if(!currentWorld->irs->requestUnloading)
                 {
@@ -101,10 +108,10 @@ namespace RoninEngine
                     // Send event OnDestroy to GameObject pre Harakiri
                     for(auto event = std::begin(target->ev_destroy); event != std::end(target->ev_destroy); ++event)
                     {
-                        (*event)(target);
+                        (*event)(target->GetRef<GameObject>());
                     }
 
-                    for(Component *component : target->m_components)
+                    for(ComponentRef &component : target->m_components)
                     {
                         // Send event OnDestroy to Component object pre Harakiri
                         for(auto event = std::begin(component->ev_destroy); event != std::end(component->ev_destroy); ++event)
@@ -127,7 +134,7 @@ namespace RoninEngine
             //////////////////////////
             for(GameObject *next : collects)
             {
-                for(Component *component : next->m_components)
+                for(ComponentRef component : next->m_components)
                 {
                     // HARAKIRI COMPONENT OBJECT
                     sepuku_Component(component);
@@ -143,7 +150,10 @@ namespace RoninEngine
                 }
 
                 // HARAKIRI GAME OBJECT
-                RoninMemory::free(next);
+                //RoninMemory::free(next);
+                next->_type_ = nullptr;
+                next->m_name = "null";
+
                 --currentWorld->irs->objects;
                 ++currentWorld->irs->_destroyedGameObject;
             }
@@ -214,7 +224,7 @@ namespace RoninEngine
             t += internal_game_time;
 
             // So, destroy childrens of the object
-            provider->operator[](t).insert(obj);
+            provider->operator[](t).insert(obj.get());
 #undef provider
         }
 

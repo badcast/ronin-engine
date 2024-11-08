@@ -20,7 +20,7 @@ namespace RoninEngine::Runtime
 
     void Camera2D::SetZoomOut(float zoomLevel)
     {
-        zoomLevel = Math::Clamp<float>(zoomLevel-100, -200, 200) ;
+        zoomLevel = Math::Clamp<float>(zoomLevel - 100, -200, 200);
         zoomLevel = Math::Clamp<float>(1.0f - (zoomLevel / 100.0f), 0.03f, 10);
         res->scale = Vec2::one * zoomLevel;
     }

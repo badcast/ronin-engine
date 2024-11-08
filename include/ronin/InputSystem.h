@@ -207,7 +207,6 @@ namespace RoninEngine::Runtime
         static const char *GetKeyName(int keyCode);
 
         static std::vector<JoystickInfo> GetJoysticks();
-
     };
 
 } // namespace RoninEngine::Runtime

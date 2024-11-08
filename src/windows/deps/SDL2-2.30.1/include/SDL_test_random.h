@@ -43,7 +43,8 @@
 #include "begin_code.h"
 /* Set up for C function definitions, even when using C++ */
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
 /* --- Definitions */
@@ -51,58 +52,55 @@ extern "C" {
 /*
  * Macros that return a random number in a specific format.
  */
-#define SDLTest_RandomInt(c)        ((int)SDLTest_Random(c))
+#define SDLTest_RandomInt(c) ((int) SDLTest_Random(c))
 
-/*
- * Context structure for the random number generator state.
- */
-  typedef struct {
-    unsigned int a;
-    unsigned int x;
-    unsigned int c;
-    unsigned int ah;
-    unsigned int al;
-  } SDLTest_RandomContext;
+    /*
+     * Context structure for the random number generator state.
+     */
+    typedef struct
+    {
+        unsigned int a;
+        unsigned int x;
+        unsigned int c;
+        unsigned int ah;
+        unsigned int al;
+    } SDLTest_RandomContext;
 
+    /* --- Function prototypes */
 
-/* --- Function prototypes */
+    /**
+     *  \brief Initialize random number generator with two integers.
+     *
+     *  Note: The random sequence of numbers returned by ...Random() is the
+     *  same for the same two integers and has a period of 2^31.
+     *
+     *  \param rndContext     pointer to context structure
+     *  \param xi         integer that defines the random sequence
+     *  \param ci         integer that defines the random sequence
+     *
+     */
+    void SDLTest_RandomInit(SDLTest_RandomContext *rndContext, unsigned int xi, unsigned int ci);
 
-/**
- *  \brief Initialize random number generator with two integers.
- *
- *  Note: The random sequence of numbers returned by ...Random() is the
- *  same for the same two integers and has a period of 2^31.
- *
- *  \param rndContext     pointer to context structure
- *  \param xi         integer that defines the random sequence
- *  \param ci         integer that defines the random sequence
- *
- */
- void SDLTest_RandomInit(SDLTest_RandomContext * rndContext, unsigned int xi,
-                  unsigned int ci);
+    /**
+     *  \brief Initialize random number generator based on current system time.
+     *
+     *  \param rndContext     pointer to context structure
+     *
+     */
+    void SDLTest_RandomInitTime(SDLTest_RandomContext *rndContext);
 
-/**
- *  \brief Initialize random number generator based on current system time.
- *
- *  \param rndContext     pointer to context structure
- *
- */
- void SDLTest_RandomInitTime(SDLTest_RandomContext *rndContext);
-
-
-/**
- *  \brief Initialize random number generator based on current system time.
- *
- *  Note: ...RandomInit() or ...RandomInitTime() must have been called
- *  before using this function.
- *
- *  \param rndContext     pointer to context structure
- *
- *  \returns a random number (32bit unsigned integer)
- *
- */
- unsigned int SDLTest_Random(SDLTest_RandomContext *rndContext);
-
+    /**
+     *  \brief Initialize random number generator based on current system time.
+     *
+     *  Note: ...RandomInit() or ...RandomInitTime() must have been called
+     *  before using this function.
+     *
+     *  \param rndContext     pointer to context structure
+     *
+     *  \returns a random number (32bit unsigned integer)
+     *
+     */
+    unsigned int SDLTest_Random(SDLTest_RandomContext *rndContext);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

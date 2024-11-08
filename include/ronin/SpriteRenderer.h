@@ -38,7 +38,7 @@ namespace RoninEngine::Runtime
     class RONIN_API SpriteRenderer : public Renderer
     {
     private:
-        Sprite *sprite;
+        SpriteRef sprite;
         native_texture_t *save_texture;
         Rect save_src;
         Rectf save_dst;
@@ -68,8 +68,8 @@ namespace RoninEngine::Runtime
         const SpriteRenderPresentMode getPresentMode() const;
         void setPresentMode(SpriteRenderPresentMode value);
 
-        void setSprite(Sprite *sprite);
-        const Sprite *getSprite() const;
+        void setSprite(SpriteRef sprite);
+        const SpriteRef getSprite() const;
 
         const Color getColor() const;
         void setColor(Color value);

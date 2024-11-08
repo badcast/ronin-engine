@@ -6,7 +6,7 @@ using namespace RoninEngine::Runtime;
 
 LogLevel rloglevel = LogLevel::Backend;
 
-void ronin_log(const char * msg)
+void ronin_log(const char *msg)
 {
     SDL_Log("%s", msg);
 }
@@ -21,7 +21,7 @@ void ronin_err(const char *msg)
     SDL_LogError(SDL_LOG_PRIORITY_ERROR, "%s", msg);
 }
 
-void ronin_err_d(const char * msg)
+void ronin_err_d(const char *msg)
 {
     Debug::ShowDisplay("Exception", msg, DisplayType::Error);
 }

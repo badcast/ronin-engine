@@ -18,12 +18,13 @@ using namespace RoninEngine::Runtime;
 
 namespace RoninEngine::Runtime
 {
-    extern int _matrix_pack_;
+    extern int _matrix_dimensity_;
+
     namespace Matrix
     {
         matrix_key_t matrix_get_key(Vec2 position)
         {
-            return Vec2::RoundToInt(position * _matrix_pack_);
+            return Vec2::RoundToInt(position * _matrix_dimensity_);
         }
 
         void matrix_update(Transform *target, const matrix_key_t &lastPoint)

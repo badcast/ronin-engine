@@ -120,6 +120,8 @@ namespace RoninEngine
             PostRender
         };
 
+        struct ParticleSystemImpl;
+
         struct RoninInput
         {
             int _mouse_wheels;
@@ -214,53 +216,16 @@ namespace RoninEngine
             AS_ATLAS
         };
 
-        struct AssetRef
+        struct AssetImpl
         {
             int index;
-            union {
-                std::unordered_map<std::size_t, std::vector<ResId>>* _audioclips;
-                std::unordered_map<std::size_t, std::vector<ResId>>* _mus;
-                std::unordered_map<std::size_t, std::vector<Sprite *>>* _sprites;
-                Atlas *_atlas;
+            union
+            {
+                std::unordered_map<std::size_t, std::vector<ResId>> *_audioclips;
+                std::unordered_map<std::size_t, std::vector<ResId>> *_mus;
+                std::unordered_map<std::size_t, std::vector<SpriteRef>> *_sprites;
             } udata;
-        };
-
-        struct ParticleDrain
-        {
-            SpriteRenderer *render;
-            float initTime;
-            Vec2 direction;
-        };
-
-        struct ParticleSystemRef
-        {
-            // TODO: Optimize here for Particle member (Contain in to ronin_particles*.cpp
-            std::set<ParticleDrain> activeParticles;
-            std::vector<SpriteRenderer *> cachedParticles;
-            float m_timing;
-            int m_maked;
-            int m_lastInspected = 0;
-            int m_limit = 0;
-
-            // bool:colorable - if true simulate it
-            bool colorable = true;
-            Color startColor = Color::transparent;
-            Color centerColor = Color::white;
-            Color endColor = Color::transparent;
-
-            // bool:scalable - if true simulate it
-            bool scalable = true;
-            Vec2 startSize = Vec2::zero;
-            Vec2 centerSize = Vec2::one;
-            Vec2 endSize = Vec2::zero;
-
-            // Lifetime for particle
-            float m_duration = 10;
-            float m_durationStartRange = 0.1f; // Range [0.0,1.0]
-            float m_durationEndRange = 0.1f;   // Range [0.0,1.0]
-
-            void link_particles(ParticleSystem *from, int n);
-            void unlink_particle(ParticleSystem *from, const ParticleDrain *drain);
+            AtlasRef _atlas;
         };
 
         struct WorldResources
@@ -283,6 +248,8 @@ namespace RoninEngine
             // destroyed queue object
             int _destroyedGameObject;
 
+            std::unordered_map<RoninPointer*, Ref<RoninPointer>> refPointers;
+
             // Script Behaviours
             std::map<GameObject::BindType, std::set<Behaviour *>> runtimeScriptBinders;
 
@@ -301,7 +268,7 @@ namespace RoninEngine
             UI::GUI *gui;
 
             // Main camera for render
-            Camera *mainCamera;
+            CameraRef mainCamera;
 
             // Main or Root object
             GameObjectRef mainObject;
@@ -314,14 +281,9 @@ namespace RoninEngine
 
         struct T2Data;
 
-        struct ParticleSystemRef;
-
         extern World *currentWorld;
         extern float internal_game_time;
         extern std::list<Asset> loaded_assets;
-
-        // using LowerParticleDrain = std::integral_constant<decltype(&IsLowerParticleDrain), &IsLowerParticleDrain>;
-        bool operator<(const ParticleDrain &lhs, const ParticleDrain &rhs);
 
         GameObjectRef create_game_object();
         GameObjectRef create_game_object(const std::string &name);
@@ -330,12 +292,12 @@ namespace RoninEngine
         void native_render_2D(Camera2D *camera);
 
         int sepuku_run();
-        void sepuku_Component(ComponentRef candidate);
+        void sepuku_Component(ComponentRef &CND);
         void sepuku_GameObject(GameObject *obj, std::set<GameObject *> *input);
 
-        template<typename T>
+        template <typename T>
         int render_getclass();
-        std::function<void(RenderCommand,Renderer*,Rendering *)> render_getfunc(int _class);
+        std::function<void(RenderCommand, Renderer *, Rendering *)> render_getfunc(int _class);
 
         void level_render_world();
 
@@ -362,6 +324,12 @@ namespace RoninEngine
 
         void storm_cast_eq_all(Vec2Int origin, int edges, std::function<void(const Vec2Int &)> predicate);
         void storm_cast_eq_edges(Vec2Int origin, int edges, std::function<void(const Vec2Int &)> predicate);
+
+        // void ReleasePointer(RoninPointer* object);
+        // void ReleaseRef(ComponentRef& object);
+        // void ReleaseRef(GameObjectRef& object);
+        // void ReleaseRef(AtlasRef& object);
+        // void ReleaseRef(SpriteRef& object);
     } // namespace Runtime
 
     extern struct RoninEnvironment

@@ -33,24 +33,23 @@
 #include "begin_code.h"
 /* Set up for C function definitions, even when using C++ */
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
+    /**
+     * \brief Start tracking SDL memory allocations
+     *
+     * \note This should be called before any other SDL functions for complete tracking coverage
+     */
+    int SDLTest_TrackAllocations(void);
 
-/**
- * \brief Start tracking SDL memory allocations
- * 
- * \note This should be called before any other SDL functions for complete tracking coverage
- */
-int SDLTest_TrackAllocations(void);
-
-/**
- * \brief Print a log of any outstanding allocations
- *
- * \note This can be called after SDL_Quit()
- */
-void SDLTest_LogAllocations(void);
-
+    /**
+     * \brief Print a log of any outstanding allocations
+     *
+     * \note This can be called after SDL_Quit()
+     */
+    void SDLTest_LogAllocations(void);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

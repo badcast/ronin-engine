@@ -32,69 +32,71 @@ Andreas Schiffler -- aschiffler at ferzkopp dot net
 
 /* Set up for C function definitions, even when using C++ */
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-	/* --- */
+    /* --- */
 
 #include <SDL2/SDL.h>
 
-	/* --------- Definitions */
+    /* --------- Definitions */
 
-	/*!
-	\brief Highest possible rate supported by framerate controller in Hz (1/s).
-	*/
-#define FPS_UPPER_LIMIT		200
+    /*!
+    \brief Highest possible rate supported by framerate controller in Hz (1/s).
+    */
+#define FPS_UPPER_LIMIT 200
 
-	/*!
-	\brief Lowest possible rate supported by framerate controller in Hz (1/s).
-	*/
-#define FPS_LOWER_LIMIT		1
+    /*!
+    \brief Lowest possible rate supported by framerate controller in Hz (1/s).
+    */
+#define FPS_LOWER_LIMIT 1
 
-	/*!
-	\brief Default rate of framerate controller in Hz (1/s).
-	*/
-#define FPS_DEFAULT		30
+    /*!
+    \brief Default rate of framerate controller in Hz (1/s).
+    */
+#define FPS_DEFAULT 30
 
-	/*! 
-	\brief Structure holding the state and timing information of the framerate controller. 
-	*/
-	typedef struct {
-		Uint32 framecount;
-		float rateticks;
-		Uint32 baseticks;
-		Uint32 lastticks;
-		Uint32 rate;
-	} FPSmanager;
+    /*!
+    \brief Structure holding the state and timing information of the framerate controller.
+    */
+    typedef struct
+    {
+        Uint32 framecount;
+        float rateticks;
+        Uint32 baseticks;
+        Uint32 lastticks;
+        Uint32 rate;
+    } FPSmanager;
 
-	/* ---- Function Prototypes */
+    /* ---- Function Prototypes */
 
 #ifdef _MSC_VER
-#  if defined(DLL_EXPORT) && !defined(LIBSDL2_GFX_DLL_IMPORT)
-#    define SDL2_FRAMERATE_SCOPE __declspec(dllexport)
-#  else
-#    ifdef LIBSDL2_GFX_DLL_IMPORT
-#      define SDL2_FRAMERATE_SCOPE __declspec(dllimport)
-#    endif
-#  endif
+#if defined(DLL_EXPORT) && !defined(LIBSDL2_GFX_DLL_IMPORT)
+#define SDL2_FRAMERATE_SCOPE __declspec(dllexport)
+#else
+#ifdef LIBSDL2_GFX_DLL_IMPORT
+#define SDL2_FRAMERATE_SCOPE __declspec(dllimport)
+#endif
+#endif
 #endif
 #ifndef SDL2_FRAMERATE_SCOPE
-#  define SDL2_FRAMERATE_SCOPE extern
+#define SDL2_FRAMERATE_SCOPE extern
 #endif
 
-	/* Functions return 0 or value for sucess and -1 for error */
+    /* Functions return 0 or value for sucess and -1 for error */
 
-	SDL2_FRAMERATE_SCOPE void SDL_initFramerate(FPSmanager * manager);
-	SDL2_FRAMERATE_SCOPE int SDL_setFramerate(FPSmanager * manager, Uint32 rate);
-	SDL2_FRAMERATE_SCOPE int SDL_getFramerate(FPSmanager * manager);
-	SDL2_FRAMERATE_SCOPE int SDL_getFramecount(FPSmanager * manager);
-	SDL2_FRAMERATE_SCOPE Uint32 SDL_framerateDelay(FPSmanager * manager);
+    SDL2_FRAMERATE_SCOPE void SDL_initFramerate(FPSmanager *manager);
+    SDL2_FRAMERATE_SCOPE int SDL_setFramerate(FPSmanager *manager, Uint32 rate);
+    SDL2_FRAMERATE_SCOPE int SDL_getFramerate(FPSmanager *manager);
+    SDL2_FRAMERATE_SCOPE int SDL_getFramecount(FPSmanager *manager);
+    SDL2_FRAMERATE_SCOPE Uint32 SDL_framerateDelay(FPSmanager *manager);
 
-	/* --- */
+    /* --- */
 
-	/* Ends C function definitions when using C++ */
+    /* Ends C function definitions when using C++ */
 #ifdef __cplusplus
 }
 #endif
 
-#endif				/* _SDL2_framerate_h */
+#endif /* _SDL2_framerate_h */

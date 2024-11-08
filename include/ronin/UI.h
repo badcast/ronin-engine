@@ -87,7 +87,7 @@ namespace RoninEngine
 
             UI uid PushCustomUI(const UIOverlay *custom, const Runtime::Rect &rect, uid parent = NOPARENT);
 
-            // Layments
+                   // Layments
             UI void LayoutNew(UILayoutDirection direction, Runtime::Rectf region = Runtime::Rectf {.0f, .0f, 1.0f, 1.0f}, bool aspectRatio = true);
 
             UI uid LayoutLabel(const std::string &text);
@@ -104,8 +104,8 @@ namespace RoninEngine
             UI uid PushButton(const std::string &text, const Runtime::Rect &point, UIEventVoid event_callback = nullptr, uid parent = NOPARENT);
             UI uid PushTextEdit(const std::string &text, const Runtime::Vec2Int &point, uid parent = NOPARENT);
             UI uid PushTextEdit(const std::string &text, const Runtime::Rect &rect, uid parent = NOPARENT);
-            UI uid PushPictureBox(Runtime::Sprite *sprite, const Runtime::Rect &rect, uid parent = NOPARENT);
-            UI uid PushPictureBox(Runtime::Sprite *sprite, const Runtime::Vec2Int &point, uid parent = NOPARENT);
+            UI uid PushPictureBox(Runtime::SpriteRef sprite, const Runtime::Rect &rect, uid parent = NOPARENT);
+            UI uid PushPictureBox(Runtime::SpriteRef sprite, const Runtime::Vec2Int &point, uid parent = NOPARENT);
 
             UI uid PushDropDown(const std::list<std::string> &elements, int index, const Runtime::Rect &rect, UIEventInteger changed, uid parent);
 
@@ -153,11 +153,11 @@ namespace RoninEngine
 
             UI uid PushCheckBox(bool checked, const std::string &text, const Runtime::Rect &rect, UIEventBool changed = nullptr, uid parent = NOPARENT);
 
-            UI uid PushSpriteButton(const std::vector<Runtime::Sprite *> &states, const Runtime::Rect &rect, UIEventVoid click = nullptr, uid parent = NOPARENT);
+            UI uid PushSpriteButton(const std::vector<Runtime::SpriteRef > &states, const Runtime::Rect &rect, UIEventVoid click = nullptr, uid parent = NOPARENT);
 
-            UI void SpriteButtonSetIcon(uid id, Runtime::Sprite* icon);
+            UI void SpriteButtonSetIcon(uid id, Runtime::SpriteRef icon);
 
-            // property-----------------------------------------------------------------------------------------------------------
+                   // property-----------------------------------------------------------------------------------------------------------
 
             UI void ElementSetRect(uid id, const Runtime::Rect &rect);
             UI Runtime::Rect ElementGetRect(uid id);
@@ -182,20 +182,20 @@ namespace RoninEngine
 
             UI bool ButtonClicked(uid id);
 
-            UI void PictureBoxSetSprite(uid id, Runtime::Sprite *sprite);
-            UI Runtime::Sprite *PictureBoxGetSprite(uid id);
+            UI void PictureBoxSetSprite(uid id, Runtime::SpriteRef sprite);
+            UI Runtime::SpriteRef PictureBoxGetSprite(uid id);
 
-            // Events
+                   // Events
             UI void AddEventListener_Click(uid id, UIEventVoid event);
 
-            // grouping-----------------------------------------------------------------------------------------------------------
+                   // grouping-----------------------------------------------------------------------------------------------------------
 
             UI bool IsGroup(uid id);
             UI bool GroupShowAsUnique(uid id) throw();
             UI bool GroupShow(uid id) throw();
             UI bool GroupClose(uid id) throw();
 
-            // other--------------------------------------------------------------------------------------------------------------
+                   // other--------------------------------------------------------------------------------------------------------------
 
             UI bool IsMouseOver();
 

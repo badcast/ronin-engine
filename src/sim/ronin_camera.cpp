@@ -30,7 +30,7 @@ namespace RoninEngine::Runtime
 
     bool Camera::isFocused()
     {
-        return mainCamera() == this;
+        return mainCamera().get() == this;
     }
 
     void Camera::Focus()
@@ -194,7 +194,7 @@ namespace RoninEngine::Runtime
     {
         if(currentWorld)
             return currentWorld->irs->mainCamera;
-        return nullptr;
+        return CameraRef{nullptr};
     }
 
 } // namespace RoninEngine::Runtime

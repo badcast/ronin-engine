@@ -4,7 +4,9 @@
 
 using namespace RoninEngine::Runtime;
 
-RoninSplashWorld::RoninSplashWorld() : World("Ronin Splash World") {}
+RoninSplashWorld::RoninSplashWorld() : World("Ronin Splash World")
+{
+}
 
 void RoninSplashWorld::OnAwake()
 {
@@ -16,8 +18,8 @@ void RoninSplashWorld::OnAwake()
 
     Rect rect;
     rect.setXY(Camera::ViewportToScreenPoint({.5f, 0.9f}));
-    rect.setWH(Vec2{250,25});
-    rect.x -= rect.w/2;
+    rect.setWH(Vec2 {250, 25});
+    rect.x -= rect.w / 2;
 }
 
 void RoninSplashWorld::OnUpdate()
@@ -31,18 +33,18 @@ void RoninSplashWorld::OnUpdate()
     if(t < 2)
     {
         perc = Math::Clamp01(t / 2);
-        Camera2D::mainCamera().StaticCast<Camera2DRef>()->SetZoomOut(20 * perc-20 + 150);
+        ReinterpretCast<Camera2D>(Camera2D::mainCamera())->SetZoomOut(20 * perc - 20 + 150);
     }
     else if(t < 4)
     {
-        perc = 1-Math::Clamp01( (t-2)/2 );
+        perc = 1 - Math::Clamp01((t - 2) / 2);
     }
-    else if( t >= 5)
+    else if(t >= 5)
     {
         // Load Now!
         RoninEngine::RoninSimulator::LoadWorld(nextWorld);
     }
 
-    Camera2D::mainCamera()->backcolor = Color::Lerp(Camera2D::mainCamera()->backcolor, "#3b3b3b",  perc);
-    objCenter->setColor(Color(objCenter->color, Math::Clamp01(perc)*255));
+    Camera2D::mainCamera()->backcolor = Color::Lerp(Camera2D::mainCamera()->backcolor, "#3b3b3b", perc);
+    objCenter->setColor(Color(objCenter->color, Math::Clamp01(perc) * 255));
 }

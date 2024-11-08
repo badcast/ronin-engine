@@ -1,377 +1,251 @@
 #pragma once
 
+#include "begin.h"
+#include "Object.h"
 #include "Declarations.h"
-#include "Behaviour.h"
-#include "Transform.h"
 
-namespace RoninEngine
+namespace RoninEngine::Runtime
 {
-    namespace Runtime
+    enum ZOrderBy
     {
-        enum ZOrderBy
+        Inherit,
+        LinearAdd
+    };
+
+    class RONIN_API GameObject final : public Object, public IComponents, public IRoninBaseEvents<GameObject>
+    {
+    public:
+        using Event = RoninBaseEvent<GameObject>;
+
+    private:
+        std::list<ComponentRef> m_components;
+        std::list<Event> ev_destroy;
+        int m_layer;
+        int m_zOrder;
+        bool m_active;
+
+    protected:
+        enum BindType
         {
-            Inherit,
-            LinearAdd
+            Bind_Start = 1,
+            Bind_Update = 2,
+            Bind_LateUpdate = 4,
+            Bind_Gizmos = 8
         };
 
-        class RONIN_API GameObject final : public Object, public IComponents, public IRoninBaseEvents<GameObject>
-        {
-        public:
-            using Event = RoninBaseEvent<GameObject>;
+        void bind_script(BindType bindFlags, Behaviour *script);
 
-        private:
-            std::list<ComponentRef> m_components;
-            std::list<Event> ev_destroy;
-            int m_layer;
-            int m_zOrder;
-            bool m_active;
+    public:
+        /**
+         * @brief Default constructor for GameObject.
+         */
+        GameObject();
 
-        protected:
-            enum BindType
-            {
-                Bind_Start = 1,
-                Bind_Update = 2,
-                Bind_LateUpdate = 4,
-                Bind_Gizmos = 8
-            };
+        /**
+         * @brief Constructor for GameObject with a specified name.
+         * @param name The name to assign to the GameObject.
+         */
+        GameObject(const std::string &name);
 
-            void bind_script(BindType bindFlags, Behaviour *script);
+        /**
+         * @brief Deleted copy constructor for GameObject.
+         */
+        GameObject(const GameObject &) = delete;
 
-        public:
-            /**
-             * @brief Default constructor for GameObject.
-             */
-            GameObject();
+        /**
+         * @brief Check if the GameObject is active.
+         * @return True if the GameObject is active, false otherwise.
+         */
+        bool isActive();
 
-            /**
-             * @brief Constructor for GameObject with a specified name.
-             * @param name The name to assign to the GameObject.
-             */
-            GameObject(const std::string &name);
+        /**
+         * @brief Check if the GameObject or any of its children is active.
+         * @return True if the GameObject or any child is active, false otherwise.
+         */
+        bool isActiveInHierarchy();
 
-            /**
-             * @brief Deleted copy constructor for GameObject.
-             */
-            GameObject(const GameObject &) = delete;
+        /**
+         * @brief Set the active state of the GameObject.
+         * @param state The new active state.
+         */
+        void SetActive(bool state);
 
-            /**
-             * @brief Check if the GameObject is active.
-             * @return True if the GameObject is active, false otherwise.
-             */
-            bool isActive();
+        /**
+         * @brief Set the layer for draw order
+         * @param layer The layer order to set
+         */
+        void SetLayer(int layer);
 
-            /**
-             * @brief Check if the GameObject or any of its children is active.
-             * @return True if the GameObject or any child is active, false otherwise.
-             */
-            bool isActiveInHierarchy();
+        /**
+         * @brief Get The Layer order of the render
+         * @return layer
+         */
+        int GetLayer() const;
 
-            /**
-             * @brief Set the active state of the GameObject.
-             * @param state The new active state.
-             */
-            void SetActive(bool state);
+        /**
+         * @brief Get Z-Order for draw orders
+         * @return Z-Order value
+         */
+        int GetZOrder() const;
 
-            /**
-             * @brief Set the layer for draw order
-             * @param layer The layer order to set
-             */
-            void SetLayer(int layer);
+        /**
+         * @brief Set Z-Order for draw orders
+         * @param value The new Z-Order for set
+         */
+        void SetZOrder(int value);
 
-            /**
-             * @brief Get The Layer order of the render
-             * @return layer
-             */
-            int GetLayer() const;
+        /**
+         * @brief Set Z-Order for draw all oreders on children.
+         * @param value The new Z-Order for set all childrens.
+         */
+        void SetZOrderAll(int value, ZOrderBy orderBy);
 
-            /**
-             * @brief Get Z-Order for draw orders
-             * @return Z-Order value
-             */
-            int GetZOrder() const;
+        /**
+         * @brief Set the active state recursively for the GameObject and its children.
+         * @param state The new active state.
+         */
+        void SetActiveRecursivelly(bool state);
 
-            /**
-             * @brief Set Z-Order for draw orders
-             * @param value The new Z-Order for set
-             */
-            void SetZOrder(int value);
+        /**
+         * @brief Get the Transform component of the GameObject.
+         * @return A pointer to the Transform component.
+         */
+        TransformRef transform();
 
-            /**
-             * @brief Set Z-Order for draw all oreders on children.
-             * @param value The new Z-Order for set all childrens.
-             */
-            void SetZOrderAll(int value, ZOrderBy orderBy);
+        /**
+         * @brief Get the SpriteRenderer component of the GameObject.
+         * @return A pointer to the SpriteRenderer component, or nullptr if not found.
+         */
+        SpriteRendererRef spriteRenderer() ;
 
-            /**
-             * @brief Set the active state recursively for the GameObject and its children.
-             * @param state The new active state.
-             */
-            void SetActiveRecursivelly(bool state);
+        /**
+         * @brief Get the Camera2D component of the GameObject.
+         * @return A pointer to the Camera2D component, or nullptr if not found.
+         */
+        Camera2DRef camera2D() ;
 
-            /**
-             * @brief Get the Transform component of the GameObject.
-             * @return A pointer to the Transform component.
-             */
-            TransformRef transform() const;
+        /**
+         * @brief Get the Terrain2D component of the GameObject.
+         * @return A pointer to the Terrain2D component, or nullptr if not found.
+         */
+        Terrain2DRef terrain2D() ;
 
-            /**
-             * @brief Get the SpriteRenderer component of the GameObject.
-             * @return A pointer to the SpriteRenderer component, or nullptr if not found.
-             */
-            SpriteRendererRef spriteRenderer() const;
+        /**
+         * @brief Check if the gameobject is PrefabObject
+         * @return True if the GameObject is PrfabObject, false otherwise.
+         *          * @see PrefabObject
+         */
+        bool isPrefab();
 
-            /**
-             * @brief Get the Camera2D component of the GameObject.
-             * @return A pointer to the Camera2D component, or nullptr if not found.
-             */
-            Camera2DRef camera2D() const;
+        /**
+         * @brief Mark the GameObject for destruction now.
+         */
+        void Destroy();
 
-            /**
-             * @brief Get the Terrain2D component of the GameObject.
-             * @return A pointer to the Terrain2D component, or nullptr if not found.
-             */
-            Terrain2DRef terrain2D() const;
+        /**
+         * @brief Mark the GameObject for destruction with a delayed time.
+         * @param time The time delay before destruction.
+         */
+        void Destroy(float time);
 
-            /**
-             * @brief Check if the gameobject is PrefabObject
-             * @return True if the GameObject is PrfabObject, false otherwise.
-             *
-             * @see PrefabObject
-             */
-            bool isPrefab();
+        /**
+         * @brief Cancel the scheduled destruction for the GameObject.
+         * @return True if the destruction was canceled, false otherwise.
+         */
+        const bool CancelDestroy();
 
-            /**
-             * @brief Mark the GameObject for destruction now.
-             */
-            void Destroy();
+        /**
+         * @brief Checks whether the object is currently being destroyed.
+         *          * This function is used to determine if the object is in the process of being destroyed.
+         * It returns true if the destruction process is currently ongoing, and false otherwise.
+         *          * @return True if the object is being destroyed, false otherwise.
+         */
+        const bool isDestroying();
 
-            /**
-             * @brief Mark the GameObject for destruction with a delayed time.
-             * @param time The time delay before destruction.
-             */
-            void Destroy(float time);
+        /**
+         * @brief Adds a specific component to the GameObject.
+         *          * This function adds the provided component to the GameObject's list of components.
+         * The component must be a valid instance derived from the base class Component.
+         *          * @param component A pointer to the component to be added.
+         * @return A pointer to the added component, or nullptr if adding failed.
+         */
+        ComponentRef AddComponent(ComponentRef component);
 
-            /**
-             * @brief Cancel the scheduled destruction for the GameObject.
-             * @return True if the destruction was canceled, false otherwise.
-             */
-            const bool CancelDestroy();
+        /**
+         * @brief Removes a specific component from the GameObject.
+         *          * This function removes the provided component from the GameObject's list of components.
+         * The component must be a valid instance that is currently attached to the GameObject.
+         *          * @param component A pointer to the component to be removed.
+         * @return True if the component was successfully removed, false if it was not found.
+         */
+        bool RemoveComponent(ComponentRef component);
 
-            /**
-             * @brief Checks whether the object is currently being destroyed.
-             *
-             * This function is used to determine if the object is in the process of being destroyed.
-             * It returns true if the destruction process is currently ongoing, and false otherwise.
-             *
-             * @return True if the object is being destroyed, false otherwise.
-             */
-            const bool isDestroying();
-
-            /**
-             * @brief Adds a specific component to the GameObject.
-             *
-             * This function adds the provided component to the GameObject's list of components.
-             * The component must be a valid instance derived from the base class Component.
-             *
-             * @param component A pointer to the component to be added.
-             * @return A pointer to the added component, or nullptr if adding failed.
-             */
-            ComponentRef AddComponent(ComponentRef component);
-
-            /**
-             * @brief Removes a specific component from the GameObject.
-             *
-             * This function removes the provided component from the GameObject's list of components.
-             * The component must be a valid instance that is currently attached to the GameObject.
-             *
-             * @param component A pointer to the component to be removed.
-             * @return True if the component was successfully removed, false if it was not found.
-             */
-            bool RemoveComponent(ComponentRef component);
-
-            /**
-             * @brief Adds a new component of the specified type to the GameObject.
-             *
-             * This function adds a new instance of the specified component type to the GameObject.
-             * The component type must be derived from the base class Component.
-             *
-             * @tparam T The type of component to add. Must be derived from Component.
-             * @return A pointer to the newly added component, or nullptr if adding failed.
-             */
-            template <typename T>
-            std::enable_if_t<std::is_base_of_v<Component, T>, Bushido<T>> AddComponent();
-
-            /**
-             * @brief Retrieves the first component of the specified type from the GameObject.
-             *
-             * This function attempts to retrieve the first instance of the specified component type
-             * that is attached to the GameObject. The component type must be derived from the base class Component.
-             *
-             * @tparam T The type of component to retrieve. Must be derived from Component.
-             * @return A pointer to the found component, or nullptr if the component was not found.
-             */
-            template <typename T>
-            std::enable_if_t<std::is_base_of_v<Component, T>, Bushido<T>> GetComponent() ;
-
-            /**
-             * @brief Removes the first component of the specified type from the GameObject.
-             *
-             * This function removes the first instance of the specified component type from the GameObject.
-             * The component type must be derived from the base class Component.
-             *
-             * @tparam T The type of component to remove. Must be derived from Component.
-             * @return True if the component was successfully removed, false if it was not found.
-             */
-            template <typename T>
-            std::enable_if_t<std::is_base_of_v<Component, T>, bool> RemoveComponent();
-
-            /**
-             * @brief Retrieves a list of all components of the specified type from the GameObject.
-             *
-             * This function collects all instances of the specified component type that are attached
-             * to the GameObject and returns them in a list.
-             * The component type must be derived from the base class Component.
-             *
-             * @tparam T The type of components to retrieve. Must be derived from Component.
-             * @return A list containing pointers to the found components.
-             */
-            template <typename T>
-            std::enable_if_t<std::is_base_of<Component, T>::value, std::list<Bushido<T>>> GetComponents() ;
-
-            /**
-             * @brief Retrieves a list of all components of the specified type from the GameObject an childs.
-             *
-             * This function collects all instances of the specified component type that are attached
-             * to the GameObject and returns them in a list with childrens.
-             * The component type must be derived from the base class Component.
-             *
-             * @tparam T The type of components to retrieve. Must be derived from Component.
-             * @return A list containing pointers to the found components.
-             */
-            template <typename T>
-            std::enable_if_t<std::is_base_of_v<Component, T>, std::list<Bushido<T>>> GetComponentsAnChilds() ;
-
-            /**
-             * @brief Register a callback for the GameObject's "destroy" event.
-             *
-             * This function allows you to register a callback for a GameObject object,
-             * which will be invoked when the "destroy" event occurs.
-             *
-             * @param callback An Event object representing a function or functor that
-             *                will be called when the GameObject is destroyed.
-             *
-             * @see ClearOnDestroy
-             */
-            void AddOnDestroy(Event callback);
-
-            /**
-             * @brief Unregister all callbaks OnDestroy
-             * @see AddOnDestroy
-             */
-            void ClearOnDestroy();
-        };
-
+        /**
+         * @brief Adds a new component of the specified type to the GameObject.
+         *          * This function adds a new instance of the specified component type to the GameObject.
+         * The component type must be derived from the base class Component.
+         *          * @tparam T The type of component to add. Must be derived from Component.
+         * @return A pointer to the newly added component, or nullptr if adding failed.
+         */
         template <typename T>
-        inline std::enable_if_t<std::is_base_of_v<Component, T>, Bushido<T>> GameObject::AddComponent()
-        {
-            static_assert(!(std::is_same_v<T, Transform> || std::is_base_of_v<Transform, T>), "Transform component can't be assigned");
+        std::enable_if_t<std::is_base_of_v<Component, T>, Ref<T>> AddComponent();
 
-            // init component
-            ComponentRef component = RoninMemory::alloc<T>();
-            this->AddComponent(component);
-
-            if constexpr(std::is_base_of_v<Behaviour, T>)
-            {
-                int flags = 0;
-
-#if 1
-#ifdef __clang__ // it's work only Clang
-#define CHECK_BASE_OVERRIDDEN(BASE, BINDER, METHOD) \
-    if((&BASE::METHOD) != (&T::METHOD))             \
-        flags |= BINDER;
-#else // it's work on GCC
-#define CHECK_BASE_OVERRIDDEN(BASE, BINDER, METHOD)                                               \
-    if constexpr(reinterpret_cast<void *>(&BASE::METHOD) != reinterpret_cast<void *>(&T::METHOD)) \
-        flags |= BINDER;
-#endif
-
-#else // if the not 0
-
-#define CHECK_BASE_OVERRIDDEN(BASE, BINDER, METHOD) \
-    if((&T::METHOD) != (&BASE::METHOD))             \
-        flags |= BINDER;
-#endif
-                CHECK_BASE_OVERRIDDEN(Behaviour, Bind_Start, OnStart);
-                CHECK_BASE_OVERRIDDEN(Behaviour, Bind_Update, OnUpdate);
-                CHECK_BASE_OVERRIDDEN(Behaviour, Bind_LateUpdate, OnLateUpdate);
-                CHECK_BASE_OVERRIDDEN(Behaviour, Bind_Gizmos, OnGizmos);
-#undef CHECK_BASE_OVERRIDDEN
-
-                bind_script(static_cast<BindType>(flags), reinterpret_cast<Behaviour *>(component.get()));
-            }
-
-            return component;
-        } // namespace Runtime
-
+        /**
+         * @brief Retrieves the first component of the specified type from the GameObject.
+         *          * This function attempts to retrieve the first instance of the specified component type
+         * that is attached to the GameObject. The component type must be derived from the base class Component.
+         *          * @tparam T The type of component to retrieve. Must be derived from Component.
+         * @return A pointer to the found component, or nullptr if the component was not found.
+         */
         template <typename T>
-        inline std::enable_if_t<std::is_base_of_v<Component, T>, bool> GameObject::RemoveComponent()
-        {
-            static_assert(!(std::is_same_v<T, Transform> || std::is_base_of_v<Transform, T>), "Transform component can't remove, basic component type");
-            T *target = GetComponent<T>();
-            if(target == nullptr)
-                return false;
-            return RemoveComponent(target);
-        }
+        std::enable_if_t<std::is_base_of_v<Component, T>, Ref<T>> GetComponent();
 
+        /**
+         * @brief Removes the first component of the specified type from the GameObject.
+         *          * This function removes the first instance of the specified component type from the GameObject.
+         * The component type must be derived from the base class Component.
+         *          * @tparam T The type of component to remove. Must be derived from Component.
+         * @return True if the component was successfully removed, false if it was not found.
+         */
         template <typename T>
-        inline std::enable_if_t<std::is_base_of<Component, T>::value, std::list<Bushido<T>>> GameObject::GetComponents()
-        {
-            Bushido<T> cast {};
-            std::list<Bushido<T>> types;
-            for(const ComponentRef & comp : m_components)
-            {
-                if(!(cast = comp.DynamicCast<T>()).isNull())
-                {
-                    types.emplace_back(cast);
-                }
-            }
+        std::enable_if_t<std::is_base_of_v<Component, T>, bool> RemoveComponent();
 
-            return types;
-        }
-
+        /**
+         * @brief Retrieves a list of all components of the specified type from the GameObject.
+         *          * This function collects all instances of the specified component type that are attached
+         * to the GameObject and returns them in a list.
+         * The component type must be derived from the base class Component.
+         *          * @tparam T The type of components to retrieve. Must be derived from Component.
+         * @return A list containing pointers to the found components.
+         */
         template <typename T>
-        inline std::enable_if_t<std::is_base_of_v<Component, T>, std::list<Bushido<T>>> GameObject::GetComponentsAnChilds()
-        {
-            std::list<Bushido<T>> types {};
-            std::list<GameObjectRef> stacks {};
-            stacks.push_back(std::move(Bushido<GameObject>{this}));
-            while(!stacks.empty())
-            {
-                types.merge(stacks.front()->GetComponents<T>());
-                for(TransformRef& t : stacks.front()->transform()->GetChilds())
-                {
-                    stacks.push_back(t->gameObject());
-                }
-                stacks.pop_front();
-            }
-            return types;
-        }
+        std::enable_if_t<std::is_base_of_v<Component, T>, std::list<Ref<T>>> GetComponents();
 
+        /**
+         * @brief Retrieves a list of all components of the specified type from the GameObject an childs.
+         *          * This function collects all instances of the specified component type that are attached
+         * to the GameObject and returns them in a list with childrens.
+         * The component type must be derived from the base class Component.
+         *          * @tparam T The type of components to retrieve. Must be derived from Component.
+         * @return A list containing pointers to the found components.
+         */
         template <typename T>
-        inline std::enable_if_t<std::is_base_of_v<Component, T>, Bushido<T>> GameObject::GetComponent()
-        {
-            if constexpr(std::is_same_v<T, Transform>)
-            {
-                return m_components.front().ReinterpretCast<Transform>();
-            }
-            else
-            {
-                auto iter = std::find_if(std::cbegin(m_components), std::cend(m_components), [](const ComponentRef &c) { return dynamic_cast<const T *>(c.get()) != nullptr; });
+        std::enable_if_t<std::is_base_of_v<Component, T>, std::list<Ref<T>>> GetComponentsAnChilds();
 
-                if(iter != std::end(m_components))
-                    return (*iter);
-            }
-            return nullptr;
-        }
-    } // namespace Runtime
+        /**
+         * @brief Register a callback for the GameObject's "destroy" event.
+         *          * This function allows you to register a callback for a GameObject object,
+         * which will be invoked when the "destroy" event occurs.
+         *          * @param callback An Event object representing a function or functor that
+         *                will be called when the GameObject is destroyed.
+         *          * @see ClearOnDestroy
+         */
+        void AddOnDestroy(Event callback);
+
+        /**
+         * @brief Unregister all callbaks OnDestroy
+         * @see AddOnDestroy
+         */
+        void ClearOnDestroy();
+    };
 } // namespace RoninEngine

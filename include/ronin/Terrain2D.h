@@ -30,7 +30,8 @@ namespace RoninEngine::Runtime
     class RONIN_API Terrain2D : public Renderer
     {
     private:
-        struct T2Data * ref;
+        struct T2Data *dat;
+
     public:
         Terrain2D();
         Terrain2D(const std::string &name, float width = 10, float height = 10);
@@ -38,7 +39,7 @@ namespace RoninEngine::Runtime
 
         RoninEngine::AI::NavMesh *get_navmesh2D();
 
-        void setMesh(Rectf state, Sprite* sprite);
+        void setMesh(Rectf state, SpriteRef sprite);
 
         void load_from(const TerrainData &terrainData);
 

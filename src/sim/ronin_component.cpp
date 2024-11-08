@@ -26,30 +26,30 @@ namespace RoninEngine
 
         const bool Component::isBinded()
         {
-            return _owner != nullptr;
+            return !_owner.isNull();
         }
 
-        TransformRef Component::transform() const
+        TransformRef Component::transform()
         {
-            return _owner->m_components.front().StaticCast<Transform>();
+            return ReinterpretCast<Transform>(_owner->m_components.front());
         }
 
-        GameObjectRef Component::gameObject() const
+        GameObjectRef Component::gameObject()
         {
             return _owner;
         }
 
-        Camera2DRef Component::camera2D() const
+        Camera2DRef Component::camera2D()
         {
             return _owner->camera2D();
         }
 
-        SpriteRendererRef Component::spriteRenderer() const
+        SpriteRendererRef Component::spriteRenderer()
         {
             return _owner->spriteRenderer();
         }
 
-        Terrain2DRef Component::terrain2D() const
+        Terrain2DRef Component::terrain2D()
         {
             return _owner->terrain2D();
         }

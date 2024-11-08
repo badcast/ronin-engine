@@ -1,5 +1,5 @@
 #ifndef _RONIN_ENGINE_STD_H_
-#define _RONIN_ENGINE_STD_H_
+#define _RONIN_ENGINE_STD_H_ 1
 
 // C++ STL
 #include <iostream>

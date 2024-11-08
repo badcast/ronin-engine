@@ -31,7 +31,6 @@ namespace RoninEngine::Runtime
         world->irs->legacy_font_hover = SDL_CreateTextureFromSurface(gscope.renderer, f2d_default->surfHilight);
 
         _custom_refresh_fonts();
-
     }
 
     void font2d_init(bool optimizeDeffects)
@@ -184,7 +183,7 @@ namespace RoninEngine::Runtime
         if(!rect.h)
             rect.h = f2d_default->fontSize.y;
 
-               // x
+        // x
         temp = (legacyVH[textAlign] >> 4 & 15);
         if(temp)
         {
@@ -240,7 +239,7 @@ namespace RoninEngine::Runtime
         }
     }
 
-    font2d_t * font2d_get_basic()
+    font2d_t *font2d_get_basic()
     {
         return f2d_default;
     }
@@ -250,4 +249,4 @@ namespace RoninEngine::Runtime
         RoninMemory::free(f2d_default);
         TTF_CloseFont(pDefaultTTFFont);
     }
-} // namespace RoninEngine::UI
+} // namespace RoninEngine::Runtime

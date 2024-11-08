@@ -59,9 +59,9 @@ char Paths::GetPathSeperatorOS()
 
 std::string Paths::MakePathValid(std::string path)
 {
-    for( int x = 0; x < path.length(); ++x)
+    for(int x = 0; x < path.length(); ++x)
     {
-        char * left = &path[x];
+        char *left = &path[x];
 #ifdef WIN32
         if(*left == '/')
 #elif __unix__ || __linux__

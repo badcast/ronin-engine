@@ -238,17 +238,17 @@ namespace RoninEngine::UI
         return id;
     }
 
-    uid GUI::PushPictureBox(Sprite *sprite, const Rect &rect, uid parent)
+    uid GUI::PushPictureBox(SpriteRef sprite, const Rect &rect, uid parent)
     {
         uid id = push_new_element(this, parent);
 
         UIElement &data = call_get_element(this->handle, id);
         data.prototype = RGUI_PICTURE_BOX;
         data.rect = rect;
-        data.resource.picturebox = sprite;
+        data.resource.picturebox = sprite.ptr_;
         return id;
     }
-    uid GUI::PushPictureBox(Sprite *sprite, const Vec2Int &point, uid parent)
+    uid GUI::PushPictureBox(SpriteRef sprite, const Vec2Int &point, uid parent)
     {
         return PushPictureBox(sprite, {point.x, point.y, sprite->width(), sprite->height()}, parent);
     }
@@ -324,7 +324,7 @@ namespace RoninEngine::UI
         return id;
     }
 
-    uid GUI::PushSpriteButton(const std::vector<Sprite*>& states, const Runtime::Rect &rect, UIEventVoid click, uid parent)
+    uid GUI::PushSpriteButton(const std::vector<SpriteRef > &states, const Runtime::Rect &rect, UIEventVoid click, uid parent)
     {
         uid id = push_new_element(this, parent);
 
@@ -334,30 +334,31 @@ namespace RoninEngine::UI
         element.event = (void *) click;
         memset(&element.resource.spriteButton, 0, sizeof(element.resource.spriteButton));
 
-        int n = states.size()-1;
-        Sprite* src;
-        if(n > -1){
+        int n = states.size() - 1;
+        SpriteRef src;
+        if(n > -1)
+        {
 
             if(n >= 2)
                 src = states[2];
             else
                 src = states[0];
 
-            element.resource.spriteButton.disable = src;
+            element.resource.spriteButton.disable = src.ptr_;
 
             if(n >= 1)
                 src = states[1];
             else
                 src = states[0];
 
-            element.resource.spriteButton.hover = src;
+            element.resource.spriteButton.hover = src.ptr_;
 
-            element.resource.spriteButton.normal = states[0];
+            element.resource.spriteButton.normal = states[0].ptr_;
         }
         return id;
     }
 
-    void GUI::SpriteButtonSetIcon(uid id, Sprite *icon)
+    void GUI::SpriteButtonSetIcon(uid id, SpriteRef icon)
     {
         UIElement &elem = call_get_element(this->handle, id);
 
@@ -366,7 +367,7 @@ namespace RoninEngine::UI
             throw ronin_uid_nocast_error();
         }
 
-        elem.resource.spriteButton.icon = icon;
+        elem.resource.spriteButton.icon = icon.ptr_;
     }
 
     // property --------------------------------------------------------------------------------------------------------
@@ -462,7 +463,7 @@ namespace RoninEngine::UI
         return handle->button_clicked.count(id) > 0;
     }
 
-    void GUI::PictureBoxSetSprite(uid id, Runtime::Sprite *sprite)
+    void GUI::PictureBoxSetSprite(uid id, Runtime::SpriteRef sprite)
     {
         UIElement &elem = call_get_element(this->handle, id);
 
@@ -471,10 +472,10 @@ namespace RoninEngine::UI
             throw ronin_uid_nocast_error();
         }
 
-        elem.resource.picturebox = sprite;
+        elem.resource.picturebox = sprite.ptr_;
     }
 
-    Runtime::Sprite *GUI::PictureBoxGetSprite(uid id)
+    Runtime::SpriteRef GUI::PictureBoxGetSprite(uid id)
     {
         UIElement &elem = call_get_element(this->handle, id);
 
@@ -483,7 +484,7 @@ namespace RoninEngine::UI
             throw ronin_uid_nocast_error();
         }
 
-        return elem.resource.picturebox;
+        return elem.resource.picturebox->GetRef<Sprite>();
     }
 
     void GUI::SliderSetValue(uid id, float value)

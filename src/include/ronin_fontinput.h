@@ -8,9 +8,9 @@ namespace RoninEngine::Runtime
 {
     struct font_ext_t
     {
-        TTF_Font * ttf;
+        TTF_Font *ttf;
         font2d_t legacy;
     };
-}
+} // namespace RoninEngine::Runtime
 
 #endif

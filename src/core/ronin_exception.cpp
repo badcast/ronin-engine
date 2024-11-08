@@ -1,5 +1,3 @@
-#pragma once
-
 #include "ronin_exception.h"
 #include "ronin_debug.h"
 

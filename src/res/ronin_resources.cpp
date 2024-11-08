@@ -276,7 +276,7 @@ namespace RoninEngine::Runtime
 
         if(!file)
         {
-            ronin_err(std::string("Music: \""+path+"\" can not load").c_str());
+            ronin_err(std::string("Music: \"" + path + "\" can not load").c_str());
             return RES_INVALID;
         }
 
@@ -294,7 +294,7 @@ namespace RoninEngine::Runtime
 
         if(!file)
         {
-            ronin_err(std::string("music stream \""+path+"\" can not load").c_str());
+            ronin_err(std::string("music stream \"" + path + "\" can not load").c_str());
             return RES_INVALID;
         }
 
@@ -307,7 +307,7 @@ namespace RoninEngine::Runtime
 
         if(!file)
         {
-            ronin_err(std::string("Music: \""+path+"\" can not load").c_str());
+            ronin_err(std::string("Music: \"" + path + "\" can not load").c_str());
             return RES_INVALID;
         }
 

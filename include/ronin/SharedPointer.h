@@ -1,116 +1,81 @@
 #ifndef _RONIN_SHARED_POINTER_H_
 #define _RONIN_SHARED_POINTER_H_ 1
 
-#include <cstdint>
-#include <type_traits>
+#include <cstddef>
 #include "Defines.h"
+#include "Declarations.h"
 
-namespace RoninEngine::Runtime
+namespace RoninEngine
 {
-    class RONIN_API RoninPointer
+    namespace Runtime
     {
-    public:
-        RoninPointer() = default;
-        virtual ~RoninPointer() = default;
+        template<typename T, typename U>
+        Ref<T> GetRef(U*);
 
-        bool isNull() const;
+        template <typename T, typename U>
+        Ref<T> StaticCast(Ref<U>);
+        template <typename T, typename U>
+        Ref<T> DynamicCast(Ref<U>);
+        template <typename T, typename U>
+        Ref<T> ReinterpretCast(Ref<U>);
 
-        operator bool() const;
-    };
-
-    template<typename T>
-    class RONIN_API SharedPointer
-    {
-    public:
-        SharedPointer();
-        explicit SharedPointer(T* ptr);
-        explicit SharedPointer(const T* ptr);
-        SharedPointer(const SharedPointer & other);
-        SharedPointer(SharedPointer && other) noexcept;
-        ~SharedPointer();
-
-        T* get() const;
-
-        SharedPointer& operator =(const SharedPointer& other);
-        SharedPointer& operator =(SharedPointer&& other);
-        bool operator==(const SharedPointer &rhs);
-        bool operator!=(const SharedPointer &rhs);
-        T *operator->() const;
-        T &operator*() const;
-        operator bool() const;
-
-    protected:
-        T* ptr_;
-        std::size_t* ref_count_;
-
-        void release();
-    };
-
-    template<typename T>
-    class RONIN_API SharedRoninObject : public SharedPointer<T>
-    {
-    public:
-        // static_assert(std::is_base_of<RoninPointer, std::remove_pointer_t<T>>::value, "T is must be RoninPointer");
-
-        // C++ owner by Base Constructor
-        using SharedPointer<T>::SharedPointer;
-        using ConstType = SharedRoninObject<const T>;
-
-        bool isNull() const;
-
-        template<typename X>
-        SharedRoninObject<X> StaticCast();
-
-        template<typename X>
-        SharedRoninObject<X> DynamicCast();
-
-        template<typename X>
-        SharedRoninObject<X> ReinterpretCast();
-    };
-
-    template<typename T>
-    template<typename X>
-    inline SharedRoninObject<X> SharedRoninObject<T>::DynamicCast()
-    {
-        SharedRoninObject<X> result {};
-        if((result.ptr_ = dynamic_cast<X*>(this->ptr_)) != nullptr)
+        class RONIN_API RoninPointer
         {
-            result.ref_count_ = this->ref_count_;
-            // Add ref
-            (*result.ref_count_)++;
-        }
-        return result;
-    }
+        protected:
+            void* _handle;
 
-    template<typename T>
-    template<typename X>
-    inline SharedRoninObject<X> SharedRoninObject<T>::StaticCast()
-    {
-        SharedRoninObject<X> result {};
-        if((result.ptr_ = static_cast<X*>(this->ptr_)))
+        public:
+            RoninPointer();
+            virtual ~RoninPointer();
+            bool isNull() const;
+            operator bool() const;
+
+            template<typename T>
+            Ref<T> GetRef();
+        };
+
+        template <typename T>
+        class RONIN_API Ref
         {
-            result.ref_count_ = this->ref_count_;
-            (*result.ref_count_)++;
-        }
-        return result;
-    }
+            template <typename U>
+            friend Ref<T> StaticCast(Ref<U>);
+            template <typename U>
+            friend Ref<T> DynamicCast(Ref<U>);
+            template <typename U>
+            friend Ref<T> ReinterpretCast(Ref<U>);
 
-    template<typename T>
-    template<typename X>
-    inline SharedRoninObject<X> SharedRoninObject<T>::ReinterpretCast()
-    {
-        SharedRoninObject<X> result {};
-        if((result.ptr_ = reinterpret_cast<X*>(this->ptr_)))
-        {
-            result.ref_count_ = this->ref_count_;
-            (*result.ref_count_)++;
-        }
-        return result;
-    }
+        public:
+            Ref() noexcept;
+            Ref(std::nullptr_t) noexcept;
+            Ref(const Ref &other) noexcept;
+            Ref(Ref &&other) noexcept;
+            explicit Ref(T *ptr) noexcept;
+            ~Ref();
 
-    template<typename T>
-    using Bushido = SharedRoninObject<std::remove_pointer_t<T>>;
+            bool isNull() const;
 
-}
+            T *get() const;
 
+            Ref &operator=(const Ref &other);
+            Ref &operator=(Ref &&other);
+            Ref &operator=(T* ptr);
+            Ref &operator=(T*&& ptr);
+            Ref &operator=(std::nullptr_t);
+            bool operator==(const Ref &rhs) const;
+            bool operator!=(const Ref &rhs) const;
+            T *operator->() const;
+            T &operator*() const;
+            operator bool() const;
+
+        private:
+            T *ptr_;
+            std::size_t *ref_count_;
+
+            void release();
+        };
+
+    } // namespace Runtime
+} // namespace RoninEngine
+
+#include "SharedPointerEnd.h"
 #endif

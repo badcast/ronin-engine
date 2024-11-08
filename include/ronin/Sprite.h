@@ -39,9 +39,9 @@ namespace RoninEngine::Runtime
 
         Rect realityRect(float opaque = 1.f);
 
-        static Sprite *CreateEmptySprite();
-        static Sprite *CreateBlackSprite();
-        static Sprite *CreateWhiteSprite();
+        static SpriteRef CreateEmptySprite();
+        static SpriteRef CreateBlackSprite();
+        static SpriteRef CreateWhiteSprite();
     };
 
 } // namespace RoninEngine::Runtime

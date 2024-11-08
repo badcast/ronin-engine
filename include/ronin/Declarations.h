@@ -1,8 +1,7 @@
-#pragma once
+#ifndef _RONIN_DECLARATIONS_H_
+#define _RONIN_DECLARATIONS_H_ 1
 
-#include <cstdint>
-
-#ifndef RONIN_COMPILLING
+#if !RONIN_COMPILLING
 typedef struct SDL_Surface Image;
 typedef struct SDL_Texture native_texture_t;
 typedef struct SDL_Cursor Cursor;
@@ -96,5 +95,30 @@ namespace RoninEngine
         class AudioSource;
         class ParticleSystem;
 
+        class RoninPointer;
+
+        template <typename T>
+        class Ref;
+
+        using ObjectRef = Ref<Object>;
+        using ComponentRef = Ref<Component>;
+        using RendererRef = Ref<Renderer>;
+        using TransformRef = Ref<Transform>;
+        using BehaviourRef = Ref<Behaviour>;
+        using CollisionRef = Ref<Collision>;
+        using LightRef = Ref<Light>;
+        using SpotlightRef = Ref<Spotlight>;
+        using SpriteRendererRef = Ref<SpriteRenderer>;
+        using Terrain2DRef = Ref<Terrain2D>;
+        using CameraRef = Ref<Camera>;
+        using Camera2DRef = Ref<Camera2D>;
+        using MoveController2DRef = Ref<MoveController2D>;
+        using AudioSourceRef = Ref<AudioSource>;
+        using ParticleSystemRef = Ref<ParticleSystem>;
+        using GameObjectRef = Ref<GameObject>;
+        using SpriteRef = Ref<Sprite>;
+        using AtlasRef = Ref<Atlas>;
     } // namespace Runtime
 } // namespace RoninEngine
+
+#endif

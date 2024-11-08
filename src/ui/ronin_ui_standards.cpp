@@ -382,12 +382,12 @@ namespace RoninEngine::UI
 
             case RGUI_SPRITE_BUTTON:
             {
-                Sprite * sprite = uiState.ms_hover ? element.resource.spriteButton.hover : element.resource.spriteButton.normal;
+                Sprite *sprite = uiState.ms_hover ? element.resource.spriteButton.hover : element.resource.spriteButton.normal;
 
-                SDL_Texture* texture = render_cache_texture(sprite);
+                SDL_Texture *texture = render_cache_texture(sprite);
 
                 Vec2Int baseSize = element.rect.getWH();
-                render_texture_extension(texture, &baseSize, reinterpret_cast<SDL_Rect*>(&sprite->m_rect), reinterpret_cast<SDL_Rect*>(&element.rect), 0.0F);
+                render_texture_extension(texture, &baseSize, reinterpret_cast<SDL_Rect *>(&sprite->m_rect), reinterpret_cast<SDL_Rect *>(&element.rect), 0.0F);
                 render_cache_unref(texture);
 
                 sprite = element.resource.spriteButton.icon;
@@ -395,7 +395,7 @@ namespace RoninEngine::UI
                     break;
 
                 texture = render_cache_texture(sprite);
-                render_texture_extension(texture, &baseSize, reinterpret_cast<SDL_Rect*>(&sprite->m_rect), reinterpret_cast<SDL_Rect*>(&element.rect), 0.0F);
+                render_texture_extension(texture, &baseSize, reinterpret_cast<SDL_Rect *>(&sprite->m_rect), reinterpret_cast<SDL_Rect *>(&element.rect), 0.0F);
                 render_cache_unref(texture);
 
                 result = uiState.ms_click;

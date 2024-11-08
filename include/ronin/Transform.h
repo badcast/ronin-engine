@@ -31,7 +31,7 @@ namespace RoninEngine::Runtime
         void LookAt(Vec2 target, Vec2 axis);
         void LookAt(Vec2 target);
         void LookAt(TransformRef target, Vec2 axis);
-        void LookAt(TransformRef arget);
+        void LookAt(TransformRef target);
         void LookAtLerp(Vec2 target, float t);
         void LookAtLerp(Vec2 target, Vec2 axis, float t);
         void LookAtLerp(TransformRef target, float t);

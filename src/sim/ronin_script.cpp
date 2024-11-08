@@ -4,7 +4,7 @@
     if(bindFlags & FLAG)   \
         binder[FLAG].insert(SCRIPT);
 
-#define RUN_SCRIPTS(FLAG, METHOD)                                     \
+#define RUN_SCRIPTS(FLAG, METHOD)                                           \
     for(Behaviour * script : currentWorld->irs->runtimeScriptBinders[FLAG]) \
         script->METHOD();
 
@@ -34,24 +34,24 @@ namespace RoninEngine::Runtime
     ///////////////////////////////////////////
     ///////////////////////////////////////////
     ///////////////////////////////////////////
-    void Behaviour::OnAwake()      ////////////
-    {                              ////////////
-    }                              ////////////
-    void Behaviour::OnStart()      ////////////
-    {                              ////////////
-    }                              ////////////
-    void Behaviour::OnUpdate()     ////////////
-    {                              ////////////
-    }                              ////////////
+    void Behaviour::OnAwake() ////////////
+    {                         ////////////
+    } ////////////
+    void Behaviour::OnStart() ////////////
+    {                         ////////////
+    } ////////////
+    void Behaviour::OnUpdate() ////////////
+    {                          ////////////
+    } ////////////
     void Behaviour::OnLateUpdate() ////////////
     {                              ////////////
-    }                              ////////////
-    void Behaviour::OnGizmos()     ////////////
-    {                              ////////////
-    }                              ////////////
-    void Behaviour::OnDestroy()    ////////////
-    {                              ////////////
-    }                              ////////////
+    } ////////////
+    void Behaviour::OnGizmos() ////////////
+    {                          ////////////
+    } ////////////
+    void Behaviour::OnDestroy() ////////////
+    {                           ////////////
+    } ////////////
     ///////////////////////////////////////////
     ///////////////////////////////////////////
     ///////////////////////////////////////////

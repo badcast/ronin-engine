@@ -11,9 +11,9 @@ namespace RoninEngine::Runtime
         if(oldParent == newParent)
             return;
 
-        for(TransformRef child : oldParent->hierarchy)
+        for(TransformRef& child : oldParent->hierarchy)
         {
-            child->m_parent = newParent;
+            child->m_parent = newParent->GetRef<Transform>();
         }
 
         newParent->hierarchy.merge(oldParent->hierarchy);
@@ -21,7 +21,7 @@ namespace RoninEngine::Runtime
     void hierarchy_parent_change(Transform *from, Transform *newParent)
     {
         // TODO: Fix it Hierarchy function
-        Transform *lastParent = from->m_parent;
+        Transform *lastParent = from->m_parent.ptr_;
 
         if(newParent && lastParent == newParent)
             return;
@@ -32,20 +32,20 @@ namespace RoninEngine::Runtime
         }
 
         if(!newParent)
-            hierarchy_append(World::GetCurrentWorld()->irs->mainObject->transform(), from); // nullptr as Root
+            hierarchy_append(World::GetCurrentWorld()->irs->mainObject->transform().ptr_, from); // nullptr as Root
         else
         {
-            from->m_parent = newParent;
+            from->m_parent = newParent->GetRef<Transform>();
             hierarchy_append(newParent, from);
         }
     }
 
     void hierarchy_child_remove(Transform *parent, Transform *who)
     {
-        if(who->m_parent != parent)
+        if(who->m_parent.ptr_ != parent)
             return;
 
-        auto iter = std::find(parent->hierarchy.begin(), parent->hierarchy.end(), who);
+        auto iter = std::find(parent->hierarchy.begin(), parent->hierarchy.end(), who->GetRef<Transform>());
         if(iter == parent->hierarchy.end())
             return;
         parent->hierarchy.erase(iter);
@@ -54,7 +54,7 @@ namespace RoninEngine::Runtime
 
     void hierarchy_childs_remove(Transform *parent)
     {
-        for(Transform *child : parent->hierarchy)
+        for(TransformRef &child : parent->hierarchy)
         {
             child->m_parent = nullptr;
         }
@@ -64,10 +64,10 @@ namespace RoninEngine::Runtime
 
     void hierarchy_append(Transform *parent, Transform *who)
     {
-        auto iter = find_if(begin(parent->hierarchy), end(parent->hierarchy), std::bind(std::equal_to<Transform *>(), std::placeholders::_1, who));
+        auto iter = find_if(begin(parent->hierarchy), std::end(parent->hierarchy), std::bind(std::equal_to<TransformRef>(), std::placeholders::_1, who->GetRef<Transform>()));
         if(iter == end(parent->hierarchy))
         {
-            who->m_parent = parent;
+            who->m_parent = parent->GetRef<Transform>();
             parent->hierarchy.emplace_back(who);
         }
     }
@@ -88,7 +88,7 @@ namespace RoninEngine::Runtime
 
             if(__target != __end)
             {
-                if((*iter) == who)
+                if((*iter).ptr_ == who)
                     __target = iter;
             }
         }
@@ -158,7 +158,7 @@ namespace RoninEngine::Runtime
         return currentWorld->irs->mainObject->transform();
     }
 
-    void Transform::LookAt(TransformRef arget)
+    void Transform::LookAt(TransformRef target)
     {
         LookAt(target->_position, Vec2::down);
     }
@@ -232,14 +232,14 @@ namespace RoninEngine::Runtime
     {
         if(this->m_parent == nullptr)
             return;
-        hierarchy_sibiling(m_parent, this, 0); // 0 is first
+        hierarchy_sibiling(m_parent.ptr_, this, 0); // 0 is first
     }
 
     void Transform::AsLastChild()
     {
         if(this->m_parent == nullptr)
             return;
-        hierarchy_sibiling(m_parent, this, m_parent->hierarchy.size() - 1); // N-1 is last
+        hierarchy_sibiling(m_parent.ptr_, this, m_parent->hierarchy.size() - 1); // N-1 is last
     }
 
     const Vec2 Transform::forward() const
@@ -329,7 +329,7 @@ namespace RoninEngine::Runtime
             Matrix::matrix_update(this, Matrix::matrix_get_key(lastPosition));
 
             Vec2 localPos = value - lastPosition;
-            for(Transform *child : hierarchy)
+            for(TransformRef& child : hierarchy)
             {
                 child->position(child->_position + localPos);
             }
@@ -361,7 +361,7 @@ namespace RoninEngine::Runtime
 
         // FIXME: BUG! Hierarchy O(n^2) Frozing of the change position (Recursive)
 
-        for(Transform *child : hierarchy)
+        for(TransformRef &child : hierarchy)
         {
             // update child position
             child->position(Vec2::RotateAround(_position, child->_position - _position, angle1));
@@ -394,7 +394,7 @@ namespace RoninEngine::Runtime
             Matrix::matrix_update(this, Matrix::matrix_get_key(Vec2::infinity));
         }
         // send in hierarchy
-        for(Transform *chlid : hierarchy)
+        for(TransformRef &chlid : hierarchy)
             chlid->parent_notify_active_state(from);
     }
 
@@ -440,12 +440,12 @@ namespace RoninEngine::Runtime
             parent = currentWorld->irs->mainObject->transform();
 
         // change children of the parent
-        hierarchy_parent_change(this, parent);
+        hierarchy_parent_change(this, parent.ptr_);
 
         if(worldPositionStays)
         {
             // change position child
-            for(TransformRef & child : hierarchy)
+            for(TransformRef &child : hierarchy)
             {
                 // Set the world position to childs
                 child->position(child->_position - parent->_position);
@@ -468,10 +468,10 @@ namespace RoninEngine::Runtime
 
     std::vector<TransformRef> Transform::GetAllTransforms()
     {
-        Transform *current;
-        std::vector<Transform *> result {};
-        std::queue<Transform *> queue {};
-        queue.push(this);
+        TransformRef current;
+        std::vector<TransformRef> result {};
+        std::queue<TransformRef> queue {};
+        queue.push(this->GetRef<Transform>());
 
         while(!queue.empty())
         {
@@ -480,7 +480,7 @@ namespace RoninEngine::Runtime
 
             result.push_back(current);
 
-            for(Transform *child : current->hierarchy)
+            for(TransformRef& child : current->hierarchy)
             {
                 queue.push(child);
             }

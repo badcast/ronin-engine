@@ -10,6 +10,7 @@ namespace RoninEngine::Runtime
     {
     private:
         int _class;
+
     public:
         Renderer();
         Renderer(const std::string &name);

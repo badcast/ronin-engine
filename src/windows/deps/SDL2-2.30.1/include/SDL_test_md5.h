@@ -40,7 +40,7 @@
  **   -- distinct additive constant for each step                     **
  **   -- round 4 added, working mod 7                                 **
  ***********************************************************************
-*/
+ */
 
 /*
  ***********************************************************************
@@ -51,7 +51,7 @@
  **    (3) Call MD5Final on mdContext                                 **
  **  The message digest is now in mdContext->digest[0...15]           **
  ***********************************************************************
-*/
+ */
 
 #ifndef SDL_test_md5_h_
 #define SDL_test_md5_h_
@@ -59,64 +59,62 @@
 #include "begin_code.h"
 /* Set up for C function definitions, even when using C++ */
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* ------------ Definitions --------- */
+    /* ------------ Definitions --------- */
 
-/* typedef a 32-bit type */
-  typedef unsigned long int MD5UINT4;
+    /* typedef a 32-bit type */
+    typedef unsigned long int MD5UINT4;
 
-/* Data structure for MD5 (Message-Digest) computation */
-  typedef struct {
-    MD5UINT4  i[2];     /* number of _bits_ handled mod 2^64 */
-    MD5UINT4  buf[4];       /* scratch buffer */
-    unsigned char in[64];   /* input buffer */
-    unsigned char digest[16];   /* actual digest after Md5Final call */
-  } SDLTest_Md5Context;
+    /* Data structure for MD5 (Message-Digest) computation */
+    typedef struct
+    {
+        MD5UINT4 i[2];            /* number of _bits_ handled mod 2^64 */
+        MD5UINT4 buf[4];          /* scratch buffer */
+        unsigned char in[64];     /* input buffer */
+        unsigned char digest[16]; /* actual digest after Md5Final call */
+    } SDLTest_Md5Context;
 
-/* ---------- Function Prototypes ------------- */
+    /* ---------- Function Prototypes ------------- */
 
-/**
- * \brief initialize the context
- *
- * \param  mdContext        pointer to context variable
- *
- * Note: The function initializes the message-digest context
- *       mdContext. Call before each new use of the context -
- *       all fields are set to zero.
- */
- void SDLTest_Md5Init(SDLTest_Md5Context * mdContext);
+    /**
+     * \brief initialize the context
+     *
+     * \param  mdContext        pointer to context variable
+     *
+     * Note: The function initializes the message-digest context
+     *       mdContext. Call before each new use of the context -
+     *       all fields are set to zero.
+     */
+    void SDLTest_Md5Init(SDLTest_Md5Context *mdContext);
 
+    /**
+     * \brief update digest from variable length data
+     *
+     * \param  mdContext       pointer to context variable
+     * \param  inBuf           pointer to data array/string
+     * \param  inLen           length of data array/string
+     *
+     * Note: The function updates the message-digest context to account
+     *       for the presence of each of the characters inBuf[0..inLen-1]
+     *       in the message whose digest is being computed.
+     */
 
-/**
- * \brief update digest from variable length data
- *
- * \param  mdContext       pointer to context variable
- * \param  inBuf           pointer to data array/string
- * \param  inLen           length of data array/string
- *
- * Note: The function updates the message-digest context to account
- *       for the presence of each of the characters inBuf[0..inLen-1]
- *       in the message whose digest is being computed.
-*/
+    void SDLTest_Md5Update(SDLTest_Md5Context *mdContext, unsigned char *inBuf, unsigned int inLen);
 
- void SDLTest_Md5Update(SDLTest_Md5Context * mdContext, unsigned char *inBuf,
-                 unsigned int inLen);
+    /**
+     * \brief complete digest computation
+     *
+     * \param mdContext     pointer to context variable
+     *
+     * Note: The function terminates the message-digest computation and
+     *       ends with the desired message digest in mdContext.digest[0..15].
+     *       Always call before using the digest[] variable.
+     */
 
-
-/**
- * \brief complete digest computation
- *
- * \param mdContext     pointer to context variable
- *
- * Note: The function terminates the message-digest computation and
- *       ends with the desired message digest in mdContext.digest[0..15].
- *       Always call before using the digest[] variable.
-*/
-
- void SDLTest_Md5Final(SDLTest_Md5Context * mdContext);
-
+    void SDLTest_Md5Final(SDLTest_Md5Context *mdContext);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

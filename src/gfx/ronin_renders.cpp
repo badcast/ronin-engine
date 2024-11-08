@@ -25,26 +25,26 @@ namespace RoninEngine::Runtime
         Vec2Int wpLeftTop;
         Vec2Int wpRightBottom;
         std::map<int, std::vector<Renderer *>> orders;
-        std::vector<std::function<void(RenderCommand, Renderer *, Rendering *)>> renderFunctions {
-            render_sprite_renderer, render_terrain2d
-        };
+        std::vector<std::function<void(RenderCommand, Renderer *, Rendering *)>> renderFunctions {render_sprite_renderer, render_terrain2d};
         int edges;
     } params;
 
-    template<>
-    int render_getclass<SpriteRenderer>(){
+    template <>
+    int render_getclass<SpriteRenderer>()
+    {
         return REND_SPRITE;
     }
-    template<>
-    int render_getclass<Terrain2D>(){
+    template <>
+    int render_getclass<Terrain2D>()
+    {
         return REND_TERRAIN2D;
     }
 
-    std::function<void(RenderCommand,Renderer*,Rendering *)> render_getfunc(int _class)
+    std::function<void(RenderCommand, Renderer *, Rendering *)> render_getfunc(int _class)
     {
         if(_class < 1 || params.renderFunctions.size() < _class)
         {
-           return nullptr;
+            return nullptr;
         }
 
         return params.renderFunctions[--_class];
@@ -111,12 +111,12 @@ namespace RoninEngine::Runtime
         camera->res->culled = 0;
 
         params.camera_position = camera->transform()->position();
-        params.root_transform = World::GetCurrentWorld()->irs->mainObject->transform();
+        params.root_transform = World::GetCurrentWorld()->irs->mainObject->transform().ptr_;
         params.wpLeftTop = Vec2::RoundToInt(Camera::ScreenToWorldPoint(Vec2::zero));
         params.wpRightBottom = Vec2::RoundToInt(Camera::ScreenToWorldPoint(Vec2(gscope.activeResolution.width, gscope.activeResolution.height)));
         params.edges = Math::Number(Math::Max(params.wpRightBottom.x - params.camera_position.x, params.wpRightBottom.y - params.camera_position.y)) + 5 + camera->distanceEvcall;
 
-               // Clearing
+        // Clearing
         if(camera->backclear)
         {
             RenderUtility::SetColor(camera->backcolor);
@@ -159,11 +159,11 @@ namespace RoninEngine::Runtime
                     {
                         for(Transform *transform_object : layerObject->second)
                         {
-                            for(Component *component : transform_object->_owner->m_components)
+                            for(ComponentRef &component : transform_object->_owner->m_components)
                             {
                                 Renderer *render_iobject;
                                 // This object not render component, then continue and to next iterator
-                                if(!component->_enable || (render_iobject = dynamic_cast<Renderer *>(component)) == nullptr)
+                                if(!component->_enable || (render_iobject = dynamic_cast<Renderer *>(component.ptr_)) == nullptr)
                                 {
                                     continue;
                                 }
@@ -179,12 +179,12 @@ namespace RoninEngine::Runtime
         {
             for(Renderer *renderRef : layer->second)
             {
-                Transform *render_transform = renderRef->transform();
+                Transform *render_transform = renderRef->transform().ptr_;
                 memset(&(params.wrapper), 0, sizeof(params.wrapper));
                 // Send command pre render
                 render_getfunc(renderRef->_class)(RenderCommand::PreRender, renderRef, &params.wrapper);
                 if(params.wrapper.texture)
-                {                    
+                {
                     params.sourcePoint = render_transform->_position;
                     params.sourcePoint += renderRef->get_offset();
 
@@ -217,7 +217,7 @@ namespace RoninEngine::Runtime
 
 #undef MX
 
-               // TODO: Render light
+        // TODO: Render light
         /*
                 // Render Lights
                 for (auto lightSource : *std::get<1>(filter)) {
@@ -256,14 +256,14 @@ namespace RoninEngine::Runtime
 
             SDL_SetRenderDrawColor(gscope.renderer, 0, 255, 0, 25);
 
-                   // Center dot
+            // Center dot
             SDL_RenderDrawPointF(gscope.renderer, params.wrapper.dst.x, params.wrapper.dst.y);
             SDL_RenderDrawPointF(gscope.renderer, params.wrapper.dst.x - offset, params.wrapper.dst.y);
             SDL_RenderDrawPointF(gscope.renderer, params.wrapper.dst.x + offset, params.wrapper.dst.y);
             SDL_RenderDrawPointF(gscope.renderer, params.wrapper.dst.x, params.wrapper.dst.y - offset);
             SDL_RenderDrawPointF(gscope.renderer, params.wrapper.dst.x, params.wrapper.dst.y + offset);
 
-                   // borders
+            // borders
             RenderUtility::DrawLine(Vec2(offset, offset), Vec2(offset + height, offset));
             RenderUtility::DrawLine(Vec2(gscope.activeResolution.width - offset, offset), Vec2(gscope.activeResolution.width - offset - height, offset));
             RenderUtility::DrawLine(Vec2(offset, gscope.activeResolution.height - offset), Vec2(offset + height, gscope.activeResolution.height - offset));
@@ -310,7 +310,7 @@ namespace RoninEngine::Runtime
     /////////////////////
     void render_sprite_renderer(RenderCommand command, Renderer *object, Rendering *rendering)
     {
-        SpriteRenderer * target = static_cast<SpriteRenderer*>(object);
+        SpriteRenderer *target = static_cast<SpriteRenderer *>(object);
         if(target->sprite == nullptr)
             return;
 
@@ -327,7 +327,7 @@ namespace RoninEngine::Runtime
                     {
                         case SpriteRenderType::Simple:
 
-                            target->save_texture = render_cache_texture(target->sprite);
+                            target->save_texture = render_cache_texture(target->sprite.ptr_);
                             rendering->src = target->sprite->m_rect;
                             rendering->dst.w = target->sprite->m_rect.w;
                             rendering->dst.h = target->sprite->m_rect.h;
@@ -346,7 +346,7 @@ namespace RoninEngine::Runtime
                                     //      rendering->dst.h = sprite->height() * abs(target->m_size.y) / pixelsPerPoint;
                                     // break;
 
-                                           // render as cut
+                                    // render as cut
                                 case SpriteRenderPresentMode::Place:
                                     rendering->src.w *= target->m_size.x;
                                     rendering->src.h *= target->m_size.y;
@@ -362,10 +362,10 @@ namespace RoninEngine::Runtime
                             rendering->dst.w = target->sprite->width() * abs(target->m_size.x) / currentWorld->irs->metricPixelsPerPoint.x;
                             rendering->dst.h = target->sprite->height() * abs(target->m_size.y) / currentWorld->irs->metricPixelsPerPoint.y;
 
-                                   // generate tiles
+                            // generate tiles
                             target->save_texture = SDL_CreateTexture(
-                                                                      // renderer, sdl_default_pixelformat, SDL_TextureAccess::SDL_TEXTUREACCESS_TARGET, rendering->src.w,
-                                                                      // rendering->src.h);
+                                // renderer, sdl_default_pixelformat, SDL_TextureAccess::SDL_TEXTUREACCESS_TARGET, rendering->src.w,
+                                // rendering->src.h);
                                 gscope.renderer,
                                 defaultPixelFormat,
                                 SDL_TextureAccess::SDL_TEXTUREACCESS_TARGET,
@@ -384,7 +384,7 @@ namespace RoninEngine::Runtime
 
                             SDL_Texture *temp_texture = SDL_CreateTextureFromSurface(gscope.renderer, target->sprite->surface);
 
-                                   // render tile
+                            // render tile
                             switch(target->renderPresentMode)
                             {
                                 case SpriteRenderPresentMode::Fixed:
@@ -472,8 +472,9 @@ namespace RoninEngine::Runtime
     /////////////////////////
     void render_terrain2d(RenderCommand command, Renderer *object, Rendering *rendering)
     {
-        Terrain2D * target = static_cast<Terrain2D*>(object);
-        switch (command) {
+        Terrain2D *target = static_cast<Terrain2D *>(object);
+        switch(command)
+        {
             case RenderCommand::PreRender:
 
                 break;
@@ -483,6 +484,5 @@ namespace RoninEngine::Runtime
             default:;
         }
     }
-
 
 } // namespace RoninEngine::Runtime

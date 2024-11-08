@@ -34,77 +34,75 @@
 
 #include "SDL_touch.h"
 
-
 #include "begin_code.h"
 /* Set up for C function definitions, even when using C++ */
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-typedef Sint64 SDL_GestureID;
+    typedef Sint64 SDL_GestureID;
 
-/* Function prototypes */
+    /* Function prototypes */
 
-/**
- * Begin recording a gesture on a specified touch device or all touch devices.
- *
- * If the parameter `touchId` is -1 (i.e., all devices), this function will
- * always return 1, regardless of whether there actually are any devices.
- *
- * \param touchId the touch device id, or -1 for all touch devices
- * \returns 1 on success or 0 if the specified device could not be found.
- *
- * \since This function is available since SDL 2.0.0.
- *
- * \sa SDL_GetTouchDevice
- */
-extern DECLSPEC int SDLCALL SDL_RecordGesture(SDL_TouchID touchId);
+    /**
+     * Begin recording a gesture on a specified touch device or all touch devices.
+     *
+     * If the parameter `touchId` is -1 (i.e., all devices), this function will
+     * always return 1, regardless of whether there actually are any devices.
+     *
+     * \param touchId the touch device id, or -1 for all touch devices
+     * \returns 1 on success or 0 if the specified device could not be found.
+     *
+     * \since This function is available since SDL 2.0.0.
+     *
+     * \sa SDL_GetTouchDevice
+     */
+    extern DECLSPEC int SDLCALL SDL_RecordGesture(SDL_TouchID touchId);
 
+    /**
+     * Save all currently loaded Dollar Gesture templates.
+     *
+     * \param dst a SDL_RWops to save to
+     * \returns the number of saved templates on success or 0 on failure; call
+     *          SDL_GetError() for more information.
+     *
+     * \since This function is available since SDL 2.0.0.
+     *
+     * \sa SDL_LoadDollarTemplates
+     * \sa SDL_SaveDollarTemplate
+     */
+    extern DECLSPEC int SDLCALL SDL_SaveAllDollarTemplates(SDL_RWops *dst);
 
-/**
- * Save all currently loaded Dollar Gesture templates.
- *
- * \param dst a SDL_RWops to save to
- * \returns the number of saved templates on success or 0 on failure; call
- *          SDL_GetError() for more information.
- *
- * \since This function is available since SDL 2.0.0.
- *
- * \sa SDL_LoadDollarTemplates
- * \sa SDL_SaveDollarTemplate
- */
-extern DECLSPEC int SDLCALL SDL_SaveAllDollarTemplates(SDL_RWops *dst);
+    /**
+     * Save a currently loaded Dollar Gesture template.
+     *
+     * \param gestureId a gesture id
+     * \param dst a SDL_RWops to save to
+     * \returns 1 on success or 0 on failure; call SDL_GetError() for more
+     *          information.
+     *
+     * \since This function is available since SDL 2.0.0.
+     *
+     * \sa SDL_LoadDollarTemplates
+     * \sa SDL_SaveAllDollarTemplates
+     */
+    extern DECLSPEC int SDLCALL SDL_SaveDollarTemplate(SDL_GestureID gestureId, SDL_RWops *dst);
 
-/**
- * Save a currently loaded Dollar Gesture template.
- *
- * \param gestureId a gesture id
- * \param dst a SDL_RWops to save to
- * \returns 1 on success or 0 on failure; call SDL_GetError() for more
- *          information.
- *
- * \since This function is available since SDL 2.0.0.
- *
- * \sa SDL_LoadDollarTemplates
- * \sa SDL_SaveAllDollarTemplates
- */
-extern DECLSPEC int SDLCALL SDL_SaveDollarTemplate(SDL_GestureID gestureId,SDL_RWops *dst);
-
-
-/**
- * Load Dollar Gesture templates from a file.
- *
- * \param touchId a touch id
- * \param src a SDL_RWops to load from
- * \returns the number of loaded templates on success or a negative error code
- *          (or 0) on failure; call SDL_GetError() for more information.
- *
- * \since This function is available since SDL 2.0.0.
- *
- * \sa SDL_SaveAllDollarTemplates
- * \sa SDL_SaveDollarTemplate
- */
-extern DECLSPEC int SDLCALL SDL_LoadDollarTemplates(SDL_TouchID touchId, SDL_RWops *src);
+    /**
+     * Load Dollar Gesture templates from a file.
+     *
+     * \param touchId a touch id
+     * \param src a SDL_RWops to load from
+     * \returns the number of loaded templates on success or a negative error code
+     *          (or 0) on failure; call SDL_GetError() for more information.
+     *
+     * \since This function is available since SDL 2.0.0.
+     *
+     * \sa SDL_SaveAllDollarTemplates
+     * \sa SDL_SaveDollarTemplate
+     */
+    extern DECLSPEC int SDLCALL SDL_LoadDollarTemplates(SDL_TouchID touchId, SDL_RWops *src);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

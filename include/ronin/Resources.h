@@ -36,15 +36,15 @@ namespace RoninEngine
         class RONIN_API Asset
         {
         private:
-            struct AssetRef *ref;
+            struct AssetImpl *ref;
 
         public:
-            Sprite *GetSprite(const std::string &name);
+            SpriteRef GetSprite(const std::string &name);
             AudioClip *GetAudioClip(const std::string &name);
-            Atlas *GetAtlasObject();
+            AtlasRef GetAtlasObject();
 
-            std::vector<Sprite *> GetSprites(const std::string &name);
-            std::vector<AudioClip*> GetAudioClips(const std::string &name);
+            std::vector<SpriteRef> GetSprites(const std::string &name);
+            std::vector<AudioClip *> GetAudioClips(const std::string &name);
         };
 
         class RONIN_API AssetManager

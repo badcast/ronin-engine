@@ -45,9 +45,9 @@ namespace RoninEngine::Runtime
         return result;
     }
 
-    Sprite *Atlas::GetSpriteFromPoint(const Vec2Int &value)
+    SpriteRef Atlas::GetSpriteFromPoint(const Vec2Int &value)
     {
-        Sprite *result = nullptr;
+        SpriteRef result = nullptr;
 
         for(const auto &sprite : _sprites)
         {
@@ -61,9 +61,9 @@ namespace RoninEngine::Runtime
         return result;
     }
 
-    Sprite *Atlas::GetSpriteFromName(const std::string &value)
+    SpriteRef Atlas::GetSpriteFromName(const std::string &value)
     {
-        Sprite *result = nullptr;
+        SpriteRef result = nullptr;
 
         // TODO: Optimize here (hash_name use)
         for(const auto &sprite : _sprites)
@@ -78,7 +78,7 @@ namespace RoninEngine::Runtime
         return result;
     }
 
-    std::vector<Sprite *> Atlas::GetSprites()
+    std::vector<SpriteRef> Atlas::GetSprites()
     {
         return _sprites;
     }

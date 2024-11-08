@@ -32,21 +32,16 @@ std::uint32_t internal_rand_rdrnd()
     return random_val;
 }
 
-
 std::uint32_t internal_rand_devrand()
 {
 #ifdef __linux__
     std::uint32_t random_val;
     std::ifstream devi;
-
     devi.open("/dev/random", std::ios_base::binary | std::ios_base::in);
-
     if(devi)
     {
-        devi.read(reinterpret_cast<char *>(&random_val), sizeof(random_val)).gcount();
-
+        devi.read(reinterpret_cast<char *>(&random_val), sizeof(random_val));
         devi.close();
-
         return random_val;
     }
 #endif

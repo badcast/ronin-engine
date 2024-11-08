@@ -81,13 +81,13 @@
 #define SDL_MAIN_NEEDED
 
 /* We need to export SDL_main so it can be launched from Java */
-#define SDLMAIN_DECLSPEC    DECLSPEC
+#define SDLMAIN_DECLSPEC DECLSPEC
 
 #elif defined(__NACL__)
 /* On NACL we use ppapi_simple to set up the application helper code,
-   then wait for the first PSE_INSTANCE_DIDCHANGEVIEW event before 
+   then wait for the first PSE_INSTANCE_DIDCHANGEVIEW event before
    starting the user main function.
-   All user code is run in a separate thread by ppapi_simple, thus 
+   All user code is run in a separate thread by ppapi_simple, thus
    allowing for blocking io to take place via nacl_io
 */
 #define SDL_MAIN_NEEDED
@@ -105,8 +105,10 @@
 #define SDL_MAIN_AVAILABLE
 
 #define SDL_PS2_SKIP_IOP_RESET() \
-   void reset_IOP(); \
-   void reset_IOP() {}
+    void reset_IOP();            \
+    void reset_IOP()             \
+    {                            \
+    }
 
 #elif defined(__3DS__)
 /*
@@ -140,135 +142,134 @@
  */
 
 #if defined(SDL_MAIN_NEEDED) || defined(SDL_MAIN_AVAILABLE)
-#define main    SDL_main
+#define main SDL_main
 #endif
 
 #include "begin_code.h"
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/**
- *  The prototype for the application's main() function
- */
-typedef int (*SDL_main_func)(int argc, char *argv[]);
-extern SDLMAIN_DECLSPEC int SDL_main(int argc, char *argv[]);
+    /**
+     *  The prototype for the application's main() function
+     */
+    typedef int (*SDL_main_func)(int argc, char *argv[]);
+    extern SDLMAIN_DECLSPEC int SDL_main(int argc, char *argv[]);
 
-
-/**
- * Circumvent failure of SDL_Init() when not using SDL_main() as an entry
- * point.
- *
- * This function is defined in SDL_main.h, along with the preprocessor rule to
- * redefine main() as SDL_main(). Thus to ensure that your main() function
- * will not be changed it is necessary to define SDL_MAIN_HANDLED before
- * including SDL.h.
- *
- * \since This function is available since SDL 2.0.0.
- *
- * \sa SDL_Init
- */
-extern DECLSPEC void SDLCALL SDL_SetMainReady(void);
+    /**
+     * Circumvent failure of SDL_Init() when not using SDL_main() as an entry
+     * point.
+     *
+     * This function is defined in SDL_main.h, along with the preprocessor rule to
+     * redefine main() as SDL_main(). Thus to ensure that your main() function
+     * will not be changed it is necessary to define SDL_MAIN_HANDLED before
+     * including SDL.h.
+     *
+     * \since This function is available since SDL 2.0.0.
+     *
+     * \sa SDL_Init
+     */
+    extern DECLSPEC void SDLCALL SDL_SetMainReady(void);
 
 #if defined(__WIN32__) || defined(__GDK__)
 
-/**
- * Register a win32 window class for SDL's use.
- *
- * This can be called to set the application window class at startup. It is
- * safe to call this multiple times, as long as every call is eventually
- * paired with a call to SDL_UnregisterApp, but a second registration attempt
- * while a previous registration is still active will be ignored, other than
- * to increment a counter.
- *
- * Most applications do not need to, and should not, call this directly; SDL
- * will call it when initializing the video subsystem.
- *
- * \param name the window class name, in UTF-8 encoding. If NULL, SDL
- *             currently uses "SDL_app" but this isn't guaranteed.
- * \param style the value to use in WNDCLASSEX::style. If `name` is NULL, SDL
- *              currently uses `(CS_BYTEALIGNCLIENT | CS_OWNDC)` regardless of
- *              what is specified here.
- * \param hInst the HINSTANCE to use in WNDCLASSEX::hInstance. If zero, SDL
- *              will use `GetModuleHandle(NULL)` instead.
- * \returns 0 on success, -1 on error. SDL_GetError() may have details.
- *
- * \since This function is available since SDL 2.0.2.
- */
-extern DECLSPEC int SDLCALL SDL_RegisterApp(const char *name, Uint32 style, void *hInst);
+    /**
+     * Register a win32 window class for SDL's use.
+     *
+     * This can be called to set the application window class at startup. It is
+     * safe to call this multiple times, as long as every call is eventually
+     * paired with a call to SDL_UnregisterApp, but a second registration attempt
+     * while a previous registration is still active will be ignored, other than
+     * to increment a counter.
+     *
+     * Most applications do not need to, and should not, call this directly; SDL
+     * will call it when initializing the video subsystem.
+     *
+     * \param name the window class name, in UTF-8 encoding. If NULL, SDL
+     *             currently uses "SDL_app" but this isn't guaranteed.
+     * \param style the value to use in WNDCLASSEX::style. If `name` is NULL, SDL
+     *              currently uses `(CS_BYTEALIGNCLIENT | CS_OWNDC)` regardless of
+     *              what is specified here.
+     * \param hInst the HINSTANCE to use in WNDCLASSEX::hInstance. If zero, SDL
+     *              will use `GetModuleHandle(NULL)` instead.
+     * \returns 0 on success, -1 on error. SDL_GetError() may have details.
+     *
+     * \since This function is available since SDL 2.0.2.
+     */
+    extern DECLSPEC int SDLCALL SDL_RegisterApp(const char *name, Uint32 style, void *hInst);
 
-/**
- * Deregister the win32 window class from an SDL_RegisterApp call.
- *
- * This can be called to undo the effects of SDL_RegisterApp.
- *
- * Most applications do not need to, and should not, call this directly; SDL
- * will call it when deinitializing the video subsystem.
- *
- * It is safe to call this multiple times, as long as every call is eventually
- * paired with a prior call to SDL_RegisterApp. The window class will only be
- * deregistered when the registration counter in SDL_RegisterApp decrements to
- * zero through calls to this function.
- *
- * \since This function is available since SDL 2.0.2.
- */
-extern DECLSPEC void SDLCALL SDL_UnregisterApp(void);
+    /**
+     * Deregister the win32 window class from an SDL_RegisterApp call.
+     *
+     * This can be called to undo the effects of SDL_RegisterApp.
+     *
+     * Most applications do not need to, and should not, call this directly; SDL
+     * will call it when deinitializing the video subsystem.
+     *
+     * It is safe to call this multiple times, as long as every call is eventually
+     * paired with a prior call to SDL_RegisterApp. The window class will only be
+     * deregistered when the registration counter in SDL_RegisterApp decrements to
+     * zero through calls to this function.
+     *
+     * \since This function is available since SDL 2.0.2.
+     */
+    extern DECLSPEC void SDLCALL SDL_UnregisterApp(void);
 
 #endif /* defined(__WIN32__) || defined(__GDK__) */
 
-
 #ifdef __WINRT__
 
-/**
- * Initialize and launch an SDL/WinRT application.
- *
- * \param mainFunction the SDL app's C-style main(), an SDL_main_func
- * \param reserved reserved for future use; should be NULL
- * \returns 0 on success or -1 on failure; call SDL_GetError() to retrieve
- *          more information on the failure.
- *
- * \since This function is available since SDL 2.0.3.
- */
-extern DECLSPEC int SDLCALL SDL_WinRTRunApp(SDL_main_func mainFunction, void * reserved);
+    /**
+     * Initialize and launch an SDL/WinRT application.
+     *
+     * \param mainFunction the SDL app's C-style main(), an SDL_main_func
+     * \param reserved reserved for future use; should be NULL
+     * \returns 0 on success or -1 on failure; call SDL_GetError() to retrieve
+     *          more information on the failure.
+     *
+     * \since This function is available since SDL 2.0.3.
+     */
+    extern DECLSPEC int SDLCALL SDL_WinRTRunApp(SDL_main_func mainFunction, void *reserved);
 
 #endif /* __WINRT__ */
 
 #if defined(__IPHONEOS__)
 
-/**
- * Initializes and launches an SDL application.
- *
- * \param argc The argc parameter from the application's main() function
- * \param argv The argv parameter from the application's main() function
- * \param mainFunction The SDL app's C-style main(), an SDL_main_func
- * \return the return value from mainFunction
- *
- * \since This function is available since SDL 2.0.10.
- */
-extern DECLSPEC int SDLCALL SDL_UIKitRunApp(int argc, char *argv[], SDL_main_func mainFunction);
+    /**
+     * Initializes and launches an SDL application.
+     *
+     * \param argc The argc parameter from the application's main() function
+     * \param argv The argv parameter from the application's main() function
+     * \param mainFunction The SDL app's C-style main(), an SDL_main_func
+     * \return the return value from mainFunction
+     *
+     * \since This function is available since SDL 2.0.10.
+     */
+    extern DECLSPEC int SDLCALL SDL_UIKitRunApp(int argc, char *argv[], SDL_main_func mainFunction);
 
 #endif /* __IPHONEOS__ */
 
 #ifdef __GDK__
 
-/**
- * Initialize and launch an SDL GDK application.
- *
- * \param mainFunction the SDL app's C-style main(), an SDL_main_func
- * \param reserved reserved for future use; should be NULL
- * \returns 0 on success or -1 on failure; call SDL_GetError() to retrieve
- *          more information on the failure.
- *
- * \since This function is available since SDL 2.24.0.
- */
-extern DECLSPEC int SDLCALL SDL_GDKRunApp(SDL_main_func mainFunction, void *reserved);
+    /**
+     * Initialize and launch an SDL GDK application.
+     *
+     * \param mainFunction the SDL app's C-style main(), an SDL_main_func
+     * \param reserved reserved for future use; should be NULL
+     * \returns 0 on success or -1 on failure; call SDL_GetError() to retrieve
+     *          more information on the failure.
+     *
+     * \since This function is available since SDL 2.24.0.
+     */
+    extern DECLSPEC int SDLCALL SDL_GDKRunApp(SDL_main_func mainFunction, void *reserved);
 
-/**
- * Callback from the application to let the suspend continue.
- *
- * \since This function is available since SDL 2.28.0.
- */
-extern DECLSPEC void SDLCALL SDL_GDKSuspendComplete(void);
+    /**
+     * Callback from the application to let the suspend continue.
+     *
+     * \since This function is available since SDL 2.28.0.
+     */
+    extern DECLSPEC void SDLCALL SDL_GDKSuspendComplete(void);
 
 #endif /* __GDK__ */
 

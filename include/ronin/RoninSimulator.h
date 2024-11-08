@@ -134,7 +134,7 @@ namespace RoninEngine
     class RONIN_API RoninSimulator
     {
     protected:
-        static void makePrivate(Runtime::World* world);
+        static void makePrivate(Runtime::World *world);
 
     public:
         /**
@@ -179,18 +179,18 @@ namespace RoninEngine
          */
         static bool LoadWorld(Runtime::World *world, bool unloadPrevious = true);
 
-        static bool LoadWorldAfterSplash(Runtime::World * world);
+        static bool LoadWorldAfterSplash(Runtime::World *world);
 
         /**
          * @brief Loads a simulation world for simulation.
          *
          * @return result of loaded world, otherwise nullptr.
          */
-        template<typename W>
-        static std::enable_if_t<std::is_base_of<RoninEngine::Runtime::World,W>::value, W*> LoadWorld();
+        template <typename W>
+        static std::enable_if_t<std::is_base_of<RoninEngine::Runtime::World, W>::value, W *> LoadWorld();
 
-        template<typename W>
-        static std::enable_if_t<std::is_base_of<RoninEngine::Runtime::World,W>::value, W*> LoadWorldAfterSplash();
+        template <typename W>
+        static std::enable_if_t<std::is_base_of<RoninEngine::Runtime::World, W>::value, W *> LoadWorldAfterSplash();
 
         /**
          * @brief Reload current world
@@ -205,7 +205,7 @@ namespace RoninEngine
          * @brief Retrive current World
          * @return result of the current World
          */
-        static Runtime::World * GetWorld();
+        static Runtime::World *GetWorld();
 
         /**
          * @brief Cancelation a reloading current world
@@ -338,10 +338,10 @@ namespace RoninEngine
         static bool SetSettings(const RoninSettings &settings);
     };
 
-    template<typename W>
-    inline std::enable_if_t<std::is_base_of<RoninEngine::Runtime::World,W>::value, W*> RoninSimulator::LoadWorld()
+    template <typename W>
+    inline std::enable_if_t<std::is_base_of<RoninEngine::Runtime::World, W>::value, W *> RoninSimulator::LoadWorld()
     {
-        W* world;
+        W *world;
 
         Runtime::RoninMemory::alloc_self(world);
 
@@ -360,10 +360,10 @@ namespace RoninEngine
         return world;
     }
 
-    template<typename W>
-    inline std::enable_if_t<std::is_base_of<RoninEngine::Runtime::World,W>::value, W*> RoninSimulator::LoadWorldAfterSplash()
+    template <typename W>
+    inline std::enable_if_t<std::is_base_of<RoninEngine::Runtime::World, W>::value, W *> RoninSimulator::LoadWorldAfterSplash()
     {
-        W* world;
+        W *world;
 
         Runtime::RoninMemory::alloc_self(world);
 
@@ -380,6 +380,5 @@ namespace RoninEngine
 
         return world;
     }
-
 
 } // namespace RoninEngine

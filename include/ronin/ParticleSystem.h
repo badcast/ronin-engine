@@ -24,6 +24,7 @@ namespace RoninEngine::Runtime
         Fabricatable = 2
     };
 
+
     /**
      * @brief A class representing a particle system.
      *
@@ -34,10 +35,10 @@ namespace RoninEngine::Runtime
     class RONIN_API ParticleSystem : public Behaviour
     {
     private:
-        struct ParticleSystemImpl *ref;
+        struct ParticleSystemImpl *impl;
 
         // Source for set
-        std::vector<Sprite *> m_sources;
+        std::vector<SpriteRef> m_sources;
         ParticleSourceInspect m_sourceInspect;
 
     public:
@@ -128,7 +129,7 @@ namespace RoninEngine::Runtime
          * @param source The source sprite to set.
          * @param inspectType (Optional) The inspection type (default: ParticleSourceInspect::InspectNext).
          */
-        void setSource(Sprite *source);
+        void setSource(SpriteRef source);
 
         /**
          * @brief Set two source sprites for the particle.
@@ -137,7 +138,7 @@ namespace RoninEngine::Runtime
          * @param src2 The second source sprite to set.
          * @param inspectType (Optional) The inspection type (default: ParticleSourceInspect::InspectNext).
          */
-        void setSources(Sprite *src1, Sprite *src2, ParticleSourceInspect inspectType = ParticleSourceInspect::InspectNext);
+        void setSources(SpriteRef src1, SpriteRef src2, ParticleSourceInspect inspectType = ParticleSourceInspect::InspectNext);
 
         /**
          * @brief Set three source sprites for the particle.
@@ -147,7 +148,7 @@ namespace RoninEngine::Runtime
          * @param src3 The third source sprite to set.
          * @param inspectType (Optional) The inspection type (default: ParticleSourceInspect::InspectNext).
          */
-        void setSources(Sprite *src1, Sprite *src2, Sprite *src3, ParticleSourceInspect inspectType = ParticleSourceInspect::InspectNext);
+        void setSources(SpriteRef src1, SpriteRef src2, SpriteRef src3, ParticleSourceInspect inspectType = ParticleSourceInspect::InspectNext);
 
         /**
          * @brief Set multiple source sprites from a container for the particle.
@@ -160,10 +161,10 @@ namespace RoninEngine::Runtime
         void setSources(const Container &sources, ParticleSourceInspect inspectType = ParticleSourceInspect::InspectNext)
         {
             using TargetType = Sprite;
-            static_assert(std::is_same<typename Container::value_type, TargetType *>::value, "Container is not contains Sprite* objects");
+            static_assert(std::is_same_v<typename Container::value_type, Ref<TargetType>>, "Container is not contains Sprite* objects");
             m_sources.clear();
             m_sourceInspect = inspectType;
-            for(TargetType *sprite : sources)
+            for(const Ref<TargetType>& sprite : sources)
             {
                 m_sources.emplace_back(sprite);
             }

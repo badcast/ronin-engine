@@ -2,7 +2,6 @@
 
 #include "Vec2.h"
 #include "Declarations.h"
-#include "SharedPointer.h"
 
 namespace RoninEngine
 {

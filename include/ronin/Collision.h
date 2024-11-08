@@ -14,12 +14,12 @@ namespace RoninEngine::Runtime
     public:
         int targetLayer;
         Vec2 collideSize;
-        std::function<bool(Collision *self, Collision *target)> onCollision;
+        std::function<bool(CollisionRef self, CollisionRef target)> onCollision;
 
         Collision();
         Collision(const std::string &name);
         Collision(const Collision &);
 
-        bool setSizeFrom(SpriteRenderer *spriteRenderer);
+        bool setSizeFrom(SpriteRendererRef spriteRenderer);
     };
 } // namespace RoninEngine::Runtime

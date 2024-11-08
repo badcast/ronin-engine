@@ -41,31 +41,33 @@
 #include "begin_code.h"
 /* Set up for C function definitions, even when using C++ */
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/**
- *Type for test images.
- */
-typedef struct SDLTest_SurfaceImage_s {
-  int width;
-  int height;
-  unsigned int bytes_per_pixel; /* 3:RGB, 4:RGBA */
-  const char *pixel_data;
-} SDLTest_SurfaceImage_t;
+    /**
+     *Type for test images.
+     */
+    typedef struct SDLTest_SurfaceImage_s
+    {
+        int width;
+        int height;
+        unsigned int bytes_per_pixel; /* 3:RGB, 4:RGBA */
+        const char *pixel_data;
+    } SDLTest_SurfaceImage_t;
 
-/* Test images */
-SDL_Surface *SDLTest_ImageBlit(void);
-SDL_Surface *SDLTest_ImageBlitColor(void);
-SDL_Surface *SDLTest_ImageBlitAlpha(void);
-SDL_Surface *SDLTest_ImageBlitBlendAdd(void);
-SDL_Surface *SDLTest_ImageBlitBlend(void);
-SDL_Surface *SDLTest_ImageBlitBlendMod(void);
-SDL_Surface *SDLTest_ImageBlitBlendNone(void);
-SDL_Surface *SDLTest_ImageBlitBlendAll(void);
-SDL_Surface *SDLTest_ImageFace(void);
-SDL_Surface *SDLTest_ImagePrimitives(void);
-SDL_Surface *SDLTest_ImagePrimitivesBlend(void);
+    /* Test images */
+    SDL_Surface *SDLTest_ImageBlit(void);
+    SDL_Surface *SDLTest_ImageBlitColor(void);
+    SDL_Surface *SDLTest_ImageBlitAlpha(void);
+    SDL_Surface *SDLTest_ImageBlitBlendAdd(void);
+    SDL_Surface *SDLTest_ImageBlitBlend(void);
+    SDL_Surface *SDLTest_ImageBlitBlendMod(void);
+    SDL_Surface *SDLTest_ImageBlitBlendNone(void);
+    SDL_Surface *SDLTest_ImageBlitBlendAll(void);
+    SDL_Surface *SDLTest_ImageFace(void);
+    SDL_Surface *SDLTest_ImagePrimitives(void);
+    SDL_Surface *SDLTest_ImagePrimitivesBlend(void);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus
