@@ -10,7 +10,9 @@ namespace RoninEngine
     namespace Runtime
     {
         template<typename T, typename U>
-        Ref<T> GetRef(U*);
+        Ref<T> GetRefMain(U*);
+
+        RONIN_API Ref<RoninPointer> GetRefMain(RoninPointer*);
 
         template <typename T, typename U>
         Ref<T> StaticCast(Ref<U>);
@@ -67,7 +69,7 @@ namespace RoninEngine
             T &operator*() const;
             operator bool() const;
 
-        private:
+        public:
             T *ptr_;
             std::size_t *ref_count_;
 
@@ -76,6 +78,4 @@ namespace RoninEngine
 
     } // namespace Runtime
 } // namespace RoninEngine
-
-#include "SharedPointerEnd.h"
 #endif

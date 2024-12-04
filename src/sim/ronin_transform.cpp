@@ -75,7 +75,7 @@ namespace RoninEngine::Runtime
     void hierarchy_sibiling(Transform *parent, Transform *who, int index)
     {
         // TODO: Set sibling for Transform component
-        decltype(parent->hierarchy)::iterator __off_pos, __target, __end = std::end(parent->hierarchy);
+        std::list<TransformRef>::iterator __off_pos, __target, __end = std::end(parent->hierarchy);
         __off_pos = __target = __end;
         for(auto iter = std::begin(parent->hierarchy); (__off_pos == __end || __target == __end) && iter != __end; ++iter)
         {
@@ -457,7 +457,6 @@ namespace RoninEngine::Runtime
             // angle(localAngle());
             position(_position + parent->_position);
         }
-
         parent_notify_active_state(this->_owner);
     }
 
@@ -472,7 +471,6 @@ namespace RoninEngine::Runtime
         std::vector<TransformRef> result {};
         std::queue<TransformRef> queue {};
         queue.push(this->GetRef<Transform>());
-
         while(!queue.empty())
         {
             current = queue.front();
@@ -485,7 +483,6 @@ namespace RoninEngine::Runtime
                 queue.push(child);
             }
         }
-
         return result;
     }
 

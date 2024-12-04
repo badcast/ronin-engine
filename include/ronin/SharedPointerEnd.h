@@ -4,7 +4,6 @@
 
 namespace RoninEngine::Runtime
 {
-
     template<typename T, typename U>
     Ref<T> GetRef(U*)
     {
@@ -206,7 +205,7 @@ namespace RoninEngine::Runtime
     Ref<T> RoninPointer::GetRef()
     {
         // TODO: Get Shared Pointer
-        T * v = nullptr;
-        return Ref<T>{v};
+        Ref<RoninPointer> ref = GetRefMain(static_cast<RoninPointer*>(this));
+        return StaticCast<T>(ref);
     }
 } // namespace RoninEngine::Runtime

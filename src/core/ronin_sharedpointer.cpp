@@ -35,67 +35,64 @@ namespace RoninEngine::Runtime
 #undef INSTANCE
 #undef INSTANCEA
 #endif
-}
 
-////////////////
-// Destroys
-////////////////
+    ////////////////
+    // Destroys
+    ////////////////
 
-void ReleasePointer(RoninPointer* object)
-{
-    if(object == nullptr || object->isNull())
-        return;
+    void ReleasePointer(RoninPointer* object)
+    {
+        if(object == nullptr || object->isNull())
+            return;
+        object->_handle = nullptr;
+        RoninMemory::_cut_oop_from(object);
+    }
 
-    object->_handle = nullptr;
-    RoninMemory::_cut_oop_from(object);
-}
+    void ReleaseRef(ComponentRef& object){
+        // ReleasePointer(static_cast<RoninPointer*>(object.ptr_));
+    }
+    void ReleaseRef(GameObjectRef& object){
+        //ReleasePointer(static_cast<RoninPointer*>(object.ptr_));
+    }
+    void ReleaseRef(AtlasRef& object){
+        //ReleasePointer(static_cast<RoninPointer*>(object.ptr_));
+    }
+    void ReleaseRef(SpriteRef& object){
+        //ReleasePointer(static_cast<RoninPointer*>(object.ptr_));
+    }
 
-void ReleaseRef(ComponentRef& object){
+    RoninPointer::RoninPointer()
+    {
+        _handle = (void*)1;
+    }
 
+    RoninPointer::~RoninPointer()
+    {
+        ReleasePointer(this);
+    }
 
-    // ReleasePointer(static_cast<RoninPointer*>(object.ptr_));
-}
-void ReleaseRef(GameObjectRef& object){
+    bool RoninPointer::isNull() const
+    {
+        return _handle == nullptr;
+    }
 
+    RoninPointer::operator bool() const
+    {
+        return !isNull();
+    }
 
-      //ReleasePointer(static_cast<RoninPointer*>(object.ptr_));
-}
-void ReleaseRef(AtlasRef& object){
+    Ref<RoninPointer> GetRefMain(RoninPointer* pointer)
+    {
+        std::unordered_map<RoninPointer*, Ref<RoninPointer>>::iterator iter = currentWorld->irs->refPointers.find(pointer);
+        if(iter != currentWorld->irs->refPointers.end())
+            return iter->second;
+        return Ref<RoninPointer>{nullptr};
+    }
 
-
-      //ReleasePointer(static_cast<RoninPointer*>(object.ptr_));
-}
-void ReleaseRef(SpriteRef& object){
-
-
-      //ReleasePointer(static_cast<RoninPointer*>(object.ptr_));
-}
-
-RoninPointer::RoninPointer()
-{
-}
-
-RoninPointer::~RoninPointer()
-{
-    ReleasePointer(this);
-}
-
-bool RoninPointer::isNull() const
-{
-    return _handle == nullptr;
-}
-
-RoninPointer::operator bool() const
-{
-    return !isNull();
-}
-
-template<>
-Ref<RoninPointer> RoninPointer::GetRef()
-{
-    std::unordered_map<RoninPointer*, Ref<RoninPointer>>::iterator iter = currentWorld->irs->refPointers.find(this);
-    if(iter != currentWorld->irs->refPointers.end())
-        return iter->second;
-    return Ref<RoninPointer>{nullptr};
+    template<>
+    Ref<RoninPointer> RoninPointer::GetRef()
+    {
+        return GetRefMain(this);
+    }
 }
 
