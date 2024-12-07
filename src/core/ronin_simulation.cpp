@@ -44,7 +44,7 @@ namespace RoninEngine
         World *currentWorld;
         World *preloadWorld;
         World *lastWorld;
-        std::set<World *> pinnedWorlds;
+        std::set<World *> loadedWorlds;
         std::set<World *> privateWorlds;
         std::vector<std::uint32_t> _watcher_time;
 
@@ -231,27 +231,27 @@ namespace RoninEngine
         {
             current_inits = SDL_INIT_VIDEO;
 
-            if(SDL_InitSubSystem(current_inits) == -1)
+            if(SDL_InitSubSystem(current_inits) < 0)
                 ronin_err_d("Fail init Video system.");
 
             current_inits = IMG_InitFlags::IMG_INIT_PNG | IMG_InitFlags::IMG_INIT_JPG;
             if(IMG_Init(current_inits) != current_inits)
                 ronin_err_d("Fail init Image library.");
 
-            if(TTF_Init() == -1)
+            if(TTF_Init() < 0)
                 ronin_err_d("Fail init Font library.");
         }
 
         // init Audio system
         if(flags & InitializeFlags::Audio)
         {
-            if(Runtime::RoninAudio::Init() == -1)
+            if(Runtime::RoninAudio::Init() < 0)
                 ronin_err_d("Fail init audio.");
         }
 
         if(flags & InitializeFlags::Joystick)
         {
-            if(SDL_InitSubSystem(SDL_INIT_JOYSTICK) == -1)
+            if(SDL_InitSubSystem(SDL_INIT_JOYSTICK) < 0)
                 ronin_err_d("Fail init Joystick system.");
         }
 
@@ -279,11 +279,11 @@ namespace RoninEngine
             return;
 
         // unload existence worlds
-        for(World *pinned : Runtime::pinnedWorlds)
+        for(World *pinned : Runtime::loadedWorlds)
         {
             Runtime::internal_unload_world(pinned);
         }
-        Runtime::pinnedWorlds.clear();
+        Runtime::loadedWorlds.clear();
 
         for(World *pinned : Runtime::privateWorlds)
         {
@@ -358,13 +358,13 @@ namespace RoninEngine
 
         if(gscope.activeWindow == nullptr)
         {
-            ShowMessage("Engine not inited");
+            ShowMessage("Ronin Engine is not initialized.");
             return;
         }
 
         if(currentWorld == nullptr)
         {
-            ShowMessage("World not loaded");
+            ShowMessage("World is not loaded.");
             return;
         }
 
@@ -459,10 +459,10 @@ namespace RoninEngine
                     Runtime::internal_load_world(preloadWorld);
 
                     currentWorld = preloadWorld;
-
-                    // Init Internal World Timer IIWT
+                    /////////////////////
+                    /// Init Internal World Timer IIWT
+                    /////////////////////
                     internal_init_timer();
-
                     if(!currentWorld->isHierarchy())
                     {
                         // init main object
@@ -472,14 +472,12 @@ namespace RoninEngine
                         // pickup from renders
                         Matrix::matrix_remove(currentWorld->irs->mainObject->transform().get());
                     }
-
-                    // Set Metric as default
+                    /////////////////////
+                    /// Set Metric as default
+                    /////////////////////
                     currentWorld->irs->metricPixelsPerPoint = Vec2::one * defaultPixelsPerPoint;
-
                     gscope.internalWorldCanStart = false;
-
                     currentWorld->OnAwake();
-
                     preloadWorld = nullptr;
                     gscope.internalWorldLoaded = true;
                 }

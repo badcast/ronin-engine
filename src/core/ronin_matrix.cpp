@@ -3,19 +3,6 @@
 
 using namespace RoninEngine::Runtime;
 
-//// MatrixLayerComparer - For compare of the layer from Transform component
-// bool matrix_compare_layer(RoninEngine::Runtime::Transform const *lhs, RoninEngine::Runtime::Transform const *rhs)
-//{
-//     /*
-//         std::int64_t l, r;
-//         l = Math::Max(lhs->id, 1u) + Math::OutsideNonZero(lhs->_layer_);
-//         r = Math::Max(rhs->id, 1u) + Math::OutsideNonZero(rhs->_layer_);
-//         return (l) < (r);
-//     */
-
-//    return (lhs->_layer_) < (rhs->_layer_);
-//}
-
 namespace RoninEngine::Runtime
 {
     extern int _matrix_dimensity_;

@@ -248,4 +248,24 @@ namespace RoninEngine::Runtime
          */
         void ClearOnDestroy();
     };
+
+    class RONIN_API Primitive
+    {
+    public:
+        static GameObjectRef CreateEmptyGameObject(Vec2 position = Vec2::zero, float angle = 0);
+        static GameObjectRef CreateEmptyGameObject(const std::string &name, Vec2 position = Vec2::zero, float angle = 0);
+        static GameObjectRef CreateBox2D(Vec2 position = Vec2::zero, float angle = 0, Vec2 size = Vec2::one, Color fillColor = Color::white);
+        static Camera2DRef CreateCamera2D(Vec2 position = Vec2::zero);
+        static SpriteRef CreateEmptySprite();
+        static SpriteRef CreateSpriteRectangle( Vec2 size = Vec2::one, Color fillColor = Color::white);
+        static SpriteRef CreateSpriteCircle( Vec2 size = Vec2::one, float radius = 1.f, Color fillColor = Color::white);
+        static SpriteRef CreateSpriteTriangle( Vec2 size = Vec2::one, float height = 1.f, Color fillColor = Color::white);
+        static SpriteRef CreateSpriteFrom(Image *surface);
+    };
+
+    extern RONIN_API void Destroy(GameObjectRef obj);
+    extern RONIN_API void Destroy(GameObjectRef obj, float t);
+    extern RONIN_API GameObjectRef Instantiate(GameObjectRef obj);
+    extern RONIN_API GameObjectRef Instantiate(GameObjectRef obj, Vec2 position, float angle = 0);
+    extern RONIN_API GameObjectRef Instantiate(GameObjectRef obj, Vec2 position, TransformRef parent, bool worldPositionStay = true);
 } // namespace RoninEngine

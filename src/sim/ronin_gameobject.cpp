@@ -42,7 +42,7 @@ namespace RoninEngine::Runtime
     GameObject::GameObject(const std::string &name) : Object(DESCRIBE_AS_ONLY_NAME(GameObject)), m_active(true), m_layer(0), m_zOrder(0)
     {
         DESCRIBE_AS_MAIN(GameObject);
-        m_components.push_back(ReinterpretCast<Component>(create_empty_transform()));
+        m_components.push_back(StaticCast<Component>(create_empty_transform()));
     }
 
     bool GameObject::isActive()
@@ -53,7 +53,6 @@ namespace RoninEngine::Runtime
     bool GameObject::isActiveInHierarchy()
     {
         TransformRef p;
-
         p = transform();
         for(; p && p->_owner->m_active;)
             p = p->m_parent;
@@ -65,7 +64,6 @@ namespace RoninEngine::Runtime
     {
         if(m_active == state)
             return;
-
         m_active = state;
         transform()->parent_notify_active_state(GetRef<GameObject>());
     }
@@ -104,7 +102,6 @@ namespace RoninEngine::Runtime
                 case Inherit:;
                 default:;
             }
-
             for(TransformRef &h : __stack.front()->transform()->hierarchy)
             {
                 __stack.emplace_back(h->gameObject().get());

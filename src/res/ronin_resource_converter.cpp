@@ -209,7 +209,7 @@ bool AssetManager::LoadAsset(const std::string &filename, Asset **asset)
                         if((*asset)->ref->udata._sprites == nullptr)
                             RoninMemory::alloc_self((*asset)->ref->udata._sprites);
 
-                        (*(*asset)->ref->udata._sprites)[pair.first].push_back(Primitive::CreateSpriteFrom(Resources::GetImageSource(rsid), false));
+                        (*(*asset)->ref->udata._sprites)[pair.first].push_back(RefNoFree(Primitive::CreateSpriteFrom(Resources::GetImageSource(rsid))));
                         break;
                     /*AudioClip*/
                     case 1:
@@ -383,7 +383,7 @@ bool AssetManager::LoadAsset(const std::string &filename, Asset **asset)
                     rect = {}; // set flush
                     std::sscanf(param1.ToString().c_str(), "%d %d %d %d", &rect.x, &rect.y, &rect.w, &rect.h);
 
-                    spr = Primitive::CreateEmptySprite(false);
+                    spr = Primitive::CreateEmptySprite();
 
                     // TODO: make sprite name spr->name = param1.empty()
                     param1 = param3["sprite"];
@@ -402,13 +402,13 @@ bool AssetManager::LoadAsset(const std::string &filename, Asset **asset)
                 // TILED
                 else
                 {
-                    spr = Primitive::CreateEmptySprite(false);
+                    spr = Primitive::CreateEmptySprite();
                 }
 
                 spr->m_rect = rect;
                 spr->surface = atlas->src;
 
-                atlas->_sprites.emplace_back(spr);
+                atlas->_sprites.emplace_back(RefNoFree(spr));
 
                 // Post setting Tiled
                 if(num3 == 1)

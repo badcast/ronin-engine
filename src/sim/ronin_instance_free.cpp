@@ -1,3 +1,10 @@
+/*
+.-. .-.  .--.  .----.   .--.  .-. .-..-..----. .-.
+| {_} | / {} \ | {}  } / {} \ | |/ / | || {}  }| |
+| { } |/  /\  \| .-. \/  /\  \| |\ \ | || .-. \| |
+`-' `-'`-'  `-'`-' `-'`-'  `-'`-' `-'`-'`-' `-'`-'
+*/
+
 #include "ronin.h"
 #include "ronin_matrix.h"
 
@@ -7,6 +14,28 @@ namespace RoninEngine
 {
     namespace Runtime
     {
+        template<>
+        void RefMarkNull(GameObjectRef object)
+        {
+            if(object)
+            {
+                object->m_name = "null";
+                object->m_components.clear();
+                object->_handle = RefClassType::Null;
+            }
+        }
+
+        template<>
+        void RefMarkNull(ComponentRef object)
+        {
+            if(object)
+            {
+                object->m_name = "null";
+                object->_owner = nullptr;
+                object->_handle = RefClassType::Null;
+            }
+        }
+
         void sepuku_Component(ComponentRef& CND)
         {
             union
@@ -73,15 +102,11 @@ namespace RoninEngine
 #endif
 
             // Free object
-            //RoninMemory::free(candidate);
-            // ReleaseRef(CND);
-            candidate->m_name = "null";
-            candidate->_type_ = nullptr;
-
+            RefMarkNull(CND);
             --currentWorld->irs->objects;
         }
 
-        void sepuku_GameObject(GameObject *target, std::set<GameObject *> *input)
+        void sepuku_GameObject(GameObjectRef target, std::set<GameObjectRef> *input)
         {
 #ifndef RONIN_USE_TYPESTR &&NDEBUG
             if(strcmp(target->_type_, "GameObject"))
@@ -89,10 +114,8 @@ namespace RoninEngine
                 throw ronin_type_error();
             }
 #endif
-            // COLLECT
-            std::vector<GameObject *> collects {target};
+            std::vector<GameObjectRef> collects {target};
             int cursor = 0;
-
             while(target)
             {
                 for(TransformRef &t : target->transform()->hierarchy)
@@ -132,7 +155,7 @@ namespace RoninEngine
             //////////////////////////
             /// HARAKIRI COMPONENT ///
             //////////////////////////
-            for(GameObject *next : collects)
+            for(GameObjectRef &next : collects)
             {
                 for(ComponentRef component : next->m_components)
                 {
@@ -150,9 +173,7 @@ namespace RoninEngine
                 }
 
                 // HARAKIRI GAME OBJECT
-                //RoninMemory::free(next);
-                next->_type_ = nullptr;
-                next->m_name = "null";
+                RefMarkNull(next);
 
                 --currentWorld->irs->objects;
                 ++currentWorld->irs->_destroyedGameObject;
@@ -161,16 +182,12 @@ namespace RoninEngine
 
         int sepuku_run()
         {
-            currentWorld->irs->_destroyedGameObject = 0;
-
 #define COLLECTOR (currentWorld->irs->runtimeCollectors)
-
+            currentWorld->irs->_destroyedGameObject = 0;
             if(COLLECTOR)
             {
-                std::map<float, std::set<GameObject *>>::iterator range_begin, range_end;
-                std::set<GameObject *> harakiri_candidates;
-
-                // std::pair<const float, std::set<GameObject *>> &pair
+                std::set<GameObjectRef> harakiri_candidates;
+                std::map<float, std::set<GameObjectRef>>::iterator range_begin, range_end;
                 range_begin = range_end = std::begin(*COLLECTOR);
                 for(; range_end != std::end(*COLLECTOR);)
                 {
@@ -181,7 +198,6 @@ namespace RoninEngine
                     harakiri_candidates.merge(range_end->second);
                     ++range_end;
                 }
-
                 if(range_begin != range_end)
                 {
                     COLLECTOR->erase(range_begin, range_end);
@@ -190,16 +206,14 @@ namespace RoninEngine
                         sepuku_GameObject(*harakiri_candidates.begin(), &harakiri_candidates);
                     } while(!harakiri_candidates.empty());
                 }
-
                 if(COLLECTOR->empty())
                 {
                     RoninMemory::free(COLLECTOR);
                     COLLECTOR = nullptr;
                 }
             }
-#undef COLLECTOR
-
             return currentWorld->irs->_destroyedGameObject;
+#undef COLLECTOR
         }
 
         void Destroy(GameObjectRef obj)
@@ -224,7 +238,7 @@ namespace RoninEngine
             t += internal_game_time;
 
             // So, destroy childrens of the object
-            provider->operator[](t).insert(obj.get());
+            (*provider)[t].insert(obj);
 #undef provider
         }
 

@@ -13,13 +13,13 @@ namespace RoninEngine::Runtime
 
     struct ParticleDrain
     {
-        SpriteRenderer* render;
+        SpriteRendererRef render{};
         float initTime;
         Vec2 direction;
 
         ParticleDrain() = default;
 
-        ParticleDrain(SpriteRenderer * _render, float _initTime, Vec2 _direction) : render(_render), initTime(_initTime), direction(_direction) {}
+        ParticleDrain(SpriteRendererRef _render, float _initTime, Vec2 _direction) : render(_render), initTime(_initTime), direction(_direction) {}
     };
 
     bool operator<(const ParticleDrain &lhs, const ParticleDrain &rhs)
@@ -119,7 +119,7 @@ namespace RoninEngine::Runtime
                    // Set Start Color
             spriteRender->setColor(startColor);
 
-            activeParticleDrains.emplace(spriteRender.ptr_, Time::time(), (from->randomDirection ? Random::RandomVector() : from->direction));
+            activeParticleDrains.emplace(spriteRender, Time::time(), (from->randomDirection ? Random::RandomVector() : from->direction));
         };
 
                // use existences
@@ -153,7 +153,7 @@ namespace RoninEngine::Runtime
                     // Remove childs
 
                     ParticleDrain drain {};
-                    drain.render = comp->GetComponent<SpriteRenderer>().ptr_;
+                    drain.render = comp->GetComponent<SpriteRenderer>();
                     auto iter = this->activeParticleDrains.find(drain);
                     if(iter != std::end(this->activeParticleDrains))
                     {
@@ -285,6 +285,8 @@ namespace RoninEngine::Runtime
                    // Update existing particles (drains)
             for(std::set<ParticleDrain>::iterator drain = std::begin(impl->activeParticleDrains); drain != std::end(impl->activeParticleDrains); ++drain)
             {
+                if(drain->render->isNull())
+                    continue;
                 float drain_lifetime = t - drain->initTime;
                 if(drain_lifetime >= impl->m_duration)
                 {
@@ -332,7 +334,7 @@ namespace RoninEngine::Runtime
                 }
 
                        // Move, rotate
-                Transform *particleTransform = drain->render->transform().ptr_;
+                TransformRef particleTransform = drain->render->transform();
                 particleTransform->Translate(drain->direction * drain_speed);
 
                 if(rotate)
@@ -344,7 +346,7 @@ namespace RoninEngine::Runtime
             ParticleDrain drained;
             for(SpriteRendererRef &reserved : impl->cachedParticles)
             {
-                drained.render = reserved.ptr_;
+                drained.render = reserved;
                 impl->activeParticleDrains.erase(drained);
             }
         }
@@ -452,6 +454,8 @@ namespace RoninEngine::Runtime
     {
         for(SpriteRendererRef &drain : impl->cachedParticles)
         {
+            if(drain.isNull())
+                continue;
             drain->ClearOnDestroy();
             drain->gameObject()->Destroy(); // destroy now
         }

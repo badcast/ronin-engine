@@ -23,19 +23,14 @@ namespace RoninEngine
             }
         }
 
-        std::string &Object::name(const std::string &newName)
+        std::string Object::name(const std::string &newName)
         {
             return (m_name = newName);
         }
 
-        std::string &Object::name()
+        std::string Object::name()
         {
             return m_name;
-        }
-
-        const char *Object::getType() const
-        {
-            return _type_;
         }
 
     } // namespace Runtime

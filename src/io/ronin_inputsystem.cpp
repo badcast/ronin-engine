@@ -18,7 +18,7 @@ namespace RoninEngine::Runtime
             return;
         }
 
-        internal_input.prev_frame_keys = static_cast<std::uint8_t *>(RoninMemory::ronin_memory_alloc(n));
+        internal_input.prev_frame_keys = static_cast<std::uint8_t *>(RoninMemory::mem_alloc(n));
         memcpy((internal_input.prev_frame_keys) + sizeof(std::uint16_t), keys, n);
     }
 
@@ -55,7 +55,7 @@ namespace RoninEngine::Runtime
     {
         if(internal_input.prev_frame_keys != nullptr)
         {
-            RoninMemory::ronin_memory_free(internal_input.prev_frame_keys);
+            RoninMemory::mem_free(internal_input.prev_frame_keys);
             internal_input.prev_frame_keys = nullptr;
         }
     }
@@ -396,7 +396,7 @@ namespace RoninEngine::Runtime
     constexpr int c_key_len = (sizeof(c_key_codename.key_strings) / sizeof(c_key_codename.key_strings[0]));
     constexpr int c_dz_len = (sizeof(c_key_codename.dead_zones) / sizeof(c_key_codename.dead_zones[0]));
 
-    const char *Input::GetKeyName(int keyCode)
+    std::string Input::GetKeyName(int keyCode)
     {
         if(keyCode <= 0 || keyCode > c_key_codename.clast_keyCode)
         {
@@ -425,7 +425,7 @@ namespace RoninEngine::Runtime
             }
         }
 
-        return c_key_codename.key_strings[keyCode];
+        return std::string{c_key_codename.key_strings[keyCode]};
     }
 
     std::vector<JoystickInfo> Input::GetJoysticks()

@@ -10,27 +10,8 @@ namespace RoninEngine
 {
     namespace Runtime
     {
-        extern std::set<World *> pinnedWorlds;
+        extern std::set<World *> loadedWorlds;
         extern std::set<World *> privateWorlds;
-
-        void WorldResources::event_camera_changed(Camera *target, CameraEvent state)
-        {
-            switch(state)
-            {
-                case CameraEvent::CAM_DELETED:
-                    // TODO: find free Camera and set as Main
-                    if(mainCamera.ptr_ == target)
-                        mainCamera = nullptr;
-                    // BUG: MEMORY LEAK CAM RESOURCES
-                    cameraResources.remove(target->res);
-
-                    RoninMemory::free(target->res);
-                    break;
-                case CameraEvent::CAM_TARGET:
-                    mainCamera = CameraRef{target};
-                    break;
-            }
-        }
 
         void internal_load_world(World *world)
         {
@@ -38,7 +19,6 @@ namespace RoninEngine
             {
                 throw ronin_null_error();
             }
-
             if(world->irs == nullptr)
             {
                 // reallocate channels
@@ -53,38 +33,28 @@ namespace RoninEngine
                 // update internal loaded font
                 font2d_update(world);
 
-                pinnedWorlds.insert(world);
+                loadedWorlds.insert(world);
             }
         }
 
         bool internal_unload_world(World *world)
         {
-            if(world == nullptr)
-            {
-                throw ronin_null_error();
-            }
-
             if(world->irs == nullptr)
                 return false;
 
             World *lastWorld = currentWorld;
             currentWorld = world;
-
             world->RequestUnload();
-
-            // unloading owner
             world->OnUnloading();
-
-            // Free Game Objects
+            /////////////////////
+            /// Free Game Objects
+            /////////////////////
             TransformRef target = world->irs->mainObject->transform();
             std::list<TransformRef> stacks;
             while(target)
             {
                 stacks.merge(target->hierarchy);
-
-                // destroy
-                sepuku_GameObject(target->_owner.ptr_, nullptr);
-
+                sepuku_GameObject(target->_owner, nullptr);
                 if(stacks.empty())
                 {
                     target = nullptr;
@@ -95,51 +65,48 @@ namespace RoninEngine
                     stacks.pop_front();
                 }
             }
+            world->irs->refPointers.clear();
             world->irs->mainObject = nullptr;
-
             if(world->irs->objects != 0)
             {
                 ronin_log(("World is have leak objects: " + std::to_string(world->irs->objects)).c_str());
             }
-
             if(world->irs->runtimeCollectors)
             {
                 RoninMemory::free(world->irs->runtimeCollectors);
                 world->irs->runtimeCollectors = nullptr;
             }
-
-            // free GUI objects
+            /////////////////////
+            /// free GUI objects
+            /////////////////////
             if(world->irs->gui)
             {
                 RoninMemory::free(world->irs->gui);
                 world->irs->gui = nullptr;
             }
-
-            // NOTE: Free Local Resources
-            // world->irs->external_local_resources = nullptr;
+            /////////////////////
+            /// NOTE: Free Local Resources
+            /// world->irs->external_local_resources = nullptr;
+            /////////////////////
             gid_resources_free(&world->irs->externalLocalResources);
 
             // Halt all channels
             Mix_HaltChannel(-1);
-
             // reallocate channels
             Mix_AllocateChannels(MIX_CHANNELS);
-
             // free native resources
             for(SDL_Surface *surface : world->irs->preloadeSurfaces)
             {
                 SDL_FreeSurface(surface);
             }
-
             for(CameraResource *cam_res : world->irs->cameraResources)
             {
                 RoninMemory::free(cam_res);
             }
-
             RoninMemory::free(world->irs);
             world->irs = nullptr;
 
-            pinnedWorlds.erase(world);
+            loadedWorlds.erase(world);
 
             currentWorld = lastWorld;
 
@@ -149,19 +116,13 @@ namespace RoninEngine
         void level_render_world()
         {
             Time::BeginWatch();
-
             // set default color
             RenderUtility::SetColor(Color::white);
-
             // Set scale to default
             SDL_RenderSetScale(gscope.renderer, 1.f, 1.f);
-
             scripts_start();
-
             scripts_update();
-
             scripts_lateUpdate();
-
             // end watcher
             gscope.queueWatcher.delayExecScripts = Time::EndWatch();
 
@@ -189,8 +150,8 @@ namespace RoninEngine
                 currentWorld->OnGizmos();
                 scripts_gizmos();
             }
-
             // end watcher
+
             gscope.queueWatcher.delayRenderGizmos = Time::EndWatch();
         }
 
@@ -206,14 +167,31 @@ namespace RoninEngine
         internal_unload_world(this);
     }
 
+    void WorldResources::event_camera_changed(Camera *target, CameraEvent state)
+    {
+        switch(state)
+        {
+            case CameraEvent::CAM_DELETED:
+                // TODO: find free Camera and set as Main
+                if(mainCamera.ptr_ == target)
+                    mainCamera = nullptr;
+                // BUG: MEMORY LEAK CAM RESOURCES
+                cameraResources.remove(target->res);
+
+                RoninMemory::free(target->res);
+                break;
+            case CameraEvent::CAM_TARGET:
+                mainCamera = CameraRef{target};
+                break;
+        }
+    }
+
     // NOTE: Check game hierarchy
     std::list<Transform *> World::MatrixCheckDamage()
     {
         if(irs == nullptr)
             throw ronin_world_notloaded_error();
-
         std::list<Transform *> damaged;
-
         for(auto x = std::begin(currentWorld->irs->matrix); x != end(currentWorld->irs->matrix); ++x)
         {
             // unordered_map<Vec2Int,... <Transform*>>
@@ -222,14 +200,13 @@ namespace RoninEngine
                 // set<Transform*>
                 for(auto &y : layerObject.second)
                 {
-                    if(!object_instanced(y) || Matrix::matrix_get_key(y->_position) != layerObject.first || x->first != y->_owner->m_layer)
+                    if(y->isNull() || Matrix::matrix_get_key(y->_position) != layerObject.first || x->first != y->_owner->m_layer)
                     {
                         damaged.emplace_back(y);
                     }
                 }
             }
         }
-
         return damaged;
     }
 
@@ -244,13 +221,13 @@ namespace RoninEngine
     {
         if(irs == nullptr)
             throw ronin_world_notloaded_error();
-
         int restored = 0;
         for(Transform *dam : damaged_content)
         {
             Matrix::matrix_key_t key = Matrix::matrix_get_key(dam->_position);
             // unordered_map<int, ...>
             for(auto &findIter : currentWorld->irs->matrix)
+            {
                 // unordered_map<Vec2Int,...>
                 for(auto &layer : findIter.second)
                     // set<Transform*>
@@ -258,13 +235,11 @@ namespace RoninEngine
                     {
                         if(set != dam)
                             continue;
-
                         if(set->_owner->m_layer != findIter.first || key != layer.first)
                         {
                             // Remove damaged transform
                             layer.second.erase(dam);
-
-                            if(object_instanced(dam))
+                            if(!dam->isNull())
                             {
                                 // Restore
                                 currentWorld->irs->matrix[dam->_owner->m_layer][key].insert(dam);
@@ -273,7 +248,7 @@ namespace RoninEngine
                             goto next;
                         }
                     }
-
+            }
         next:
             continue;
         }
@@ -338,24 +313,20 @@ namespace RoninEngine
     {
         if(irs == nullptr)
             throw ronin_world_notloaded_error();
-
         static char delim = 0x32;
         std::string delims;
         std::string result;
         std::list<TransformRef> stack;
         TransformRef target = this->irs->mainObject->transform();
-
         while(target)
         {
             for(TransformRef& current : target->hierarchy)
             {
                 stack.emplace_back(current);
             }
-
             result += delims;
             result += target->name();
             result += "\n";
-
             if(!stack.empty())
             {
                 target = stack.front();
@@ -364,7 +335,6 @@ namespace RoninEngine
             else
                 target = nullptr;
         }
-
         return result;
     }
 
@@ -372,7 +342,6 @@ namespace RoninEngine
     {
         if(irs == nullptr)
             throw ronin_world_notloaded_error();
-
         return this->irs->mainObject != nullptr;
     }
 
@@ -385,7 +354,6 @@ namespace RoninEngine
     {
         if(irs == nullptr)
             throw ronin_world_notloaded_error();
-
         return this->irs->gui;
     }
 
@@ -393,7 +361,6 @@ namespace RoninEngine
     {
         if(irs == nullptr)
             throw ronin_world_notloaded_error();
-
         this->irs->requestUnloading = true;
     }
 
@@ -401,7 +368,6 @@ namespace RoninEngine
     {
         if(irs == nullptr)
             throw ronin_world_notloaded_error();
-
         return irs->_destroyedGameObject;
     }
 
@@ -409,10 +375,8 @@ namespace RoninEngine
     {
         if(irs == nullptr)
             throw ronin_world_notloaded_error();
-
         std::list<GameObjectRef> all_gobjects;
         GameObjectRef next = irs->mainObject;
-
         while(next)
         {
             for(TransformRef& e : next->transform()->hierarchy)
@@ -431,10 +395,8 @@ namespace RoninEngine
     {
         if(irs == nullptr)
             throw ronin_world_notloaded_error();
-
         std::list<ComponentRef> components;
         std::list<GameObjectRef> all_objects = GetAllGameObjects();
-
         for(GameObjectRef& curObject : all_objects)
         {
             for(ComponentRef & self_component : curObject->m_components)
@@ -455,7 +417,7 @@ namespace RoninEngine
             // std::pair<const float, std::set<GameObject *>>
             for(auto mapIter = std::begin(*irs->runtimeCollectors); mapIter != std::end(*irs->runtimeCollectors); ++mapIter)
             {
-                std::set<GameObject *>::iterator iter = mapIter->second.find(obj.ptr_);
+                std::set<GameObjectRef>::iterator iter = mapIter->second.find(obj);
                 if(iter != std::end(mapIter->second))
                 {
                     mapIter->second.erase(iter);
@@ -472,19 +434,12 @@ namespace RoninEngine
     {
         if(irs == nullptr)
             throw ronin_world_notloaded_error();
-
-        int x;
-        if(!obj)
+        if(obj && irs->runtimeCollectors)
         {
-            //
-            return -1;
-        }
-        if(irs->runtimeCollectors)
-        {
-            x = 0;
-            for(std::pair<const float, std::set<GameObject *>> &mapIter : *irs->runtimeCollectors)
+            int x = 0;
+            for(std::pair<const float, std::set<GameObjectRef>> &mapIter : *irs->runtimeCollectors)
             {
-                if(mapIter.second.find(obj.ptr_) != std::end(mapIter.second))
+                if(mapIter.second.find(obj) != std::end(mapIter.second))
                 {
                     return x;
                 }
@@ -499,7 +454,6 @@ namespace RoninEngine
     {
         if(irs == nullptr)
             throw ronin_world_notloaded_error();
-
         return this->CostObjectDestruction(obj) > ~0;
     }
 
@@ -507,11 +461,10 @@ namespace RoninEngine
     {
         if(irs == nullptr)
             throw ronin_world_notloaded_error();
-
         int x = 0;
         if(irs->runtimeCollectors)
         {
-            for(std::pair<const float, std::set<GameObject *>> &mapIter : *irs->runtimeCollectors)
+            for(std::pair<const float, std::set<GameObjectRef>> &mapIter : *irs->runtimeCollectors)
             {
                 x += mapIter.second.size();
             }

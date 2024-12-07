@@ -204,7 +204,7 @@ namespace RoninEngine::Runtime
          * @see KeyboardCode
          * @return A name of the Key
          */
-        static const char *GetKeyName(int keyCode);
+        static std::string GetKeyName(int keyCode);
 
         static std::vector<JoystickInfo> GetJoysticks();
     };

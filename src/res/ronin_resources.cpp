@@ -15,7 +15,6 @@ namespace RoninEngine::Runtime
         {
             return;
         }
-
         for(AudioClip *ac_res : gid->gid_audio_clips)
         {
             // Handle free
@@ -24,7 +23,6 @@ namespace RoninEngine::Runtime
             // 2ndHandle free
             RoninMemory::free(ac_res);
         }
-
         for(MusicClip *mus_res : gid->gid_music_clips)
         {
             // Handle free
@@ -33,20 +31,13 @@ namespace RoninEngine::Runtime
             // 2ndHandle free
             RoninMemory::free(mus_res);
         }
-
         for(SDL_Surface *surf_res : gid->gid_surfaces)
         {
             SDL_FreeSurface(surf_res);
         }
-
-        for(Sprite *sprite : gid->gid_sprites)
-        {
-            RoninMemory::free(sprite);
-        }
-
         for(void *mem : gid->gid_privates)
         {
-            RoninMemory::ronin_memory_free(mem);
+            RoninMemory::mem_free(mem);
         }
     }
 
@@ -55,7 +46,7 @@ namespace RoninEngine::Runtime
         return (local ? &(currentWorld->irs->externalLocalResources) : external_global_resources);
     }
 
-    inline GidResources *get_resource(ResId id)
+    constexpr GidResources *get_resource(ResId id)
     {
         return (id & RES_LOCAL_FLAG) ? &(currentWorld->irs->externalLocalResources) : external_global_resources;
     }
@@ -134,7 +125,7 @@ namespace RoninEngine::Runtime
 
         if(sz == 0)
         {
-            memory = static_cast<char *>(RoninMemory::ronin_memory_alloc(sz));
+            memory = static_cast<char *>(RoninMemory::mem_alloc(sz));
 
             if(memory == nullptr)
                 throw Exception::ronin_out_of_mem();
@@ -161,7 +152,7 @@ namespace RoninEngine::Runtime
                 // read from
                 std::size_t pos = stream.read(buffer, block_size).gcount();
                 // resize
-                memory = static_cast<char *>(RoninMemory::ronin_memory_realloc(memory, sz + pos));
+                memory = static_cast<char *>(RoninMemory::mem_realloc(memory, sz + pos));
                 if(memory == nullptr)
                 {
                     sz = 0;
@@ -187,7 +178,7 @@ namespace RoninEngine::Runtime
         surf = IMG_Load_RW(SDL_RWFromConstMem(memory.second, memory.first), SDL_TRUE);
 
         // free loaded stream buffer
-        RoninMemory::ronin_memory_free(memory.second);
+        RoninMemory::mem_free(memory.second);
 
         if(surf == nullptr)
         {
@@ -231,7 +222,7 @@ namespace RoninEngine::Runtime
         Mix_Chunk *chunk = Mix_LoadWAV_RW(SDL_RWFromMem(memory.second, memory.first), SDL_TRUE);
 
         // free loaded stream buffer
-        RoninMemory::ronin_memory_free(memory.second);
+        RoninMemory::mem_free(memory.second);
 
         if(chunk == nullptr)
         {
