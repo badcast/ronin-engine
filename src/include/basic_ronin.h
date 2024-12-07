@@ -206,7 +206,7 @@ namespace RoninEngine
             int loops;
         };
 
-        struct GidResources
+        struct GroupResources
         {
             std::vector<AudioClip *> gid_audio_clips;
             std::vector<MusicClip *> gid_music_clips;
@@ -269,7 +269,7 @@ namespace RoninEngine
             std::list<CameraResource *> cameraResources;
 
             // External resources
-            GidResources externalLocalResources;
+            GroupResources externalLocalResources;
 
             // Main UI Object
             UI::GUI *gui;
@@ -324,8 +324,8 @@ namespace RoninEngine
         void scripts_gizmos();
         void scripts_unbind(Behaviour *script);
 
-        void gid_resources_free(GidResources *gid);
-        GidResources *gid_get(bool local);
+        void gid_resources_free(GroupResources *gid);
+        GroupResources *gid_get(bool local);
         SDL_Surface *private_load_surface(const void *memres, int length, bool local = false);
 
         void storm_cast_eq_all(Vec2Int origin, int edges, std::function<void(const Vec2Int &)> predicate);

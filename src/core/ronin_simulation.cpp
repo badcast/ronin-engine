@@ -49,7 +49,7 @@ namespace RoninEngine
         std::vector<std::uint32_t> _watcher_time;
 
         std::list<Asset> loaded_assets;
-        GidResources *external_global_resources = nullptr;
+        GroupResources *external_global_resources = nullptr;
 
         float internal_time_scale, internal_game_time, internal_delta_time;
 
