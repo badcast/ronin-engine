@@ -2,13 +2,17 @@
 
 #include "begin.h"
 
-namespace RoninEngine::Runtime::RoninMemory
+namespace RoninEngine::Runtime
+{
+    RONIN_API void instance_end(RoninPointer* pointer);
+
+namespace RoninMemory
 {
     // main memory controller
-    RONIN_API void *ronin_memory_alloc(std::size_t size);
-    RONIN_API void *ronin_memory_realloc(void *memory, std::size_t size);
-    RONIN_API void ronin_memory_free(void *memory);
-    RONIN_API std::uint64_t total_allocated();
+    RONIN_API void *mem_alloc(std::size_t size);
+    RONIN_API void *mem_realloc(void *memory, std::size_t size);
+    RONIN_API void mem_free(void *memory);
+    RONIN_API std::uint64_t mem_allocated();
 
     template <typename T, typename... Args>
     constexpr inline T *_paste_oop_init(T *raw_memory, Args &&...args)
@@ -32,14 +36,14 @@ namespace RoninEngine::Runtime::RoninMemory
     template <typename T, typename... Args>
     constexpr inline T *alloc(Args &&...args)
     {
-        void *mem = ronin_memory_alloc(sizeof(T));
+        void *mem = mem_alloc(sizeof(T));
         return _paste_oop_init<T>(static_cast<T *>(mem), std::forward<Args>(args)...);
     }
 
     template <typename T, typename... Args>
     constexpr inline T *alloc()
     {
-        void *mem = ronin_memory_alloc(sizeof(T));
+        void *mem = mem_alloc(sizeof(T));
         return _paste_oop_init<T>(static_cast<T *>(mem));
     }
 
@@ -58,7 +62,7 @@ namespace RoninEngine::Runtime::RoninMemory
     template <typename T>
     constexpr inline void free(T *memory)
     {
-        ronin_memory_free(_cut_oop_from(memory));
+        mem_free(_cut_oop_from(memory));
     }
-
-} // namespace RoninEngine::Runtime::RoninMemory
+}
+}

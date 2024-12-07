@@ -15,11 +15,3 @@ namespace RoninEngine::Runtime
     const TRect<int> TRect<int>::one = {1, 1, 1, 1};
 
 } // namespace RoninEngine::Runtime
-
-void check_object(RoninEngine::Runtime::Object *obj)
-{
-    if(obj->_type_ == nullptr)
-    {
-        throw ronin_null_error();
-    }
-}

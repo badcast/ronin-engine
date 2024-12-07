@@ -7,15 +7,14 @@ using namespace RoninEngine::Runtime;
 
 namespace RoninEngine::Runtime
 {
-    extern GidResources *external_global_resources;
+    extern GroupResources *external_global_resources;
 
-    void gid_resources_free(GidResources *gid)
+    void gid_resources_free(GroupResources *gid)
     {
         if(gid == nullptr)
         {
             return;
         }
-
         for(AudioClip *ac_res : gid->gid_audio_clips)
         {
             // Handle free
@@ -24,7 +23,6 @@ namespace RoninEngine::Runtime
             // 2ndHandle free
             RoninMemory::free(ac_res);
         }
-
         for(MusicClip *mus_res : gid->gid_music_clips)
         {
             // Handle free
@@ -33,29 +31,22 @@ namespace RoninEngine::Runtime
             // 2ndHandle free
             RoninMemory::free(mus_res);
         }
-
         for(SDL_Surface *surf_res : gid->gid_surfaces)
         {
             SDL_FreeSurface(surf_res);
         }
-
-        for(Sprite *sprite : gid->gid_sprites)
-        {
-            RoninMemory::free(sprite);
-        }
-
         for(void *mem : gid->gid_privates)
         {
-            RoninMemory::ronin_memory_free(mem);
+            RoninMemory::mem_free(mem);
         }
     }
 
-    GidResources *gid_get(bool local)
+    GroupResources *gid_get(bool local)
     {
         return (local ? &(currentWorld->irs->externalLocalResources) : external_global_resources);
     }
 
-    inline GidResources *get_resource(ResId id)
+    constexpr GroupResources *get_resource(ResId id)
     {
         return (id & RES_LOCAL_FLAG) ? &(currentWorld->irs->externalLocalResources) : external_global_resources;
     }
@@ -64,7 +55,7 @@ namespace RoninEngine::Runtime
     {
         if(memory != nullptr)
         {
-            GidResources *resources;
+            GroupResources *resources;
             if(local)
             {
                 if(currentWorld == nullptr)
@@ -86,9 +77,9 @@ namespace RoninEngine::Runtime
         return memory;
     }
 
-    GidResources *make_resource(ResId *resultId, bool local)
+    GroupResources *make_resource(ResId *resultId, bool local)
     {
-        GidResources *resources;
+        GroupResources *resources;
 
         if(local)
         {
@@ -111,15 +102,14 @@ namespace RoninEngine::Runtime
         return resources;
     }
 
-    SDL_Surface *private_load_surface(const void *memres, int length, bool local)
+    SDL_Surface *private_load_surface(const void *memres, int size, bool local)
     {
         ResId __result;
-        SDL_Surface *surf = IMG_Load_RW(SDL_RWFromConstMem(memres, length), SDL_TRUE);
+        SDL_Surface *surf = IMG_Load_RW(SDL_RWFromConstMem(memres, size), SDL_TRUE);
         if(surf != nullptr)
         {
             make_resource(&__result, local)->gid_surfaces.emplace_back(surf);
         }
-
         return surf;
     }
 
@@ -127,14 +117,12 @@ namespace RoninEngine::Runtime
     {
         std::size_t sz;
         char *memory = nullptr;
-
         stream.seekg(0, std::ios_base::end);
         sz = stream.tellg();
         stream.seekg(0, std::ios_base::beg);
-
         if(sz == 0)
         {
-            memory = static_cast<char *>(RoninMemory::ronin_memory_alloc(sz));
+            memory = static_cast<char *>(RoninMemory::mem_alloc(sz));
 
             if(memory == nullptr)
                 throw Exception::ronin_out_of_mem();
@@ -161,7 +149,7 @@ namespace RoninEngine::Runtime
                 // read from
                 std::size_t pos = stream.read(buffer, block_size).gcount();
                 // resize
-                memory = static_cast<char *>(RoninMemory::ronin_memory_realloc(memory, sz + pos));
+                memory = static_cast<char *>(RoninMemory::mem_realloc(memory, sz + pos));
                 if(memory == nullptr)
                 {
                     sz = 0;
@@ -179,7 +167,7 @@ namespace RoninEngine::Runtime
     ResId Resources::LoadImageFromStream(std::istream &stream, bool local)
     {
         ResId id;
-        GidResources *gid;
+        GroupResources *gid;
         SDL_Surface *surf, *conv;
         std::pair<std::size_t, void *> memory;
 
@@ -187,7 +175,7 @@ namespace RoninEngine::Runtime
         surf = IMG_Load_RW(SDL_RWFromConstMem(memory.second, memory.first), SDL_TRUE);
 
         // free loaded stream buffer
-        RoninMemory::ronin_memory_free(memory.second);
+        RoninMemory::mem_free(memory.second);
 
         if(surf == nullptr)
         {
@@ -224,14 +212,14 @@ namespace RoninEngine::Runtime
     ResId Resources::LoadAudioClipFromStream(std::istream &stream, bool local)
     {
         ResId id;
-        GidResources *gid;
+        GroupResources *gid;
 
         auto memory = stream_to_mem(stream);
 
         Mix_Chunk *chunk = Mix_LoadWAV_RW(SDL_RWFromMem(memory.second, memory.first), SDL_TRUE);
 
         // free loaded stream buffer
-        RoninMemory::ronin_memory_free(memory.second);
+        RoninMemory::mem_free(memory.second);
 
         if(chunk == nullptr)
         {
@@ -249,7 +237,7 @@ namespace RoninEngine::Runtime
     ResId Resources::LoadMusicClipFromStream(std::istream &stream, bool local)
     {
         ResId id;
-        GidResources *gid;
+        GroupResources *gid;
 
         auto memory = stream_to_mem(stream);
         Mix_Music *music = Mix_LoadMUS_RW(SDL_RWFromMem(memory.second, memory.first), SDL_TRUE);
@@ -318,7 +306,7 @@ namespace RoninEngine::Runtime
     {
         if(resource == RES_INVALID)
             return nullptr;
-        GidResources *gid;
+        GroupResources *gid;
         gid = get_resource(resource);
         resource &= ~RES_LOCAL_FLAG;
         if(resource >= gid->gid_surfaces.size())
@@ -330,7 +318,7 @@ namespace RoninEngine::Runtime
     {
         if(resource == RES_INVALID)
             return nullptr;
-        GidResources *gid = get_resource(resource);
+        GroupResources *gid = get_resource(resource);
         resource &= ~RES_LOCAL_FLAG;
         if(resource >= gid->gid_audio_clips.size())
             return nullptr;
@@ -341,7 +329,7 @@ namespace RoninEngine::Runtime
     {
         if(resource == RES_INVALID)
             return nullptr;
-        GidResources *gid = get_resource(resource);
+        GroupResources *gid = get_resource(resource);
         resource &= ~RES_LOCAL_FLAG;
         if(resource >= gid->gid_music_clips.size())
             return nullptr;

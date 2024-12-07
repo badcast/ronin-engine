@@ -120,6 +120,13 @@ namespace RoninEngine
             PostRender
         };
 
+        enum RefClassType
+        {
+            Null = 0,
+            Shared,
+            Const
+        };
+
         struct ParticleSystemImpl;
 
         struct RoninInput
@@ -199,12 +206,11 @@ namespace RoninEngine
             int loops;
         };
 
-        struct GidResources
+        struct GroupResources
         {
             std::vector<AudioClip *> gid_audio_clips;
             std::vector<MusicClip *> gid_music_clips;
             std::vector<SDL_Surface *> gid_surfaces;
-            std::vector<Sprite *> gid_sprites;
             std::vector<void *> gid_privates;
         };
 
@@ -248,13 +254,14 @@ namespace RoninEngine
             // destroyed queue object
             int _destroyedGameObject;
 
+            // Collection of Refs
             std::unordered_map<RoninPointer*, Ref<RoninPointer>> refPointers;
 
             // Script Behaviours
             std::map<GameObject::BindType, std::set<Behaviour *>> runtimeScriptBinders;
 
             // destruction task (queue object)
-            std::map<float, std::set<GameObject *>> *runtimeCollectors;
+            std::map<float, std::set<GameObject*>> *runtimeCollectors;
 
             // Matrix
             Matrix::matrix_map_t matrix;
@@ -262,7 +269,7 @@ namespace RoninEngine
             std::list<CameraResource *> cameraResources;
 
             // External resources
-            GidResources externalLocalResources;
+            GroupResources externalLocalResources;
 
             // Main UI Object
             UI::GUI *gui;
@@ -276,24 +283,23 @@ namespace RoninEngine
             std::map<SDL_Surface *, std::pair<int, SDL_Texture *>> renderCache;
             std::map<SDL_Texture *, SDL_Surface *> renderCacheRefs;
 
-            void event_camera_changed(Camera *target, CameraEvent state);
+            void event_camera_changed(CameraRef target, CameraEvent state);
         };
 
         struct T2Data;
 
         extern World *currentWorld;
         extern float internal_game_time;
-        extern std::list<Asset> loaded_assets;
+        extern std::list<AssetRef> loaded_assets;
 
         GameObjectRef create_game_object();
         GameObjectRef create_game_object(const std::string &name);
 
-        bool object_instanced(const Object *obj);
         void native_render_2D(Camera2D *camera);
 
         int sepuku_run();
         void sepuku_Component(ComponentRef &CND);
-        void sepuku_GameObject(GameObject *obj, std::set<GameObject *> *input);
+        void sepuku_GameObject(GameObjectRef obj, std::set<GameObject *> *input);
 
         template <typename T>
         int render_getclass();
@@ -306,10 +312,10 @@ namespace RoninEngine
         void internal_free_loaded_assets();
 
         void hierarchy_childs_move(Transform *oldParent, Transform *newParent);
-        void hierarchy_parent_change(Transform *from, Transform *newParent);
+        void hierarchy_parent_change(TransformRef from, TransformRef newParent);
         void hierarchy_child_remove(Transform *parent, Transform *who);
         void hierarchy_childs_remove(Transform *parent);
-        void hierarchy_append(Transform *parent, Transform *who);
+        void hierarchy_append(TransformRef parent, TransformRef who);
         void hierarchy_sibiling(Transform *parent, Transform *who, int index);
 
         void scripts_start();
@@ -318,18 +324,25 @@ namespace RoninEngine
         void scripts_gizmos();
         void scripts_unbind(Behaviour *script);
 
-        void gid_resources_free(GidResources *gid);
-        GidResources *gid_get(bool local);
-        SDL_Surface *private_load_surface(const void *memres, int length, bool local = false);
+        void gid_resources_free(GroupResources *gid);
+        GroupResources *gid_get(bool local);
+        SDL_Surface *private_load_surface(const void *memres, int size, bool local = false);
 
         void storm_cast_eq_all(Vec2Int origin, int edges, std::function<void(const Vec2Int &)> predicate);
         void storm_cast_eq_edges(Vec2Int origin, int edges, std::function<void(const Vec2Int &)> predicate);
 
-        // void ReleasePointer(RoninPointer* object);
-        // void ReleaseRef(ComponentRef& object);
-        // void ReleaseRef(GameObjectRef& object);
-        // void ReleaseRef(AtlasRef& object);
-        // void ReleaseRef(SpriteRef& object);
+        RoninPointer* RefNoFree(RoninPointer*);
+        template<typename T>
+        constexpr Ref<T> RefNoFree(Ref<T> object)
+        {
+            if(object)
+                RefNoFree(static_cast<RoninPointer*>(object.ptr_));
+            return object;
+        }
+        template<typename T>
+        void RefMarkNull(Ref<T> object);
+        void RefReleaseSoft(RoninPointer* object);
+        void RefReleaseHard(RoninPointer* object);
     } // namespace Runtime
 
     extern struct RoninEnvironment

@@ -12,11 +12,12 @@ namespace RoninEngine::Runtime
 
         // TODO: Make Mutex lock for escape race-condition state.
 
+        std::uint64_t __ronin_allocated = 0;
+
 #if TEST_MALLOC
         std::set<void *> allocated_leaker;
 #endif
-        std::uint64_t __ronin_allocated = 0;
-        void *ronin_memory_alloc(std::size_t size)
+        void *mem_alloc(std::size_t size)
         {
             void *memory;
 
@@ -41,7 +42,7 @@ namespace RoninEngine::Runtime
             return memory;
         }
 
-        void *ronin_memory_realloc(void *memory, std::size_t size)
+        void *mem_realloc(void *memory, std::size_t size)
         {
 #if TEST_MALLOC
             allocated_leaker.erase(memory);
@@ -63,7 +64,7 @@ namespace RoninEngine::Runtime
             return memory;
         }
 
-        void ronin_memory_free(void *memory)
+        void mem_free(void *memory)
         {
 #if USE_SDL_MEM
             SDL_free(memory);
@@ -77,7 +78,7 @@ namespace RoninEngine::Runtime
 #endif
         }
 
-        std::uint64_t total_allocated()
+        std::uint64_t mem_allocated()
         {
             return __ronin_allocated;
         }

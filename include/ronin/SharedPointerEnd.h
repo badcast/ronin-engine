@@ -4,45 +4,46 @@
 
 namespace RoninEngine::Runtime
 {
-    template<typename T, typename U>
-    Ref<T> GetRef(U*)
-    {
-        // TODO: Get Shared Pointer
-        T * v = nullptr;
-        return Ref<T>{v};
-    }
-
     template<typename T,typename U>
-    Ref<T> ReinterpretCast(Ref<U> input)
+    Ref<T> ReinterpretCastUnsafe(Ref<U> input)
     {
-        Ref<T> result {};
-        if((result.ptr_ = reinterpret_cast<T*>(input.ptr_)))
+        T* p;
+        size_t * r = nullptr;
+        if((p = reinterpret_cast<T*>(input.get())))
         {
-            result.ref_count_ = input.ref_count_;
+            r = input.get_ref();
+            if(r)
+                (*r)++;
         }
-        return result;
+        return Ref<T>{p,r};
     }
 
     template<typename T,typename U>
     Ref<T> DynamicCast(Ref<U> input)
     {
-        Ref<T> result {};
-        if((result.ptr_ = dynamic_cast<T*>(input.ptr_)))
+        T* p;
+        size_t * r = nullptr;
+        if((p = dynamic_cast<T*>(input.get())))
         {
-            result.ref_count_ = input.ref_count_;
+            r = input.get_ref();
+            if(r)
+                (*r)++;
         }
-        return result;
+        return Ref<T>{p,r};
     }
 
     template<typename T,typename U>
     Ref<T> StaticCast(Ref<U> input)
     {
-        Ref<T> result {};
-        if((result.ptr_ = static_cast<T*>(input.ptr_)))
+        T* p;
+        size_t * r = nullptr;
+        if((p = static_cast<T*>(input.get())))
         {
-            result.ref_count_ = input.ref_count_;
+            r = input.get_ref();
+            if(r)
+                (*r)++;
         }
-        return result;
+        return Ref<T>{p,r};
     }
 
     template <typename T>
@@ -78,6 +79,12 @@ namespace RoninEngine::Runtime
         }
     }
 
+    template<typename T>
+    Ref<T>::Ref(T* ptr, size_t* refCount) noexcept : ptr_(ptr), ref_count_(refCount)
+    {
+
+    }
+
     template <typename T>
     Ref<T>::~Ref()
     {
@@ -88,6 +95,12 @@ namespace RoninEngine::Runtime
     T *Ref<T>::get() const
     {
         return ptr_;
+    }
+
+    template<typename T>
+    size_t *Ref<T>::get_ref() const
+    {
+        return ref_count_;
     }
 
     template <typename T>
@@ -104,18 +117,6 @@ namespace RoninEngine::Runtime
         return *this;
     }
 
-    template<typename T>
-    Ref<T> &Ref<T>::operator=(T* && ptr)
-    {
-        release();
-        if(ptr)
-        {
-            ptr_ = ptr;
-            ref_count_ = new std::size_t(1);
-        }
-        return *this;
-    }
-
     template <typename T>
     Ref<T> &Ref<T>::operator=(Ref &&other)
     {
@@ -126,20 +127,6 @@ namespace RoninEngine::Runtime
             ref_count_ = other.ref_count_;
             other.ptr_ = nullptr;
             other.ref_count_ = nullptr;
-            if(ref_count_)
-                ++(*ref_count_);
-        }
-        return *this;
-    }
-
-    template<typename T>
-    Ref<T> &Ref<T>::operator=(T* ptr)
-    {
-        release();
-        if (ptr)
-        {
-            ptr_ = ptr;
-            ref_count_ = new std::size_t(1);
         }
         return *this;
     }
@@ -178,16 +165,18 @@ namespace RoninEngine::Runtime
     template <typename T>
     Ref<T>::operator bool() const
     {
-        return ptr_ != nullptr;
+        return !isNull();
     }
 
     template <typename T>
     void Ref<T>::release()
     {
-        if(ref_count_ && --ref_count_ == 0)
+        if(ref_count_ && !(--(*ref_count_)))
         {
-            // TODO: Destroy
-
+            if constexpr (std::is_base_of_v<RoninPointer, T>)
+            {
+                instance_end(ptr_);
+            }
             delete ref_count_;
         }
 
@@ -204,8 +193,7 @@ namespace RoninEngine::Runtime
     template<typename T>
     Ref<T> RoninPointer::GetRef()
     {
-        // TODO: Get Shared Pointer
         Ref<RoninPointer> ref = GetRefMain(static_cast<RoninPointer*>(this));
-        return StaticCast<T>(ref);
+        return DynamicCast<T>(ref);
     }
 } // namespace RoninEngine::Runtime

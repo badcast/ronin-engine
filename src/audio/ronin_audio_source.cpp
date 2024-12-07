@@ -30,9 +30,6 @@ AudioSource::AudioSource(const std::string &name) : Component(DESCRIBE_AS_ONLY_N
 
 AudioSource::~AudioSource()
 {
-    setClip(nullptr);
-    // Close opened channel
-    RoninAudio::closeChannel(data->targetChannel);
     RoninMemory::free(data);
 }
 

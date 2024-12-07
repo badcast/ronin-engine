@@ -42,7 +42,6 @@ namespace RoninEngine::Runtime
     GameObject::GameObject(const std::string &name) : Object(DESCRIBE_AS_ONLY_NAME(GameObject)), m_active(true), m_layer(0), m_zOrder(0)
     {
         DESCRIBE_AS_MAIN(GameObject);
-        m_components.push_back(ReinterpretCast<Component>(create_empty_transform()));
     }
 
     bool GameObject::isActive()
@@ -53,7 +52,6 @@ namespace RoninEngine::Runtime
     bool GameObject::isActiveInHierarchy()
     {
         TransformRef p;
-
         p = transform();
         for(; p && p->_owner->m_active;)
             p = p->m_parent;
@@ -65,7 +63,6 @@ namespace RoninEngine::Runtime
     {
         if(m_active == state)
             return;
-
         m_active = state;
         transform()->parent_notify_active_state(GetRef<GameObject>());
     }
@@ -104,7 +101,6 @@ namespace RoninEngine::Runtime
                 case Inherit:;
                 default:;
             }
-
             for(TransformRef &h : __stack.front()->transform()->hierarchy)
             {
                 __stack.emplace_back(h->gameObject().get());
@@ -187,6 +183,7 @@ namespace RoninEngine::Runtime
             Behaviour *script;
             Renderer *render;
             Light *light;
+            Camera* cam;
         } _utp;
 
         if(std::end(m_components) == std::find_if(begin(m_components), end(m_components), std::bind(std::equal_to<ComponentRef>(), std::placeholders::_1, component)))
@@ -194,17 +191,21 @@ namespace RoninEngine::Runtime
             component->_owner = GetRef<GameObject>();
             m_components.emplace_back(component);
 
-            if(_utp.script = dynamic_cast<Behaviour *>(component.get()))
+            if(_utp.script = dynamic_cast<Behaviour *>(component.ptr_))
             {
                 _utp.script->OnAwake();
             }
-            else if(_utp.render = dynamic_cast<Renderer *>(component.get()))
+            else if(_utp.render = dynamic_cast<Renderer *>(component.ptr_))
             {
               // TODO: awake on renderer
             }
-            else if(_utp.light = dynamic_cast<Light *>(component.get()))
+            else if(_utp.light = dynamic_cast<Light *>(component.ptr_))
             {
               // TODO: awake on Light
+            }
+            else if(_utp.cam = dynamic_cast<Camera*>(component.ptr_))
+            {
+                _utp.cam->Focus();
             }
         }
 

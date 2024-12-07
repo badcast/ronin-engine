@@ -76,12 +76,12 @@ namespace RoninEngine::Runtime
 
     SpriteRef Sprite::CreateBlackSprite()
     {
-        return Primitive::CreateSpriteRectangle(true, Vec2::one, Color::black);
+        return Primitive::CreateSpriteRectangle( Vec2::one, Color::black);
     }
 
     SpriteRef Sprite::CreateWhiteSprite()
     {
-        return Primitive::CreateSpriteRectangle(true, Vec2::one, Color::white);
+        return Primitive::CreateSpriteRectangle(Vec2::one, Color::white);
     }
 
 } // namespace RoninEngine::Runtime

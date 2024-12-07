@@ -5,34 +5,29 @@ using namespace RoninEngine::Exception;
 
 namespace RoninEngine::Runtime
 {
-
     void hierarchy_childs_move(Transform *oldParent, Transform *newParent)
     {
         if(oldParent == newParent)
             return;
-
         for(TransformRef& child : oldParent->hierarchy)
         {
             child->m_parent = newParent->GetRef<Transform>();
         }
-
         newParent->hierarchy.merge(oldParent->hierarchy);
     }
-    void hierarchy_parent_change(Transform *from, Transform *newParent)
+
+    void hierarchy_parent_change(TransformRef from, TransformRef newParent)
     {
         // TODO: Fix it Hierarchy function
-        Transform *lastParent = from->m_parent.ptr_;
-
+        TransformRef lastParent = from->m_parent;
         if(newParent && lastParent == newParent)
             return;
-
         if(lastParent)
         {
-            hierarchy_child_remove(lastParent, from);
+            hierarchy_child_remove(lastParent.ptr_, from.ptr_);
         }
-
         if(!newParent)
-            hierarchy_append(World::GetCurrentWorld()->irs->mainObject->transform().ptr_, from); // nullptr as Root
+            hierarchy_append(World::GetCurrentWorld()->irs->mainObject->transform(), from); // nullptr as Root
         else
         {
             from->m_parent = newParent->GetRef<Transform>();
@@ -44,8 +39,7 @@ namespace RoninEngine::Runtime
     {
         if(who->m_parent.ptr_ != parent)
             return;
-
-        auto iter = std::find(parent->hierarchy.begin(), parent->hierarchy.end(), who->GetRef<Transform>());
+        std::list<TransformRef>::iterator iter = std::find(parent->hierarchy.begin(), parent->hierarchy.end(), who->GetRef<Transform>());
         if(iter == parent->hierarchy.end())
             return;
         parent->hierarchy.erase(iter);
@@ -58,16 +52,15 @@ namespace RoninEngine::Runtime
         {
             child->m_parent = nullptr;
         }
-
         parent->hierarchy.clear();
     }
 
-    void hierarchy_append(Transform *parent, Transform *who)
+    void hierarchy_append(TransformRef parent, TransformRef who)
     {
         auto iter = find_if(begin(parent->hierarchy), std::end(parent->hierarchy), std::bind(std::equal_to<TransformRef>(), std::placeholders::_1, who->GetRef<Transform>()));
         if(iter == end(parent->hierarchy))
         {
-            who->m_parent = parent->GetRef<Transform>();
+            who->m_parent = parent;
             parent->hierarchy.emplace_back(who);
         }
     }
@@ -92,7 +85,6 @@ namespace RoninEngine::Runtime
                     __target = iter;
             }
         }
-
         if(__target != __end && __off_pos != __end)
             std::swap(__off_pos, __target); // set sibling
     }
@@ -117,7 +109,6 @@ namespace RoninEngine::Runtime
     {
         if(index < 0 || childCount() < index)
             throw std::out_of_range("index");
-
         auto iter = begin(hierarchy);
         for(int x = 0; iter != end(hierarchy); ++x)
         {
@@ -138,12 +129,12 @@ namespace RoninEngine::Runtime
 
     void Transform::childAdd(TransformRef child)
     {
-        hierarchy_append(this, child.get());
+        hierarchy_append(this->GetRef<Transform>(), child);
     }
 
     void Transform::childRemove(TransformRef child)
     {
-        hierarchy_child_remove(this, child.get());
+        hierarchy_child_remove(this, child.ptr_);
     }
 
     std::list<TransformRef> Transform::GetChilds() const
@@ -440,7 +431,7 @@ namespace RoninEngine::Runtime
             parent = currentWorld->irs->mainObject->transform();
 
         // change children of the parent
-        hierarchy_parent_change(this, parent.ptr_);
+        hierarchy_parent_change(this->GetRef<Transform>(), parent);
 
         if(worldPositionStays)
         {

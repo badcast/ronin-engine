@@ -7,6 +7,7 @@ namespace RoninEngine
     namespace Runtime
     {
         typedef std::uint32_t ResId;
+
         class RONIN_API Resources
         {
         public:
@@ -33,7 +34,7 @@ namespace RoninEngine
             static MusicClip *GetMusicClipSource(ResId resource);
         };
 
-        class RONIN_API Asset
+        class RONIN_API Asset : public RoninPointer
         {
         private:
             struct AssetImpl *ref;
@@ -50,9 +51,9 @@ namespace RoninEngine
         class RONIN_API AssetManager
         {
         public:
-            static bool LoadAsset(const std::string &filename, Asset **asset);
+            static AssetRef LoadAsset(const std::string &filename);
+            static bool UnloadAsset(AssetRef asset);
             static Cursor *ConvertImageToCursor(Image *imageSrc, Vec2Int cursorHotspot);
-            static void DeleteAsset(Asset *asset);
         };
     } // namespace Runtime
 } // namespace RoninEngine

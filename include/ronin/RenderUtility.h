@@ -8,7 +8,6 @@ namespace RoninEngine::Runtime
     public:
         static Color GetColor();
         static void SetColor(const Color &newColor);
-
         static void DrawLine(Vec2 a, Vec2 b);
         static void DrawLineWithPivot(Vec2 ared, Vec2 bblue);
         static void DrawPosition(const Vec2 &origin, float scalar);
@@ -25,19 +24,15 @@ namespace RoninEngine::Runtime
         static void DrawTextClassic(Vec2 origin, const std::string &text);
         static void DrawCircle(Vec2 origin, float distance);
         static void DrawArrow(Vec2 origin, Vec2 dir, float tailLength = 1.0f, float arrowSize = 0.1f);
-
         static void DrawSprite(SpriteRef sprite, Vec2 origin, Vec2 size = Vec2::one, float angleRadian = 0);
         static void DrawSpriteToScreen(SpriteRef sprite, const Rect &rect, float angleRadian = 0);
-
         static void DrawSpriteExtent(SpriteRef sprite, const Rect &rect, float angleRadian = 0);
         static void DrawSpriteExtent(SpriteRef sprite, Vec2Int baseSize, const Rect &rect, float angleRadian = 0);
-
         static void DrawFillRect(Vec2 origin, float width, float height);
         static void DrawFillRectRounded(Vec2 origin, float width, float height, std::uint16_t radius);
         static void DrawFillSquare(Vec2 origin, float width);
         static void DrawFillSquareRounded(Vec2 origin, float width, std::uint16_t radius);
         static void DrawFillCircle(Vec2 origin, float distance);
-
         static void DrawTextToScreen(Vec2Int screenPoint, const std::string &text, int font_size = 11);
     };
 } // namespace RoninEngine::Runtime

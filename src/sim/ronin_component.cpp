@@ -31,7 +31,7 @@ namespace RoninEngine
 
         TransformRef Component::transform()
         {
-            return ReinterpretCast<Transform>(_owner->m_components.front());
+            return StaticCast<Transform>(_owner->m_components.front());
         }
 
         GameObjectRef Component::gameObject()

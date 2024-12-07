@@ -342,9 +342,7 @@ namespace RoninEngine
     inline std::enable_if_t<std::is_base_of<RoninEngine::Runtime::World, W>::value, W *> RoninSimulator::LoadWorld()
     {
         W *world;
-
         Runtime::RoninMemory::alloc_self(world);
-
         // Load
         if(LoadWorld(world, true))
         {
@@ -356,7 +354,6 @@ namespace RoninEngine
             Runtime::RoninMemory::free(world);
             world = nullptr;
         }
-
         return world;
     }
 
@@ -364,9 +361,7 @@ namespace RoninEngine
     inline std::enable_if_t<std::is_base_of<RoninEngine::Runtime::World, W>::value, W *> RoninSimulator::LoadWorldAfterSplash()
     {
         W *world;
-
         Runtime::RoninMemory::alloc_self(world);
-
         if(LoadWorldAfterSplash(world))
         {
             // Make Private
@@ -377,7 +372,6 @@ namespace RoninEngine
             Runtime::RoninMemory::free(world);
             world = nullptr;
         }
-
         return world;
     }
 

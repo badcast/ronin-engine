@@ -13,42 +13,15 @@ constexpr const char resClass[][16] {
     "MusicClip",
     // Atlas is Object serialize
     "Atlas"};
-
 constexpr char modeAtlas[][6] {"Rect", "Tiled"};
-
 constexpr char atlasDirections[][6] {"Right", "Down"};
-
 std::hash<std::string> stringHasher;
 
 void RoninEngine::Runtime::internal_free_loaded_assets()
 {
-    for(Asset &asset : loaded_assets)
+    for(AssetRef &asset : loaded_assets)
     {
-
-        switch(asset.ref->index)
-        {
-            case AssetIndex::AS_SPRITE:
-                if(asset.ref->udata._sprites)
-                    RoninMemory::free(asset.ref->udata._sprites);
-                break;
-            case AssetIndex::AS_AUDIO:
-                if(asset.ref->udata._audioclips)
-                    RoninMemory::free(asset.ref->udata._audioclips);
-                break;
-            case AssetIndex::AS_MUSIC:
-                if(asset.ref->udata._mus)
-                    RoninMemory::free(asset.ref->udata._mus);
-                break;
-            case AssetIndex::AS_ATLAS:
-                if(asset.ref->_atlas)
-                {
-                    // ReleaseRef(asset.ref->_atlas);
-                    asset.ref->_atlas = nullptr;
-                }
-                break;
-        }
-
-        RoninMemory::free(asset.ref); // free asset
+        RefMarkNull(asset);
     }
     loaded_assets.clear();
 
@@ -68,20 +41,9 @@ Cursor *AssetManager::ConvertImageToCursor(Image *imageSrc, Vec2Int cursorHotspo
     return cursor;
 }
 
-void AssetManager::DeleteAsset(Asset *asset)
-{
-    // TODO: Make unintialize asset data.
-}
-
-bool AssetManager::LoadAsset(const std::string &filename, Asset **asset)
+AssetRef AssetManager::LoadAsset(const std::string &filename)
 {
     using namespace json;
-
-    if(asset == nullptr)
-    {
-        ronin_err("asset argument is null pointer");
-        return false;
-    }
 
     ResId rsid;
     int num1, num2, num3, num4;
@@ -89,6 +51,7 @@ bool AssetManager::LoadAsset(const std::string &filename, Asset **asset)
     JSON json, param1, param2, param3, map;
     std::vector<std::pair<std::size_t, std::vector<std::string>>> __files;
     std::filesystem::path dir_of_asset;
+    Asset* asset;
     std::ifstream input(filename);
     str1.assign(std::istreambuf_iterator<char>(input), std::istreambuf_iterator<char>());
     input.close();
@@ -97,29 +60,24 @@ bool AssetManager::LoadAsset(const std::string &filename, Asset **asset)
     if(json.IsNull())
     {
         ronin_err("Can not load asset file");
-        return false;
+        return nullptr;
     }
 
     num2 = sizeof(resClass) / sizeof(resClass[0]);
-
     str1 = json["class"].ToString();
-
     for(num1 = 0; num1 < num2;)
     {
         if(str1 == resClass[num1])
             break;
         ++num1;
     }
-
     if(num1 >= num2)
     {
         ronin_err("Can not load asset file");
-        return false;
+        return nullptr;
     }
-
     dir_of_asset = filename;
     dir_of_asset = dir_of_asset.parent_path();
-
     switch(num1)
     {
         case 0:
@@ -127,13 +85,11 @@ bool AssetManager::LoadAsset(const std::string &filename, Asset **asset)
         case 2:
         {
             JSON sources = json["source"];
-
             if(sources.JSONType() != JSON::Class::Array)
             {
                 ronin_err("Can not load asset file");
-                return false;
+                return nullptr;
             }
-
             for(auto &source0 : sources.ArrayRange())
             {
                 // #1. Check Resources
@@ -171,8 +127,8 @@ bool AssetManager::LoadAsset(const std::string &filename, Asset **asset)
                 __files.emplace_back(std::make_pair(hash_it, _strings));
             }
 
-            *asset = &loaded_assets.emplace_back();
-            RoninMemory::alloc_self((*asset)->ref);
+            RoninMemory::alloc_self(asset);
+            RoninMemory::alloc_self(asset->ref);
             for(auto &pair : __files)
             {
                 switch(num1)
@@ -204,30 +160,30 @@ bool AssetManager::LoadAsset(const std::string &filename, Asset **asset)
                 {
                     /*Sprites*/
                     case 0:
-                        (*asset)->ref->index = AssetIndex::AS_SPRITE;
+                        asset->ref->index = AssetIndex::AS_SPRITE;
 
-                        if((*asset)->ref->udata._sprites == nullptr)
-                            RoninMemory::alloc_self((*asset)->ref->udata._sprites);
+                        if(asset->ref->udata._sprites == nullptr)
+                            RoninMemory::alloc_self(asset->ref->udata._sprites);
 
-                        (*(*asset)->ref->udata._sprites)[pair.first].push_back(Primitive::CreateSpriteFrom(Resources::GetImageSource(rsid), false));
+                        (*asset->ref->udata._sprites)[pair.first].push_back(RefNoFree(Primitive::CreateSpriteFrom(Resources::GetImageSource(rsid))));
                         break;
                     /*AudioClip*/
                     case 1:
-                        (*asset)->ref->index = AssetIndex::AS_AUDIO;
+                        asset->ref->index = AssetIndex::AS_AUDIO;
 
-                        if((*asset)->ref->udata._audioclips == nullptr)
-                            RoninMemory::alloc_self((*asset)->ref->udata._audioclips);
+                        if(asset->ref->udata._audioclips == nullptr)
+                            RoninMemory::alloc_self(asset->ref->udata._audioclips);
 
-                        (*(*asset)->ref->udata._audioclips)[pair.first].push_back(rsid);
+                        (*asset->ref->udata._audioclips)[pair.first].push_back(rsid);
                         break;
                     /*MusicClip*/
                     case 2:
-                        (*asset)->ref->index = AssetIndex::AS_MUSIC;
+                        asset->ref->index = AssetIndex::AS_MUSIC;
 
-                        if((*asset)->ref->udata._mus == nullptr)
-                            RoninMemory::alloc_self((*asset)->ref->udata._mus);
+                        if(asset->ref->udata._mus == nullptr)
+                            RoninMemory::alloc_self(asset->ref->udata._mus);
 
-                        (*(*asset)->ref->udata._mus)[pair.first].push_back(rsid);
+                        (*asset->ref->udata._mus)[pair.first].push_back(rsid);
                         break;
                     default:;
                 }
@@ -247,7 +203,7 @@ bool AssetManager::LoadAsset(const std::string &filename, Asset **asset)
                 if(param1.JSONType() != JSON::Class::String)
                 {
                     ronin_err("mode param is invalid and not contains atlas mode");
-                    return false;
+                    return nullptr;
                 }
 
                 // Identify
@@ -262,7 +218,7 @@ bool AssetManager::LoadAsset(const std::string &filename, Asset **asset)
                 if(num3 == num2)
                 {
                     ronin_err("Atlas mode is not identified.");
-                    return false;
+                    return nullptr;
                 }
             }
             else
@@ -279,7 +235,7 @@ bool AssetManager::LoadAsset(const std::string &filename, Asset **asset)
                     if(map.JSONType() != JSON::Class::Array)
                     {
                         ronin_err("Can not load asset file. Map key is not contains Array maps");
-                        return false;
+                        return nullptr;
                     }
                     num2 = map.size();
                     break;
@@ -287,7 +243,7 @@ bool AssetManager::LoadAsset(const std::string &filename, Asset **asset)
                     if(map.JSONType() != JSON::Class::String)
                     {
                         ronin_err("Can not assign mode is Tiled. Map key is not contains Rect value");
-                        return false;
+                        return nullptr;
                     }
 
                     rect = {0, 0, -1, -1}; // set flush
@@ -320,7 +276,7 @@ bool AssetManager::LoadAsset(const std::string &filename, Asset **asset)
                     break;
                 default:
                     ronin_err("Invalid atlas mode");
-                    return false;
+                    return nullptr;
                     break;
             }
 
@@ -328,7 +284,7 @@ bool AssetManager::LoadAsset(const std::string &filename, Asset **asset)
             if(param1.JSONType() != JSON::Class::String)
             {
                 ronin_err(("Invalid atlas key \"source\" is not valid from " + filename).c_str());
-                return false;
+                return nullptr;
             }
 
             _src = dir_of_asset.generic_string();
@@ -339,15 +295,14 @@ bool AssetManager::LoadAsset(const std::string &filename, Asset **asset)
             if(rsid == RES_INVALID)
             {
                 ronin_err(("Atlas image is invalid " + param1.ToString()).c_str());
-                return false;
+                return nullptr;
             }
 
-            *asset = &loaded_assets.emplace_back();
-            RoninMemory::alloc_self((*asset)->ref);
-
-            (*asset)->ref->index = AssetIndex::AS_ATLAS;
-            (*asset)->ref->_atlas = std::move(AtlasRef{RoninMemory::alloc<Atlas>()});
-            atlas = (*asset)->ref->_atlas;
+            RoninMemory::alloc_self(asset);
+            RoninMemory::alloc_self(asset->ref);
+            asset->ref->index = AssetIndex::AS_ATLAS;
+            asset->ref->_atlas = std::move(AtlasRef{RoninMemory::alloc<Atlas>()});
+            atlas = asset->ref->_atlas;
             atlas->src = Resources::GetImageSource(rsid);
 
             // Post settings Tiled Mode
@@ -383,7 +338,7 @@ bool AssetManager::LoadAsset(const std::string &filename, Asset **asset)
                     rect = {}; // set flush
                     std::sscanf(param1.ToString().c_str(), "%d %d %d %d", &rect.x, &rect.y, &rect.w, &rect.h);
 
-                    spr = Primitive::CreateEmptySprite(false);
+                    spr = Primitive::CreateEmptySprite();
 
                     // TODO: make sprite name spr->name = param1.empty()
                     param1 = param3["sprite"];
@@ -402,13 +357,13 @@ bool AssetManager::LoadAsset(const std::string &filename, Asset **asset)
                 // TILED
                 else
                 {
-                    spr = Primitive::CreateEmptySprite(false);
+                    spr = Primitive::CreateEmptySprite();
                 }
 
                 spr->m_rect = rect;
                 spr->surface = atlas->src;
 
-                atlas->_sprites.emplace_back(spr);
+                atlas->_sprites.emplace_back(RefNoFree(spr));
 
                 // Post setting Tiled
                 if(num3 == 1)
@@ -439,19 +394,27 @@ bool AssetManager::LoadAsset(const std::string &filename, Asset **asset)
             }
             break;
     }
-    return true;
+    return loaded_assets.emplace_back(asset);
+}
+
+bool AssetManager::UnloadAsset(AssetRef asset)
+{
+    bool retval;
+    RefMarkNull(asset);
+    if((retval = asset.isNull()))
+    {
+        loaded_assets.remove(asset);
+    }
+    return retval;
 }
 
 SpriteRef Asset::GetSprite(const std::string &name)
 {
     if(ref->index != AssetIndex::AS_SPRITE || ref->udata._sprites == nullptr)
         return nullptr;
-
     auto test = ref->udata._sprites->find(stringHasher(name));
-
     if(test == std::end(*ref->udata._sprites) || test->second.empty() || test->second.size() > 1)
         return nullptr;
-
     return test->second.front();
 }
 
@@ -459,12 +422,9 @@ AudioClip *Asset::GetAudioClip(const std::string &name)
 {
     if(ref->index != AssetIndex::AS_AUDIO || ref->udata._audioclips == nullptr)
         return nullptr;
-
     auto test = ref->udata._audioclips->find(stringHasher(name));
-
     if(test == std::end(*ref->udata._audioclips) || test->second.empty() || test->second.size() > 1)
         return nullptr;
-
     return Resources::GetAudioClipSource(test->second.front());
 }
 
@@ -472,7 +432,6 @@ AtlasRef Asset::GetAtlasObject()
 {
     if(ref->index != AssetIndex::AS_ATLAS)
         return nullptr;
-
     return ref->_atlas;
 }
 
@@ -480,12 +439,9 @@ std::vector<SpriteRef> Asset::GetSprites(const std::string &name)
 {
     if(ref->index != AssetIndex::AS_SPRITE || ref->udata._sprites == nullptr)
         return {};
-
     auto test = ref->udata._sprites->find(stringHasher(name));
-
     if(test == std::end(*ref->udata._sprites))
         return {};
-
     return test->second;
 }
 
@@ -493,18 +449,13 @@ std::vector<AudioClip *> Asset::GetAudioClips(const std::string &name)
 {
     if(ref->index != AssetIndex::AS_AUDIO || ref->udata._audioclips == nullptr)
         return {};
-
     auto test = ref->udata._audioclips->find(stringHasher(name));
-
     if(test == std::end(*ref->udata._audioclips))
         return {};
-
     std::vector<AudioClip *> sources {};
-
     for(ResId id : test->second)
     {
         sources.push_back(Resources::GetAudioClipSource(id));
     }
-
     return sources;
 }

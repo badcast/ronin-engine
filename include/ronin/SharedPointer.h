@@ -1,9 +1,7 @@
 #ifndef _RONIN_SHARED_POINTER_H_
 #define _RONIN_SHARED_POINTER_H_ 1
 
-#include <cstddef>
 #include "Defines.h"
-#include "Declarations.h"
 
 namespace RoninEngine
 {
@@ -13,23 +11,24 @@ namespace RoninEngine
         Ref<T> GetRefMain(U*);
 
         RONIN_API Ref<RoninPointer> GetRefMain(RoninPointer*);
+        RONIN_API void RefRegister(Ref<RoninPointer>);
 
         template <typename T, typename U>
         Ref<T> StaticCast(Ref<U>);
         template <typename T, typename U>
         Ref<T> DynamicCast(Ref<U>);
         template <typename T, typename U>
-        Ref<T> ReinterpretCast(Ref<U>);
+        Ref<T> ReinterpretCastUnsafe(Ref<U>);
 
         class RONIN_API RoninPointer
         {
         protected:
-            void* _handle;
-
+            int _handle;
         public:
             RoninPointer();
             virtual ~RoninPointer();
             bool isNull() const;
+
             operator bool() const;
 
             template<typename T>
@@ -39,40 +38,28 @@ namespace RoninEngine
         template <typename T>
         class RONIN_API Ref
         {
-            template <typename U>
-            friend Ref<T> StaticCast(Ref<U>);
-            template <typename U>
-            friend Ref<T> DynamicCast(Ref<U>);
-            template <typename U>
-            friend Ref<T> ReinterpretCast(Ref<U>);
-
         public:
             Ref() noexcept;
             Ref(std::nullptr_t) noexcept;
             Ref(const Ref &other) noexcept;
             Ref(Ref &&other) noexcept;
             explicit Ref(T *ptr) noexcept;
-            ~Ref();
-
+            explicit Ref(T *ptr, size_t *refCount) noexcept;
+            virtual ~Ref();
             bool isNull() const;
-
             T *get() const;
-
+            std::size_t *get_ref() const;
             Ref &operator=(const Ref &other);
             Ref &operator=(Ref &&other);
-            Ref &operator=(T* ptr);
-            Ref &operator=(T*&& ptr);
             Ref &operator=(std::nullptr_t);
             bool operator==(const Ref &rhs) const;
             bool operator!=(const Ref &rhs) const;
             T *operator->() const;
             T &operator*() const;
             operator bool() const;
-
-        public:
+        private:
             T *ptr_;
             std::size_t *ref_count_;
-
             void release();
         };
 

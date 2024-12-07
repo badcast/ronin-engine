@@ -94,6 +94,7 @@ namespace RoninEngine
         class MoveController2D;
         class AudioSource;
         class ParticleSystem;
+        class Asset;
 
         class RoninPointer;
 
@@ -118,6 +119,7 @@ namespace RoninEngine
         using GameObjectRef = Ref<GameObject>;
         using SpriteRef = Ref<Sprite>;
         using AtlasRef = Ref<Atlas>;
+        using AssetRef = Ref<Asset>;
     } // namespace Runtime
 } // namespace RoninEngine
 
