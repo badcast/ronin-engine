@@ -78,7 +78,7 @@ namespace RoninEngine::Runtime
 #endif
         }
 
-        std::uint64_t total_allocated()
+        std::uint64_t mem_allocated()
         {
             return __ronin_allocated;
         }

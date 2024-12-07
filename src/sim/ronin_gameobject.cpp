@@ -184,6 +184,7 @@ namespace RoninEngine::Runtime
             Behaviour *script;
             Renderer *render;
             Light *light;
+            Camera* cam;
         } _utp;
 
         if(std::end(m_components) == std::find_if(begin(m_components), end(m_components), std::bind(std::equal_to<ComponentRef>(), std::placeholders::_1, component)))
@@ -191,17 +192,21 @@ namespace RoninEngine::Runtime
             component->_owner = GetRef<GameObject>();
             m_components.emplace_back(component);
 
-            if(_utp.script = dynamic_cast<Behaviour *>(component.get()))
+            if(_utp.script = dynamic_cast<Behaviour *>(component.ptr_))
             {
                 _utp.script->OnAwake();
             }
-            else if(_utp.render = dynamic_cast<Renderer *>(component.get()))
+            else if(_utp.render = dynamic_cast<Renderer *>(component.ptr_))
             {
               // TODO: awake on renderer
             }
-            else if(_utp.light = dynamic_cast<Light *>(component.get()))
+            else if(_utp.light = dynamic_cast<Light *>(component.ptr_))
             {
               // TODO: awake on Light
+            }
+            else if(_utp.cam = dynamic_cast<Camera*>(component.ptr_))
+            {
+                _utp.cam->Focus();
             }
         }
 

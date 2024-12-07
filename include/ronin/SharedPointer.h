@@ -11,6 +11,7 @@ namespace RoninEngine
         Ref<T> GetRefMain(U*);
 
         RONIN_API Ref<RoninPointer> GetRefMain(RoninPointer*);
+        RONIN_API void RefRegister(Ref<RoninPointer>);
 
         template <typename T, typename U>
         Ref<T> StaticCast(Ref<U>);

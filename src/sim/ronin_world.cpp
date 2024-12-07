@@ -27,9 +27,8 @@ namespace RoninEngine
                 RoninMemory::alloc_self(world->irs);
                 RoninMemory::alloc_self(world->irs->gui, world);
 
-                // set state load
+                       // set state load
                 world->irs->requestUnloading = false;
-
                 // update internal loaded font
                 font2d_update(world);
 
@@ -41,8 +40,7 @@ namespace RoninEngine
         {
             if(world->irs == nullptr)
                 return false;
-
-            World *lastWorld = currentWorld;
+            World *prevWorld = currentWorld;
             currentWorld = world;
             world->RequestUnload();
             world->OnUnloading();
@@ -65,8 +63,6 @@ namespace RoninEngine
                     stacks.pop_front();
                 }
             }
-            world->irs->refPointers.clear();
-            world->irs->mainObject = nullptr;
             if(world->irs->objects != 0)
             {
                 ronin_log(("World is have leak objects: " + std::to_string(world->irs->objects)).c_str());
@@ -90,7 +86,7 @@ namespace RoninEngine
             /////////////////////
             gid_resources_free(&world->irs->externalLocalResources);
 
-            // Halt all channels
+                   // Halt all channels
             Mix_HaltChannel(-1);
             // reallocate channels
             Mix_AllocateChannels(MIX_CHANNELS);
@@ -105,11 +101,8 @@ namespace RoninEngine
             }
             RoninMemory::free(world->irs);
             world->irs = nullptr;
-
             loadedWorlds.erase(world);
-
-            currentWorld = lastWorld;
-
+            currentWorld = prevWorld;
             return true;
         }
 
@@ -134,19 +127,19 @@ namespace RoninEngine
                 // draw world in world size
                 native_render_2D(reinterpret_cast<Camera2D *>(cam));
 
-                // Set scale to default
+                       // Set scale to default
                 SDL_RenderSetScale(gscope.renderer, 1.f, 1.f);
             }
             gscope.queueWatcher.delayPresent = Time::EndWatch();
 
-            // begin watcher
+                   // begin watcher
             Time::BeginWatch();
             if(!currentWorld->irs->requestUnloading && cam)
             {
                 // Reset Color
                 RenderUtility::SetColor(Color::white);
 
-                // Draw gizmos
+                       // Draw gizmos
                 currentWorld->OnGizmos();
                 scripts_gizmos();
             }
@@ -167,13 +160,13 @@ namespace RoninEngine
         internal_unload_world(this);
     }
 
-    void WorldResources::event_camera_changed(Camera *target, CameraEvent state)
+    void WorldResources::event_camera_changed(CameraRef target, CameraEvent state)
     {
         switch(state)
         {
             case CameraEvent::CAM_DELETED:
                 // TODO: find free Camera and set as Main
-                if(mainCamera.ptr_ == target)
+                if(mainCamera == target)
                     mainCamera = nullptr;
                 // BUG: MEMORY LEAK CAM RESOURCES
                 cameraResources.remove(target->res);
@@ -181,12 +174,12 @@ namespace RoninEngine
                 RoninMemory::free(target->res);
                 break;
             case CameraEvent::CAM_TARGET:
-                mainCamera = CameraRef{target};
+                mainCamera = target;
                 break;
         }
     }
 
-    // NOTE: Check game hierarchy
+           // NOTE: Check game hierarchy
     std::list<Transform *> World::MatrixCheckDamage()
     {
         if(irs == nullptr)
@@ -216,7 +209,7 @@ namespace RoninEngine
         return MatrixRestore(damaged);
     }
 
-    // try restore damaged matrix element's
+           // try restore damaged matrix element's
     int World::MatrixRestore(const std::list<Runtime::Transform *> &damaged_content)
     {
         if(irs == nullptr)

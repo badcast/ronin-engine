@@ -283,14 +283,14 @@ namespace RoninEngine
             std::map<SDL_Surface *, std::pair<int, SDL_Texture *>> renderCache;
             std::map<SDL_Texture *, SDL_Surface *> renderCacheRefs;
 
-            void event_camera_changed(Camera *target, CameraEvent state);
+            void event_camera_changed(CameraRef target, CameraEvent state);
         };
 
         struct T2Data;
 
         extern World *currentWorld;
         extern float internal_game_time;
-        extern std::list<Asset> loaded_assets;
+        extern std::list<AssetRef> loaded_assets;
 
         GameObjectRef create_game_object();
         GameObjectRef create_game_object(const std::string &name);
@@ -326,37 +326,23 @@ namespace RoninEngine
 
         void gid_resources_free(GroupResources *gid);
         GroupResources *gid_get(bool local);
-        SDL_Surface *private_load_surface(const void *memres, int length, bool local = false);
+        SDL_Surface *private_load_surface(const void *memres, int size, bool local = false);
 
         void storm_cast_eq_all(Vec2Int origin, int edges, std::function<void(const Vec2Int &)> predicate);
         void storm_cast_eq_edges(Vec2Int origin, int edges, std::function<void(const Vec2Int &)> predicate);
 
         RoninPointer* RefNoFree(RoninPointer*);
         template<typename T>
-        constexpr Ref<T>& RefNoFree(Ref<T>& object)
+        constexpr Ref<T> RefNoFree(Ref<T> object)
         {
             if(object)
                 RefNoFree(static_cast<RoninPointer*>(object.ptr_));
             return object;
         }
         template<typename T>
-        constexpr Ref<T>&& RefNoFree(Ref<T>&& object)
-        {
-            if(object)
-                RefNoFree(static_cast<RoninPointer*>(object.ptr_));
-            return std::move(object);
-        }
-        template<typename T>
-        constexpr void RefMarkNull(Ref<T> object)
-        {
-            if(object)
-                object.ptr_._handle = RefClassType::Null;
-        }
-        void release_pointer(RoninPointer* object);
-        void unref(ComponentRef& object);
-        void unref(GameObjectRef& object);
-        void unref(AtlasRef& object);
-        void unref(SpriteRef& object);
+        void RefMarkNull(Ref<T> object);
+        void RefReleaseSoft(RoninPointer* object);
+        void RefReleaseHard(RoninPointer* object);
     } // namespace Runtime
 
     extern struct RoninEnvironment

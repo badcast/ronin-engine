@@ -173,8 +173,7 @@ namespace RoninEngine::Runtime
     {
         if(ref_count_ && !(--(*ref_count_)))
         {
-            // TODO: Destroy
-            if constexpr ( std::is_base_of_v<RoninPointer, T> )
+            if constexpr (std::is_base_of_v<RoninPointer, T>)
             {
                 instance_end(ptr_);
             }

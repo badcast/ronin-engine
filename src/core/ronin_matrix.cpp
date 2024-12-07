@@ -38,7 +38,6 @@ namespace RoninEngine::Runtime
                         layer->second.erase(eq);
                 }
             }
-
             // Add point to new source
             currentWorld->irs->matrix[target->_owner->m_layer][newPoint].insert(target);
         }

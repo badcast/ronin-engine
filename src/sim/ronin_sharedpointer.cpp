@@ -4,38 +4,36 @@ using namespace RoninEngine::Runtime;
 
 namespace RoninEngine::Runtime
 {
-    ////////////////
-    // Destroys
-    ////////////////
+    void instance_end(RoninPointer* pointer)
+    {
+        RefReleaseHard(pointer);
+    }
+
     RoninPointer* RefNoFree(RoninPointer * object)
     {
         object->_handle = RefClassType::Const;
         return object;
     }
 
-    void release_pointer(RoninPointer* object)
+    ////////////
+    /// Destroys
+    ////////////
+    void RefReleaseSoft(RoninPointer* object)
     {
-        if(object == nullptr)
-            return;
-        if(object->_handle == RefClassType::Const)
-            object->_handle = RefClassType::Null;
-        else
+        std::unordered_map<RoninPointer*, Ref<RoninPointer>>::iterator iter;
+        iter = currentWorld->irs->refPointers.find(object);
+        if(iter != currentWorld->irs->refPointers.end())
+            currentWorld->irs->refPointers.erase(iter);
+    }
+
+    void RefReleaseHard(RoninPointer *object)
+    {
+        if(object->_handle != RefClassType::Const)
             RoninMemory::free(object);
     }
 
-    void unref(ComponentRef& object){
-    }
-    void unref(GameObjectRef& object){
-    }
-    void unref(AtlasRef& object){
-    }
-    void unref(SpriteRef& object){
-    }
-
-    RoninPointer::RoninPointer()
-    {
-        _handle = RefClassType::Shared;
-    }
+    RoninPointer::RoninPointer() : _handle(RefClassType::Shared)
+    {}
 
     RoninPointer::~RoninPointer()
     {}
@@ -50,12 +48,21 @@ namespace RoninEngine::Runtime
         return _handle != RefClassType::Null;
     }
 
+    void RefRegister(Ref<RoninPointer> noninitref)
+    {
+        if(currentWorld == nullptr || currentWorld->irs == nullptr || !noninitref)
+            return;
+        currentWorld->irs->refPointers[static_cast<RoninPointer*>(noninitref.ptr_)] = noninitref;
+    }
+
     Ref<RoninPointer> GetRefMain(RoninPointer* pointer)
     {
+        if(pointer == nullptr)
+            return nullptr;
         std::unordered_map<RoninPointer*, Ref<RoninPointer>>::iterator iter = currentWorld->irs->refPointers.find(pointer);
         if(iter != currentWorld->irs->refPointers.end())
             return iter->second;
-        return Ref<RoninPointer>{nullptr};
+        return nullptr;
     }
 
     template<>

@@ -14,12 +14,12 @@ namespace RoninEngine
 
             // init component
             ComponentRef component { RoninMemory::alloc<T>() };
+            RefRegister(StaticCast<RoninPointer>(component));
             AddComponent(component);
 
             if constexpr(std::is_base_of_v<Behaviour, T>)
             {
                 int flags = 0;
-
 #if 1
 #ifdef __clang__ // it's work only Clang
 #define CHECK_BASE_OVERRIDDEN(BASE, BINDER, METHOD) \

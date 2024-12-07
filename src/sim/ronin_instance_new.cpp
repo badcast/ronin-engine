@@ -7,11 +7,6 @@ namespace RoninEngine
 {
     namespace Runtime
     {
-        void instance_end(RoninPointer* pointer)
-        {
-            release_pointer(pointer);
-        }
-
         template <typename T>
         Ref<T> instance_new(bool initInHierarchy, T *currentInstance, const char *name)
         {
@@ -62,7 +57,7 @@ namespace RoninEngine
             Ref<T> result { currentInstance };
             if(currentInstance)
             {
-                currentWorld->irs->refPointers[static_cast<RoninPointer*>(currentInstance)] = std::move(StaticCast<RoninPointer>(result));
+                RefRegister(StaticCast<RoninPointer>(result));
             }
 
             if constexpr(std::is_same_v<T, GameObject>)
@@ -85,7 +80,7 @@ namespace RoninEngine
             {
             }
 
-            return RefNoFree(result);
+            return result;
         }
 
         TransformRef create_empty_transform()
@@ -112,13 +107,8 @@ namespace RoninEngine
 
         GameObjectRef __instantiate(GameObjectRef obj)
         {
-
-            // TODO: Use Reflectable Class <Prototype> class reference for instance a new object from method <Clone>
-
             GameObjectRef clone;
-
             clone = create_game_object((obj->m_name.find(_cloneStr) == std::string::npos ? obj->m_name + _cloneStr : obj->m_name));
-
             for(auto iter = begin(obj->m_components); iter != end(obj->m_components); ++iter)
             {
                 ComponentRef &replacement = *iter;
@@ -157,7 +147,7 @@ namespace RoninEngine
 
                     //} else if (dynamic_cast<Behaviour*>(replacement)) {
 
-                    /// replacement = internal_factory_base<Behaviour>(false, reinterpret_cast<Behaviour*>(replacement),
+                    /// replacement = instance_new<Behaviour>(false, reinterpret_cast<Behaviour*>(replacement),
                     /// nullptr);
                 }
                 else

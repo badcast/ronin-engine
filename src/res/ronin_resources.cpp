@@ -102,15 +102,14 @@ namespace RoninEngine::Runtime
         return resources;
     }
 
-    SDL_Surface *private_load_surface(const void *memres, int length, bool local)
+    SDL_Surface *private_load_surface(const void *memres, int size, bool local)
     {
         ResId __result;
-        SDL_Surface *surf = IMG_Load_RW(SDL_RWFromConstMem(memres, length), SDL_TRUE);
+        SDL_Surface *surf = IMG_Load_RW(SDL_RWFromConstMem(memres, size), SDL_TRUE);
         if(surf != nullptr)
         {
             make_resource(&__result, local)->gid_surfaces.emplace_back(surf);
         }
-
         return surf;
     }
 
@@ -118,11 +117,9 @@ namespace RoninEngine::Runtime
     {
         std::size_t sz;
         char *memory = nullptr;
-
         stream.seekg(0, std::ios_base::end);
         sz = stream.tellg();
         stream.seekg(0, std::ios_base::beg);
-
         if(sz == 0)
         {
             memory = static_cast<char *>(RoninMemory::mem_alloc(sz));

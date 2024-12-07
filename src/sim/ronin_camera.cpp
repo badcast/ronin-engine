@@ -11,8 +11,6 @@ namespace RoninEngine::Runtime
         World::GetCurrentWorld()->irs->cameraResources.emplace_front(RoninMemory::alloc_self(res));
         res->scale = Vec2::one;
         res->culled = 0;
-
-        Focus();
     }
     Camera::~Camera()
     {
@@ -36,7 +34,7 @@ namespace RoninEngine::Runtime
     void Camera::Focus()
     {
         if(currentWorld)
-            currentWorld->irs->event_camera_changed(this, CameraEvent::CAM_TARGET);
+            currentWorld->irs->event_camera_changed(this->GetRef<Camera>(), CameraEvent::CAM_TARGET);
     }
 
     Vec2 Camera::ScreenToWorldPoint(Vec2 screenPoint)
