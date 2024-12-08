@@ -20,6 +20,7 @@ namespace RoninEngine::Runtime
     ////////////
     void RefReleaseSoft(RoninPointer* object)
     {
+        return;
         std::unordered_map<RoninPointer*, Ref<RoninPointer>>::iterator iter;
         iter = currentWorld->irs->refPointers.find(object);
         if(iter != currentWorld->irs->refPointers.end())

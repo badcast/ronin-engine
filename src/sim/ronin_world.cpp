@@ -63,6 +63,7 @@ namespace RoninEngine
                     stacks.pop_front();
                 }
             }
+            world->irs->mainObject = nullptr;
             if(world->irs->objects != 0)
             {
                 ronin_log(("World is have leak objects: " + std::to_string(world->irs->objects)).c_str());

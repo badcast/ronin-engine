@@ -300,7 +300,6 @@ namespace RoninEngine
 
         for(World *pinned : Runtime::privateWorlds)
         {
-            Runtime::internal_unload_world(pinned);
             RoninMemory::free(pinned);
         }
         Runtime::privateWorlds.clear();
