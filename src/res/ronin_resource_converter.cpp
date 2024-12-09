@@ -21,7 +21,7 @@ void RoninEngine::Runtime::internal_free_loaded_assets()
 {
     for(AssetRef &asset : loaded_assets)
     {
-        AssetManager::UnloadAsset(asset);
+        RefMarkNull(asset);
     }
     loaded_assets.clear();
 
