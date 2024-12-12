@@ -7,43 +7,40 @@ namespace RoninEngine::Runtime
     template<typename T,typename U>
     Ref<T> ReinterpretCastUnsafe(Ref<U> input)
     {
-        T* p;
-        size_t * r = nullptr;
-        if((p = reinterpret_cast<T*>(input.get())))
+        Ref<T> retval;
+        if((retval.ptr_ = reinterpret_cast<T*>(input.ptr_)))
         {
-            r = input.get_ref();
-            if(r)
-                (*r)++;
+            retval.ref_count_ = input.ref_count_;
+            if(retval.ref_count_)
+                (*retval.ref_count_)++;
         }
-        return Ref<T>{p,r};
+        return retval;
     }
 
     template<typename T,typename U>
     Ref<T> DynamicCast(Ref<U> input)
     {
-        T* p;
-        size_t * r = nullptr;
-        if((p = dynamic_cast<T*>(input.get())))
+        Ref<T> retval;
+        if((retval.ptr_ = dynamic_cast<T*>(input.ptr_)))
         {
-            r = input.get_ref();
-            if(r)
-                (*r)++;
+            retval.ref_count_ = input.ref_count_;
+            if(retval.ref_count_)
+                (*retval.ref_count_)++;
         }
-        return Ref<T>{p,r};
+        return retval;
     }
 
     template<typename T,typename U>
     Ref<T> StaticCast(Ref<U> input)
     {
-        T* p;
-        size_t * r = nullptr;
-        if((p = static_cast<T*>(input.get())))
+        Ref<T> retval;
+        if((retval.ptr_ = static_cast<T*>(input.ptr_)))
         {
-            r = input.get_ref();
-            if(r)
-                (*r)++;
+            retval.ref_count_ = input.ref_count_;
+            if(retval.ref_count_)
+                (*retval.ref_count_)++;
         }
-        return Ref<T>{p,r};
+        return retval;
     }
 
     template <typename T>
@@ -79,12 +76,6 @@ namespace RoninEngine::Runtime
         }
     }
 
-    template<typename T>
-    Ref<T>::Ref(T* ptr, size_t* refCount) noexcept : ptr_(ptr), ref_count_(refCount)
-    {
-
-    }
-
     template <typename T>
     Ref<T>::~Ref()
     {
@@ -95,12 +86,6 @@ namespace RoninEngine::Runtime
     T *Ref<T>::get() const
     {
         return ptr_;
-    }
-
-    template<typename T>
-    size_t *Ref<T>::get_ref() const
-    {
-        return ref_count_;
     }
 
     template <typename T>
@@ -144,10 +129,22 @@ namespace RoninEngine::Runtime
         return this->ptr_ == rhs.ptr_;
     }
 
+    template<typename T>
+    bool Ref<T>::operator==(std::nullptr_t) const
+    {
+        return this->isNull();
+    }
+
     template <typename T>
     bool Ref<T>::operator!=(const Ref &rhs) const
     {
         return !(*this == rhs);
+    }
+
+    template<typename T>
+    bool Ref<T>::operator !=(std::nullptr_t) const
+    {
+        return !this->isNull();
     }
 
     template <typename T>
@@ -175,7 +172,7 @@ namespace RoninEngine::Runtime
         {
             if constexpr (std::is_base_of_v<RoninPointer, T>)
             {
-                instance_end(ptr_);
+                RoninPointer::instance_end(ptr_);
             }
             delete ref_count_;
         }

@@ -331,9 +331,13 @@ namespace RoninEngine
         void storm_cast_eq_all(Vec2Int origin, int edges, std::function<void(const Vec2Int &)> predicate);
         void storm_cast_eq_edges(Vec2Int origin, int edges, std::function<void(const Vec2Int &)> predicate);
 
-        RoninPointer* RefNoFree(RoninPointer*);
+        constexpr inline RoninPointer* RefNoFree(RoninPointer * object)
+        {
+            object->_handle = RefClassType::Const;
+            return object;
+        }
         template<typename T>
-        constexpr Ref<T> RefNoFree(Ref<T> object)
+        constexpr inline Ref<T> RefNoFree(Ref<T> object)
         {
             if(object)
                 RefNoFree(static_cast<RoninPointer*>(object.ptr_));

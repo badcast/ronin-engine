@@ -6,6 +6,9 @@
 
 #define COLOR_IMPL_EXT API_EXPORT const Color
 
+constexpr const char* HexColorFormatRGB = "%02X%02X%02X%02X";
+constexpr const char* HexColorFormatRGBA = "%02X%02X%02X%02X%02X";
+
 using namespace RoninEngine::Runtime;
 using namespace RoninEngine::Exception;
 
@@ -140,8 +143,6 @@ Color::operator native_color_t() const
 
 Color Color::HexToColor(const char *hex)
 {
-    constexpr auto hex_color_format32 = "%02X%02X%02X%02X";
-
     std::uint32_t red = 0, green = 0, blue = 0, alpha = 255;
 
     if(hex == nullptr)
@@ -158,7 +159,7 @@ Color Color::HexToColor(const char *hex)
     for(int i = 0; hex[i]; ++i)
         chars[i] = std::toupper(hex[i]);
 
-    sscanf(chars, hex_color_format32, &red, &green, &blue, &alpha);
+    sscanf(chars, HexColorFormatRGBA, &red, &green, &blue, &alpha);
 
     return Color(red, green, blue, alpha);
 }
@@ -178,9 +179,9 @@ std::string Color::ColorToHex(const Color &color, bool appendAlpha)
     char hex[18];
 
     if(appendAlpha)
-        snprintf(hex, sizeof(hex), "#%02X%02X%02X%02X", color.r, color.g, color.b, color.a);
+        snprintf(hex, sizeof(hex), HexColorFormatRGBA, color.r, color.g, color.b, color.a);
     else
-        snprintf(hex, sizeof(hex), "#%02X%02X%02X", color.r, color.g, color.b);
+        snprintf(hex, sizeof(hex), HexColorFormatRGB, color.r, color.g, color.b);
 
     return {hex};
 }

@@ -94,7 +94,12 @@ namespace RoninEngine
                 AudioSource *audioSource;
             } _knife;
 
-            Component* candidate = CND.get();
+            Component* candidate = CND.ptr_;
+
+            if(candidate->_owner == nullptr)
+            {
+                int foo = 0;
+            }
 
 #define self (_knife.transform)
             if((self = dynamic_cast<Transform *>(candidate)))
@@ -104,13 +109,14 @@ namespace RoninEngine
                 {
                     if(self->m_parent)
                     {
-                        hierarchy_child_remove(self->m_parent.get(), self);
+                        hierarchy_child_remove(self->m_parent.ptr_, self);
                     }
                     // Parent is off for self Transform
                     hierarchy_childs_remove(self);
 
                     // picking from matrix
-                    Matrix::matrix_remove(self);
+                    if(self->_owner)
+                        Matrix::matrix_remove(self);
                 }
             }
 #undef self

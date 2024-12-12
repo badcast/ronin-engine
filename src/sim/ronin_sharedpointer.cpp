@@ -4,17 +4,10 @@ using namespace RoninEngine::Runtime;
 
 namespace RoninEngine::Runtime
 {
-    void instance_end(RoninPointer* pointer)
+    void RoninPointer::instance_end(RoninPointer* pointer)
     {
         RefReleaseHard(pointer);
     }
-
-    RoninPointer* RefNoFree(RoninPointer * object)
-    {
-        object->_handle = RefClassType::Const;
-        return object;
-    }
-
            ////////////
            /// Destroys
            ////////////
@@ -48,14 +41,20 @@ namespace RoninEngine::Runtime
         return _handle != RefClassType::Null;
     }
 
-    void RefRegister(Ref<RoninPointer> noninitref)
+    void RoninPointer::RefRegister(Ref<RoninPointer> noninitref)
     {
         if(currentWorld == nullptr || currentWorld->irs == nullptr || !noninitref)
             return;
         currentWorld->irs->refPointers[static_cast<RoninPointer*>(noninitref.ptr_)] = noninitref;
     }
 
-    Ref<RoninPointer> GetRefMain(RoninPointer* pointer)
+    template<>
+    Ref<RoninPointer> RoninPointer::GetRef()
+    {
+        return GetRefMain(this);
+    }
+
+    Ref<RoninPointer> RoninPointer::GetRefMain(RoninPointer* pointer)
     {
         if(pointer)
         {
@@ -66,10 +65,5 @@ namespace RoninEngine::Runtime
         return nullptr;
     }
 
-    template<>
-    Ref<RoninPointer> RoninPointer::GetRef()
-    {
-        return GetRefMain(this);
-    }
 }
 

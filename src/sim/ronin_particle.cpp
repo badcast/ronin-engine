@@ -24,7 +24,7 @@ namespace RoninEngine::Runtime
 
     bool operator<(const ParticleDrain &lhs, const ParticleDrain &rhs)
     {
-        return lhs.render < rhs.render;
+        return lhs.render.ptr_ < rhs.render.ptr_;
     }
 
     struct ParticleSystemImpl

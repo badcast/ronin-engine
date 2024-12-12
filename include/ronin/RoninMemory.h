@@ -4,8 +4,6 @@
 
 namespace RoninEngine::Runtime
 {
-    RONIN_API void instance_end(RoninPointer* pointer);
-
 namespace RoninMemory
 {
     // main memory controller

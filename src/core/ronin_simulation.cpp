@@ -106,7 +106,11 @@ namespace RoninEngine
         {
             lastWorld = currentWorld;    // Switched world first unload after load
             preloadWorld = currentWorld; // Switched world as Newer is preload
-
+            if(std::end(privateWorlds) != privateWorlds.find(lastWorld))
+            {
+                internal_unload_world(lastWorld);
+                lastWorld = nullptr;
+            }
             gscope.internalWorldLoaded = false;
         }
 
@@ -280,7 +284,7 @@ namespace RoninEngine
         gscope.activeWindow = nullptr;
 
         Runtime::free_legacy_font();
-               // NOTE: Free Global Resources
+                                     // NOTE: Free Global Resources
         if(external_global_resources)
         {
             gid_resources_free(external_global_resources);
@@ -291,7 +295,7 @@ namespace RoninEngine
         Runtime::internal_free_loaded_assets();
 
 
-        // unload existence worlds
+               // unload existence worlds
         for(World *pinned : Runtime::loadedWorlds)
         {
             Runtime::internal_unload_world(pinned);
@@ -408,16 +412,14 @@ namespace RoninEngine
                 // Unload old World
                 if(lastWorld)
                 {
-                    internal_unload_world(lastWorld);
-
+                    internal_unload_world(lastWorld); 
                            // Free Private World
                     auto worldIter = privateWorlds.find(lastWorld);
-                    if(worldIter != privateWorlds.end())
+                    if( worldIter != privateWorlds.end())
                     {
                         RoninMemory::free(lastWorld);
                         privateWorlds.erase(worldIter);
                     }
-
                     lastWorld = nullptr;
                 }
 
@@ -461,7 +463,7 @@ namespace RoninEngine
                         currentWorld->irs->mainObject->name("Main Object");
                         currentWorld->irs->mainObject->transform()->name("Root");
                         // pickup from renders
-                        Matrix::matrix_remove(currentWorld->irs->mainObject->transform().get());
+                        Matrix::matrix_remove(currentWorld->irs->mainObject->transform().ptr_);
                     }
                     /////////////////////
                     /// Set Metric as default
@@ -584,7 +586,7 @@ namespace RoninEngine
                 }
             }
 
-            // update events
+                   // update events
             internal_input_update_after();
 
             if(currentWorld == nullptr || currentWorld->irs->requestUnloading && preloadWorld == nullptr)
@@ -758,7 +760,7 @@ namespace RoninEngine
     {
         if(currentWorld == nullptr || preloadWorld != nullptr)
         {
-            ronin_log("Active world not loaded");
+            ronin_log("RELOAD WORLD: current or preload is not loaded for reload.");
             return false;
         }
 
@@ -1053,15 +1055,15 @@ namespace RoninEngine
             },
                 [&]() // Apply Render Texture Scale Quality
             { return refSettings.textureQuality != settings.textureQuality && (SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, (settings.textureQuality ? "1" : "0")) == SDL_TRUE); },
-                // Apply Video Driver
+                                                                                                                                                                                  // Apply Video Driver
                 [&]() { return false; },
-                // Apply Render Driver
+                               // Apply Render Driver
                 [&]() { return false; },
-                // Apply Brightness
+                               // Apply Brightness
                 [&]() { return (refSettings.brightness != settings.brightness && SDL_SetWindowBrightness(gscope.activeWindow, settings.brightness) == 0); },
-                // Apply Window Opacity
+                                                                                                                                                   // Apply Window Opacity
                 [&]() { return (refSettings.windowOpacity != settings.windowOpacity && SDL_SetWindowOpacity(gscope.activeWindow, settings.windowOpacity) == 0); },
-                // Apply VSync
+                                                                                                                                                         // Apply VSync
                 [&]() { return (refSettings.verticalSync != settings.verticalSync && SDL_SetHint(SDL_HINT_RENDER_VSYNC, ((settings.verticalSync) ? "1" : "0"))); }};
 
         bool apply_any = false;

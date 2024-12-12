@@ -70,13 +70,13 @@ SpriteRef Primitive::CreateSpriteCircle(Vec2 size, float radius, Color fillColor
     {
         RoninSimulator::Kill();
     }
+    currentWorld->irs->preloadeSurfaces.push_back(surface);
     SDL_Renderer *renderer = SDL_CreateSoftwareRenderer(surface);
 
     // draw circle
     filledCircleColor(renderer, size.x / 2, size.y / 2, static_cast<std::uint16_t>(radius * currentWorld->irs->metricPixelsPerPoint.x / 2) - 1, fillColor);
 
     SDL_DestroyRenderer(renderer);
-    currentWorld->irs->preloadeSurfaces.push_back(surface);
     RoninMemory::alloc_self(sprite, surface, Rect(0, 0, size.x, size.y));
     return SpriteRef{sprite};
 }
