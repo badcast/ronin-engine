@@ -25,7 +25,6 @@ namespace RoninEngine
                 if constexpr(std::is_same_v<T, GameObject>)
                 {
                     throw std::exception();
-                    //cloning = Instantiate(instance->ref<T>()).ptr_;
                 }
                 else if constexpr(std::is_same_v<T, Transform>)
                 {
@@ -109,10 +108,9 @@ namespace RoninEngine
         GameObjectRef __instantiate(GameObjectRef obj)
         {
             GameObjectRef clone;
-            clone = create_game_object((obj->m_name.find(_cloneStr) == std::string::npos ? obj->m_name + _cloneStr : obj->m_name));
-            for(auto iter = begin(obj->m_components); iter != end(obj->m_components); ++iter)
+            clone = create_game_object((obj->m_name.find(_cloneStr) != std::string::npos ? obj->m_name + _cloneStr : obj->m_name));
+            for(ComponentRef &replacement : obj->m_components)
             {
-                ComponentRef &replacement = *iter;
                 TransformRef refTransform = DynamicCast<Transform>(replacement);
                 if(refTransform)
                 {
@@ -138,11 +136,11 @@ namespace RoninEngine
                     cloneIt->_enable = cloneFrom->_enable;
                     continue;
                 }
-                else if(!DynamicCast<SpriteRenderer>(replacement).isNull())
+                else if(DynamicCast<SpriteRenderer>(replacement))
                 {
                     replacement = StaticCast<Component>(instance_new<SpriteRenderer>(false, reinterpret_cast<SpriteRenderer *>(replacement.ptr_), nullptr));
                 }
-                else if(!DynamicCast<Camera2D>(replacement).isNull())
+                else if(DynamicCast<Camera2D>(replacement))
                 {
                     replacement = StaticCast<Component>(instance_new<Camera2D>(false, reinterpret_cast<Camera2D*>(replacement.ptr_), nullptr));
 

@@ -59,12 +59,18 @@ namespace RoninEngine
             Ref &operator=(Ref &&other);
             Ref &operator=(std::nullptr_t);
             bool operator==(const Ref &rhs) const;
+            bool operator==(Ref &&rhs) const;
             bool operator==(std::nullptr_t) const;
             bool operator!=(const Ref &rhs) const;
+            bool operator!=(Ref &&rhs) const;
             bool operator!=(std::nullptr_t) const;
+            bool operator<(const Ref &rhs) const;
+            bool operator<(Ref &&rhs) const;
+            bool operator>(const Ref &rhs) const;
+            bool operator>(Ref &&rhs) const;
             T *operator->() const;
             T &operator*() const;
-            operator bool() const;
+            explicit operator bool() const;
         private:
             T *ptr_;
             std::size_t *ref_count_;

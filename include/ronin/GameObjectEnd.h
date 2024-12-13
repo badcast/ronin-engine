@@ -43,7 +43,7 @@ namespace RoninEngine
                 CHECK_BASE_OVERRIDDEN(Behaviour, Bind_Gizmos, OnGizmos);
 #undef CHECK_BASE_OVERRIDDEN
 
-                bind_script(static_cast<BindType>(flags), reinterpret_cast<Behaviour *>(component.get()));
+                bind_script(static_cast<BindType>(flags), StaticCast<Behaviour>(component));
             }
 
             return StaticCast<T>(component);

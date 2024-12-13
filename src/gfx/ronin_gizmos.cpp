@@ -120,7 +120,7 @@ namespace RoninEngine::Runtime
     {
         float cos, sin;
         int i, dx, dy, cx, cy;
-        SDL_Point vertices[4];
+        Vec2Int vertices[4];
 
         cos = Math::Cos(angleRadian);
         sin = Math::Sin(angleRadian);

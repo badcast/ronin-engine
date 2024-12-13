@@ -258,7 +258,7 @@ namespace RoninEngine
             std::unordered_map<RoninPointer*, Ref<RoninPointer>> refPointers;
 
             // Script Behaviours
-            std::map<GameObject::BindType, std::set<Behaviour *>> runtimeScriptBinders;
+            std::map<GameObject::BindType, std::set<Behaviour*>> runtimeScriptBinders;
 
             // destruction task (queue object)
             std::map<float, std::set<GameObject*>> *runtimeCollectors;
@@ -303,7 +303,6 @@ namespace RoninEngine
 
         template <typename T>
         int render_getclass();
-        std::function<void(RenderCommand, Renderer *, Rendering *)> render_getfunc(int _class);
 
         void level_render_world();
 
@@ -322,7 +321,7 @@ namespace RoninEngine
         void scripts_update();
         void scripts_lateUpdate();
         void scripts_gizmos();
-        void scripts_unbind(Behaviour *script);
+        void scripts_unbind(BehaviourRef script);
 
         void gid_resources_free(GroupResources *gid);
         GroupResources *gid_get(bool local);

@@ -13,7 +13,7 @@ namespace RoninEngine::Runtime
     };
 
     void native_render_2D(Camera2D *camera);
-    // void native_render_3D(Camera3D *camera);
+    void native_render_3D(Camera *camera);
     void render_sprite_renderer(RenderCommand command, Renderer *object, Rendering *rendering);
     void render_terrain2d(RenderCommand command, Renderer *object, Rendering *rendering);
 
@@ -40,13 +40,12 @@ namespace RoninEngine::Runtime
         return REND_TERRAIN2D;
     }
 
-    std::function<void(RenderCommand, Renderer *, Rendering *)> render_getfunc(int _class)
+    constexpr std::function<void(RenderCommand, Renderer *, Rendering *)> render_getfunc(int _class)
     {
         if(_class < 1 || params.renderFunctions.size() < _class)
         {
             return nullptr;
         }
-
         return params.renderFunctions[--_class];
     }
 
@@ -57,55 +56,9 @@ namespace RoninEngine::Runtime
         return (pos.x + rSz.x >= wpLeftTop.x && pos.x - rSz.x <= wpRightBottom.x) && (pos.y - rSz.y <= wpLeftTop.y && pos.y + rSz.y >= wpRightBottom.y);
     }
 
-    /*
-        std::tuple<std::list<Renderer*>*, std::list<Light*>*> linear_select(Camera* camera)
-        {
-            constexpr std::uint8_t Nz = 2;
-            list<Renderer*> layers[Nz];
-            std::uint8_t zN = 0;
-            if (__rendererOutResults.empty()) {
-                auto res = Application::getResolution();
-                Vec2 topLeft, rightBottom, rSz;
-                topLeft = this->ScreenToWorldPoint(Vec2::zero);
-                rightBottom = this->ScreenToWorldPoint(Vec2(res.width, res.height));
-
-                 for (auto render : RoninEngine::Level::getScene()->_assoc_renderers) {
-                     if (render->zOrder >= Nz)
-                         throw std::out_of_range("N z range");
-
-                      rSz = render->GetSize() / 2;
-
-                     Transform* t = render->transform();
-                     if (render->zOrder >= 0 &&
-                         //	X
-                         (t->_p.x + rSz.x >= topLeft.x && t->_p.x - rSz.x <= rightBottom.x) &&
-                         //	Y
-                         (t->_p.y - rSz.y <= topLeft.y && t->_p.y + rSz.y >= rightBottom.y)) {
-                         layers[render->zOrder].emplace_front(render);
-                     }
-                 }
-
-                  // ordering and collect
-                  list<Renderer*>* target;
-                  while ((target = zN < Nz ? &layers[zN++] : nullptr)) {
-                      for (auto x = begin(*target); x != end(*target); ++x) {
-                          __rendererOutResults.emplace_back((*x));
-                      }
-                  }
-              }
-
-             if (__lightsOutResults.empty()) {
-                 __lightsOutResults.assign(RoninEngine::Level::getScene()->_assoc_lightings.begin(),
-        RoninEngine::Level::getScene()->_assoc_lightings.end());
-             }
-
-              return make_tuple(&__rendererOutResults, &__lightsOutResults);
-          }
-      */
-
-    ///////////////
-    // CAMERA 2D //
-    ///////////////
+    /////////////////
+    /// CAMERA 2D ///
+    /////////////////
     void native_render_2D(Camera2D *camera)
     {
         camera->res->culled = 0;
@@ -116,7 +69,7 @@ namespace RoninEngine::Runtime
         params.wpRightBottom = Vec2::RoundToInt(Camera::ScreenToWorldPoint(Vec2(gscope.activeResolution.width, gscope.activeResolution.height)));
         params.edges = Math::Number(Math::Max(params.wpRightBottom.x - params.camera_position.x, params.wpRightBottom.y - params.camera_position.y)) + 5 + camera->distanceEvcall;
 
-        // Clearing
+               // Clearing
         if(camera->backclear)
         {
             RenderUtility::SetColor(camera->backcolor);
@@ -142,10 +95,9 @@ namespace RoninEngine::Runtime
            ' ← ← ← ← ← ← ← ← ← '        /
            + - - - - - - - - - +    /
         */
-#define MX (currentWorld->irs->matrix)
         Matrix::matrix_key_t camKey = Matrix::matrix_get_key(params.camera_position);
         // unordered_map<int,... <Transform*>>
-        for(auto &layer : MX)
+        for(auto &layer : currentWorld->irs->matrix)
         {
             // Render Objects
             storm_cast_eq_all(
@@ -175,7 +127,7 @@ namespace RoninEngine::Runtime
                 });
         }
 
-        for(auto layer = std::begin(params.orders); layer != std::end(params.orders); ++layer)
+        for(std::map<int, std::vector<Renderer *>>::iterator layer = std::begin(params.orders); layer != std::end(params.orders); ++layer)
         {
             for(Renderer *renderRef : layer->second)
             {
@@ -191,14 +143,14 @@ namespace RoninEngine::Runtime
                     params.wrapper.dst.w *= currentWorld->irs->metricPixelsPerPoint.x * camera->res->scale.x;
                     params.wrapper.dst.h *= currentWorld->irs->metricPixelsPerPoint.y * camera->res->scale.y;
 
-                    // convert world to screen
+                           // convert world to screen
 
-                    // Horizontal
+                           // Horizontal
                     params.wrapper.dst.x += ((gscope.activeResolution.width - params.wrapper.dst.w) / 2.0f - (params.camera_position.x - params.sourcePoint.x) * currentWorld->irs->metricPixelsPerPoint.x * camera->res->scale.x);
                     // Vertical
                     params.wrapper.dst.y += ((gscope.activeResolution.height - params.wrapper.dst.h) / 2.0f + (params.camera_position.y - params.sourcePoint.y) * currentWorld->irs->metricPixelsPerPoint.y * camera->res->scale.y);
 
-                    // draw to backbuffer
+                           // draw to backbuffer
                     SDL_RenderCopyExF(gscope.renderer, params.wrapper.texture, reinterpret_cast<SDL_Rect *>(&(params.wrapper.src)), reinterpret_cast<SDL_FRect *>(&(params.wrapper.dst)), render_transform->_angle_, nullptr, SDL_RendererFlip::SDL_FLIP_NONE);
 
                     ++(camera->res->culled);
@@ -207,17 +159,9 @@ namespace RoninEngine::Runtime
                 render_getfunc(renderRef->_class)(RenderCommand::PostRender, renderRef, &params.wrapper);
             }
             layer->second.clear();
-
-            // Optimize Orders
-            if(layer->second.capacity() > 1024)
-            {
-                layer->second.reserve(1024);
-            }
         }
 
-#undef MX
-
-        // TODO: Render light
+               // TODO: Render light
         /*
                 // Render Lights
                 for (auto lightSource : *std::get<1>(filter)) {
@@ -225,27 +169,27 @@ namespace RoninEngine::Runtime
                     // clear
                     memset(&wrapper, 0, sizeof wrapper);
 
-                     lightSource->get_light_source(&wrapper); // draw
+                        lightSource->get_light_source(&wrapper); // draw
 
-                      if (wrapper.texture) {
-                          Vec2 point = transform()->position();
-                          sourcePoint = lightSource->transform()->position();
+                            if (wrapper.texture) {
+                                Vec2 point = transform()->position();
+                                sourcePoint = lightSource->transform()->position();
 
-                           wrapper.dst.w *= pixelsPerPoint;
+                                    wrapper.dst.w *= pixelsPerPoint;
 
-                            wrapper.dst.h *= pixelsPerPoint;
+                                      wrapper.dst.h *= pixelsPerPoint;
 
-                             // h
-                             wrapper.dst.x += ((rect.w - wrapper.dst.w) / 2.0f - (point.x - sourcePoint.x) * pixelsPerPoint);
-                             // v
-                             wrapper.dst.y += ((rect.h - wrapper.dst.h) / 2.0f + (point.y - sourcePoint.y) * pixelsPerPoint);
+                                        // h
+                                        wrapper.dst.x += ((rect.w - wrapper.dst.w) / 2.0f - (point.x - sourcePoint.x) * pixelsPerPoint);
+                                        // v
+                                        wrapper.dst.y += ((rect.h - wrapper.dst.h) / 2.0f + (point.y - sourcePoint.y) * pixelsPerPoint);
 
-                              SDL_RenderCopyExF(renderer, wrapper.texture, reinterpret_cast<SDL_Rect*>(&wrapper.src),
-                 reinterpret_cast<SDL_FRect*>(&wrapper.dst), lightSource->transform()->_angle_ - transform()->_angle_,
-                 nullptr, SDL_RendererFlip::SDL_FLIP_NONE);
-                          }
-                      }
-              */
+                                          SDL_RenderCopyExF(renderer, wrapper.texture, reinterpret_cast<SDL_Rect*>(&wrapper.src),
+                             reinterpret_cast<SDL_FRect*>(&wrapper.dst), lightSource->transform()->_angle_ - transform()->_angle_,
+                             nullptr, SDL_RendererFlip::SDL_FLIP_NONE);
+                                      }
+                                  }
+                          */
         if(camera->visibleBorders)
         {
             float offset = 25 * std::max(1 - Time::deltaTime(), 0.1f);
@@ -256,14 +200,14 @@ namespace RoninEngine::Runtime
 
             SDL_SetRenderDrawColor(gscope.renderer, 0, 255, 0, 25);
 
-            // Center dot
+                   // Center dot
             SDL_RenderDrawPointF(gscope.renderer, params.wrapper.dst.x, params.wrapper.dst.y);
             SDL_RenderDrawPointF(gscope.renderer, params.wrapper.dst.x - offset, params.wrapper.dst.y);
             SDL_RenderDrawPointF(gscope.renderer, params.wrapper.dst.x + offset, params.wrapper.dst.y);
             SDL_RenderDrawPointF(gscope.renderer, params.wrapper.dst.x, params.wrapper.dst.y - offset);
             SDL_RenderDrawPointF(gscope.renderer, params.wrapper.dst.x, params.wrapper.dst.y + offset);
 
-            // borders
+                   // borders
             RenderUtility::DrawLine(Vec2(offset, offset), Vec2(offset + height, offset));
             RenderUtility::DrawLine(Vec2(gscope.activeResolution.width - offset, offset), Vec2(gscope.activeResolution.width - offset - height, offset));
             RenderUtility::DrawLine(Vec2(offset, gscope.activeResolution.height - offset), Vec2(offset + height, gscope.activeResolution.height - offset));
@@ -300,14 +244,14 @@ namespace RoninEngine::Runtime
         }
     }
 
-    ///////////////
-    // CAMERA 3D //
-    ///////////////
+    /////////////////
+    /// CAMERA 3D ///
+    /////////////////
     // TODO: Make Camera 3D
 
-    /////////////////////
-    // SPRITE RENDERER //
-    /////////////////////
+    ///////////////////////
+    /// SPRITE RENDERER ///
+    ///////////////////////
     void render_sprite_renderer(RenderCommand command, Renderer *object, Rendering *rendering)
     {
         SpriteRenderer *target = static_cast<SpriteRenderer *>(object);
@@ -346,7 +290,7 @@ namespace RoninEngine::Runtime
                                     //      rendering->dst.h = sprite->height() * abs(target->m_size.y) / pixelsPerPoint;
                                     // break;
 
-                                    // render as cut
+                                           // render as cut
                                 case SpriteRenderPresentMode::Place:
                                     rendering->src.w *= target->m_size.x;
                                     rendering->src.h *= target->m_size.y;
@@ -362,10 +306,10 @@ namespace RoninEngine::Runtime
                             rendering->dst.w = target->sprite->width() * abs(target->m_size.x) / currentWorld->irs->metricPixelsPerPoint.x;
                             rendering->dst.h = target->sprite->height() * abs(target->m_size.y) / currentWorld->irs->metricPixelsPerPoint.y;
 
-                            // generate tiles
+                                   // generate tiles
                             target->save_texture = SDL_CreateTexture(
-                                // renderer, sdl_default_pixelformat, SDL_TextureAccess::SDL_TEXTUREACCESS_TARGET, rendering->src.w,
-                                // rendering->src.h);
+                                                                      // renderer, sdl_default_pixelformat, SDL_TextureAccess::SDL_TEXTUREACCESS_TARGET, rendering->src.w,
+                                                                      // rendering->src.h);
                                 gscope.renderer,
                                 defaultPixelFormat,
                                 SDL_TextureAccess::SDL_TEXTUREACCESS_TARGET,
@@ -384,7 +328,7 @@ namespace RoninEngine::Runtime
 
                             SDL_Texture *temp_texture = SDL_CreateTextureFromSurface(gscope.renderer, target->sprite->surface);
 
-                            // render tile
+                                   // render tile
                             switch(target->renderPresentMode)
                             {
                                 case SpriteRenderPresentMode::Fixed:
@@ -467,9 +411,9 @@ namespace RoninEngine::Runtime
         }
     }
 
-    /////////////////////////
-    // TERRAIN 2D RENDERER //
-    /////////////////////////
+           ///////////////////////////
+           /// TERRAIN 2D RENDERER ///
+           ///////////////////////////
     void render_terrain2d(RenderCommand command, Renderer *object, Rendering *rendering)
     {
         Terrain2D *target = static_cast<Terrain2D *>(object);

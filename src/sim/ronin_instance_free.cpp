@@ -130,7 +130,7 @@ namespace RoninEngine
                 if(!currentWorld->irs->requestUnloading)
                 {
                     // Run last script object
-                    scripts_unbind(self);
+                    scripts_unbind(self->GetRef<Behaviour>());
                 }
             }
 #undef self
