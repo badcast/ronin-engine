@@ -56,30 +56,30 @@ namespace RoninEngine
             if(asset->isNull())
                 return;
 
-            switch(asset->ref->index)
+            switch(asset->impl->index)
             {
                 case AssetIndex::AS_SPRITE:
-                    if(asset->ref->udata._sprites)
-                        RoninMemory::free(asset->ref->udata._sprites);
+                    if(asset->impl->udata._sprites)
+                        RoninMemory::free(asset->impl->udata._sprites);
                     break;
                 case AssetIndex::AS_AUDIO:
-                    if(asset->ref->udata._audioclips)
-                        RoninMemory::free(asset->ref->udata._audioclips);
+                    if(asset->impl->udata._audioclips)
+                        RoninMemory::free(asset->impl->udata._audioclips);
                     break;
                 case AssetIndex::AS_MUSIC:
-                    if(asset->ref->udata._mus)
-                        RoninMemory::free(asset->ref->udata._mus);
+                    if(asset->impl->udata._mus)
+                        RoninMemory::free(asset->impl->udata._mus);
                     break;
                 case AssetIndex::AS_ATLAS:
-                    if(asset->ref->_atlas)
+                    if(asset->impl->_atlas)
                     {
                         // ReleaseRef(asset.ref->_atlas);
-                        asset->ref->_atlas = nullptr;
+                        asset->impl->_atlas = nullptr;
                     }
                     break;
             }
-            RoninMemory::free(asset->ref); // free asset
-            asset->ref = nullptr;
+            RoninMemory::free(asset->impl); // free asset
+            asset->impl = nullptr;
             asset->_handle = RefClassType::Null;
         }
 

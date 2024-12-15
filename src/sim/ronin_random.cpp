@@ -36,12 +36,11 @@ std::uint32_t internal_rand_devrand()
 {
 #ifdef __linux__
     std::uint32_t random_val;
-    std::ifstream devi;
-    devi.open("/dev/random", std::ios_base::binary | std::ios_base::in);
-    if(devi)
+    if(!_fileDevRand)
+        _fileDevRand.open("/dev/urandom", std::ios_base::binary | std::ios_base::in);
+    if(_fileDevRand)
     {
-        devi.read(reinterpret_cast<char *>(&random_val), sizeof(random_val));
-        devi.close();
+        _fileDevRand.read(reinterpret_cast<char *>(&random_val), sizeof(random_val));
         return random_val;
     }
 #endif
@@ -49,7 +48,7 @@ std::uint32_t internal_rand_devrand()
     return internal_rand_custom();
 }
 
-std::function<std::uint32_t(void)> _internal_random_ = internal_rand_rdrnd;
+std::function<std::uint32_t(void)> internalRandom = internal_rand_rdrnd;
 
 void Random::SRand(std::uint32_t seed)
 {
@@ -60,7 +59,7 @@ void Random::SRand(std::uint32_t seed)
 
 int Random::Range(int min, int max)
 {
-    return min + _internal_random_() % (max - min + 1);
+    return min + internalRandom() % (max - min + 1);
 }
 
 float Random::Range(float min, float max)
@@ -71,7 +70,7 @@ float Random::Range(float min, float max)
 float Random::Value()
 {
     // const for diaz. 0.0 - 1.0F
-    return static_cast<float>(static_cast<double>(_internal_random_()) / ronin_rand_max);
+    return static_cast<float>(static_cast<double>(internalRandom()) / ronin_rand_max);
 }
 
 Vec2 Random::RandomVector()
@@ -87,4 +86,8 @@ float Random::AngleDegress()
 float Random::AngleRadian()
 {
     return Value() * Math::Pi2;
+}
+
+Color Random::color(){
+    return Color(internalRandom(),255);
 }

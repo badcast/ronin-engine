@@ -37,7 +37,7 @@ namespace RoninEngine
         class RONIN_API Asset : public RoninPointer
         {
         private:
-            struct AssetImpl *ref;
+            struct AssetImpl *impl;
 
         public:
             SpriteRef GetSprite(const std::string &name);
