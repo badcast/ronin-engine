@@ -128,7 +128,7 @@ AssetRef AssetManager::LoadAsset(const std::string &filename)
             }
 
             RoninMemory::alloc_self(asset);
-            RoninMemory::alloc_self(asset->ref);
+            RoninMemory::alloc_self(asset->impl);
             for(auto &pair : __files)
             {
                 switch(num1)
@@ -160,30 +160,30 @@ AssetRef AssetManager::LoadAsset(const std::string &filename)
                 {
                     /*Sprites*/
                     case 0:
-                        asset->ref->index = AssetIndex::AS_SPRITE;
+                        asset->impl->index = AssetIndex::AS_SPRITE;
 
-                        if(asset->ref->udata._sprites == nullptr)
-                            RoninMemory::alloc_self(asset->ref->udata._sprites);
+                        if(asset->impl->udata._sprites == nullptr)
+                            RoninMemory::alloc_self(asset->impl->udata._sprites);
 
-                        (*asset->ref->udata._sprites)[pair.first].push_back(RefNoFree(Primitive::CreateSpriteFrom(Resources::GetImageSource(rsid))));
+                        (*asset->impl->udata._sprites)[pair.first].push_back(RefNoFree(Primitive::CreateSpriteFrom(Resources::GetImageSource(rsid))));
                         break;
                     /*AudioClip*/
                     case 1:
-                        asset->ref->index = AssetIndex::AS_AUDIO;
+                        asset->impl->index = AssetIndex::AS_AUDIO;
 
-                        if(asset->ref->udata._audioclips == nullptr)
-                            RoninMemory::alloc_self(asset->ref->udata._audioclips);
+                        if(asset->impl->udata._audioclips == nullptr)
+                            RoninMemory::alloc_self(asset->impl->udata._audioclips);
 
-                        (*asset->ref->udata._audioclips)[pair.first].push_back(rsid);
+                        (*asset->impl->udata._audioclips)[pair.first].push_back(rsid);
                         break;
                     /*MusicClip*/
                     case 2:
-                        asset->ref->index = AssetIndex::AS_MUSIC;
+                        asset->impl->index = AssetIndex::AS_MUSIC;
 
-                        if(asset->ref->udata._mus == nullptr)
-                            RoninMemory::alloc_self(asset->ref->udata._mus);
+                        if(asset->impl->udata._mus == nullptr)
+                            RoninMemory::alloc_self(asset->impl->udata._mus);
 
-                        (*asset->ref->udata._mus)[pair.first].push_back(rsid);
+                        (*asset->impl->udata._mus)[pair.first].push_back(rsid);
                         break;
                     default:;
                 }
@@ -299,10 +299,10 @@ AssetRef AssetManager::LoadAsset(const std::string &filename)
             }
 
             RoninMemory::alloc_self(asset);
-            RoninMemory::alloc_self(asset->ref);
-            asset->ref->index = AssetIndex::AS_ATLAS;
-            asset->ref->_atlas = std::move(AtlasRef{RoninMemory::alloc<Atlas>()});
-            atlas = asset->ref->_atlas;
+            RoninMemory::alloc_self(asset->impl);
+            asset->impl->index = AssetIndex::AS_ATLAS;
+            asset->impl->_atlas = std::move(AtlasRef{RoninMemory::alloc<Atlas>()});
+            atlas = asset->impl->_atlas;
             atlas->src = Resources::GetImageSource(rsid);
 
             // Post settings Tiled Mode
@@ -400,6 +400,8 @@ AssetRef AssetManager::LoadAsset(const std::string &filename)
 bool AssetManager::UnloadAsset(AssetRef asset)
 {
     bool retval;
+    if(asset.isNull())
+        return false;
     RefMarkNull(asset);
     if((retval = asset.isNull()))
     {
@@ -410,47 +412,47 @@ bool AssetManager::UnloadAsset(AssetRef asset)
 
 SpriteRef Asset::GetSprite(const std::string &name)
 {
-    if(ref->index != AssetIndex::AS_SPRITE || ref->udata._sprites == nullptr)
+    if(impl->index != AssetIndex::AS_SPRITE || impl->udata._sprites == nullptr)
         return nullptr;
-    auto test = ref->udata._sprites->find(stringHasher(name));
-    if(test == std::end(*ref->udata._sprites) || test->second.empty() || test->second.size() > 1)
+    auto test = impl->udata._sprites->find(stringHasher(name));
+    if(test == std::end(*impl->udata._sprites) || test->second.empty() || test->second.size() > 1)
         return nullptr;
     return test->second.front();
 }
 
 AudioClip *Asset::GetAudioClip(const std::string &name)
 {
-    if(ref->index != AssetIndex::AS_AUDIO || ref->udata._audioclips == nullptr)
+    if(impl->index != AssetIndex::AS_AUDIO || impl->udata._audioclips == nullptr)
         return nullptr;
-    auto test = ref->udata._audioclips->find(stringHasher(name));
-    if(test == std::end(*ref->udata._audioclips) || test->second.empty() || test->second.size() > 1)
+    auto test = impl->udata._audioclips->find(stringHasher(name));
+    if(test == std::end(*impl->udata._audioclips) || test->second.empty() || test->second.size() > 1)
         return nullptr;
     return Resources::GetAudioClipSource(test->second.front());
 }
 
 AtlasRef Asset::GetAtlasObject()
 {
-    if(ref->index != AssetIndex::AS_ATLAS)
+    if(impl->index != AssetIndex::AS_ATLAS)
         return nullptr;
-    return ref->_atlas;
+    return impl->_atlas;
 }
 
 std::vector<SpriteRef> Asset::GetSprites(const std::string &name)
 {
-    if(ref->index != AssetIndex::AS_SPRITE || ref->udata._sprites == nullptr)
+    if(impl->index != AssetIndex::AS_SPRITE || impl->udata._sprites == nullptr)
         return {};
-    auto test = ref->udata._sprites->find(stringHasher(name));
-    if(test == std::end(*ref->udata._sprites))
+    auto test = impl->udata._sprites->find(stringHasher(name));
+    if(test == std::end(*impl->udata._sprites))
         return {};
     return test->second;
 }
 
 std::vector<AudioClip *> Asset::GetAudioClips(const std::string &name)
 {
-    if(ref->index != AssetIndex::AS_AUDIO || ref->udata._audioclips == nullptr)
+    if(impl->index != AssetIndex::AS_AUDIO || impl->udata._audioclips == nullptr)
         return {};
-    auto test = ref->udata._audioclips->find(stringHasher(name));
-    if(test == std::end(*ref->udata._audioclips))
+    auto test = impl->udata._audioclips->find(stringHasher(name));
+    if(test == std::end(*impl->udata._audioclips))
         return {};
     std::vector<AudioClip *> sources {};
     for(ResId id : test->second)

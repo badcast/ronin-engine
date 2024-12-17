@@ -8,18 +8,13 @@ namespace RoninEngine::Runtime
     {
     public:
         static void SRand(std::uint32_t seed);
-
         static int Range(int min, int max);
-
         static float Range(float min, float max);
-
         static float Value();
-
         static Vec2 RandomVector();
-
         static float AngleDegress();
-
         static float AngleRadian();
+        static Color color();
     };
 
     class RONIN_API Math

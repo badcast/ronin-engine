@@ -33,7 +33,7 @@ namespace RoninEngine::Runtime
             Bind_Gizmos = 8
         };
 
-        void bind_script(BindType bindFlags, Behaviour *script);
+        void bind_script(BindType bindFlags, BehaviourRef script);
 
     public:
         /**

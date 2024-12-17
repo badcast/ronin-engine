@@ -116,8 +116,6 @@ namespace RoninEngine
             SDL_RenderSetScale(gscope.renderer, 1.f, 1.f);
             scripts_start();
             scripts_update();
-            scripts_lateUpdate();
-            // end watcher
             gscope.queueWatcher.delayExecScripts = Time::EndWatch();
 
             Time::BeginWatch();
@@ -127,13 +125,15 @@ namespace RoninEngine
             {
                 // draw world in world size
                 native_render_2D(reinterpret_cast<Camera2D *>(cam));
-
                        // Set scale to default
                 SDL_RenderSetScale(gscope.renderer, 1.f, 1.f);
             }
             gscope.queueWatcher.delayPresent = Time::EndWatch();
 
-                   // begin watcher
+            Time::BeginWatch();
+            scripts_lateUpdate();
+            gscope.queueWatcher.delayExecScripts+=Time::EndWatch();
+
             Time::BeginWatch();
             if(!currentWorld->irs->requestUnloading && cam)
             {
@@ -144,8 +144,6 @@ namespace RoninEngine
                 currentWorld->OnGizmos();
                 scripts_gizmos();
             }
-            // end watcher
-
             gscope.queueWatcher.delayRenderGizmos = Time::EndWatch();
         }
 

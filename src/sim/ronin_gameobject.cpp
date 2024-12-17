@@ -9,32 +9,6 @@ namespace RoninEngine::Runtime
 {
     extern TransformRef create_empty_transform();
 
-    // // Add Component
-    // template RONIN_API MoveController2DRef GameObject::AddComponent<MoveController2D>();
-    // template RONIN_API SpriteRendererRef GameObject::AddComponent<SpriteRenderer>();
-    // template RONIN_API Camera2DRef GameObject::AddComponent<Camera2D>();
-    // template RONIN_API SpotlightRef GameObject::AddComponent<Spotlight>();
-    // template RONIN_API Terrain2DRef GameObject::AddComponent<Terrain2D>();
-    // template RONIN_API ParticleSystemRef GameObject::AddComponent<ParticleSystem>();
-    // template RONIN_API CollisionRef GameObject::AddComponent<Collision>();
-    // // Get Component
-    // template RONIN_API MoveController2DRef GameObject::GetComponent<MoveController2D>() ;
-    // template RONIN_API SpriteRendererRef GameObject::GetComponent<SpriteRenderer>() ;
-    // template RONIN_API Camera2DRef GameObject::GetComponent<Camera2D>() ;
-    // template RONIN_API SpotlightRef GameObject::GetComponent<Spotlight>() ;
-    // template RONIN_API Terrain2DRef GameObject::GetComponent<Terrain2D>() ;
-    // template RONIN_API TransformRef GameObject::GetComponent<Transform>() ;
-    // template RONIN_API ParticleSystemRef GameObject::GetComponent<ParticleSystem>() ;
-    // template RONIN_API CollisionRef GameObject::GetComponent<Collision>() ;
-    // // Remove Component
-    // template RONIN_API bool GameObject::RemoveComponent<MoveController2D>();
-    // template RONIN_API bool GameObject::RemoveComponent<SpriteRenderer>();
-    // template RONIN_API bool GameObject::RemoveComponent<Camera2D>();
-    // template RONIN_API bool GameObject::RemoveComponent<Spotlight>();
-    // template RONIN_API bool GameObject::RemoveComponent<Terrain2D>();
-    // template RONIN_API bool GameObject::RemoveComponent<ParticleSystem>();
-    // template RONIN_API bool GameObject::RemoveComponent<Collision>();
-
     GameObject::GameObject() : GameObject(DESCRIBE_AS_MAIN_OFF(GameObject))
     {
     }
@@ -51,11 +25,9 @@ namespace RoninEngine::Runtime
 
     bool GameObject::isActiveInHierarchy()
     {
-        TransformRef p;
-        p = transform();
+        TransformRef p = transform();
         for(; p && p->_owner->m_active;)
             p = p->m_parent;
-
         return p.isNull();
     }
 
@@ -128,7 +100,7 @@ namespace RoninEngine::Runtime
         {
             for(TransformRef &h : __stack.front()->transform()->hierarchy)
             {
-                __stack.emplace_back(h->gameObject().get());
+                __stack.emplace_back(h->_owner.ptr_);
             }
             __stack.front()->SetActive(state);
             __stack.pop_front();
@@ -137,7 +109,6 @@ namespace RoninEngine::Runtime
 
     TransformRef GameObject::transform()
     {
-        // NOTE: Transform всегда первый объект из контейнера m_components
         return StaticCast<Transform>(m_components.front());
     }
 
@@ -158,12 +129,14 @@ namespace RoninEngine::Runtime
 
     bool GameObject::isPrefab()
     {
-        return transform()->m_parent == nullptr && currentWorld->irs->mainObject.ptr_ != this;
+        // TODO: Create prefab type
+        throw Exception::ronin_implementation_error();
+        return transform()->m_parent.isNull() && currentWorld->irs->mainObject.ptr_ != this;
     }
 
     void GameObject::Destroy()
     {
-        Runtime::Destroy(GetRef<GameObject>(), 0);
+        Runtime::Destroy(GetRef<GameObject>());
     }
 
     void GameObject::Destroy(float t)

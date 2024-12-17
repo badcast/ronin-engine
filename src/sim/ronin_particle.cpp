@@ -263,12 +263,10 @@ namespace RoninEngine::Runtime
         };
 
         int makeFlag = (loop || !impl->activeParticleDrains.empty()) ? M_Execute : 0;
-
         if(loop && impl->m_limit == 0 || impl->m_maked < impl->m_limit || impl->m_maked < startWith)
         {
             makeFlag |= M_Fabricate;
         }
-
         if(makeFlag)
         {
             float t = Time::time();

@@ -129,6 +129,12 @@ namespace RoninEngine::Runtime
         return this->ptr_ == rhs.ptr_;
     }
 
+    template <typename T>
+    bool Ref<T>::operator==(Ref &&rhs) const
+    {
+        return this->ptr_ == rhs.ptr_;
+    }
+
     template<typename T>
     bool Ref<T>::operator==(std::nullptr_t) const
     {
@@ -141,10 +147,40 @@ namespace RoninEngine::Runtime
         return !(*this == rhs);
     }
 
+    template <typename T>
+    bool Ref<T>::operator!=(Ref &&rhs) const
+    {
+        return !(*this == rhs);
+    }
+
     template<typename T>
     bool Ref<T>::operator !=(std::nullptr_t) const
     {
         return !this->isNull();
+    }
+
+    template <typename T>
+    bool Ref<T>::operator<(const Ref &rhs) const
+    {
+        return this->ptr_ < rhs.ptr_;
+    }
+
+    template <typename T>
+    bool Ref<T>::operator<(Ref &&rhs) const
+    {
+        return this->ptr_ < rhs.ptr_;
+    }
+
+    template <typename T>
+    bool Ref<T>::operator>(const Ref &rhs) const
+    {
+        return this->ptr_ > rhs.ptr_;
+    }
+
+    template <typename T>
+    bool Ref<T>::operator>(Ref &&rhs) const
+    {
+        return this->ptr_ > rhs.ptr_;
     }
 
     template <typename T>

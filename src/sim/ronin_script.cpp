@@ -1,13 +1,5 @@
 #include "ronin.h"
 
-#define BIND(FLAG, SCRIPT) \
-    if(bindFlags & FLAG)   \
-        binder[FLAG].insert(SCRIPT);
-
-#define RUN_SCRIPTS(FLAG, METHOD)                                           \
-    for(Behaviour * script : currentWorld->irs->runtimeScriptBinders[FLAG]) \
-        script->METHOD();
-
 namespace RoninEngine::Runtime
 {
     Behaviour::Behaviour() : Behaviour(DESCRIBE_AS_MAIN_OFF(Behaviour))
@@ -19,21 +11,25 @@ namespace RoninEngine::Runtime
         DESCRIBE_AS_MAIN(Behaviour);
     }
 
-    void GameObject::bind_script(BindType bindFlags, Behaviour *script)
+    void GameObject::bind_script(BindType bindFlags, BehaviourRef script)
     {
-        auto &binder = currentWorld->irs->runtimeScriptBinders;
-
-        BIND(Bind_Start, script);
-        BIND(Bind_Update, script);
-        BIND(Bind_LateUpdate, script);
-        BIND(Bind_Gizmos, script);
+        if(!script || !bindFlags)
+            return;
+        if((bindFlags & Bind_Start))
+            currentWorld->irs->runtimeScriptBinders[Bind_Start].insert(script.ptr_);
+        if((bindFlags & Bind_Update))
+            currentWorld->irs->runtimeScriptBinders[Bind_Update].insert(script.ptr_);
+        if((bindFlags & Bind_LateUpdate))
+            currentWorld->irs->runtimeScriptBinders[Bind_LateUpdate].insert(script.ptr_);
+        if((bindFlags & Bind_Gizmos))
+            currentWorld->irs->runtimeScriptBinders[Bind_Gizmos].insert(script.ptr_);
     }
 
-    ///////////////////////////////////////////
-    ///////////////////////////////////////////
-    ///////////////////////////////////////////
-    ///////////////////////////////////////////
-    ///////////////////////////////////////////
+           ///////////////////////////////////////////
+           ///////////////////////////////////////////
+           ///////////////////////////////////////////
+           ///////////////////////////////////////////
+           ///////////////////////////////////////////
     void Behaviour::OnAwake() ////////////
     {                         ////////////
     } ////////////
@@ -60,37 +56,39 @@ namespace RoninEngine::Runtime
 
     void scripts_start()
     {
-        std::set<Behaviour *> __last;
+        std::set<Behaviour*> __last;
         __last.merge(currentWorld->irs->runtimeScriptBinders[GameObject::BindType::Bind_Start]);
-
-        for(Behaviour *script : __last)
+        currentWorld->irs->runtimeScriptBinders[GameObject::BindType::Bind_Start].clear();
+        for(Behaviour * script : __last)
             script->OnStart();
     }
 
     void scripts_update()
     {
-        RUN_SCRIPTS(GameObject::BindType::Bind_Update, OnUpdate);
+        for(Behaviour *script : currentWorld->irs->runtimeScriptBinders[GameObject::BindType::Bind_Update])
+                script->OnUpdate();
     }
 
     void scripts_lateUpdate()
     {
-        RUN_SCRIPTS(GameObject::BindType::Bind_LateUpdate, OnLateUpdate);
+        for(Behaviour * script : currentWorld->irs->runtimeScriptBinders[GameObject::BindType::Bind_LateUpdate])
+            script->OnLateUpdate();
     }
 
     void scripts_gizmos()
     {
-        RUN_SCRIPTS(GameObject::BindType::Bind_Gizmos, OnGizmos);
+        for(Behaviour * script : currentWorld->irs->runtimeScriptBinders[GameObject::BindType::Bind_Gizmos])
+            script->OnGizmos();
     }
 
-    void scripts_unbind(Behaviour *script)
+    void scripts_unbind(BehaviourRef script)
     {
-        for(auto iter = std::begin(currentWorld->irs->runtimeScriptBinders); iter != std::end(currentWorld->irs->runtimeScriptBinders); ++iter)
+        if(!script)
+            return;
+        for(std::map<GameObject::BindType, std::set<Behaviour*>>::iterator iter = std::begin(currentWorld->irs->runtimeScriptBinders); iter != std::end(currentWorld->irs->runtimeScriptBinders); ++iter)
         {
-            iter->second.erase(script);
+            iter->second.erase(script.ptr_);
         }
     }
 
 } // namespace RoninEngine::Runtime
-
-#undef BIND
-#undef RUN_SCRIPTS
