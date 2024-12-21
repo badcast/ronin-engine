@@ -746,14 +746,14 @@ namespace RoninEngine
     bool RoninSimulator::LoadWorldAfterSplash(Runtime::World *world)
     {
         RoninSplashWorld *splashScreen;
-
-        if(world == nullptr)
-            return false;
-
-        RoninMemory::alloc_self(splashScreen);
-        splashScreen->nextWorld = world;
-        makePrivate(splashScreen);
-        return LoadWorld(splashScreen);
+        if(world)
+        {
+            RoninMemory::alloc_self(splashScreen);
+            splashScreen->nextWorld = world;
+            makePrivate(splashScreen);
+            return LoadWorld(splashScreen);
+        }
+        return false;
     }
 
     bool RoninSimulator::ReloadWorld()

@@ -252,15 +252,13 @@ namespace RoninEngine
     {
         if(irs == nullptr || irs->mainCamera == nullptr || irs->mainCamera->res == nullptr)
             return -1;
-
         return irs->mainCamera->res->culled;
     }
 
     int World::MatrixCacheCount()
     {
         if(irs == nullptr)
-            throw ronin_world_notloaded_error();
-
+            return -1;
         int cached = 0;
         for(auto &matrix : this->irs->matrix)
             cached += static_cast<int>(std::count_if(
@@ -277,10 +275,9 @@ namespace RoninEngine
     int World::MatrixCacheClear()
     {
         if(irs == nullptr)
-            throw ronin_world_notloaded_error();
-
-        std::vector<typename std::unordered_map<Vec2Int, std::set<Transform *>>::iterator> cached;
+            return -1;
         int cleans = 0;
+        std::vector<typename std::unordered_map<Vec2Int, std::set<Transform *>>::iterator> cached;
         for(auto &matrix : this->irs->matrix)
         {
             for(auto iter = std::begin(matrix.second); iter != std::end(matrix.second); ++iter)
@@ -304,12 +301,12 @@ namespace RoninEngine
     std::string World::GetTreeOfHierarchy() const
     {
         if(irs == nullptr)
-            throw ronin_world_notloaded_error();
+            return {};
         static char delim = 0x32;
         std::string delims;
         std::string result;
         std::list<TransformRef> stack;
-        TransformRef target = this->irs->mainObject->transform();
+        TransformRef target = irs->mainObject->transform();
         while(target)
         {
             for(TransformRef& current : target->hierarchy)
@@ -332,34 +329,36 @@ namespace RoninEngine
 
     bool World::isHierarchy()
     {
-        if(irs == nullptr)
-            throw ronin_world_notloaded_error();
-        return this->irs->mainObject != nullptr;
+        if(irs != nullptr)
+            return !irs->mainObject.isNull();
+        return false;
     }
 
     std::string &World::name()
     {
-        return this->m_name;
+        return m_name;
     }
 
     UI::GUI *World::GetGUI()
     {
-        if(irs == nullptr)
-            throw ronin_world_notloaded_error();
-        return this->irs->gui;
+        UI::GUI * retval;
+        if(irs != nullptr)
+            retval = irs->gui;
+        else
+            retval = nullptr;
+        return retval;
     }
 
     void World::RequestUnload()
     {
-        if(irs == nullptr)
-            throw ronin_world_notloaded_error();
-        this->irs->requestUnloading = true;
+        if(irs)
+            irs->requestUnloading = true;
     }
 
     int World::GetDestroyedFrames()
     {
         if(irs == nullptr)
-            throw ronin_world_notloaded_error();
+            return -1;
         return irs->_destroyedGameObject;
     }
 
