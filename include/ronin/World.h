@@ -38,7 +38,7 @@ namespace RoninEngine::Runtime
         std::list<ComponentRef> GetAllComponents();
 
         template <typename T>
-        std::list<T *> FindObjectsWithType();
+        std::list<Ref<T>> FindObjectsWithType();
 
         const bool CancelObjectDestruction(GameObjectRef obj);
         const int CostObjectDestruction(GameObjectRef obj);
@@ -60,14 +60,14 @@ namespace RoninEngine::Runtime
     };
 
     template <typename T>
-    std::list<T *> World::FindObjectsWithType()
+    std::list<Ref<T>> World::FindObjectsWithType()
     {
-        T *_target;
-        std::list<T *> __classes;
-        std::list<Component *> __compr = GetAllComponents();
+        Ref<T> _target;
+        std::list<Ref<T>> __classes;
+        std::list<ComponentRef> __compr = GetAllComponents();
         for(auto iter = __compr.begin(); iter != __compr.end(); ++iter)
         {
-            if((_target = dynamic_cast<T *>(*iter)))
+            if((_target = DynamicCast<T>(*iter)))
             {
                 __classes.emplace_back(_target);
             }
