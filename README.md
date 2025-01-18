@@ -64,4 +64,4 @@ cmake --build . -j $(nproc)
 
 ---
 
-© [2023] RoninEngine. All rights reserved.
+© [2024] RoninEngine. All rights reserved.
