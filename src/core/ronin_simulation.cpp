@@ -313,8 +313,8 @@ namespace RoninEngine
 
         Mix_Quit();
         IMG_Quit();
-        SDL_Quit();
         TTF_Quit();
+        SDL_Quit();
 
         std::size_t memory_leak = Runtime::RoninMemory::mem_allocated();
         if(memory_leak > 0)
