@@ -115,7 +115,9 @@ namespace RoninEngine::Runtime
                             {
                                 Renderer *render_iobject;
                                 // This object not render component, then continue and to next iterator
-                                if(!component->_enable || (render_iobject = dynamic_cast<Renderer *>(component.ptr_)) == nullptr)
+                                if(!component->_enable || (render_iobject = dynamic_cast<Renderer *>(component.ptr_)) == nullptr
+                                || render_iobject->_owner == nullptr
+                                   )
                                 {
                                     continue;
                                 }

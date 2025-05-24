@@ -12,7 +12,7 @@ namespace RoninEngine::Runtime
 
         // TODO: Make Mutex lock for escape race-condition state.
 
-        std::uint64_t __ronin_allocated = 0;
+        int __ronin_allocated = 0;
 
 #if TEST_MALLOC
         std::set<void *> allocated_leaker;
@@ -78,7 +78,7 @@ namespace RoninEngine::Runtime
 #endif
         }
 
-        std::uint64_t mem_allocated()
+        int mem_allocated()
         {
             return __ronin_allocated;
         }

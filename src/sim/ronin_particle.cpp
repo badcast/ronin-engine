@@ -61,7 +61,6 @@ namespace RoninEngine::Runtime
     inline SpriteRef inspect_at(const std::vector<SpriteRef> &sources, int &last_inspected, ParticleSourceInspect inspection)
     {
         SpriteRef inspected;
-
         if(!sources.empty())
         {
             switch(inspection)
@@ -76,9 +75,6 @@ namespace RoninEngine::Runtime
 
             inspected = sources[last_inspected];
         }
-        else
-            inspected = nullptr;
-
         return inspected;
     }
 

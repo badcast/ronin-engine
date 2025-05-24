@@ -50,6 +50,8 @@ namespace RoninEngine::Runtime
         int MatrixRestore(const std::list<Transform *> &damaged_content);
         int MatrixCacheCount();
         int MatrixCacheClear();
+        std::uint64_t StatCountRefLinks();
+        std::uint64_t StatMaxRefDepth();
 
         // TODO: Make function for moving out GameObject into Other World
         void ObjectMoveTo(GameObject *target, World *newWorld);

@@ -316,8 +316,8 @@ namespace RoninEngine
         TTF_Quit();
         SDL_Quit();
 
-        std::size_t memory_leak = Runtime::RoninMemory::mem_allocated();
-        if(memory_leak > 0)
+        int memory_leak = Runtime::RoninMemory::mem_allocated();
+        if(memory_leak != 0)
         {
 #if TEST_MALLOC
             auto REF = (RoninEngine::Runtime::RoninMemory::allocated_leaker.back());
@@ -336,7 +336,7 @@ namespace RoninEngine
         }
 
         memory_leak = SDL_GetNumAllocations();
-        if(memory_leak > 0)
+        if(memory_leak != 0)
         {
             SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "sdl-memory-leak count: %d", memory_leak);
         }
@@ -649,19 +649,19 @@ namespace RoninEngine
         __templs[1] = Resolution::GetMidResolution();
         __templs[2] = Resolution::GetMaxResolution();
 
-        for(int s = 1; s < 4; ++s)
+        for(int s = 0; s < 4; ++s)
         {
-            btdt[s].buttonid = s;
+            btdt[s].buttonid = s+1;
 
-            _lstrs[s - 1] += std::to_string(__templs[s - 1].width);
-            _lstrs[s - 1] += "x";
+            _lstrs[s] += std::to_string(__templs[s].width);
+            _lstrs[s] += "x";
 
-            _lstrs[s - 1] += std::to_string(__templs[s - 1].height);
-            _lstrs[s - 1] += " ";
+            _lstrs[s] += std::to_string(__templs[s].height);
+            _lstrs[s] += " ";
 
-            _lstrs[s - 1] += std::to_string(__templs[s - 1].hz);
+            _lstrs[s] += std::to_string(__templs[s].hz);
 
-            btdt[s].text = _lstrs[s - 1].data();
+            btdt[s].text = _lstrs[s].data();
         }
 
         msgbd.flags = SDL_MESSAGEBOX_INFORMATION;

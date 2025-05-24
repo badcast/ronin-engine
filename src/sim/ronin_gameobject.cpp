@@ -127,6 +127,16 @@ namespace RoninEngine::Runtime
         return GetComponent<Terrain2D>();
     }
 
+    void GameObject::setTag(const std::string &tag)
+    {
+        m_tag = tag;
+    }
+
+    std::string GameObject::getTag() const
+    {
+        return m_tag;
+    }
+
     bool GameObject::isPrefab()
     {
         // TODO: Create prefab type

@@ -20,6 +20,7 @@ namespace RoninEngine::Runtime
     private:
         std::list<ComponentRef> m_components;
         std::list<Event> ev_destroy;
+        std::string m_tag;
         int m_layer;
         int m_zOrder;
         bool m_active;
@@ -129,6 +130,17 @@ namespace RoninEngine::Runtime
          * @return A pointer to the Terrain2D component, or nullptr if not found.
          */
         Terrain2DRef terrain2D() ;
+
+        /**
+         * @brief Set the tag of the GameObject.
+         */
+        void setTag(const std::string& tag);
+
+        /**
+         * @brief Get the tag component of the GameObject.
+         * @return Result of the Tag.
+         */
+        std::string getTag() const;
 
         /**
          * @brief Check if the gameobject is PrefabObject

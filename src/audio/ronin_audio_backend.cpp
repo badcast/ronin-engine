@@ -16,16 +16,13 @@ namespace RoninEngine::Runtime
         int currentInits = MIX_InitFlags::MIX_INIT_OGG;
         if((lastInitResult = (Mix_Init(currentInits))) < 1)
             return -1;
-
         if(Mix_OpenAudioDevice(MIX_DEFAULT_FREQUENCY, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS, CHUNK_SIZE, NULL, SDL_AUDIO_ALLOW_FREQUENCY_CHANGE | SDL_AUDIO_ALLOW_CHANNELS_CHANGE) != 0)
         {
             lastInitResult = 0;
             Mix_Quit();
             return -1;
         }
-
         lastInitResult = 1;
-
         return 0;
     }
 
@@ -105,9 +102,7 @@ namespace RoninEngine::Runtime
             IRS->audioChannels.resize(newReserve, false);
             channel = lastChannel; // it's n-1 ( size is ) +1
         }
-
         IRS->audioChannels[channel] = true;
-
         return channel;
     }
 
@@ -120,7 +115,6 @@ namespace RoninEngine::Runtime
             channels[channel] = false;
             return true;
         }
-
         return false;
     }
 

@@ -136,11 +136,11 @@ namespace RoninEngine
                     cloneIt->_enable = cloneFrom->_enable;
                     continue;
                 }
-                else if(DynamicCast<SpriteRenderer>(replacement))
+                else if(dynamic_cast<SpriteRenderer*>(replacement.ptr_))
                 {
                     replacement = StaticCast<Component>(instance_new<SpriteRenderer>(false, reinterpret_cast<SpriteRenderer *>(replacement.ptr_), nullptr));
                 }
-                else if(DynamicCast<Camera2D>(replacement))
+                else if(dynamic_cast<Camera2D*>(replacement.ptr_))
                 {
                     replacement = StaticCast<Component>(instance_new<Camera2D>(false, reinterpret_cast<Camera2D*>(replacement.ptr_), nullptr));
 
@@ -174,7 +174,7 @@ namespace RoninEngine
         GameObjectRef Instantiate(GameObjectRef obj, Vec2 position, float angle)
         {
             obj = Instantiate(obj);
-            if(obj != nullptr)
+            if(!obj.isNull())
             {
                 obj->transform()->position(position);
                 obj->transform()->angle(angle);
@@ -185,7 +185,7 @@ namespace RoninEngine
         GameObjectRef Instantiate(GameObjectRef obj, Vec2 position, TransformRef parent, bool worldPositionStay)
         {
             obj = Instantiate(obj);
-            if(obj != nullptr)
+            if(!obj.isNull())
             {
                 obj->transform()->position(position);
                 obj->transform()->setParent(parent, worldPositionStay);

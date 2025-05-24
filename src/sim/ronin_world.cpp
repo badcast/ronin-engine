@@ -156,7 +156,8 @@ namespace RoninEngine
     World::~World()
     {
         // unloading
-        internal_unload_world(this);
+        if(this->irs)
+            internal_unload_world(this);
     }
 
     void WorldResources::event_camera_changed(CameraRef target, CameraEvent state)
@@ -296,6 +297,28 @@ namespace RoninEngine
         }
 
         return cleans;
+    }
+
+    std::uint64_t World::StatCountRefLinks(){
+        std::uint64_t retval = 0;
+        if(irs)
+        {
+            retval = irs->refPointers.size();
+        }
+        return retval;
+    }
+
+    std::uint64_t World::StatMaxRefDepth(){
+        std::uint64_t retval = 0;
+        if(irs)
+        {
+            for(auto & refkey : this->irs->refPointers)
+            {
+                if(refkey.second.ref_count_)
+                    retval = Math::Max(retval, *refkey.second.ref_count_);
+            }
+        }
+        return retval;
     }
 
     std::string World::GetTreeOfHierarchy() const

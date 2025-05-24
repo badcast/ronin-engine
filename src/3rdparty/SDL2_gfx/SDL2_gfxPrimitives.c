@@ -4096,7 +4096,12 @@ int thickLineRGBA(SDL_Renderer *renderer, Sint16 x1, Sint16 y1, Sint16 x2, Sint1
 void _custom_refresh_fonts()
 {
     int __size = sizeof(gfxPrimitivesFont) / sizeof(gfxPrimitivesFont[0]);
-
     while(__size-- > 0)
-        gfxPrimitivesFont[__size] = NULL;
+    {
+        if(gfxPrimitivesFont[__size])
+        {
+            SDL_DestroyTexture(gfxPrimitivesFont[__size]);
+            gfxPrimitivesFont[__size] = NULL;
+        }
+    }
 }

@@ -30,7 +30,7 @@ namespace RoninEngine::Runtime
     class RONIN_API Terrain2D : public Renderer
     {
     private:
-        struct T2Data *dat;
+        struct T2Data *m_t2data;
 
     public:
         Terrain2D();
@@ -40,8 +40,9 @@ namespace RoninEngine::Runtime
         RoninEngine::AI::NavMesh *get_navmesh2D();
 
         void setMesh(Rectf state, SpriteRef sprite);
+        void setTextureScale(Vec2 scale);
 
-        void load_from(const TerrainData &terrainData);
+        void loadFrom(const TerrainData &terrainData);
 
         const bool is_collider(const Vec2 destination);
 

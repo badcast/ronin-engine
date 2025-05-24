@@ -10,7 +10,7 @@ namespace RoninMemory
     RONIN_API void *mem_alloc(std::size_t size);
     RONIN_API void *mem_realloc(void *memory, std::size_t size);
     RONIN_API void mem_free(void *memory);
-    RONIN_API std::uint64_t mem_allocated();
+    RONIN_API int mem_allocated();
 
     template <typename T, typename... Args>
     constexpr inline T *_paste_oop_init(T *raw_memory, Args &&...args)
