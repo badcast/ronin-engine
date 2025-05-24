@@ -209,7 +209,7 @@ namespace RoninEngine::Runtime
     bool RoninAudio::setMusicState(MusicClip *clip, AudioState state, bool loop)
     {
         bool result;
-        if(result = HasInit())
+        if((result = HasInit()))
         {
             gscope.musicData.loops = 0; // clear loop flag
             switch(state)
