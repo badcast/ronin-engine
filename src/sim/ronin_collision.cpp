@@ -25,8 +25,6 @@ namespace RoninEngine::Runtime
         {
             return false;
         }
-
-        // Если не произошло коллизии в выровненных координатах, то есть коллизия в оригинальных координатах
         return true;
     }
 

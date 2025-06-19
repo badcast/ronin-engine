@@ -38,7 +38,7 @@ namespace RoninEngine
         };
 
         template <typename T>
-        class RONIN_API Ref
+        class Ref
         {
             template<typename A,typename B>
             friend Ref<A> StaticCast(Ref<B>);
