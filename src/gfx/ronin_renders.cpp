@@ -56,9 +56,9 @@ namespace RoninEngine::Runtime
         return (pos.x + rSz.x >= wpLeftTop.x && pos.x - rSz.x <= wpRightBottom.x) && (pos.y - rSz.y <= wpLeftTop.y && pos.y + rSz.y >= wpRightBottom.y);
     }
 
-    /////////////////
-    /// CAMERA 2D ///
-    /////////////////
+           /////////////////
+           /// CAMERA 2D ///
+           /////////////////
     void native_render_2D(Camera2D *camera)
     {
         camera->res->culled = 0;
@@ -116,7 +116,7 @@ namespace RoninEngine::Runtime
                                 Renderer *render_iobject;
                                 // This object not render component, then continue and to next iterator
                                 if(!component->_enable || (render_iobject = dynamic_cast<Renderer *>(component.ptr_)) == nullptr
-                                || render_iobject->_owner == nullptr
+                                   || render_iobject->_owner == nullptr
                                    )
                                 {
                                     continue;
@@ -171,27 +171,27 @@ namespace RoninEngine::Runtime
                     // clear
                     memset(&wrapper, 0, sizeof wrapper);
 
-                        lightSource->get_light_source(&wrapper); // draw
+                         lightSource->get_light_source(&wrapper); // draw
 
-                            if (wrapper.texture) {
-                                Vec2 point = transform()->position();
-                                sourcePoint = lightSource->transform()->position();
+                              if (wrapper.texture) {
+                                  Vec2 point = transform()->position();
+                                  sourcePoint = lightSource->transform()->position();
 
-                                    wrapper.dst.w *= pixelsPerPoint;
+                                       wrapper.dst.w *= pixelsPerPoint;
 
-                                      wrapper.dst.h *= pixelsPerPoint;
+                                          wrapper.dst.h *= pixelsPerPoint;
 
-                                        // h
-                                        wrapper.dst.x += ((rect.w - wrapper.dst.w) / 2.0f - (point.x - sourcePoint.x) * pixelsPerPoint);
-                                        // v
-                                        wrapper.dst.y += ((rect.h - wrapper.dst.h) / 2.0f + (point.y - sourcePoint.y) * pixelsPerPoint);
+                                             // h
+                                             wrapper.dst.x += ((rect.w - wrapper.dst.w) / 2.0f - (point.x - sourcePoint.x) * pixelsPerPoint);
+                                             // v
+                                             wrapper.dst.y += ((rect.h - wrapper.dst.h) / 2.0f + (point.y - sourcePoint.y) * pixelsPerPoint);
 
-                                          SDL_RenderCopyExF(renderer, wrapper.texture, reinterpret_cast<SDL_Rect*>(&wrapper.src),
-                             reinterpret_cast<SDL_FRect*>(&wrapper.dst), lightSource->transform()->_angle_ - transform()->_angle_,
-                             nullptr, SDL_RendererFlip::SDL_FLIP_NONE);
-                                      }
-                                  }
-                          */
+                                                SDL_RenderCopyExF(renderer, wrapper.texture, reinterpret_cast<SDL_Rect*>(&wrapper.src),
+                                   reinterpret_cast<SDL_FRect*>(&wrapper.dst), lightSource->transform()->_angle_ - transform()->_angle_,
+                                   nullptr, SDL_RendererFlip::SDL_FLIP_NONE);
+                                            }
+                                        }
+                                */
         if(camera->visibleBorders)
         {
             float offset = 25 * std::max(1 - Time::deltaTime(), 0.1f);
@@ -246,14 +246,14 @@ namespace RoninEngine::Runtime
         }
     }
 
-    /////////////////
-    /// CAMERA 3D ///
-    /////////////////
-    // TODO: Make Camera 3D
+           /////////////////
+           /// CAMERA 3D ///
+           /////////////////
+           // TODO: Make Camera 3D
 
-    ///////////////////////
-    /// SPRITE RENDERER ///
-    ///////////////////////
+           ///////////////////////
+           /// SPRITE RENDERER ///
+           ///////////////////////
     void render_sprite_renderer(RenderCommand command, Renderer *object, Rendering *rendering)
     {
         SpriteRenderer *target = static_cast<SpriteRenderer *>(object);
