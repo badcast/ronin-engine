@@ -63,7 +63,7 @@ namespace RoninEngine
             {
                 currentInstance->m_components.push_back(StaticCast<Component>(instance_new<Transform>(false, nullptr, nullptr)));
                 currentInstance->m_components.front()->_owner = result;
-                Matrix::matrix_update(result->transform().ptr_, Matrix::matrix_get_key(Vec2::infinity));
+                Matrix::matrix_update(result->transform(), Matrix::matrix_get_key(Vec2::infinity));
 
                 if(initInHierarchy)
                 {

@@ -90,8 +90,15 @@ namespace RoninEngine
 
     namespace Runtime::Matrix
     {
+        struct MxContain
+        {
+            std::set<RoninEngine::Runtime::RendererRef> r;
+            std::set<RoninEngine::Runtime::TransformRef> t;
+
+            inline MxContain() : r(),t(){}
+        };
         typedef RoninEngine::Runtime::Vec2Int matrix_key_t;
-        typedef std::map<int, std::unordered_map<matrix_key_t, std::set<RoninEngine::Runtime::Transform *>>> matrix_map_t;
+        typedef std::map<int, std::unordered_map<matrix_key_t, MxContain>> matrix_map_t;
     } // namespace Runtime::Matrix
 
     namespace Runtime
@@ -298,7 +305,7 @@ namespace RoninEngine
         void native_render_2D(Camera2D *camera);
 
         int sepuku_run();
-        void sepuku_Component(ComponentRef &CND);
+        void sepuku_Component(ComponentRef &component);
         void sepuku_GameObject(GameObjectRef obj, std::set<GameObject *> *input);
 
         template <typename T>

@@ -179,75 +179,75 @@ namespace RoninEngine
         }
     }
 
-           // NOTE: Check game hierarchy
-    std::list<Transform *> World::MatrixCheckDamage()
-    {
-        if(irs == nullptr)
-            throw ronin_world_notloaded_error();
-        std::list<Transform *> damaged;
-        for(auto x = std::begin(currentWorld->irs->matrix); x != end(currentWorld->irs->matrix); ++x)
-        {
-            // unordered_map<Vec2Int,... <Transform*>>
-            for(auto &layerObject : x->second)
-            {
-                // set<Transform*>
-                for(auto &y : layerObject.second)
-                {
-                    if(y->isNull() || Matrix::matrix_get_key(y->_position) != layerObject.first || x->first != y->_owner->m_layer)
-                    {
-                        damaged.emplace_back(y);
-                    }
-                }
-            }
-        }
-        return damaged;
-    }
+    //        // NOTE: Check game hierarchy
+    // std::list<Transform *> World::MatrixCheckDamage()
+    // {
+    //     if(irs == nullptr)
+    //         throw ronin_world_notloaded_error();
+    //     std::list<Transform *> damaged;
+    //     for(auto x = std::begin(currentWorld->irs->matrix); x != end(currentWorld->irs->matrix); ++x)
+    //     {
+    //         // unordered_map<Vec2Int,... <TransformRef>>
+    //         for(auto &layerObject : x->second)
+    //         {
+    //             // set<TransformRef>
+    //             for(auto &y : layerObject.second)
+    //             {
+    //                 if(y->isNull() || Matrix::matrix_get_key(y->_position) != layerObject.first || x->first != y->_owner->m_layer)
+    //                 {
+    //                     damaged.emplace_back(y);
+    //                 }
+    //             }
+    //         }
+    //     }
+    //     return damaged;
+    // }
 
-    int World::MatrixRestore()
-    {
-        auto damaged = MatrixCheckDamage();
-        return MatrixRestore(damaged);
-    }
+    // int World::MatrixRestore()
+    // {
+    //     auto damaged = MatrixCheckDamage();
+    //     return MatrixRestore(damaged);
+    // }
 
-           // try restore damaged matrix element's
-    int World::MatrixRestore(const std::list<Runtime::Transform *> &damaged_content)
-    {
-        if(irs == nullptr)
-            throw ronin_world_notloaded_error();
-        int restored = 0;
-        for(Transform *dam : damaged_content)
-        {
-            Matrix::matrix_key_t key = Matrix::matrix_get_key(dam->_position);
-            // unordered_map<int, ...>
-            for(auto &findIter : currentWorld->irs->matrix)
-            {
-                // unordered_map<Vec2Int,...>
-                for(auto &layer : findIter.second)
-                    // set<Transform*>
-                    for(auto &set : layer.second)
-                    {
-                        if(set != dam)
-                            continue;
-                        if(set->_owner->m_layer != findIter.first || key != layer.first)
-                        {
-                            // Remove damaged transform
-                            layer.second.erase(dam);
-                            if(!dam->isNull())
-                            {
-                                // Restore
-                                currentWorld->irs->matrix[dam->_owner->m_layer][key].insert(dam);
-                            }
-                            ++restored;
-                            goto next;
-                        }
-                    }
-            }
-        next:
-            continue;
-        }
+    //        // try restore damaged matrix element's
+    // int World::MatrixRestore(const std::list<Runtime::Transform *> &damaged_content)
+    // {
+    //     if(irs == nullptr)
+    //         throw ronin_world_notloaded_error();
+    //     int restored = 0;
+    //     for(Transform *dam : damaged_content)
+    //     {
+    //         Matrix::matrix_key_t key = Matrix::matrix_get_key(dam->_position);
+    //         // unordered_map<int, ...>
+    //         for(auto &findIter : currentWorld->irs->matrix)
+    //         {
+    //             // unordered_map<Vec2Int,...>
+    //             for(auto &layer : findIter.second)
+    //                 // set<Transform*>
+    //                 for(auto &set : layer.second)
+    //                 {
+    //                     if(set != dam)
+    //                         continue;
+    //                     if(set->_owner->m_layer != findIter.first || key != layer.first)
+    //                     {
+    //                         // Remove damaged transform
+    //                         layer.second.erase(dam);
+    //                         if(!dam->isNull())
+    //                         {
+    //                             // Restore
+    //                             currentWorld->irs->matrix[dam->_owner->m_layer][key].insert(dam);
+    //                         }
+    //                         ++restored;
+    //                         goto next;
+    //                     }
+    //                 }
+    //         }
+    //     next:
+    //         continue;
+    //     }
 
-        return restored;
-    }
+    //     return restored;
+    // }
 
     int World::GetCulled()
     {
@@ -256,48 +256,48 @@ namespace RoninEngine
         return irs->mainCamera->res->culled;
     }
 
-    int World::MatrixCacheCount()
-    {
-        if(irs == nullptr)
-            return -1;
-        int cached = 0;
-        for(auto &matrix : this->irs->matrix)
-            cached += static_cast<int>(std::count_if(
-                matrix.second.begin(),
-                matrix.second.end(),
-                [](auto iobject)
-                {
-                    // predicate
-                    return iobject.second.empty();
-                }));
-        return cached;
-    }
+    // int World::MatrixCacheCount()
+    // {
+    //     if(irs == nullptr)
+    //         return -1;
+    //     int cached = 0;
+    //     for(auto &matrix : this->irs->matrix)
+    //         cached += static_cast<int>(std::count_if(
+    //             matrix.second.begin(),
+    //             matrix.second.end(),
+    //             [](auto iobject)
+    //             {
+    //                 // predicate
+    //                 return iobject.second.empty();
+    //             }));
+    //     return cached;
+    // }
 
-    int World::MatrixCacheClear()
-    {
-        if(irs == nullptr)
-            return -1;
-        int cleans = 0;
-        std::vector<typename std::unordered_map<Vec2Int, std::set<Transform *>>::iterator> cached;
-        for(auto &matrix : this->irs->matrix)
-        {
-            for(auto iter = std::begin(matrix.second); iter != std::end(matrix.second); ++iter)
-            {
-                if(iter->second.empty())
-                {
-                    cached.emplace_back(iter);
-                }
-            }
-            for(auto &iter_ref : cached)
-            {
-                matrix.second.erase(iter_ref);
-            }
-            cleans += static_cast<int>(cached.size());
-            cached.clear();
-        }
+    // int World::MatrixCacheClear()
+    // {
+    //     if(irs == nullptr)
+    //         return -1;
+    //     int cleans = 0;
+    //     std::vector<typename std::unordered_map<Vec2Int, std::set<Transform *>>::iterator> cached;
+    //     for(auto &matrix : this->irs->matrix)
+    //     {
+    //         for(auto iter = std::begin(matrix.second); iter != std::end(matrix.second); ++iter)
+    //         {
+    //             if(iter->second.empty())
+    //             {
+    //                 cached.emplace_back(iter);
+    //             }
+    //         }
+    //         for(auto &iter_ref : cached)
+    //         {
+    //             matrix.second.erase(iter_ref);
+    //         }
+    //         cleans += static_cast<int>(cached.size());
+    //         cached.clear();
+    //     }
 
-        return cleans;
-    }
+    //     return cleans;
+    // }
 
     std::uint64_t World::StatCountRefLinks(){
         std::uint64_t retval = 0;

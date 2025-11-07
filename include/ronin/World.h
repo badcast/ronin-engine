@@ -45,11 +45,6 @@ namespace RoninEngine::Runtime
         const bool StateObjectDestruction(GameObjectRef obj);
         const int CountObjectDestruction();
 
-        std::list<Transform *> MatrixCheckDamage();
-        int MatrixRestore();
-        int MatrixRestore(const std::list<Transform *> &damaged_content);
-        int MatrixCacheCount();
-        int MatrixCacheClear();
         std::uint64_t StatCountRefLinks();
         std::uint64_t StatMaxRefDepth();
 

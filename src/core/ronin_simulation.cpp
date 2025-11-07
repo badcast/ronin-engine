@@ -54,7 +54,7 @@ namespace RoninEngine
         float internal_time_scale, internal_game_time, internal_delta_time;
 
         std::uint32_t internal_frames; // framecounter
-        int _matrix_dimensity_ = 1;
+        float _matrix_cell_size_ = 1.0F;
         RoninInput internal_input;
         bool text_inputState;
 
@@ -463,7 +463,7 @@ namespace RoninEngine
                         currentWorld->irs->mainObject->name("Main Object");
                         currentWorld->irs->mainObject->transform()->name("Root");
                         // pickup from renders
-                        Matrix::matrix_remove(currentWorld->irs->mainObject->transform().ptr_);
+                        Matrix::matrix_remove(currentWorld->irs->mainObject->transform());
                     }
                     /////////////////////
                     /// Set Metric as default

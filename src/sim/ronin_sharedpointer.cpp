@@ -48,7 +48,6 @@ namespace RoninEngine::Runtime
         currentWorld->irs->refPointers[static_cast<RoninPointer*>(noninitref.ptr_)] = noninitref;
     }
 
-    template<>
     Ref<RoninPointer> RoninPointer::GetRef()
     {
         return GetRefMain(this);

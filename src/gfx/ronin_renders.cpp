@@ -106,10 +106,10 @@ namespace RoninEngine::Runtime
                 [&](const Vec2Int &candidate)
                 {
                     // unordered_map<Vec2Int,... <Transform*>>
-                    const auto &layerObject = layer.second.find(candidate);
+                    std::unordered_map<Matrix::matrix_key_t,Matrix::MxContain>::iterator layerObject = layer.second.find(candidate);
                     if(layerObject != std::end(layer.second))
                     {
-                        for(Transform *transform_object : layerObject->second)
+                        for(TransformRef transform_object : layerObject->second.t)
                         {
                             for(ComponentRef &component : transform_object->_owner->m_components)
                             {

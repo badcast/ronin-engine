@@ -34,6 +34,7 @@ namespace RoninEngine
 
             template<typename T>
             Ref<T> GetRef();
+
             Ref<RoninPointer> GetRef();
         };
 

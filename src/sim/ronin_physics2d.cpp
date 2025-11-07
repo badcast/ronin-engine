@@ -89,18 +89,18 @@ namespace RoninEngine::Runtime
                     if(findedIter.first & layer || findedIter.first == layer)
                     {
                         // unordered_map<Vec2Int,...>
-                        auto layerObject = findedIter.second.find(candidate);
+                        std::unordered_map<Matrix::matrix_key_t,Matrix::MxContain>::iterator layerObject = findedIter.second.find(candidate);
                         if(layerObject != std::end(findedIter.second))
                         {
-                            // set<Transform*>
-                            for(auto &object : layerObject->second)
+                            // set<TransformRef>
+                            for(TransformRef object : layerObject->second.t)
                             {
                                 if constexpr(not std::is_same<Pred, std::nullptr_t>::value)
                                 {
                                     if(predicate(object->_position) == false)
                                         continue;
                                 }
-                                if constexpr(std::is_same<container_result, std::set<Transform *>>::value)
+                                if constexpr(std::is_same<container_result, std::set<TransformRef>>::value)
                                     container.insert(object);
                                 else
                                     container.emplace_back(object);
@@ -133,18 +133,17 @@ namespace RoninEngine::Runtime
         {
             for(pointer.y = leftUpPoint.y; pointer.y <= rightDownPoint.y; ++pointer.y)
             {
-                for(auto &findedIter : currentWorld->irs->matrix)
+                for(Matrix::matrix_map_t::value_type &findedIter : currentWorld->irs->matrix)
                 {
                     if(findedIter.first & layer || findedIter.first == layer)
                     {
-                        // unordered_map<Vec2Int,...>
-                        auto layerObject = findedIter.second.find(pointer);
+                        // unordered_map<matrix_key_t,...>
+                        std::unordered_map<Matrix::matrix_key_t,Matrix::MxContain>::iterator layerObject = findedIter.second.find(pointer);
                         if(layerObject != std::end(findedIter.second))
                         {
-                            // set<Transform*>
-                            for(auto &object : layerObject->second)
+                            for(TransformRef object : (layerObject->second).t)
                             {
-                                if constexpr(std::is_same<container_result, std::set<Transform *>>::value)
+                                if constexpr(std::is_same<container_result, std::set<TransformRef>>::value)
                                     result.insert(object);
                                 else
                                     result.emplace_back(object);
@@ -174,17 +173,17 @@ namespace RoninEngine::Runtime
         return result;
     }
 
-    template RONIN_API std::list<Transform *> Physics2D::GetStormCast(Vec2, int, int);
-    template RONIN_API std::list<Transform *> Physics2D::GetRectangleCast(Vec2, Vec2, int);
-    template RONIN_API std::list<Transform *> Physics2D::GetCircleCast(Vec2, float, int);
+    template RONIN_API std::list<TransformRef> Physics2D::GetStormCast(Vec2, int, int);
+    template RONIN_API std::list<TransformRef> Physics2D::GetRectangleCast(Vec2, Vec2, int);
+    template RONIN_API std::list<TransformRef> Physics2D::GetCircleCast(Vec2, float, int);
 
-    template RONIN_API std::vector<Transform *> Physics2D::GetStormCast(Vec2, int, int);
-    template RONIN_API std::vector<Transform *> Physics2D::GetRectangleCast(Vec2, Vec2, int);
-    template RONIN_API std::vector<Transform *> Physics2D::GetCircleCast(Vec2, float, int);
+    template RONIN_API std::vector<TransformRef> Physics2D::GetStormCast(Vec2, int, int);
+    template RONIN_API std::vector<TransformRef> Physics2D::GetRectangleCast(Vec2, Vec2, int);
+    template RONIN_API std::vector<TransformRef> Physics2D::GetCircleCast(Vec2, float, int);
 
-    template RONIN_API std::set<Transform *> Physics2D::GetStormCast(Vec2, int, int);
-    template RONIN_API std::set<Transform *> Physics2D::GetRectangleCast(Vec2, Vec2, int);
-    template RONIN_API std::set<Transform *> Physics2D::GetCircleCast(Vec2, float, int);
+    template RONIN_API std::set<TransformRef> Physics2D::GetStormCast(Vec2, int, int);
+    template RONIN_API std::set<TransformRef> Physics2D::GetRectangleCast(Vec2, Vec2, int);
+    template RONIN_API std::set<TransformRef> Physics2D::GetCircleCast(Vec2, float, int);
 
 } // namespace RoninEngine::Runtime
 

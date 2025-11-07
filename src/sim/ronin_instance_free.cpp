@@ -83,7 +83,7 @@ namespace RoninEngine
             asset->_handle = RefClassType::Null;
         }
 
-        void sepuku_Component(ComponentRef& CND)
+        void sepuku_Component(ComponentRef& component)
         {
             union
             {
@@ -94,7 +94,7 @@ namespace RoninEngine
                 AudioSource *audioSource;
             } _knife;
 
-            Component* candidate = CND.ptr_;
+            Component* candidate = component.ptr_;
 
             if(candidate->_owner == nullptr)
             {
@@ -116,7 +116,7 @@ namespace RoninEngine
 
                     // picking from matrix
                     if(self->_owner)
-                        Matrix::matrix_remove(self);
+                        Matrix::matrix_remove(component->transform());
                 }
             }
 #undef self
@@ -138,7 +138,7 @@ namespace RoninEngine
             else if((self = dynamic_cast<Camera *>(candidate)))
             {
                 // Free Camera Resources
-                currentWorld->irs->event_camera_changed(StaticCast<Camera>(CND), CameraEvent::CAM_DELETED);
+                currentWorld->irs->event_camera_changed(StaticCast<Camera>(component), CameraEvent::CAM_DELETED);
             }
 #undef self
 #define self (_knife.renderer)
@@ -156,8 +156,8 @@ namespace RoninEngine
 #undef self
 
             // Free object
-            RefMarkNull(CND);
-            RefReleaseSoft(static_cast<RoninPointer*>(CND.ptr_));
+            RefMarkNull(component);
+            RefReleaseSoft(static_cast<RoninPointer*>(component.ptr_));
             --currentWorld->irs->objects;
         }
 

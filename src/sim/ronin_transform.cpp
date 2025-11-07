@@ -299,7 +299,7 @@ namespace RoninEngine::Runtime
         Vec2Int lastPoint = Matrix::matrix_get_key(_position);
         _position = (this->m_parent ? this->m_parent->_position + value : value);
         if(_owner->m_active)
-            Matrix::matrix_update(this, lastPoint);
+            Matrix::matrix_update(StaticCast<Transform>(GetRef()), lastPoint);
         return value;
     }
 
@@ -317,7 +317,7 @@ namespace RoninEngine::Runtime
 
         if(_owner->m_active)
         {
-            Matrix::matrix_update(this, Matrix::matrix_get_key(lastPosition));
+            Matrix::matrix_update(StaticCast<Transform>(GetRef()), Matrix::matrix_get_key(lastPosition));
 
             Vec2 localPos = value - lastPosition;
             for(TransformRef& child : hierarchy)
@@ -377,12 +377,12 @@ namespace RoninEngine::Runtime
         if(!from->m_active)
         {
             // Delete from matrix, for is not active object
-            Matrix::matrix_remove(this);
+            Matrix::matrix_remove(StaticCast<Transform>(GetRef()));
         }
         else
         {
             // Add to matrix, for active object
-            Matrix::matrix_update(this, Matrix::matrix_get_key(Vec2::infinity));
+            Matrix::matrix_update(StaticCast<Transform>(GetRef()), Matrix::matrix_get_key(Vec2::infinity));
         }
         // send in hierarchy
         for(TransformRef &chlid : hierarchy)
@@ -398,13 +398,13 @@ namespace RoninEngine::Runtime
     {
         // Delete from matrix, for is not active object
         if(_owner->m_active)
-            Matrix::matrix_remove(this);
+            Matrix::matrix_remove(StaticCast<Transform>(GetRef()));
 
         _owner->m_layer = value;
 
         // Add to matrix, for active object
         if(_owner->m_active)
-            Matrix::matrix_update(this, Matrix::matrix_get_key(Vec2::infinity));
+            Matrix::matrix_update(StaticCast<Transform>(GetRef()), Matrix::matrix_get_key(Vec2::infinity));
     }
 
     int Transform::zOrder() const
