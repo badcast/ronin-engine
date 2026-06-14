@@ -82,51 +82,28 @@ namespace RoninEngine::Runtime
             RenderUtility::DrawPosition(params.camera_position, defaultMaxWorldScalar);
         }
 
-        /* RUN STORM CAST
-           + - - - - - - - - - +    \
-           ' → → → → → → → → ↓ '        \
-           ' ↑ → → → → → → ↓ ↓ '            \
-           ' ↑ ↑ → → → → ↓ ↓ ↓ '                \
-           ' ↑ ↑ ↑ → → ↓ ↓ ↓ ↓ '                    \
-           ' ↑ ↑ ↑ ↑ ← ↓ ↓ ↓ ↓ '                      >    INSPECTION OBJECTS
-           ' ↑ ↑ ↑ ← ← ← ↓ ↓ ↓ '                    /
-           ' ↑ ↑ ← ← ← ← ← ↓ ↓ '                /
-           ' ↑ ← ← ← ← ← ← ← ↓ '            /
-           ' ← ← ← ← ← ← ← ← ← '        /
-           + - - - - - - - - - +    /
-        */
-        Matrix::matrix_key_t camKey = Matrix::matrix_get_key(params.camera_position);
-        // unordered_map<int,... <Transform*>>
-        for(auto &layer : currentWorld->irs->matrix)
-        {
-            // Render Objects
-            storm_cast_eq_all(
-                camKey,
-                params.edges,
-                [&](const Vec2Int &candidate)
-                {
-                    // unordered_map<Vec2Int,... <Transform*>>
-                    const auto &layerObject = layer.second.find(candidate);
-                    if(layerObject != std::end(layer.second))
-                    {
-                        for(Transform *transform_object : layerObject->second)
-                        {
-                            for(ComponentRef &component : transform_object->_owner->m_components)
-                            {
-                                Renderer *render_iobject;
-                                // This object not render component, then continue and to next iterator
-                                if(!component->_enable || (render_iobject = dynamic_cast<Renderer *>(component.ptr_)) == nullptr
-                                   || render_iobject->_owner == nullptr
-                                   )
-                                {
-                                    continue;
-                                }
+        float minX = std::min(params.wpLeftTop.x, params.wpRightBottom.x);
+        float minY = std::min(params.wpLeftTop.y, params.wpRightBottom.y);
+        float maxX = std::max(params.wpLeftTop.x, params.wpRightBottom.x);
+        float maxY = std::max(params.wpLeftTop.y, params.wpRightBottom.y);
+        Rectf camRect(minX, minY, maxX - minX, maxY - minY);
 
-                                params.orders[render_iobject->_owner->m_zOrder].push_back(render_iobject);
-                            }
-                        }
-                    }
-                });
+        std::set<Transform*> visibleTransforms;
+        Matrix::matrix_get_intersects(camRect, visibleTransforms);
+
+        for (Transform* transform_object : visibleTransforms)
+        {
+            for(ComponentRef &component : transform_object->_owner->m_components)
+            {
+                Renderer *render_iobject;
+                if(!component->_enable || (render_iobject = dynamic_cast<Renderer *>(component.ptr_)) == nullptr
+                   || render_iobject->_owner == nullptr)
+                {
+                    continue;
+                }
+
+                params.orders[render_iobject->_owner->m_zOrder].push_back(render_iobject);
+            }
         }
 
         for(std::map<int, std::vector<Renderer *>>::iterator layer = std::begin(params.orders); layer != std::end(params.orders); ++layer)

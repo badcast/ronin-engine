@@ -3,156 +3,63 @@
 
 namespace RoninEngine::Runtime
 {
-
-    /*       This is projection: Algorithm storm member used.
-             + - - - - - - - - - +
-             ' → → → → → → → → ↓ '
-             ' ↑ → → → → → → ↓ ↓ '
-             ' ↑ ↑ → → → → ↓ ↓ ↓ '
-             ' ↑ ↑ ↑ → → ↓ ↓ ↓ ↓ '
-             ' ↑ ↑ ↑ ↑ ← ↓ ↓ ↓ ↓ '
-             ' ↑ ↑ ↑ ← ← ← ↓ ↓ ↓ '
-             ' ↑ ↑ ← ← ← ← ← ↓ ↓ '
-             ' ↑ ← ← ← ← ← ← ← ↓ '
-             ' ← ← ← ← ← ← ← ← ← '
-             + - - - - - - - - - +
-    */
-    template <bool foreach>
-    constexpr inline void storm_cast_eq_t(Vec2Int origin, int edges, std::function<void(const Vec2Int &)> predicate)
+    void Physics2D::SimulateStorm(Vec2Int origin, int edges, std::function<void(const Vec2Int &)> predicate, bool fillInside)
     {
-        constexpr std::int8_t storm_vec[][2] {
-            /*X  Y*/
-            {-1, 0}, // ←
-            {0, 1},  // ↑
-            {1, 0},  // →
-            {0, -1}  // ↓
-        };
-        constexpr int nvec = sizeof(storm_vec) / sizeof(storm_vec[0]);
-
-        int nsection, iv;
-
-        predicate(origin);
-
-        // Edge
-        for(nsection = 0; edges-- > 0;)
+        int x = 0, y = 0, dx = 0, dy = -1;
+        int t = std::max(edges, 2);
+        int maxI = t * t;
+        for(int i = 0; i < maxI; i++)
         {
-            // Line
-            for(iv = 0; iv < nvec; ++iv)
+            if (fillInside)
+                predicate(origin + Vec2Int {x, y});
+            else if(
+                (x == -edges || x == edges) && (y >= -edges && y <= edges) || 
+                (y == -edges || y == edges) && (x >= -edges && x <= edges))
             {
-                // Section
-                if(!(iv & 1))
-                    ++nsection;
-
-                if constexpr(foreach)
-                {
-                    int s = 0;
-                    do
-                    {
-                        origin.x += storm_vec[iv][0];
-                        origin.y += storm_vec[iv][1];
-                        predicate(origin);
-                    } while(++s < nsection);
-                }
-                else
-                {
-                    origin.x += storm_vec[iv][0] * nsection;
-                    origin.y += storm_vec[iv][1] * nsection;
-                    predicate(origin);
-                }
+                predicate(origin + Vec2Int {x, y});
             }
+
+            if(x == y || (x < 0 && x == -y) || (x > 0 && x == 1 - y))
+            {
+                t = dx;
+                dx = -dy;
+                dy = t;
+            }
+            x += dx;
+            y += dy;
         }
     }
 
-    void storm_cast_eq_all(Vec2Int origin, int edges, std::function<void(const Vec2Int &)> predicate)
-    {
-        storm_cast_eq_t<true>(origin, edges, predicate);
-    }
-
-    void storm_cast_eq_edges(Vec2Int origin, int edges, std::function<void(const Vec2Int &)> predicate)
-    {
-        storm_cast_eq_t<false>(origin, edges, predicate);
-    }
-
-    template <typename container_result, typename Pred>
-    container_result storm_cast_vec_eq(Vec2 origin, int edges, int layer, Pred predicate)
-    {
-        container_result container;
-
-        storm_cast_eq_t<true>(
-            Matrix::matrix_get_key(origin),
-            edges,
-            [&](const Vec2Int &candidate)
-            {
-                // unordered_map<int,... <Transform*>>
-                for(auto &findedIter : currentWorld->irs->matrix)
-                {
-                    if(findedIter.first & layer || findedIter.first == layer)
-                    {
-                        // unordered_map<Vec2Int,...>
-                        auto layerObject = findedIter.second.find(candidate);
-                        if(layerObject != std::end(findedIter.second))
-                        {
-                            // set<Transform*>
-                            for(auto &object : layerObject->second)
-                            {
-                                if constexpr(not std::is_same<Pred, std::nullptr_t>::value)
-                                {
-                                    if(predicate(object->_position) == false)
-                                        continue;
-                                }
-                                if constexpr(std::is_same<container_result, std::set<Transform *>>::value)
-                                    container.insert(object);
-                                else
-                                    container.emplace_back(object);
-                            }
-                        }
-                    }
-                }
-            });
-
-        return container;
-    }
 
     template <typename container_result>
     container_result Physics2D::GetStormCast(Vec2 origin, int edges, int layer)
     {
-        return storm_cast_vec_eq<container_result>(origin, edges, layer, nullptr);
+        float size = edges * 2.f; 
+        return GetRectangleCast<container_result>(origin, Vec2(size, size), layer);
     }
 
     template <typename container_result>
     container_result Physics2D::GetRectangleCast(Vec2 center, Vec2 size, int layer)
     {
         container_result result;
+        size = Vec2::Abs(size);
+        Rectf rect(center.x - size.x / 2.f, center.y - size.y / 2.f, size.x, size.y);
 
-        size = Vec2::Abs(size) / 2.f;
-        Vec2Int leftUpPoint {Matrix::matrix_get_key(center - size)};
-        Vec2Int rightDownPoint {Matrix::matrix_get_key(center + size)};
-        Vec2Int pointer = leftUpPoint;
-
-        for(; pointer.x <= rightDownPoint.x; ++pointer.x)
+        std::set<Transform*> intersects;
+        for(auto &findedIter : currentWorld->irs->matrix)
         {
-            for(pointer.y = leftUpPoint.y; pointer.y <= rightDownPoint.y; ++pointer.y)
+            if(findedIter.first & layer || findedIter.first == layer)
             {
-                for(auto &findedIter : currentWorld->irs->matrix)
-                {
-                    if(findedIter.first & layer || findedIter.first == layer)
-                    {
-                        // unordered_map<Vec2Int,...>
-                        auto layerObject = findedIter.second.find(pointer);
-                        if(layerObject != std::end(findedIter.second))
-                        {
-                            // set<Transform*>
-                            for(auto &object : layerObject->second)
-                            {
-                                if constexpr(std::is_same<container_result, std::set<Transform *>>::value)
-                                    result.insert(object);
-                                else
-                                    result.emplace_back(object);
-                            }
-                        }
-                    }
-                }
+                findedIter.second->Retrieve(intersects, rect);
             }
+        }
+        
+        for (auto obj : intersects)
+        {
+            if constexpr(std::is_same<container_result, std::set<Transform *>>::value)
+                result.insert(obj);
+            else
+                result.emplace_back(obj);
         }
 
         return result;
@@ -161,19 +68,21 @@ namespace RoninEngine::Runtime
     template <typename container_result>
     container_result Physics2D::GetCircleCast(Vec2 origin, float distance, int layer)
     {
-        container_result result = storm_cast_vec_eq<container_result>(
-            origin,
-            Math::Number(Math::Ceil(distance)),
-            layer,
-            [distance, &origin](Vec2 rhs)
+        container_result result;
+        container_result candidates = GetRectangleCast<container_result>(origin, Vec2(distance * 2.f, distance * 2.f), layer);
+        
+        for (auto& obj : candidates)
+        {
+            if (Vec2::Distance(origin, obj->position()) <= distance)
             {
-                // condition
-                return Vec2::Distance(origin, rhs) <= distance;
-            });
-
+                if constexpr(std::is_same<container_result, std::set<Transform *>>::value)
+                    result.insert(obj);
+                else
+                    result.emplace_back(obj);
+            }
+        }
         return result;
     }
-
     template RONIN_API std::list<Transform *> Physics2D::GetStormCast(Vec2, int, int);
     template RONIN_API std::list<Transform *> Physics2D::GetRectangleCast(Vec2, Vec2, int);
     template RONIN_API std::list<Transform *> Physics2D::GetCircleCast(Vec2, float, int);

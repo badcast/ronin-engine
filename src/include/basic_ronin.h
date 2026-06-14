@@ -90,8 +90,8 @@ namespace RoninEngine
 
     namespace Runtime::Matrix
     {
-        typedef RoninEngine::Runtime::Vec2Int matrix_key_t;
-        typedef std::map<int, std::unordered_map<matrix_key_t, std::set<RoninEngine::Runtime::Transform *>>> matrix_map_t;
+        class QuadTree;
+        typedef std::map<int, QuadTree*> matrix_map_t;
     } // namespace Runtime::Matrix
 
     namespace Runtime
@@ -327,8 +327,7 @@ namespace RoninEngine
         GroupResources *gid_get(bool local);
         SDL_Surface *private_load_surface(const void *memres, int size, bool local = false);
 
-        void storm_cast_eq_all(Vec2Int origin, int edges, std::function<void(const Vec2Int &)> predicate);
-        void storm_cast_eq_edges(Vec2Int origin, int edges, std::function<void(const Vec2Int &)> predicate);
+
 
         constexpr inline RoninPointer* RefNoFree(RoninPointer * object)
         {

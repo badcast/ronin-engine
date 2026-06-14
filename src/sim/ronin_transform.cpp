@@ -296,10 +296,10 @@ namespace RoninEngine::Runtime
 
     const Vec2 Transform::localPosition(Vec2 value)
     {
-        Vec2Int lastPoint = Matrix::matrix_get_key(_position);
+
         _position = (this->m_parent ? this->m_parent->_position + value : value);
         if(_owner->m_active)
-            Matrix::matrix_update(this, lastPoint);
+            Matrix::matrix_update(this);
         return value;
     }
 
@@ -317,7 +317,7 @@ namespace RoninEngine::Runtime
 
         if(_owner->m_active)
         {
-            Matrix::matrix_update(this, Matrix::matrix_get_key(lastPosition));
+            Matrix::matrix_update(this);
 
             Vec2 localPos = value - lastPosition;
             for(TransformRef& child : hierarchy)
@@ -382,7 +382,7 @@ namespace RoninEngine::Runtime
         else
         {
             // Add to matrix, for active object
-            Matrix::matrix_update(this, Matrix::matrix_get_key(Vec2::infinity));
+            Matrix::matrix_update(this);
         }
         // send in hierarchy
         for(TransformRef &chlid : hierarchy)
@@ -404,7 +404,7 @@ namespace RoninEngine::Runtime
 
         // Add to matrix, for active object
         if(_owner->m_active)
-            Matrix::matrix_update(this, Matrix::matrix_get_key(Vec2::infinity));
+            Matrix::matrix_update(this);
     }
 
     int Transform::zOrder() const

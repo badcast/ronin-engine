@@ -56,6 +56,22 @@ namespace RoninEngine
                 return x == 0 && y == 0 && w == 0 && h == 0;
             }
 
+            bool Intersects(const TRect<T> &other) const
+            {
+                return !(other.x >= x + w || 
+                         other.x + other.w <= x || 
+                         other.y >= y + h || 
+                         other.y + other.h <= y);
+            }
+
+            bool Contains(const TRect<T> &other) const
+            {
+                return (other.x >= x && 
+                        other.x + other.w <= x + w && 
+                        other.y >= y && 
+                        other.y + other.h <= y + h);
+            }
+
             TRect<T> operator+(const TRect<T> &rhs)
             {
                 return {this->x + rhs.x, this->y + rhs.y, this->w + rhs.w, this->h + rhs.h};
