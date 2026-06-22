@@ -12,7 +12,7 @@ namespace RoninEngine::Runtime
         float _angle_;
 
     protected:
-        std::list<TransformRef> hierarchy;
+        std::vector<TransformRef> hierarchy;
 
         void parent_notify_active_state(GameObjectRef from);
 
@@ -44,7 +44,7 @@ namespace RoninEngine::Runtime
         void childAdd(TransformRef child);
         void childRemove(TransformRef child);
 
-        std::list<TransformRef> GetChilds() const;
+        const std::vector<TransformRef>& GetChilds() const;
 
         // look forward axis from world coordinates
         const Vec2 forward() const;

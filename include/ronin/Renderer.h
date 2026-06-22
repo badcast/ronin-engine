@@ -16,6 +16,8 @@ namespace RoninEngine::Runtime
         Renderer(const std::string &name);
         Renderer(const Renderer &) = delete;
 
+        Renderer* get_renderer() override { return this; }
+
         virtual const Vec2 getSize() const = 0;
 
         virtual void setSize(const Vec2 &value) = 0;

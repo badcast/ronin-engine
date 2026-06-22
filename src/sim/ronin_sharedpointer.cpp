@@ -13,10 +13,7 @@ namespace RoninEngine::Runtime
            ////////////
     void RefReleaseSoft(RoninPointer* object)
     {
-        std::unordered_map<RoninPointer*, Ref<RoninPointer>>::iterator iter;
-        iter = currentWorld->irs->refPointers.find(object);
-        if(iter != currentWorld->irs->refPointers.end())
-            currentWorld->irs->refPointers.erase(iter);
+        // No longer needed
     }
 
     void RefReleaseHard(RoninPointer *object)
@@ -25,7 +22,7 @@ namespace RoninEngine::Runtime
             RoninMemory::free(object);
     }
 
-    RoninPointer::RoninPointer() : _handle(RefClassType::Shared)
+    RoninPointer::RoninPointer() : _handle(RefClassType::Shared), _ref_count_intrusive(0)
     {}
 
     RoninPointer::~RoninPointer()
@@ -41,12 +38,7 @@ namespace RoninEngine::Runtime
         return _handle != RefClassType::Null;
     }
 
-    void RoninPointer::RefRegister(Ref<RoninPointer> noninitref)
-    {
-        if(currentWorld == nullptr || currentWorld->irs == nullptr || !noninitref)
-            return;
-        currentWorld->irs->refPointers[static_cast<RoninPointer*>(noninitref.ptr_)] = noninitref;
-    }
+    // RefRegister removed
 
     template<>
     Ref<RoninPointer> RoninPointer::GetRef()
@@ -58,9 +50,7 @@ namespace RoninEngine::Runtime
     {
         if(pointer)
         {
-            std::unordered_map<RoninPointer*, Ref<RoninPointer>>::iterator iter = currentWorld->irs->refPointers.find(pointer);
-            if(iter != currentWorld->irs->refPointers.end())
-                return iter->second;
+            return Ref<RoninPointer>(pointer);
         }
         return nullptr;
     }

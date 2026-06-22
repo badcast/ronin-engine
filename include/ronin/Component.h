@@ -30,6 +30,9 @@ namespace RoninEngine::Runtime
          */
         bool enable() const;
 
+        virtual class Renderer* get_renderer() { return nullptr; }
+        virtual class Light* get_light_component() { return nullptr; }
+
         /**
          * @brief Set the enable state of the component.
          * @param value True to enable the component, false to disable it.

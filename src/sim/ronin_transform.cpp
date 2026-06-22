@@ -13,7 +13,8 @@ namespace RoninEngine::Runtime
         {
             child->m_parent = newParent->GetRef<Transform>();
         }
-        newParent->hierarchy.merge(oldParent->hierarchy);
+        newParent->hierarchy.insert(newParent->hierarchy.end(), oldParent->hierarchy.begin(), oldParent->hierarchy.end());
+        oldParent->hierarchy.clear();
     }
 
     void hierarchy_parent_change(TransformRef from, TransformRef newParent)
@@ -39,7 +40,7 @@ namespace RoninEngine::Runtime
     {
         if(who->m_parent.ptr_ != parent)
             return;
-        std::list<TransformRef>::iterator iter = std::find(parent->hierarchy.begin(), parent->hierarchy.end(), who->GetRef<Transform>());
+        auto iter = std::find(parent->hierarchy.begin(), parent->hierarchy.end(), who->GetRef<Transform>());
         if(iter == parent->hierarchy.end())
             return;
         parent->hierarchy.erase(iter);
@@ -57,8 +58,8 @@ namespace RoninEngine::Runtime
 
     void hierarchy_append(TransformRef parent, TransformRef who)
     {
-        auto iter = find_if(begin(parent->hierarchy), std::end(parent->hierarchy), std::bind(std::equal_to<TransformRef>(), std::placeholders::_1, who->GetRef<Transform>()));
-        if(iter == end(parent->hierarchy))
+        auto iter = std::find(parent->hierarchy.begin(), parent->hierarchy.end(), who->GetRef<Transform>());
+        if(iter == parent->hierarchy.end())
         {
             who->m_parent = parent;
             parent->hierarchy.emplace_back(who);
@@ -67,26 +68,19 @@ namespace RoninEngine::Runtime
 
     void hierarchy_sibiling(Transform *parent, Transform *who, int index)
     {
-        // TODO: Set sibling for Transform component
-        std::list<TransformRef>::iterator __off_pos, __target, __end = std::end(parent->hierarchy);
-        __off_pos = __target = __end;
-        for(auto iter = std::begin(parent->hierarchy); (__off_pos == __end || __target == __end) && iter != __end; ++iter)
+        if (index < 0 || index >= parent->hierarchy.size())
+            return;
+        auto iter = std::find(parent->hierarchy.begin(), parent->hierarchy.end(), who->GetRef<Transform>());
+        if (iter != parent->hierarchy.end())
         {
-            if(__off_pos != __end)
+            auto target = parent->hierarchy.begin() + index;
+            if (iter != target)
             {
-                if(index == 0)
-                    __off_pos = iter;
-                --index;
-            }
-
-            if(__target != __end)
-            {
-                if((*iter).ptr_ == who)
-                    __target = iter;
+                TransformRef val = *iter;
+                parent->hierarchy.erase(iter);
+                parent->hierarchy.insert(parent->hierarchy.begin() + index, val);
             }
         }
-        if(__target != __end && __off_pos != __end)
-            std::swap(__off_pos, __target); // set sibling
     }
 
     Transform::Transform() : Transform(DESCRIBE_AS_MAIN_OFF(Transform))
@@ -107,19 +101,9 @@ namespace RoninEngine::Runtime
 
     TransformRef Transform::childOf(int index)
     {
-        if(index < 0 || childCount() < index)
+        if(index < 0 || childCount() <= index)
             throw std::out_of_range("index");
-        auto iter = begin(hierarchy);
-        for(int x = 0; iter != end(hierarchy); ++x)
-        {
-            if(x == index)
-            {
-                return *iter;
-                break;
-            }
-        }
-
-        return nullptr;
+        return hierarchy[index];
     }
 
     bool Transform::childContain(TransformRef child)
@@ -137,7 +121,7 @@ namespace RoninEngine::Runtime
         hierarchy_child_remove(this, child.ptr_);
     }
 
-    std::list<TransformRef> Transform::GetChilds() const
+    const std::vector<TransformRef>& Transform::GetChilds() const
     {
         return hierarchy;
     }
@@ -168,29 +152,11 @@ namespace RoninEngine::Runtime
     {
         float a = Vec2::Angle(axis, target - _position) * Math::rad2deg;
 
-        // FIXME: Using Atan2 for replaced than
+        Vec2 dir = target - _position;
+        float cross = axis.x * dir.y - axis.y * dir.x;
+        if(cross > 0)
+            a = -a;
 
-        // normalize
-        if(axis.x == 1)
-        {
-            if(_position.y < target.y)
-                a = -a;
-        }
-        else if(axis.x == -1)
-        {
-            if(_position.y > target.y)
-                a = -a;
-        }
-        if(axis.y == 1)
-        {
-            if(_position.x > target.x)
-                a = -a;
-        }
-        else if(axis.y == -1)
-        {
-            if(_position.x < target.x)
-                a = -a;
-        }
         angle(a);
     }
 
@@ -310,7 +276,10 @@ namespace RoninEngine::Runtime
 
     const Vec2 Transform::position(Vec2 value)
     {
-        Vec2 lastPosition = _position;
+        if (_position == value)
+            return value;
+
+        Vec2 localPos = value - _position;
 
         // set the new position
         _position = value;
@@ -319,10 +288,18 @@ namespace RoninEngine::Runtime
         {
             Matrix::matrix_update(this);
 
-            Vec2 localPos = value - lastPosition;
-            for(TransformRef& child : hierarchy)
+            if(localPos != Vec2::zero)
             {
-                child->position(child->_position + localPos);
+                std::vector<TransformRef> descendants = hierarchy;
+                for(size_t i = 0; i < descendants.size(); ++i)
+                {
+                    TransformRef child = descendants[i];
+                    child->_position += localPos;
+                    if(child->_owner->m_active)
+                        Matrix::matrix_update(child.ptr_);
+                    for(TransformRef& gc : child->hierarchy)
+                        descendants.push_back(gc);
+                }
             }
         }
         return value;
@@ -335,30 +312,28 @@ namespace RoninEngine::Runtime
 
     void Transform::angle(float value)
     {
-        // Formulas:
-        // 1. For get local position  = child.position - parent.position
-        // 2. For get absolute position = parent.position + (child.position - parent.position)
-        float angle1;
-
         if(_angle_ == value || !_owner->m_active)
             return;
 
-        angle1 = _angle_;
+        float diffAngle = _angle_ - value;
+        float diffRad = diffAngle * Math::deg2rad;
         _angle_ = value;
 
-        // Difference
-        value = angle1 - value;
-        angle1 = value * Math::deg2rad;
-
-        // FIXME: BUG! Hierarchy O(n^2) Frozing of the change position (Recursive)
-
-        for(TransformRef &child : hierarchy)
+        std::vector<TransformRef> descendants = hierarchy;
+        for(size_t i = 0; i < descendants.size(); ++i)
         {
-            // update child position
-            child->position(Vec2::RotateAround(_position, child->_position - _position, angle1));
-
+            TransformRef child = descendants[i];
+            
+            // update child position rotated around parent
+            child->_position = Vec2::RotateAround(_position, child->_position - _position, diffRad);
             // update child angle
-            child->angle(child->_angle_ - value);
+            child->_angle_ -= diffAngle;
+            
+            if(child->_owner->m_active)
+                Matrix::matrix_update(child.ptr_);
+            
+            for(TransformRef& gc : child->hierarchy)
+                descendants.push_back(gc);
         }
     }
 
@@ -458,20 +433,13 @@ namespace RoninEngine::Runtime
 
     std::vector<TransformRef> Transform::GetAllTransforms()
     {
-        TransformRef current;
-        std::vector<TransformRef> result {};
-        std::queue<TransformRef> queue {};
-        queue.push(this->GetRef<Transform>());
-        while(!queue.empty())
+        std::vector<TransformRef> result;
+        result.push_back(this->GetRef<Transform>());
+        for(size_t i = 0; i < result.size(); ++i)
         {
-            current = queue.front();
-            queue.pop();
-
-            result.push_back(current);
-
-            for(TransformRef& child : current->hierarchy)
+            for(TransformRef& child : result[i]->hierarchy)
             {
-                queue.push(child);
+                result.push_back(child);
             }
         }
         return result;

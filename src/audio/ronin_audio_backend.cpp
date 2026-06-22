@@ -167,12 +167,14 @@ namespace RoninEngine::Runtime
     {
         if(clip == nullptr || clip->mix_chunk == nullptr)
             return -1;
-        //        double duration = static_cast<double>(clip->mix_chunk->alen) / (MIX_DEFAULT_FORMAT);
-        //        return duration;
 
-        // double duration = (static_cast<double>(clip->mix_chunk->alen) / MIX_DEFAULT_FREQUENCY);
-
-        throw RoninEngine::Exception::ronin_implementation_error();
+        int frequency, channels;
+        Uint16 format;
+        if (Mix_QuerySpec(&frequency, &format, &channels) != 0) {
+            int bytes_per_sample = (format & 0xFF) / 8;
+            double duration = static_cast<double>(clip->mix_chunk->alen) / (frequency * channels * bytes_per_sample);
+            return duration;
+        }
 
         return -1;
     }

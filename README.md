@@ -22,6 +22,13 @@ RoninEngine is a powerful game engine for developing games and user interfaces i
 
 - **Create your own games and GUI**: RoninEngine provides the capability to create not just games but also custom user interfaces (GUI).
 
+## Recent Updates (Последние обновления)
+
+- **Инвазивный подсчет ссылок (`Ref<>`)**: Значительно повышена производительность за счет удаления глобальных словарей (`std::unordered_map`). Теперь подсчет ссылок встроен непосредственно в базовый класс `RoninPointer`, что делает операции O(1).
+- **Оптимизация рендеринга (`Camera2D::renderer`)**: Отрисовка 2D-объектов ускорена благодаря замене медленного `dynamic_cast` на виртуальные методы (`get_renderer()`).
+- **Система освещения (Light System)**: Добавлены базовые компоненты освещения: `SimpleLight`, `Spotlight` и `DirectLight`. Интегрировано в пайплайн 2D-рендеринга.
+- **Исправление `RoninAudio`**: Корректное определение длительности аудио-клипов с использованием `Mix_QuerySpec` и точного размера сэмплов.
+
 ## Getting Started
 
 1. **Install Dependencies**: Before using RoninEngine, ensure you have all the necessary dependencies installed.

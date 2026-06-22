@@ -91,18 +91,26 @@ namespace RoninEngine::Runtime
         std::set<Transform*> visibleTransforms;
         Matrix::matrix_get_intersects(camRect, visibleTransforms);
 
+        std::vector<Light*> visibleLights;
+
         for (Transform* transform_object : visibleTransforms)
         {
             for(ComponentRef &component : transform_object->_owner->m_components)
             {
-                Renderer *render_iobject;
-                if(!component->_enable || (render_iobject = dynamic_cast<Renderer *>(component.ptr_)) == nullptr
-                   || render_iobject->_owner == nullptr)
-                {
+                if (!component->_enable)
                     continue;
+
+                Renderer *render_iobject = component->get_renderer();
+                if (render_iobject && render_iobject->_owner)
+                {
+                    params.orders[render_iobject->_owner->m_zOrder].push_back(render_iobject);
                 }
 
-                params.orders[render_iobject->_owner->m_zOrder].push_back(render_iobject);
+                Light *light_object = component->get_light_component();
+                if (light_object && light_object->_owner)
+                {
+                    visibleLights.push_back(light_object);
+                }
             }
         }
 
@@ -140,35 +148,25 @@ namespace RoninEngine::Runtime
             layer->second.clear();
         }
 
-               // TODO: Render light
-        /*
-                // Render Lights
-                for (auto lightSource : *std::get<1>(filter)) {
-                    // drawing
-                    // clear
-                    memset(&wrapper, 0, sizeof wrapper);
+        // Render Lights
+        for (Light* lightSource : visibleLights)
+        {
+            memset(&(params.wrapper), 0, sizeof(params.wrapper));
+            lightSource->get_light_source(&(params.wrapper));
 
-                         lightSource->get_light_source(&wrapper); // draw
+            if (params.wrapper.texture)
+            {
+                params.sourcePoint = lightSource->transform()->position();
 
-                              if (wrapper.texture) {
-                                  Vec2 point = transform()->position();
-                                  sourcePoint = lightSource->transform()->position();
+                params.wrapper.dst.w *= currentWorld->irs->metricPixelsPerPoint.x * camera->res->scale.x;
+                params.wrapper.dst.h *= currentWorld->irs->metricPixelsPerPoint.y * camera->res->scale.y;
 
-                                       wrapper.dst.w *= pixelsPerPoint;
+                params.wrapper.dst.x += ((gscope.activeResolution.width - params.wrapper.dst.w) / 2.0f - (params.camera_position.x - params.sourcePoint.x) * currentWorld->irs->metricPixelsPerPoint.x * camera->res->scale.x);
+                params.wrapper.dst.y += ((gscope.activeResolution.height - params.wrapper.dst.h) / 2.0f + (params.camera_position.y - params.sourcePoint.y) * currentWorld->irs->metricPixelsPerPoint.y * camera->res->scale.y);
 
-                                          wrapper.dst.h *= pixelsPerPoint;
-
-                                             // h
-                                             wrapper.dst.x += ((rect.w - wrapper.dst.w) / 2.0f - (point.x - sourcePoint.x) * pixelsPerPoint);
-                                             // v
-                                             wrapper.dst.y += ((rect.h - wrapper.dst.h) / 2.0f + (point.y - sourcePoint.y) * pixelsPerPoint);
-
-                                                SDL_RenderCopyExF(renderer, wrapper.texture, reinterpret_cast<SDL_Rect*>(&wrapper.src),
-                                   reinterpret_cast<SDL_FRect*>(&wrapper.dst), lightSource->transform()->_angle_ - transform()->_angle_,
-                                   nullptr, SDL_RendererFlip::SDL_FLIP_NONE);
-                                            }
-                                        }
-                                */
+                SDL_RenderCopyExF(gscope.renderer, params.wrapper.texture, reinterpret_cast<SDL_Rect*>(&(params.wrapper.src)), reinterpret_cast<SDL_FRect*>(&(params.wrapper.dst)), lightSource->transform()->_angle_, nullptr, SDL_RendererFlip::SDL_FLIP_NONE);
+            }
+        }
         if(camera->visibleBorders)
         {
             float offset = 25 * std::max(1 - Time::deltaTime(), 0.1f);

@@ -56,7 +56,6 @@ namespace RoninEngine
             Ref<T> result { currentInstance };
             if(currentInstance)
             {
-                RoninPointer::RefRegister(StaticCast<RoninPointer>(result));
             }
 
             if constexpr(std::is_same_v<T, GameObject>)

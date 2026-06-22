@@ -20,11 +20,12 @@ namespace RoninEngine
         {
             template<typename T>
             friend class Ref;
+        public:
+            int _ref_count_intrusive;
         protected:
             int _handle;
             static void instance_end(RoninPointer*);
             static Ref<RoninPointer> GetRefMain(RoninPointer*);
-            static void RefRegister(Ref<RoninPointer>);
         public:
             RoninPointer();
             virtual ~RoninPointer();
@@ -73,7 +74,6 @@ namespace RoninEngine
             explicit operator bool() const;
         private:
             T *ptr_;
-            std::size_t *ref_count_;
             void release();
         };
 

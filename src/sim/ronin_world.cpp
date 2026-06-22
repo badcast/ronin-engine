@@ -51,7 +51,7 @@ namespace RoninEngine
             std::list<TransformRef> stacks;
             while(target)
             {
-                stacks.merge(target->hierarchy);
+                stacks.insert(stacks.end(), target->hierarchy.begin(), target->hierarchy.end());
                 sepuku_GameObject(target->_owner, nullptr);
                 if(stacks.empty())
                 {
@@ -244,25 +244,11 @@ namespace RoninEngine
     }
 
     std::uint64_t World::StatCountRefLinks(){
-        std::uint64_t retval = 0;
-        if(irs)
-        {
-            retval = irs->refPointers.size();
-        }
-        return retval;
+        return 0; // Deprecated due to intrusive Ref counting
     }
 
     std::uint64_t World::StatMaxRefDepth(){
-        std::uint64_t retval = 0;
-        if(irs)
-        {
-            for(auto & refkey : this->irs->refPointers)
-            {
-                if(refkey.second.ref_count_)
-                    retval = Math::Max(retval, *refkey.second.ref_count_);
-            }
-        }
-        return retval;
+        return 0; // Deprecated due to intrusive Ref counting
     }
 
     std::string World::GetTreeOfHierarchy() const

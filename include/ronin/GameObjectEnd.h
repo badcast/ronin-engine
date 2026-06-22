@@ -14,7 +14,6 @@ namespace RoninEngine
 
             // init component
             ComponentRef component { RoninMemory::alloc<T>() };
-            RefRegister(StaticCast<RoninPointer>(component));
             AddComponent(component);
 
             if constexpr(std::is_base_of_v<Behaviour, T>)

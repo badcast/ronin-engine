@@ -10,9 +10,7 @@ namespace RoninEngine::Runtime
         Ref<T> retval;
         if((retval.ptr_ = reinterpret_cast<T*>(input.ptr_)))
         {
-            retval.ref_count_ = input.ref_count_;
-            if(retval.ref_count_)
-                (*retval.ref_count_)++;
+            retval.ptr_->_ref_count_intrusive++;
         }
         return retval;
     }
@@ -23,9 +21,7 @@ namespace RoninEngine::Runtime
         Ref<T> retval;
         if((retval.ptr_ = dynamic_cast<T*>(input.ptr_)))
         {
-            retval.ref_count_ = input.ref_count_;
-            if(retval.ref_count_)
-                (*retval.ref_count_)++;
+            retval.ptr_->_ref_count_intrusive++;
         }
         return retval;
     }
@@ -36,43 +32,40 @@ namespace RoninEngine::Runtime
         Ref<T> retval;
         if((retval.ptr_ = static_cast<T*>(input.ptr_)))
         {
-            retval.ref_count_ = input.ref_count_;
-            if(retval.ref_count_)
-                (*retval.ref_count_)++;
+            retval.ptr_->_ref_count_intrusive++;
         }
         return retval;
     }
 
     template <typename T>
-    Ref<T>::Ref() noexcept : ptr_(nullptr), ref_count_(nullptr)
+    Ref<T>::Ref() noexcept : ptr_(nullptr)
     {
     }
 
     template <typename T>
-    Ref<T>::Ref(std::nullptr_t) noexcept : ptr_(nullptr), ref_count_(nullptr)
+    Ref<T>::Ref(std::nullptr_t) noexcept : ptr_(nullptr)
     {
     }
 
     template <typename T>
-    Ref<T>::Ref(const Ref &other) noexcept : ptr_(other.ptr_), ref_count_(other.ref_count_)
+    Ref<T>::Ref(const Ref &other) noexcept : ptr_(other.ptr_)
     {
-        if(ref_count_)
-            (*ref_count_)++;
+        if(ptr_)
+            ptr_->_ref_count_intrusive++;
     }
 
     template <typename T>
-    Ref<T>::Ref(Ref &&other) noexcept : ptr_(other.ptr_), ref_count_(other.ref_count_)
+    Ref<T>::Ref(Ref &&other) noexcept : ptr_(other.ptr_)
     {
         other.ptr_ = nullptr;
-        other.ref_count_ = nullptr;
     }
 
     template<typename T>
     Ref<T>::Ref(T* ptr) noexcept : ptr_(ptr)
     {
-        if(ptr)
+        if(ptr_)
         {
-            ref_count_ = new std::size_t(1);
+            ptr_->_ref_count_intrusive++;
         }
     }
 
@@ -95,9 +88,8 @@ namespace RoninEngine::Runtime
         {
             release();
             ptr_ = other.ptr_;
-            ref_count_ = other.ref_count_;
-            if(ref_count_)
-                ++(*ref_count_);
+            if(ptr_)
+                ptr_->_ref_count_intrusive++;
         }
         return *this;
     }
@@ -109,9 +101,7 @@ namespace RoninEngine::Runtime
         {
             release();
             ptr_ = other.ptr_;
-            ref_count_ = other.ref_count_;
             other.ptr_ = nullptr;
-            other.ref_count_ = nullptr;
         }
         return *this;
     }
@@ -204,17 +194,12 @@ namespace RoninEngine::Runtime
     template <typename T>
     void Ref<T>::release()
     {
-        if(ref_count_ && !(--(*ref_count_)))
+        if(ptr_ && !(--(ptr_->_ref_count_intrusive)))
         {
-            if constexpr (std::is_base_of_v<RoninPointer, T>)
-            {
-                RoninPointer::instance_end(ptr_);
-            }
-            delete ref_count_;
+            RoninPointer::instance_end(ptr_);
         }
 
         ptr_ = nullptr;
-        ref_count_ = nullptr;
     }
 
     template <typename T>

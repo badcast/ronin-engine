@@ -254,8 +254,7 @@ namespace RoninEngine
             // destroyed queue object
             int _destroyedGameObject;
 
-            // Collection of Refs
-            std::unordered_map<RoninPointer*, Ref<RoninPointer>> refPointers;
+            // Pointer refs (removed for intrusive Ref counting)
 
             // Script Behaviours
             std::map<GameObject::BindType, std::set<Behaviour*>> runtimeScriptBinders;
