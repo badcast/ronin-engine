@@ -123,38 +123,34 @@ namespace RoninEngine::Runtime
     Vec2 Vec2::Slerp(const Vec2 &lhs, const Vec2 &rhs, float t)
     {
         t = Math::Clamp01(t);
-
-        Vec2 a_norm = lhs.normalized();
-        Vec2 b_norm = rhs.normalized();
-
-        float dot = Dot(a_norm, b_norm);
-        float theta = std::acos(dot);
-
-        if(std::abs(theta) < 0.001f)
-        {
-            return Lerp(lhs, rhs, t);
-        }
-
-        float sin_theta = std::sin(theta);
-        float a_coeff = std::sin((1 - t) * theta) / sin_theta;
-        float b_coeff = std::sin(t * theta) / sin_theta;
-
-        return a_norm * a_coeff + b_norm * b_coeff;
+        return SlerpUnclamped(lhs, rhs, t);
     }
 
     Vec2 Vec2::SlerpUnclamped(const Vec2 &lhs, const Vec2 &rhs, float t)
     {
-        Vec2 a_norm = lhs.normalized();
-        Vec2 b_norm = rhs.normalized();
+        float lhsMag = lhs.magnitude();
+        float rhsMag = rhs.magnitude();
+        if(lhsMag < 1e-5f || rhsMag < 1e-5f)
+            return LerpUnclamped(lhs, rhs, t);
 
-        float dot = Dot(a_norm, b_norm);
+        Vec2 a_norm = lhs / lhsMag;
+        Vec2 b_norm = rhs / rhsMag;
+
+        float dot = Math::Clamp(Dot(a_norm, b_norm), -1.0f, 1.0f);
         float theta = std::acos(dot);
 
+        if(std::abs(theta) < 0.001f)
+            return LerpUnclamped(lhs, rhs, t);
+
         float sin_theta = std::sin(theta);
-        float a_coeff = std::sin((1 - t) * theta) / sin_theta;
+        if(std::abs(sin_theta) < 1e-5f)
+            return LerpUnclamped(lhs, rhs, t);
+
+        float a_coeff = std::sin((1.0f - t) * theta) / sin_theta;
         float b_coeff = std::sin(t * theta) / sin_theta;
 
-        return a_norm * a_coeff + b_norm * b_coeff;
+        float mag = Math::LerpUnclamped(lhsMag, rhsMag, t);
+        return (a_norm * a_coeff + b_norm * b_coeff) * mag;
     }
 
     Vec2 Vec2::Lerp(const Vec2 &lhs, const Vec2 &rhs, float t)
@@ -251,10 +247,10 @@ namespace RoninEngine::Runtime
 
     Vec2 Vec2::SmoothDamp(const Vec2 &current, Vec2 target, Vec2 &currentVelocity, float smoothTime, float maxSpeed, float deltaTime)
     {
-        smoothTime = Math::Max(0.f, Math::Max(0001.f, smoothTime));
+        smoothTime = Math::Max(0.0001f, smoothTime);
         float n0 = 2 / smoothTime;
         float n1 = n0 * deltaTime;
-        float d = 1 / (1 + n1 + 0, 48 * n1 * n1 + 0, 235 * n1 * n1 * n1);
+        float d = 1.0f / (1.0f + n1 + 0.48f * n1 * n1 + 0.235f * n1 * n1 * n1);
         Vec2 vector = current - target;
         Vec2 vector2 = target;
         float maxLength = maxSpeed * smoothTime;
@@ -283,14 +279,14 @@ namespace RoninEngine::Runtime
 
     Vec2 Vec2::Round(Vec2 lhs)
     {
-        lhs.x = (float) static_cast<int>(lhs.x);
-        lhs.y = (float) static_cast<int>(lhs.y);
+        lhs.x = Math::Round(lhs.x);
+        lhs.y = Math::Round(lhs.y);
         return lhs;
     }
 
     Vec2Int Vec2::RoundToInt(const Vec2 &lhs)
     {
-        return {static_cast<int>(lhs.x), static_cast<int>(lhs.y)};
+        return {static_cast<int>(Math::Round(lhs.x)), static_cast<int>(Math::Round(lhs.y))};
     }
 
     bool Vec2::HasIntersection(const Vec2 &p, const Rectf &r)
@@ -315,8 +311,10 @@ namespace RoninEngine::Runtime
     {
         float Sin = Math::Sin(angleRadian);
         float Cos = Math::Cos(angleRadian);
-        position.x = position.x * Cos - position.y * Sin;
-        position.y = position.x * Sin + position.y * Cos;
+        float px = position.x;
+        float py = position.y;
+        position.x = px * Cos - py * Sin;
+        position.y = px * Sin + py * Cos;
         return position;
     }
 
@@ -324,8 +322,10 @@ namespace RoninEngine::Runtime
     {
         float Sin = Math::Sin(angleRadian);
         float Cos = Math::Cos(angleRadian);
-        center.x = localPosition.x * Cos - localPosition.y * Sin + center.x;
-        center.y = localPosition.x * Sin + localPosition.y * Cos + center.y;
+        float lx = localPosition.x;
+        float ly = localPosition.y;
+        center.x = lx * Cos - ly * Sin + center.x;
+        center.y = lx * Sin + ly * Cos + center.y;
         return center;
     }
 
@@ -333,8 +333,10 @@ namespace RoninEngine::Runtime
     {
         float Cos = Math::Cos(angleRadian);
         float Sin = Math::Sin(angleRadian);
-        position.x = position.x * Cos + position.y * Sin;
-        position.y = -position.x * Sin + position.y * Cos;
+        float px = position.x;
+        float py = position.y;
+        position.x = px * Cos + py * Sin;
+        position.y = -px * Sin + py * Cos;
         return position;
     }
 
@@ -350,7 +352,10 @@ namespace RoninEngine::Runtime
 
     bool Vec2::LookRotation(Vec2 from, Transform *to, float angleRadian)
     {
-        float angle = Vec2::Angle(to->_position - from, to->_position - to->forward());
+        if(!to)
+            return false;
+        Vec2 dirToFrom = (from - to->position()).normalized();
+        float angle = Vec2::Angle(dirToFrom, to->forward());
         return angle <= angleRadian;
     }
 
@@ -411,8 +416,7 @@ namespace RoninEngine::Runtime
 
     RONIN_API bool operator==(const Vec2Int &lhs, const Vec2 &rhs)
     {
-        // return rhs.x == lhs.x && rhs.y == lhs.y;
-        return Vec2 {rhs} == rhs;
+        return Vec2(lhs.x, lhs.y) == rhs;
     }
 
     RONIN_API bool operator!=(const Vec2Int &lhs, const Vec2 &rhs)

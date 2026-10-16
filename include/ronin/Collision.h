@@ -21,5 +21,7 @@ namespace RoninEngine::Runtime
         Collision(const Collision &);
 
         bool setSizeFrom(SpriteRendererRef spriteRenderer);
+
+        static bool CheckCollision(Rectf rectA, float angleRadA, Rectf rectB, float angleRadB);
     };
 } // namespace RoninEngine::Runtime

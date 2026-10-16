@@ -11,26 +11,22 @@ namespace RoninEngine
     // origin = 2 - max
     int enter_resolution(SDL_DisplayMode *mode, int origin = 0)
     {
-        int result;
+        int result = -1;
         int selDisplay;
-        for(;;)
+        if(gscope.activeWindow == nullptr)
+            selDisplay = SDL_GetNumVideoDisplays() > 0 ? 0 : -1;
+        else
+            selDisplay = SDL_GetWindowDisplayIndex(gscope.activeWindow);
+
+        if(selDisplay != -1)
         {
-            if(gscope.activeWindow == nullptr)
-                result = SDL_GetNumVideoDisplays() > 0 ? 0 : -1;
-            else
-                result = SDL_GetWindowDisplayIndex(gscope.activeWindow);
-
-            if((selDisplay = result) != -1)
+            int numModes = SDL_GetNumDisplayModes(selDisplay);
+            if(numModes > 0)
             {
-                result = SDL_GetNumDisplayModes(result);
-
-                if(result > 0)
-                {
-                    int ndex = origin == 2 ? 0 : origin == 1 ? (result / 2 - 1) : result - 1;
-                    result = SDL_GetDisplayMode(selDisplay, ndex, mode);
-                }
+                int ndex = origin == 2 ? 0 : origin == 1 ? std::max(0, numModes / 2) : numModes - 1;
+                ndex = std::max(0, std::min(numModes - 1, ndex));
+                result = SDL_GetDisplayMode(selDisplay, ndex, mode);
             }
-            break;
         }
         return result;
     }
@@ -42,7 +38,7 @@ namespace RoninEngine
 
     Resolution Resolution::GetMaxResolution()
     {
-        SDL_DisplayMode mode;
+        SDL_DisplayMode mode {0, 1920, 1080, 60, nullptr};
         if(enter_resolution(&mode, 2) < 0)
         {
             RoninSimulator::ShowMessageFail(SDL_GetError());
@@ -52,7 +48,7 @@ namespace RoninEngine
 
     Resolution Resolution::GetMinResolution()
     {
-        SDL_DisplayMode mode;
+        SDL_DisplayMode mode {0, 640, 480, 60, nullptr};
         if(enter_resolution(&mode, 0) < 0)
         {
             RoninSimulator::ShowMessageFail(SDL_GetError());
@@ -62,7 +58,7 @@ namespace RoninEngine
 
     Resolution Resolution::GetMidResolution()
     {
-        SDL_DisplayMode mode;
+        SDL_DisplayMode mode {0, 1280, 720, 60, nullptr};
         if(enter_resolution(&mode, 1) < 0)
         {
             RoninSimulator::ShowMessageFail(SDL_GetError());

@@ -46,9 +46,9 @@ namespace RoninEngine::Runtime
         return (local ? &(currentWorld->irs->externalLocalResources) : external_global_resources);
     }
 
-    constexpr GroupResources *get_resource(ResId id)
+    inline GroupResources *get_resource(ResId id)
     {
-        return (id & RES_LOCAL_FLAG) ? &(currentWorld->irs->externalLocalResources) : external_global_resources;
+        return (id & RES_LOCAL_FLAG) ? (currentWorld && currentWorld->irs ? &(currentWorld->irs->externalLocalResources) : nullptr) : external_global_resources;
     }
 
     void *make_private_resource(void *memory, bool local)
@@ -115,13 +115,14 @@ namespace RoninEngine::Runtime
 
     std::pair<std::size_t, void *> stream_to_mem(std::istream &stream)
     {
-        std::size_t sz;
+        std::size_t sz = 0;
         char *memory = nullptr;
         stream.seekg(0, std::ios_base::end);
-        sz = stream.tellg();
+        std::streampos endPos = stream.tellg();
         stream.seekg(0, std::ios_base::beg);
-        if(sz == 0)
+        if(endPos > 0)
         {
+            sz = static_cast<std::size_t>(endPos);
             memory = static_cast<char *>(RoninMemory::mem_alloc(sz));
 
             if(memory == nullptr)
@@ -133,6 +134,10 @@ namespace RoninEngine::Runtime
                 ronin_warn("peek size is not an equals reads != peekSize");
                 sz = reads;
             }
+        }
+        else if(endPos == 0)
+        {
+            return std::make_pair(0, nullptr);
         }
         else
         {
@@ -264,7 +269,7 @@ namespace RoninEngine::Runtime
 
         if(!file)
         {
-            ronin_err(std::string("Music: \"" + path + "\" can not load").c_str());
+            ronin_err(std::string("Image: \"" + path + "\" can not load").c_str());
             return RES_INVALID;
         }
 
@@ -282,7 +287,7 @@ namespace RoninEngine::Runtime
 
         if(!file)
         {
-            ronin_err(std::string("music stream \"" + path + "\" can not load").c_str());
+            ronin_err(std::string("AudioClip: \"" + path + "\" can not load").c_str());
             return RES_INVALID;
         }
 
@@ -306,8 +311,9 @@ namespace RoninEngine::Runtime
     {
         if(resource == RES_INVALID)
             return nullptr;
-        GroupResources *gid;
-        gid = get_resource(resource);
+        GroupResources *gid = get_resource(resource);
+        if(!gid)
+            return nullptr;
         resource &= ~RES_LOCAL_FLAG;
         if(resource >= gid->gid_surfaces.size())
             return nullptr;
@@ -319,6 +325,8 @@ namespace RoninEngine::Runtime
         if(resource == RES_INVALID)
             return nullptr;
         GroupResources *gid = get_resource(resource);
+        if(!gid)
+            return nullptr;
         resource &= ~RES_LOCAL_FLAG;
         if(resource >= gid->gid_audio_clips.size())
             return nullptr;
@@ -330,6 +338,8 @@ namespace RoninEngine::Runtime
         if(resource == RES_INVALID)
             return nullptr;
         GroupResources *gid = get_resource(resource);
+        if(!gid)
+            return nullptr;
         resource &= ~RES_LOCAL_FLAG;
         if(resource >= gid->gid_music_clips.size())
             return nullptr;

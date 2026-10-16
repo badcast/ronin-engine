@@ -1,4 +1,4 @@
-﻿#include "ronin.h"
+#include "ronin.h"
 
 #ifdef OVERRIDE_LIBBRAINMAP
 #include <brain_map.hpp>
@@ -77,23 +77,40 @@ namespace RoninEngine::AI
 
     Neuron *NavMesh::get(const Vec2 &worldPoint)
     {
-        Vec2Int p {Math::Number(static_cast<float>(shedule->_xsize) / 2 + worldPoint.x / worldScale.x), Math::Number(static_cast<float>(shedule->_ysize) / 2 - worldPoint.y / worldScale.y)};
-
-        return get(p);
+        return get(WorldPointToPoint(worldPoint));
     }
 
     Neuron *NavMesh::get(const Vec2 &worldPoint, Vec2Int &outPoint)
     {
-        outPoint.x = Math::Round(shedule->_xsize / 2 + (worldPoint.x + worldOffset.x) / worldScale.x);
-        outPoint.y = Math::Round(shedule->_ysize / 2 - (worldPoint.y + worldOffset.y) / worldScale.y);
+        outPoint = WorldPointToPoint(worldPoint);
         return get(outPoint);
+    }
+
+    Neuron *NavMesh::operator[](const Runtime::Vec2Int &point)
+    {
+        return get(point);
+    }
+
+    Runtime::Vec2Int NavMesh::FindFreeSpace(const Runtime::Vec2Int &origin, int maxEdges)
+    {
+        Runtime::Vec2Int found = origin;
+        bool hasFound = false;
+        Physics2D::SimulateStorm(origin, maxEdges, [&](const Runtime::Vec2Int &p)
+        {
+            if(!hasFound && Contains(p) && !hasLocked(p))
+            {
+                found = p;
+                hasFound = true;
+            }
+        }, true);
+        return found;
     }
 
     const Vec2Int NavMesh::WorldPointToPoint(const Vec2 &worldPoint)
     {
         Vec2Int p;
-        p.x = Math::Round(shedule->_xsize / 2 + (worldPoint.x + worldOffset.x) / worldScale.x);
-        p.y = Math::Round(shedule->_ysize / 2 - (worldPoint.y + worldOffset.y) / worldScale.y);
+        p.x = static_cast<int>(Math::Round(shedule->_xsize / 2.0f + (worldPoint.x + worldOffset.x) / worldScale.x));
+        p.y = static_cast<int>(Math::Round(shedule->_ysize / 2.0f - (worldPoint.y + worldOffset.y) / worldScale.y));
         return p;
     }
 

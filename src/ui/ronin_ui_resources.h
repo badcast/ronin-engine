@@ -7,6 +7,13 @@ namespace RoninEngine::UI
 {
     using namespace RoninEngine::Runtime;
 
+    enum
+    {
+        ElementEnableMask = 1,
+        ElementVisibleMask = 2,
+        ElementGroupMask = 4
+    };
+
     struct SliderResource
     {
         float value;

@@ -19,7 +19,15 @@ namespace RoninEngine::Runtime
 
     void hierarchy_parent_change(TransformRef from, TransformRef newParent)
     {
-        // TODO: Fix it Hierarchy function
+        if(!from)
+            return;
+        if(newParent == from)
+            return;
+        for(TransformRef p = newParent; p; p = p->m_parent)
+        {
+            if(p == from)
+                return;
+        }
         TransformRef lastParent = from->m_parent;
         if(newParent && lastParent == newParent)
             return;
@@ -251,7 +259,7 @@ namespace RoninEngine::Runtime
 
     const bool Transform::LookOfAngle(Vec2 target, float angle) const
     {
-        float _result = Vec2::Angle(this->_position - target, this->_position - this->forward());
+        float _result = Vec2::Angle(target - this->_position, this->forward());
         return _result <= angle * Math::deg2rad;
     }
 
@@ -262,10 +270,7 @@ namespace RoninEngine::Runtime
 
     const Vec2 Transform::localPosition(Vec2 value)
     {
-
-        _position = (this->m_parent ? this->m_parent->_position + value : value);
-        if(_owner->m_active)
-            Matrix::matrix_update(this);
+        position(this->m_parent ? this->m_parent->_position + value : value);
         return value;
     }
 
@@ -285,21 +290,21 @@ namespace RoninEngine::Runtime
         _position = value;
 
         if(_owner->m_active)
-        {
             Matrix::matrix_update(this);
 
-            if(localPos != Vec2::zero)
+        if(localPos != Vec2::zero)
+        {
+            std::vector<TransformRef> descendants = hierarchy;
+            for(size_t i = 0; i < descendants.size(); ++i)
             {
-                std::vector<TransformRef> descendants = hierarchy;
-                for(size_t i = 0; i < descendants.size(); ++i)
-                {
-                    TransformRef child = descendants[i];
-                    child->_position += localPos;
-                    if(child->_owner->m_active)
-                        Matrix::matrix_update(child.ptr_);
-                    for(TransformRef& gc : child->hierarchy)
-                        descendants.push_back(gc);
-                }
+                TransformRef child = descendants[i];
+                if(child.isNull())
+                    continue;
+                child->_position += localPos;
+                if(child->_owner && child->_owner->m_active)
+                    Matrix::matrix_update(child.ptr_);
+                for(TransformRef& gc : child->hierarchy)
+                    descendants.push_back(gc);
             }
         }
         return value;
@@ -312,24 +317,29 @@ namespace RoninEngine::Runtime
 
     void Transform::angle(float value)
     {
-        if(_angle_ == value || !_owner->m_active)
+        if(_angle_ == value)
             return;
 
         float diffAngle = _angle_ - value;
         float diffRad = diffAngle * Math::deg2rad;
         _angle_ = value;
 
+        if(_owner->m_active)
+            Matrix::matrix_update(this);
+
         std::vector<TransformRef> descendants = hierarchy;
         for(size_t i = 0; i < descendants.size(); ++i)
         {
             TransformRef child = descendants[i];
+            if(child.isNull())
+                continue;
             
             // update child position rotated around parent
             child->_position = Vec2::RotateAround(_position, child->_position - _position, diffRad);
             // update child angle
             child->_angle_ -= diffAngle;
             
-            if(child->_owner->m_active)
+            if(child->_owner && child->_owner->m_active)
                 Matrix::matrix_update(child.ptr_);
             
             for(TransformRef& gc : child->hierarchy)
@@ -339,12 +349,12 @@ namespace RoninEngine::Runtime
 
     float Transform::localAngle() const
     {
-        return _angle_ - m_parent->_angle_;
+        return m_parent ? _angle_ - m_parent->_angle_ : _angle_;
     }
 
     void Transform::localAngle(float value)
     {
-        angle(value + m_parent->_angle_);
+        angle(value + (m_parent ? m_parent->_angle_ : 0.0f));
     }
 
     void Transform::parent_notify_active_state(GameObjectRef from)
@@ -402,26 +412,19 @@ namespace RoninEngine::Runtime
 
     void Transform::setParent(TransformRef parent, bool worldPositionStays)
     {
-        if(parent == nullptr)
+        if(parent == nullptr && currentWorld && currentWorld->irs)
             parent = currentWorld->irs->mainObject->transform();
 
-        // change children of the parent
+        if(parent == this->GetRef<Transform>())
+            return;
+
+        Vec2 oldLocalPos = localPosition();
+
         hierarchy_parent_change(this->GetRef<Transform>(), parent);
 
-        if(worldPositionStays)
+        if(!worldPositionStays && parent)
         {
-            // change position child
-            for(TransformRef &child : hierarchy)
-            {
-                // Set the world position to childs
-                child->position(child->_position - parent->_position);
-                // child->position(_position + child->_position);
-            }
-        }
-        else
-        {
-            // angle(localAngle());
-            position(_position + parent->_position);
+            localPosition(oldLocalPos);
         }
         parent_notify_active_state(this->_owner);
     }

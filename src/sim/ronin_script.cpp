@@ -65,20 +65,41 @@ namespace RoninEngine::Runtime
 
     void scripts_update()
     {
-        for(Behaviour *script : currentWorld->irs->runtimeScriptBinders[GameObject::BindType::Bind_Update])
+        if(!currentWorld || !currentWorld->irs)
+            return;
+        auto &binders = currentWorld->irs->runtimeScriptBinders[GameObject::BindType::Bind_Update];
+        std::vector<Behaviour *> snapshot(binders.begin(), binders.end());
+        for(Behaviour *script : snapshot)
+        {
+            if(script && binders.count(script))
                 script->OnUpdate();
+        }
     }
 
     void scripts_lateUpdate()
     {
-        for(Behaviour * script : currentWorld->irs->runtimeScriptBinders[GameObject::BindType::Bind_LateUpdate])
-            script->OnLateUpdate();
+        if(!currentWorld || !currentWorld->irs)
+            return;
+        auto &binders = currentWorld->irs->runtimeScriptBinders[GameObject::BindType::Bind_LateUpdate];
+        std::vector<Behaviour *> snapshot(binders.begin(), binders.end());
+        for(Behaviour *script : snapshot)
+        {
+            if(script && binders.count(script))
+                script->OnLateUpdate();
+        }
     }
 
     void scripts_gizmos()
     {
-        for(Behaviour * script : currentWorld->irs->runtimeScriptBinders[GameObject::BindType::Bind_Gizmos])
-            script->OnGizmos();
+        if(!currentWorld || !currentWorld->irs)
+            return;
+        auto &binders = currentWorld->irs->runtimeScriptBinders[GameObject::BindType::Bind_Gizmos];
+        std::vector<Behaviour *> snapshot(binders.begin(), binders.end());
+        for(Behaviour *script : snapshot)
+        {
+            if(script && binders.count(script))
+                script->OnGizmos();
+        }
     }
 
     void scripts_unbind(BehaviourRef script)

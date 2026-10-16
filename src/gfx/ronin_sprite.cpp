@@ -45,7 +45,7 @@ namespace RoninEngine::Runtime
 
     const bool Sprite::valid() const
     {
-        return m_rect.w - m_rect.x >= 0 || m_rect.h - m_rect.y >= 0 || surface;
+        return surface != nullptr && m_rect.w > 0 && m_rect.h > 0;
     }
 
     int Sprite::width() const
@@ -60,13 +60,61 @@ namespace RoninEngine::Runtime
 
     const Vec2 Sprite::size() const
     {
-        return {width() / currentWorld->irs->metricPixelsPerPoint.x, height() / currentWorld->irs->metricPixelsPerPoint.y};
+        Vec2 mpp = (currentWorld && currentWorld->irs) ? currentWorld->irs->metricPixelsPerPoint : Vec2(100.0f, 100.0f);
+        return {width() / mpp.x, height() / mpp.y};
     }
 
     Rect Sprite::realityRect(float opaque)
     {
-        // NOTE: Формула пикселей для SDL :: Y Offset * (Pitch/BytesPerPixel) + X Offset
-        return m_rect;
+        if(surface == nullptr || m_rect.w <= 0 || m_rect.h <= 0)
+            return m_rect;
+
+        Uint8 minAlpha = static_cast<Uint8>(Math::Clamp01(opaque) * 255.0f);
+        int minX = m_rect.w, minY = m_rect.h, maxX = -1, maxY = -1;
+
+        SDL_LockSurface(surface);
+        int bpp = surface->format->BytesPerPixel;
+        int startX = m_rect.x;
+        int startY = m_rect.y;
+        int endX = std::min(m_rect.x + m_rect.w, surface->w);
+        int endY = std::min(m_rect.y + m_rect.h, surface->h);
+
+        for(int y = startY; y < endY; ++y)
+        {
+            Uint8 *row = static_cast<Uint8 *>(surface->pixels) + y * surface->pitch;
+            for(int x = startX; x < endX; ++x)
+            {
+                Uint32 pixel = 0;
+                Uint8 a = 255;
+                if(bpp == 4)
+                {
+                    pixel = *reinterpret_cast<Uint32 *>(row + x * 4);
+                    if(surface->format->Amask != 0)
+                        a = static_cast<Uint8>((pixel & surface->format->Amask) >> surface->format->Ashift);
+                }
+                else if(bpp == 1 && surface->format->palette)
+                {
+                    pixel = *(row + x);
+                    a = surface->format->palette->colors[pixel].a;
+                }
+
+                if(a >= minAlpha)
+                {
+                    int localX = x - startX;
+                    int localY = y - startY;
+                    if(localX < minX) minX = localX;
+                    if(localX > maxX) maxX = localX;
+                    if(localY < minY) minY = localY;
+                    if(localY > maxY) maxY = localY;
+                }
+            }
+        }
+        SDL_UnlockSurface(surface);
+
+        if(maxX < minX || maxY < minY)
+            return Rect {0, 0, 0, 0};
+
+        return Rect {minX, minY, maxX - minX + 1, maxY - minY + 1};
     }
 
     SpriteRef Sprite::CreateEmptySprite()

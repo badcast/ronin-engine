@@ -40,6 +40,11 @@ namespace RoninEngine
             {
             }
 
+            template <typename U>
+            TRect(const TRect<U> &other) : x(static_cast<T>(other.x)), y(static_cast<T>(other.y)), w(static_cast<T>(other.w)), h(static_cast<T>(other.h))
+            {
+            }
+
             template <typename oth_rect>
             TRect(const oth_rect &other)
             {

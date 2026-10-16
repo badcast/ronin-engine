@@ -7,9 +7,11 @@ namespace RoninEngine::Runtime
     extern bool text_inputState;
     std::string internalText;
 
+    static SDL_Joystick *cachedJoystick = nullptr;
+
     void internal_input_init()
     {
-        int n;
+        int n = SDL_NUM_SCANCODES;
         const std::uint8_t *keys = SDL_GetKeyboardState(&n);
 
         if(keys == nullptr)
@@ -18,8 +20,11 @@ namespace RoninEngine::Runtime
             return;
         }
 
-        internal_input.prev_frame_keys = static_cast<std::uint8_t *>(RoninMemory::mem_alloc(n));
-        memcpy((internal_input.prev_frame_keys) + sizeof(std::uint16_t), keys, n);
+        internal_input.prev_frame_keys = static_cast<std::uint8_t *>(RoninMemory::mem_alloc(SDL_NUM_SCANCODES));
+        if(internal_input.prev_frame_keys != nullptr)
+        {
+            memcpy(internal_input.prev_frame_keys, keys, std::min(n, static_cast<int>(SDL_NUM_SCANCODES)));
+        }
     }
 
     void internal_input_update(const SDL_Event &e)
@@ -37,15 +42,18 @@ namespace RoninEngine::Runtime
                 internal_input._mouse_wheels = e.wheel.y;
                 break;
             case SDL_MOUSEBUTTONDOWN:
-                internal_input._mouse_state[e.button.button - 1] = InputStateFlags::KeyDown;
+                if(e.button.button >= 1 && e.button.button <= sizeof(internal_input._mouse_state))
+                    internal_input._mouse_state[e.button.button - 1] = InputStateFlags::KeyDown;
                 break;
             case SDL_MOUSEBUTTONUP:
-                internal_input._mouse_state[e.button.button - 1] = InputStateFlags::KeyUp;
+                if(e.button.button >= 1 && e.button.button <= sizeof(internal_input._mouse_state))
+                    internal_input._mouse_state[e.button.button - 1] = InputStateFlags::KeyUp;
                 break;
             case SDL_KEYDOWN:
             case SDL_KEYUP:
             {
-                internal_input.prev_frame_keys[e.key.keysym.scancode] = e.type - SDL_KEYDOWN + 1;
+                if(internal_input.prev_frame_keys != nullptr && e.key.keysym.scancode < SDL_NUM_SCANCODES)
+                    internal_input.prev_frame_keys[e.key.keysym.scancode] = e.type - SDL_KEYDOWN + 1;
                 break;
             }
         }
@@ -58,6 +66,11 @@ namespace RoninEngine::Runtime
             RoninMemory::mem_free(internal_input.prev_frame_keys);
             internal_input.prev_frame_keys = nullptr;
         }
+        if(cachedJoystick != nullptr)
+        {
+            SDL_JoystickClose(cachedJoystick);
+            cachedJoystick = nullptr;
+        }
     }
 
     void internal_input_update_before()
@@ -68,20 +81,24 @@ namespace RoninEngine::Runtime
 
         const Uint8 *keys = SDL_GetKeyboardState(nullptr);
 
-        SDL_Joystick *joystick = nullptr;
-
         if(SDL_NumJoysticks() > 0)
         {
-            joystick = SDL_JoystickOpen(0);
+            if(cachedJoystick == nullptr)
+                cachedJoystick = SDL_JoystickOpen(0);
+        }
+        else if(cachedJoystick != nullptr)
+        {
+            SDL_JoystickClose(cachedJoystick);
+            cachedJoystick = nullptr;
         }
 
         if(keys[SDL_SCANCODE_A] || keys[SDL_SCANCODE_LEFT])
             internal_input._movement_axis.x = -1;
         else if(keys[SDL_SCANCODE_D] || keys[SDL_SCANCODE_RIGHT])
             internal_input._movement_axis.x = 1;
-        else if(joystick)
+        else if(cachedJoystick)
         {
-            Sint16 v = SDL_JoystickGetAxis(joystick, 0);
+            Sint16 v = SDL_JoystickGetAxis(cachedJoystick, 0);
             internal_input._movement_axis.x = v > JoystickDeadZone ? 1 : v < -JoystickDeadZone ? -1 : 0;
         }
         else
@@ -91,16 +108,13 @@ namespace RoninEngine::Runtime
             internal_input._movement_axis.y = 1;
         else if(keys[SDL_SCANCODE_S] || keys[SDL_SCANCODE_DOWN])
             internal_input._movement_axis.y = -1;
-        else if(joystick)
+        else if(cachedJoystick)
         {
-            Sint16 v = SDL_JoystickGetAxis(joystick, 1);
+            Sint16 v = SDL_JoystickGetAxis(cachedJoystick, 1);
             internal_input._movement_axis.y = v > JoystickDeadZone ? -1 : v < -JoystickDeadZone ? 1 : 0;
         }
         else
             internal_input._movement_axis.y = 0;
-
-        if(joystick)
-            SDL_JoystickClose(joystick);
     }
 
     void internal_input_update_after()

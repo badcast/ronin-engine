@@ -310,6 +310,10 @@ namespace RoninEngine
         bool internal_unload_world(World *);
         void internal_free_loaded_assets();
 
+        GameObjectRef create_empty_gameobject();
+        TransformRef create_empty_transform();
+        GameObjectRef create_game_object();
+
         void hierarchy_childs_move(Transform *oldParent, Transform *newParent);
         void hierarchy_parent_change(TransformRef from, TransformRef newParent);
         void hierarchy_child_remove(Transform *parent, Transform *who);

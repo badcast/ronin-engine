@@ -5,7 +5,7 @@ namespace RoninEngine::Runtime
 {
     using namespace RoninEngine::Runtime;
 
-    MusicClip *clip()
+    MusicClip *MusicPlayer::getClip()
     {
         return gscope.musicData.m_clip;
     }

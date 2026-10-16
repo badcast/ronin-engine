@@ -2,13 +2,6 @@
 #include "ronin_ui_resources.h"
 #include "ronin_debug.h"
 
-enum
-{
-    ElementEnableMask = 1,
-    ElementVisibleMask = 2,
-    ElementGroupMask = 4
-};
-
 namespace RoninEngine::UI
 {
     using namespace RoninEngine::Runtime;
@@ -69,6 +62,14 @@ namespace RoninEngine::UI
         {
             case GUIControlPresent::RGUI_DROPDOWN:
                 RoninMemory::free(element.resource.dropdown);
+                element.resource.dropdown = nullptr;
+                break;
+            case RGUI_CUSTOM_OVERLAY:
+                if(element.resource.overlay.isInit && element.resource.overlay.inspector)
+                {
+                    element.resource.overlay.inspector->OnDestroy();
+                    element.resource.overlay.isInit = false;
+                }
                 break;
             case RGUI_TEXT:
             case RGUI_BUTTON:
@@ -88,7 +89,7 @@ namespace RoninEngine::UI
         handle->owner = world;
         handle->interactable = true;
         handle->visible = true;
-        // push main component
+        // push main component (index 0 is NOPARENT sentinel)
         handle->elements.emplace_back();
     }
 
@@ -106,7 +107,7 @@ namespace RoninEngine::UI
 
         for(auto &iter : gui->handle->elements)
         {
-            if(gui->IsGroup(iter.id))
+            if(!iter.removed && gui->IsGroup(iter.id))
                 groups.push_back(iter.id);
         }
 
@@ -117,7 +118,9 @@ namespace RoninEngine::UI
 
     bool GUI::ElementContains(uid id)
     {
-        return handle->elements.size() >= id;
+        if(id == NOPARENT)
+            return true;
+        return id < handle->elements.size() && !handle->elements[id].removed;
     }
 
     uid GUI::PushGroup(const Rect &rect)
@@ -177,7 +180,7 @@ namespace RoninEngine::UI
         if(layout == nullptr)
             throw RoninEngine::Exception::ronin_ui_layout_error();
 
-        return layout->addElement(PushLabel(text, Vec2Int::zero));
+        return layout->addElement(PushLabel(text, Rect(0, 0, defaultMakets.buttonSize.x, defaultMakets.buttonSize.y)));
     }
 
     uid GUI::LayoutButton(const std::string &text)
@@ -191,11 +194,11 @@ namespace RoninEngine::UI
 
     uid GUI::PushLabel(const std::string &text, const Rect &rect, int fontWidth, uid parent)
     {
-        // TODO: fontWidth - for set Font size
         uid id = push_new_element(this, parent);
         UIElement &data = call_get_element(this->handle, id);
         data.text = text;
         data.rect = rect;
+        data.fontWidth = fontWidth > 0 ? fontWidth : 13;
         data.prototype = RGUI_TEXT;
         data.id = id;
         return id;
@@ -203,7 +206,7 @@ namespace RoninEngine::UI
 
     uid GUI::PushLabel(const std::string &text, const Vec2Int &point, int fontWidth, uid parent)
     {
-        return PushLabel(text, {point.x, point.y, 0, 0}, fontWidth, parent);
+        return PushLabel(text, {point.x, point.y, defaultMakets.buttonSize.x, defaultMakets.buttonSize.y}, fontWidth, parent);
     }
 
     uid GUI::PushButton(const std::string &text, const Vec2Int &point, UIEventVoid event_callback, uid parent)
@@ -250,7 +253,9 @@ namespace RoninEngine::UI
     }
     uid GUI::PushPictureBox(SpriteRef sprite, const Vec2Int &point, uid parent)
     {
-        return PushPictureBox(sprite, {point.x, point.y, sprite->width(), sprite->height()}, parent);
+        int w = sprite ? sprite->width() : 32;
+        int h = sprite ? sprite->height() : 32;
+        return PushPictureBox(sprite, {point.x, point.y, w, h}, parent);
     }
 
     template <typename Container>
@@ -267,8 +272,6 @@ namespace RoninEngine::UI
         // Init UI Element
         ui_resource_new(element);
 
-        element.resource.dropdown->first = index;
-
         for(auto iter = std::cbegin(container); iter != std::cend(container); ++iter)
         {
             if constexpr(std::is_same<T, std::string>())
@@ -281,10 +284,14 @@ namespace RoninEngine::UI
             }
         }
 
+        int count = static_cast<int>(element.resource.dropdown->second.size());
+        index = Math::Clamp(index, 0, Math::Max(0, count - 1));
+        element.resource.dropdown->first = index;
+
         if(!element.resource.dropdown->second.empty())
         {
             auto iter = element.resource.dropdown->second.begin();
-            std::advance(iter, Math::Min(static_cast<int>(element.resource.dropdown->second.size() - 1), index));
+            std::advance(iter, index);
             element.text = *iter;
         }
 
@@ -300,12 +307,12 @@ namespace RoninEngine::UI
     {
         uid id = push_new_element(this, parent);
         UIElement &element = call_get_element(this->handle, id);
-        element.prototype = RGUI_HSLIDER;
+        element.prototype = (rect.h > rect.w * 2) ? RGUI_VSLIDER : RGUI_HSLIDER;
         element.rect = rect;
         element.event = (void *) changed;
-        element.resource.slider.value = value;
         element.resource.slider.min = min;
         element.resource.slider.max = max;
+        element.resource.slider.value = Math::Clamp(value, min, max);
         element.resource.slider.stepPercentage = 0.1f;
         return id;
     }
@@ -518,17 +525,14 @@ namespace RoninEngine::UI
     bool GUI::IsGroup(uid id)
     {
         if(!ElementContains(id))
-            throw RoninEngine::Exception::ronin_out_of_range_error();
+            return false;
 
         return (call_get_element(this->handle, id).options & ElementGroupMask) == ElementGroupMask;
     }
 
     bool GUI::GroupShowAsUnique(uid id) throw()
     {
-        if(!ElementContains(id))
-            throw RoninEngine::Exception::ronin_out_of_range_error();
-
-        if(!IsGroup(id))
+        if(!ElementContains(id) || !IsGroup(id))
             return false;
 
         handle->layers.remove_if([this](auto v) { return IsGroup(v); });
@@ -584,18 +588,72 @@ namespace RoninEngine::UI
 
     bool GUI::PopElement(uid id)
     {
-        // TODO: Make Pop (Remove) element
-        return false;
+        if(id == NOPARENT || !ElementContains(id))
+            return false;
+
+        UIElement &elem = call_get_element(handle, id);
+
+        // recursively pop children
+        std::vector<uid> childsCopy = elem.childs;
+        for(uid childId : childsCopy)
+        {
+            PopElement(childId);
+        }
+
+        ui_resource_del(elem);
+
+        // remove from layers
+        handle->layers.remove(id);
+
+        // remove from parent
+        if(elem.parentId != NOPARENT && elem.parentId < handle->elements.size())
+        {
+            auto &pChilds = handle->elements[elem.parentId].childs;
+            pChilds.erase(std::remove(pChilds.begin(), pChilds.end(), id), pChilds.end());
+        }
+
+        // remove from layouts
+        for(auto &layout : handle->layouts)
+        {
+            auto &lElems = layout.elements;
+            auto it = std::find(lElems.begin(), lElems.end(), id);
+            if(it != lElems.end())
+            {
+                lElems.erase(it);
+                layout.maketUpdate();
+            }
+        }
+
+        handle->button_clicked.erase(id);
+        if(handle->focusedID == id)
+        {
+            handle->focusedID = 0;
+            handle->_focusedUI = false;
+        }
+
+        elem.removed = true;
+        elem.options = 0;
+        elem.text.clear();
+        elem.event = nullptr;
+        elem.childs.clear();
+
+        return true;
     }
 
     void GUI::PopAllElements()
     {
-        for(UIElement &elem : handle->elements)
+        for(size_t i = 1; i < handle->elements.size(); ++i)
         {
-            ui_resource_del(elem);
+            if(!handle->elements[i].removed)
+                ui_resource_del(handle->elements[i]);
         }
         handle->layers.clear();
+        handle->layouts.clear();
+        handle->button_clicked.clear();
+        handle->focusedID = 0;
+        handle->_focusedUI = false;
         handle->elements.clear();
+        handle->elements.emplace_back(); // NOPARENT dummy sentinel at index 0
     }
 
     bool GUI::FocusedGUI()
@@ -609,7 +667,6 @@ namespace RoninEngine::UI
         if(iter != std::end(elements))
             return -1;
 
-        UIElement &element = call_get_element(handle, id);
         this->elements.push_back(id);
         maketUpdate();
         return id;
@@ -618,12 +675,21 @@ namespace RoninEngine::UI
     void UILayout::maketUpdate()
     {
         Rectf _reg = region;
+        if(aspectRatio)
+        {
+            _reg.x *= gscope.activeResolution.width;
+            _reg.y *= gscope.activeResolution.height;
+            _reg.w *= gscope.activeResolution.width;
+            _reg.h *= gscope.activeResolution.height;
+        }
         for(uid id : elements)
         {
+            if(!handle || id >= handle->elements.size() || handle->elements[id].removed)
+                continue;
             UIElement *elem = &call_get_element(handle, id);
 
-            elem->rect.x = _reg.x;
-            elem->rect.y = _reg.y;
+            elem->rect.x = static_cast<int>(_reg.x);
+            elem->rect.y = static_cast<int>(_reg.y);
 
             switch(direction)
             {
@@ -659,18 +725,16 @@ namespace RoninEngine::UI
         std::deque<uid> ui_drains;
 
         UIElement *uiElement;
-        UIState uiState;
+        UIState uiState {};
 
-        Vec2Int ms;
-        bool ui_msclick, ui_hover, ui_contex;
-
-        ms = Input::GetMousePoint();
+        Vec2Int ms = Input::GetMousePoint();
 
         uiState.gui = gui;
-        uiState.ms = Input::GetMousePoint();
+        uiState.ms = ms;
 
         handle->_focusedUI = false;
-        ui_msclick = Input::GetMouseUp(MouseButton::MouseLeft);
+        bool ui_msclick = Input::GetMouseUp(MouseButton::MouseLeft);
+        bool any_clicked_this_frame = Input::GetMouseDown(MouseButton::MouseLeft) || ui_msclick;
 
         for(auto iter = begin(handle->layers); iter != end(handle->layers); ++iter)
         {
@@ -680,44 +744,60 @@ namespace RoninEngine::UI
 
         gui->handle->any_mouse_hover = false;
         gui->handle->button_clicked.clear();
-        // TODO: OPTIMIZE HERE
+
+        uid focusedIdToDrawLast = 0;
+
         while(!ui_drains.empty() && !handle->owner->irs->requestUnloading)
         {
             id = ui_drains.front();
             ui_drains.pop_front();
 
+            if(!gui->ElementContains(id))
+                continue;
+
             uiElement = &call_get_element(gui->handle, id);
+            if(uiElement->removed)
+                continue;
+
+            bool isVisible = (uiElement->options & ElementVisibleMask) != 0;
+            if(!isVisible)
+                continue;
+
             for(auto iter = begin(uiElement->childs); iter != end(uiElement->childs); ++iter)
                 ui_drains.push_back(*iter);
 
-            // status mouse hovered
-            uiState.ms_hover = Vec2Int::HasIntersection(ms, uiElement->rect);
-            ui_contex = !uiElement->contextRect.empty();
-
-            if(uiState.ms_hover)
-                gui->handle->any_mouse_hover = uiState.ms_hover;
-
-            if(!(uiElement->options & ElementGroupMask) && (uiElement->options & ElementVisibleMask))
+            if(id == handle->focusedID && uiElement->prototype == RGUI_DROPDOWN)
             {
-                ui_hover = id == handle->focusedID;
+                focusedIdToDrawLast = id;
+                continue;
+            }
 
-                // unfocus on click an not hovered
-                if(ui_hover && (!uiState.ms_hover || !ui_contex) && uiState.ms_click)
+            uiState.ms_hover = Vec2Int::HasIntersection(ms, uiElement->rect);
+            bool ui_contex = !uiElement->contextRect.empty() && Vec2Int::HasIntersection(ms, uiElement->contextRect);
+
+            if(uiState.ms_hover || ui_contex)
+            {
+                if(!(uiElement->options & ElementGroupMask))
+                    gui->handle->any_mouse_hover = true;
+            }
+
+            if(!(uiElement->options & ElementGroupMask))
+            {
+                bool ui_focus = (id == handle->focusedID);
+
+                if(ui_focus && !uiState.ms_hover && !ui_contex && any_clicked_this_frame)
                 {
-                    ui_hover = false;
+                    ui_focus = false;
                     handle->focusedID = 0;
                 }
 
-                // Refresh UIState
-                uiState.ms_click = ui_msclick && uiState.ms_hover;
+                uiState.ms_click = ui_msclick && (uiState.ms_hover || ui_contex);
 
-                // Draw Internal GUI
-                if((general_ui_render(*uiElement, uiState, ui_hover)) && handle->interactable)
+                if(general_ui_render(*uiElement, uiState, ui_focus) && handle->interactable)
                 {
-                    // Избавляемся от перекликов в UI
                     handle->_focusedUI = true;
 
-                    if(ui_hover)
+                    if(ui_focus)
                     {
                         handle->focusedID = id;
                     }
@@ -726,22 +806,57 @@ namespace RoninEngine::UI
                     {
                         if(handle->callback)
                         {
-                            // Send callback of the General UI Event
                             handle->callback(id, handle->callbackData);
                         }
-                        // run event
                         general_ui_event_action(uiElement);
                     }
                 }
                 else
-                { // disabled state
-                    // TODO: disabled state for UI element's
-                    if(id == handle->focusedID && !ui_hover)
+                {
+                    if(id == handle->focusedID && !ui_focus)
                         handle->focusedID = 0;
                 }
                 if(!handle->_focusedUI)
-                    handle->_focusedUI = ui_hover;
+                    handle->_focusedUI = ui_focus;
             }
+        }
+
+        if(focusedIdToDrawLast != 0 && gui->ElementContains(focusedIdToDrawLast))
+        {
+            uiElement = &call_get_element(gui->handle, focusedIdToDrawLast);
+            uiState.ms_hover = Vec2Int::HasIntersection(ms, uiElement->rect);
+            bool ui_contex = !uiElement->contextRect.empty() && Vec2Int::HasIntersection(ms, uiElement->contextRect);
+            if(uiState.ms_hover || ui_contex)
+                gui->handle->any_mouse_hover = true;
+
+            bool ui_focus = true;
+            if(!uiState.ms_hover && !ui_contex && any_clicked_this_frame)
+            {
+                ui_focus = false;
+                handle->focusedID = 0;
+            }
+
+            uiState.ms_click = ui_msclick && (uiState.ms_hover || ui_contex);
+
+            if(general_ui_render(*uiElement, uiState, ui_focus) && handle->interactable)
+            {
+                handle->_focusedUI = true;
+                if(ui_focus)
+                    handle->focusedID = focusedIdToDrawLast;
+                if(uiElement->options & ElementEnableMask)
+                {
+                    if(handle->callback)
+                        handle->callback(focusedIdToDrawLast, handle->callbackData);
+                    general_ui_event_action(uiElement);
+                }
+            }
+            else
+            {
+                if(!ui_focus)
+                    handle->focusedID = 0;
+            }
+            if(!handle->_focusedUI)
+                handle->_focusedUI = ui_focus;
         }
     }
 

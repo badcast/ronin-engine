@@ -55,7 +55,8 @@ namespace RoninExt
         if(_buffer)
             delete[] _buffer;
 
-        _buffer = new int[_size] {0};
+        bigsize numInts = (_size + 31) / 32;
+        _buffer = (numInts > 0) ? new int[numInts] {0} : nullptr;
     }
 
     bitlist::bigsize bitlist::size() const
@@ -96,25 +97,22 @@ namespace RoninExt
 
     void bitlist::set(bigsize bitPos, int bitValue)
     {
-        // bigsize quot = bitPos / BITS;
-        // bigsize rem = bitPos % BITS;
-
-        // std::uint8_t *pointer = (reinterpret_cast<std::uint8_t *>(_buffer)) + quot;
-        // quot = (1 << rem);
-        // // Reset bit
-        // (*pointer) ^= (*pointer) & (quot);
-        // // Write bit
-        // (*pointer) |= quot * (bitValue == 1);
+        if(bitPos >= _size || _buffer == nullptr)
+            return;
+        bigsize index = bitPos / 32;
+        int bit = static_cast<int>(bitPos % 32);
+        if(bitValue)
+            _buffer[index] |= (1U << bit);
+        else
+            _buffer[index] &= ~(1U << bit);
     }
 
     int bitlist::get(bigsize bitPos)
     {
-        // bigsize quot = bitPos / BITS;
-        // bigsize rem = bitPos % BITS;
-
-        // std::uint8_t *pointer = (reinterpret_cast<std::uint8_t *>(_buffer)) + quot;
-        // quot = (1 << rem);
-        // return static_cast<int>((*pointer) & quot) & 0x1;
-        return -1;
+        if(bitPos >= _size || _buffer == nullptr)
+            return -1;
+        bigsize index = bitPos / 32;
+        int bit = static_cast<int>(bitPos % 32);
+        return (_buffer[index] >> bit) & 1;
     }
 } // namespace RoninExt

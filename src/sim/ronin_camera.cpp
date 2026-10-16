@@ -39,6 +39,9 @@ namespace RoninEngine::Runtime
 
     Vec2 Camera::ScreenToWorldPoint(Vec2 screenPoint)
     {
+        if(!currentWorld || !currentWorld->irs)
+            return screenPoint;
+
         Vec2 scale;
 
         if(currentWorld->irs->mainCamera)
@@ -64,6 +67,9 @@ namespace RoninEngine::Runtime
 
     Vec2 Camera::WorldToScreenPoint(Vec2 worldPoint)
     {
+        if(!currentWorld || !currentWorld->irs)
+            return worldPoint;
+
         Vec2 scale;
         // Difference at Main Camera
         if(currentWorld->irs->mainCamera)
@@ -89,6 +95,9 @@ namespace RoninEngine::Runtime
 
     Vec2 Camera::ViewportToWorldPoint(Vec2 viewportPoint)
     {
+        if(!currentWorld || !currentWorld->irs)
+            return viewportPoint;
+
         Vec2 scale;
 
         if(currentWorld->irs->mainCamera)
@@ -110,6 +119,9 @@ namespace RoninEngine::Runtime
 
     Vec2 Camera::WorldToViewportPoint(Vec2 worldPoint)
     {
+        if(!currentWorld || !currentWorld->irs)
+            return worldPoint;
+
         Vec2 scale;
 
         // Difference at Main Camera

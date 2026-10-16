@@ -49,13 +49,13 @@ float Math::Abs(float x)
 // negative absolute value
 float Math::NAbs(float x)
 {
-    return Abs(x) * ~0;
+    return -Abs(x);
 }
 
 // negative absolute value
 int Math::NAbs(int x)
 {
-    return Abs(x) * ~0;
+    return -Abs(x);
 }
 
 float Math::Signf(float x)
@@ -225,7 +225,7 @@ float Math::MoveTowards(float current, float target, float maxDelta)
     }
     else
     {
-        result = current + Sign(target - current) * maxDelta;
+        result = current + Signf(target - current) * maxDelta;
     }
     return result;
 }
@@ -281,10 +281,10 @@ float Math::SmoothDamp(float current, float target, float &currentVelocity, floa
 
 float Math::SmoothDamp(float current, float target, float &currentVelocity, float smoothTime, float maxSpeed, float deltaTime)
 {
-    smoothTime = Max(0.f, Min(1.f, smoothTime));
+    smoothTime = Max(0.0001f, smoothTime);
     float num = 2 / smoothTime;
     float num2 = num * deltaTime;
-    float num3 = 1 / (1 + num2 + 0, 48 * num2 * num2 + 0, 235 * num2 * num2 * num2);
+    float num3 = 1.0f / (1.0f + num2 + 0.48f * num2 * num2 + 0.235f * num2 * num2 * num2);
     float num4 = current - target;
     float num5 = target;
     float num6 = maxSpeed * smoothTime;
@@ -293,7 +293,7 @@ float Math::SmoothDamp(float current, float target, float &currentVelocity, floa
     float num7 = (currentVelocity + num * num4) * deltaTime;
     currentVelocity = (currentVelocity - num * num7) * num3;
     float num8 = target + (num4 + num7) * num3;
-    if(num5 - current > 0 == num8 > num5)
+    if((num5 - current > 0) == (num8 > num5))
     {
         num8 = num5;
         currentVelocity = (num8 - num5) / deltaTime;
@@ -337,29 +337,28 @@ float Math::SmoothStep(float from, float to, float t)
 
 std::uint64_t Math::NumLastOf(std::uint64_t number, int level)
 {
-    std::uint64_t x = std::pow(10, level);
-    auto d = std::ldiv(number, x);
-    if(number < x / 10)
-        d.rem = 0;
-    return d.rem;
+    std::uint64_t x = 1;
+    for(int i = 0; i < level; ++i)
+        x *= 10;
+    return number % x;
 }
 
 std::string Math::NumBeautify(std::uint64_t num, char seperate, int digits)
 {
-    constexpr int radix = 10;
-    int level = 1;
-    std::string result {};
-    std::div_t dv;
-
-    while((num = (dv = std::div(num, radix)).quot))
+    if(num == 0)
+        return "0";
+    if(digits <= 0)
+        digits = 3;
+    std::string result;
+    int count = 0;
+    while(num > 0)
     {
-        result.insert(0, std::to_string(dv.rem));
-
-        if(level % digits == 0)
-            result.insert(0, 1, seperate);
-        ++level;
+        if(count > 0 && (count % digits == 0))
+            result.insert(result.begin(), seperate);
+        result.insert(result.begin(), static_cast<char>('0' + (num % 10)));
+        num /= 10;
+        ++count;
     }
-    result.insert(0, std::to_string(dv.rem));
     return result;
 }
 

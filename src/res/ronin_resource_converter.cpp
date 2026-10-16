@@ -131,61 +131,64 @@ AssetRef AssetManager::LoadAsset(const std::string &filename)
             RoninMemory::alloc_self(asset->impl);
             for(auto &pair : __files)
             {
-                switch(num1)
+                for(const auto &filePath : pair.second)
                 {
-                    /*Sprites*/
-                    case 0:
-                        rsid = Resources::LoadImage(pair.second.front(), false);
-                        break;
-                    /*AudioClip*/
-                    case 1:
-                        rsid = Resources::LoadAudioClip(pair.second.front(), false);
-                        break;
-                    /*MusicClip*/
-                    case 2:
-                        rsid = Resources::LoadMusicClip(pair.second.front(), false);
-                        break;
-                    default:
-                        rsid = RES_INVALID;
-                        break;
-                }
+                    switch(num1)
+                    {
+                        /*Sprites*/
+                        case 0:
+                            rsid = Resources::LoadImage(filePath, false);
+                            break;
+                        /*AudioClip*/
+                        case 1:
+                            rsid = Resources::LoadAudioClip(filePath, false);
+                            break;
+                        /*MusicClip*/
+                        case 2:
+                            rsid = Resources::LoadMusicClip(filePath, false);
+                            break;
+                        default:
+                            rsid = RES_INVALID;
+                            break;
+                    }
 
-                if(rsid == RES_INVALID)
-                {
-                    ronin_warn(("Invalid resource " + pair.second.front()).c_str());
-                    continue;
-                }
+                    if(rsid == RES_INVALID)
+                    {
+                        ronin_warn(("Invalid resource " + filePath).c_str());
+                        continue;
+                    }
 
-                switch(num1)
-                {
-                    /*Sprites*/
-                    case 0:
-                        asset->impl->index = AssetIndex::AS_SPRITE;
+                    switch(num1)
+                    {
+                        /*Sprites*/
+                        case 0:
+                            asset->impl->index = AssetIndex::AS_SPRITE;
 
-                        if(asset->impl->udata._sprites == nullptr)
-                            RoninMemory::alloc_self(asset->impl->udata._sprites);
+                            if(asset->impl->udata._sprites == nullptr)
+                                RoninMemory::alloc_self(asset->impl->udata._sprites);
 
-                        (*asset->impl->udata._sprites)[pair.first].push_back(RefNoFree(Primitive::CreateSpriteFrom(Resources::GetImageSource(rsid))));
-                        break;
-                    /*AudioClip*/
-                    case 1:
-                        asset->impl->index = AssetIndex::AS_AUDIO;
+                            (*asset->impl->udata._sprites)[pair.first].push_back(RefNoFree(Primitive::CreateSpriteFrom(Resources::GetImageSource(rsid))));
+                            break;
+                        /*AudioClip*/
+                        case 1:
+                            asset->impl->index = AssetIndex::AS_AUDIO;
 
-                        if(asset->impl->udata._audioclips == nullptr)
-                            RoninMemory::alloc_self(asset->impl->udata._audioclips);
+                            if(asset->impl->udata._audioclips == nullptr)
+                                RoninMemory::alloc_self(asset->impl->udata._audioclips);
 
-                        (*asset->impl->udata._audioclips)[pair.first].push_back(rsid);
-                        break;
-                    /*MusicClip*/
-                    case 2:
-                        asset->impl->index = AssetIndex::AS_MUSIC;
+                            (*asset->impl->udata._audioclips)[pair.first].push_back(rsid);
+                            break;
+                        /*MusicClip*/
+                        case 2:
+                            asset->impl->index = AssetIndex::AS_MUSIC;
 
-                        if(asset->impl->udata._mus == nullptr)
-                            RoninMemory::alloc_self(asset->impl->udata._mus);
+                            if(asset->impl->udata._mus == nullptr)
+                                RoninMemory::alloc_self(asset->impl->udata._mus);
 
-                        (*asset->impl->udata._mus)[pair.first].push_back(rsid);
-                        break;
-                    default:;
+                            (*asset->impl->udata._mus)[pair.first].push_back(rsid);
+                            break;
+                        default:;
+                    }
                 }
             }
         }
@@ -353,11 +356,16 @@ AssetRef AssetManager::LoadAsset(const std::string &filename)
                             spr->name = param1.ToString();
                         }
                     }
+                    if(spr->name.empty())
+                    {
+                        spr->name = "sprite-" + std::to_string(num1);
+                    }
                 }
                 // TILED
                 else
                 {
                     spr = Primitive::CreateEmptySprite();
+                    spr->name = "sprite-" + std::to_string(num1);
                 }
 
                 spr->m_rect = rect;
@@ -372,21 +380,22 @@ AssetRef AssetManager::LoadAsset(const std::string &filename)
                     switch(num4)
                     {
                         case 0: // Right
-                            if(rect.x >= x * rect.w)
+                            rect.x += rect.w;
+                            if(rect.x > x * rect.w)
+                            {
                                 rect.x = 0;
-                            else
-                                rect.x += rect.w;
-
-                            if(rect.y >= y * rect.h)
-                                rect.y = 0;
-                            else
                                 rect.y += rect.h;
+                            }
                             break;
 
                         case 1: // Down
-                            // TODO: Make direction to down
-                            num4 = 0;
-                            continue;
+                            rect.y += rect.h;
+                            if(rect.y > y * rect.h)
+                            {
+                                rect.y = 0;
+                                rect.x += rect.w;
+                            }
+                            break;
 
                         default:;
                     }
@@ -412,7 +421,7 @@ bool AssetManager::UnloadAsset(AssetRef asset)
 
 SpriteRef Asset::GetSprite(const std::string &name)
 {
-    if(impl->index != AssetIndex::AS_SPRITE || impl->udata._sprites == nullptr)
+    if(!impl || impl->index != AssetIndex::AS_SPRITE || impl->udata._sprites == nullptr)
         return nullptr;
     auto test = impl->udata._sprites->find(stringHasher(name));
     if(test == std::end(*impl->udata._sprites) || test->second.empty() || test->second.size() > 1)
@@ -422,7 +431,7 @@ SpriteRef Asset::GetSprite(const std::string &name)
 
 AudioClip *Asset::GetAudioClip(const std::string &name)
 {
-    if(impl->index != AssetIndex::AS_AUDIO || impl->udata._audioclips == nullptr)
+    if(!impl || impl->index != AssetIndex::AS_AUDIO || impl->udata._audioclips == nullptr)
         return nullptr;
     auto test = impl->udata._audioclips->find(stringHasher(name));
     if(test == std::end(*impl->udata._audioclips) || test->second.empty() || test->second.size() > 1)
@@ -432,14 +441,14 @@ AudioClip *Asset::GetAudioClip(const std::string &name)
 
 AtlasRef Asset::GetAtlasObject()
 {
-    if(impl->index != AssetIndex::AS_ATLAS)
+    if(!impl || impl->index != AssetIndex::AS_ATLAS)
         return nullptr;
     return impl->_atlas;
 }
 
 std::vector<SpriteRef> Asset::GetSprites(const std::string &name)
 {
-    if(impl->index != AssetIndex::AS_SPRITE || impl->udata._sprites == nullptr)
+    if(!impl || impl->index != AssetIndex::AS_SPRITE || impl->udata._sprites == nullptr)
         return {};
     auto test = impl->udata._sprites->find(stringHasher(name));
     if(test == std::end(*impl->udata._sprites))
@@ -449,7 +458,7 @@ std::vector<SpriteRef> Asset::GetSprites(const std::string &name)
 
 std::vector<AudioClip *> Asset::GetAudioClips(const std::string &name)
 {
-    if(impl->index != AssetIndex::AS_AUDIO || impl->udata._audioclips == nullptr)
+    if(!impl || impl->index != AssetIndex::AS_AUDIO || impl->udata._audioclips == nullptr)
         return {};
     auto test = impl->udata._audioclips->find(stringHasher(name));
     if(test == std::end(*impl->udata._audioclips))

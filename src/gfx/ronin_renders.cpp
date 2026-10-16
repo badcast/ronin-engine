@@ -40,7 +40,7 @@ namespace RoninEngine::Runtime
         return REND_TERRAIN2D;
     }
 
-    constexpr std::function<void(RenderCommand, Renderer *, Rendering *)> render_getfunc(int _class)
+    inline std::function<void(RenderCommand, Renderer *, Rendering *)> render_getfunc(int _class)
     {
         if(_class < 1 || params.renderFunctions.size() < _class)
         {
@@ -99,7 +99,7 @@ namespace RoninEngine::Runtime
 
         for (Transform* transform_object : visibleTransforms)
         {
-            if (!transform_object || !transform_object->_owner)
+            if (!transform_object || !transform_object->_owner || !transform_object->_owner->isActiveInHierarchy())
                 continue;
 
             for(ComponentRef &component : transform_object->_owner->m_components)
@@ -225,7 +225,9 @@ namespace RoninEngine::Runtime
                     if(camera->visibleObjects)
                     {
                         Rect factSz = face->get_relative_size();
-                        Vec2 sz = Vec2::Scale(face->getSize(), Vec2(factSz.getWH()) / currentWorld->irs->metricPixelsPerPoint);
+                        Vec2 mpp = currentWorld->irs->metricPixelsPerPoint;
+                        Vec2 wh(factSz.getWH());
+                        Vec2 sz = Vec2::Scale(face->getSize(), Vec2(wh.x / mpp.x, wh.y / mpp.y));
                         if(sz.x <= 0.f && sz.y <= 0.f)
                             sz = face->getSize();
                         RenderUtility::SetColor(Color::blue);
@@ -243,10 +245,7 @@ namespace RoninEngine::Runtime
             RenderUtility::SetColor(prevColor);
         }
 
-        for(auto &layer : params.orders)
-        {
-            layer.second.clear();
-        }
+        params.orders.clear();
     }
 
            /////////////////

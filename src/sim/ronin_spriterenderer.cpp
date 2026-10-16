@@ -1,5 +1,6 @@
 #include "ronin.h"
 #include "ronin_render_cache.h"
+#include "ronin_matrix.h"
 
 namespace RoninEngine::Runtime
 {
@@ -10,7 +11,7 @@ namespace RoninEngine::Runtime
     }
 
     SpriteRenderer::SpriteRenderer(const std::string &name)
-        : Renderer(DESCRIBE_AS_ONLY_NAME(SpriteRenderer)), sprite(nullptr), save_texture(nullptr), renderType(SpriteRenderType::Simple), renderOut(SpriteRenderOut::Centering), flip(SpriteRenderFlip::FlipNone), renderPresentMode(SpriteRenderPresentMode::Fixed), color(Color::white)
+        : Renderer(DESCRIBE_AS_ONLY_NAME(SpriteRenderer)), sprite(nullptr), save_texture(nullptr), m_size(Vec2::one), renderType(SpriteRenderType::Simple), renderOut(SpriteRenderOut::Centering), flip(SpriteRenderFlip::FlipNone), renderPresentMode(SpriteRenderPresentMode::Fixed), color(Color::white)
     {
         _class = render_getclass<SpriteRenderer>();
         DESCRIBE_AS_MAIN(SpriteRenderer);
@@ -76,7 +77,14 @@ namespace RoninEngine::Runtime
 
     void SpriteRenderer::setSize(const Vec2 &newSize)
     {
-        m_size = Vec2::Abs(newSize);
+        Vec2 absSize = Vec2::Abs(newSize);
+        if(m_size != absSize)
+        {
+            free_render_cache();
+            m_size = absSize;
+            if(_owner && transform())
+                Matrix::matrix_update(transform().ptr_);
+        }
     }
 
     void SpriteRenderer::setRealSize()
@@ -87,12 +95,17 @@ namespace RoninEngine::Runtime
 
     Vec2 SpriteRenderer::get_offset()
     {
-        Vec2 outOffset;
+        Vec2 outOffset = Vec2::zero;
+        if(sprite)
+        {
+            outOffset = Vec2::Scale(Vec2::half - sprite->center(), m_size);
+        }
         switch(renderOut)
         {
             case SpriteRenderOut::Origin:
-                outOffset = -m_size + m_size / 2 + Vec2::half;
-
+                outOffset += -m_size + m_size / 2.0f + Vec2::half;
+                break;
+            default:
                 break;
         }
         return outOffset;
@@ -118,6 +131,9 @@ namespace RoninEngine::Runtime
 
         // cache free from last sprite
         free_render_cache();
+
+        if(_owner && transform())
+            Matrix::matrix_update(transform().ptr_);
     }
 
     const SpriteRef SpriteRenderer::getSprite() const

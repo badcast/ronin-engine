@@ -23,6 +23,9 @@ namespace RoninEngine::Runtime
 
     void font2d_update(RoninEngine::Runtime::World *world)
     {
+        if(!world || !world->irs || !gscope.renderer || !f2d_default)
+            return;
+
         if(world->irs->legacy_font_normal)
             SDL_DestroyTexture(world->irs->legacy_font_normal);
         world->irs->legacy_font_normal = SDL_CreateTextureFromSurface(gscope.renderer, f2d_default->surfNormal);
@@ -31,6 +34,148 @@ namespace RoninEngine::Runtime
         world->irs->legacy_font_hover = SDL_CreateTextureFromSurface(gscope.renderer, f2d_default->surfHilight);
 
         _custom_refresh_fonts();
+    }
+
+    static void font2d_setup_data(font2d_t *f2d, bool optimizeDeffects)
+    {
+        if(!f2d || !f2d->surfNormal)
+            return;
+
+        f2d->fontSize = {font_arealike_width, font_arealike_height};
+
+        // Структурирование шрифта
+        {
+            uint8_t target;
+            uint8_t i;
+            int deltay;
+            Rect *p;
+            int maxWidth = f2d->surfNormal->w;
+
+            // set unknown symbols
+            for(i = 0; i < 32; ++i)
+            {
+                p = f2d->data + i;
+                // to unknown '?'
+                p->x = 195;
+                p->y = 17;
+                p->w = f2d->fontSize.x;
+                p->h = f2d->fontSize.y;
+            }
+
+            // load Eng & other chars
+            maxWidth /= f2d->fontSize.x;
+            target = i;
+            deltay = 0;
+            for(i = 0; target != 127;)
+            {
+                p = f2d->data + target++;
+                p->x = f2d->fontSize.x * i;
+                p->y = deltay;
+                p->w = f2d->fontSize.x;
+                p->h = f2d->fontSize.y;
+                ++i;
+                if(!(i = i % maxWidth) || target == 127)
+                    deltay += f2d->fontSize.y;
+            }
+
+            // load Rus
+            target = 192;
+            for(i = 0; target != 255;)
+            {
+                p = f2d->data + target++;
+                p->x = f2d->fontSize.x * i;
+                p->y = deltay;
+                p->w = f2d->fontSize.x;
+                p->h = f2d->fontSize.y;
+                ++i;
+                if(!(i = i % maxWidth))
+                    deltay += f2d->fontSize.y;
+            }
+        }
+        if(optimizeDeffects)
+        {
+            SDL_Surface *model = f2d->surfNormal;
+            int i, x, y, cx, cy;
+            Rect origRect, optimizedRect;
+            SDL_Color *pixel;
+            std::uint8_t flagBreaker;
+            for(i = 33; i != 255; ++i)
+            {
+                flagBreaker = 0;
+                origRect = f2d->data[i];
+                optimizedRect = origRect;
+                for(x = 0; x < origRect.w / 2; ++x)
+                {
+                    // оптимизация с левой по правой
+                    if(!(flagBreaker & 1))
+                    {
+                        for(y = origRect.h - 1; y >= 0; --y)
+                        {
+                            cx = origRect.x + x;
+                            cy = origRect.y + y;
+                            pixel = (SDL_Color *) model->pixels + (cy * (model->pitch / model->format->BytesPerPixel) + cx);
+                            if(pixel->a)
+                                break;
+                        }
+                        if(y == ~0)
+                        {
+                            ++optimizedRect.x;
+                            --optimizedRect.w;
+                        }
+                        else
+                        {
+                            flagBreaker |= 1;
+                        }
+                    }
+                    // оптимизация с права на лева
+                    if(!(flagBreaker & 2))
+                    {
+                        for(y = origRect.h - 1; y >= 0; --y)
+                        {
+                            cx = origRect.x + origRect.w - 1 - x;
+                            cy = origRect.y + y;
+                            pixel = (SDL_Color *) model->pixels + (cy * (model->pitch / model->format->BytesPerPixel) + cx);
+                            if(pixel->a)
+                                break;
+                        }
+                        if(y == -1)
+                        {
+                            --optimizedRect.w;
+                        }
+                        else
+                        {
+                            flagBreaker |= 2;
+                        }
+                    }
+
+                    if(flagBreaker == 3)
+                        break;
+                }
+                if(optimizedRect.w < 1)
+                    optimizedRect.w = 1;
+                f2d->data[i] = optimizedRect;
+            }
+        }
+        f2d->compressed = static_cast<int>(optimizeDeffects);
+    }
+
+    font2d_t *font2d_create(SDL_Surface *surfaceNormal, SDL_Surface *surfaceHiNormal, bool optimizeDeffects)
+    {
+        if(!surfaceNormal)
+            return nullptr;
+        font2d_t *f2d = nullptr;
+        if(RoninMemory::alloc_self(f2d) == nullptr)
+            throw RoninEngine::Exception::ronin_out_of_mem();
+
+        f2d->surfNormal = surfaceNormal;
+        f2d->surfHilight = surfaceHiNormal ? surfaceHiNormal : surfaceNormal;
+        font2d_setup_data(f2d, optimizeDeffects);
+        return f2d;
+    }
+
+    int font2d_metric(const std::string &text, int fontSize)
+    {
+        return RoninEngine::UI::Single_TextWidth_WithCyrilic(text, fontSize);
     }
 
     void font2d_init(bool optimizeDeffects)
@@ -55,114 +200,7 @@ namespace RoninEngine::Runtime
         if((f2d_default->surfHilight = private_load_surface(font_arealike_hi_png, font_arealike_hi_png_len)) == nullptr)
             throw RoninEngine::Exception::ronin_out_of_mem();
 
-        f2d_default->fontSize = {font_arealike_width, font_arealike_height};
-
-        // Структурирование шрифта
-        {
-            uint8_t target;
-            uint8_t i;
-            int deltay;
-            Rect *p;
-            int maxWidth = f2d_default->surfNormal->w;
-
-            // set unknown symbols
-            for(i = 0; i < 32; ++i)
-            {
-                p = f2d_default->data + i;
-                // to unknown '?'
-                p->x = 195;
-                p->y = 17;
-                p->w = f2d_default->fontSize.x;
-                p->h = f2d_default->fontSize.y;
-            }
-
-            // load Eng & other chars
-            maxWidth /= f2d_default->fontSize.x;
-            target = i;
-            deltay = 0;
-            for(i = 0; target != 127;)
-            {
-                p = f2d_default->data + target++;
-                p->x = f2d_default->fontSize.x * i;
-                p->y = deltay;
-                p->w = f2d_default->fontSize.x;
-                p->h = f2d_default->fontSize.y;
-                ++i;
-                if(!(i = i % maxWidth) || target == 127)
-                    deltay += f2d_default->fontSize.y;
-            }
-
-            // load Rus
-            target = 192;
-            for(i = 0; target != 255;)
-            {
-                p = f2d_default->data + target++;
-                p->x = f2d_default->fontSize.x * i;
-                p->y = deltay;
-                p->w = f2d_default->fontSize.x;
-                p->h = f2d_default->fontSize.y;
-                ++i;
-                if(!(i = i % maxWidth))
-                    deltay += f2d_default->fontSize.y;
-            }
-        }
-        if(optimizeDeffects)
-        {
-            SDL_Surface *model = f2d_default->surfNormal;
-            int i, x, y, cx, cy;
-            Rect optimizedRect;
-            SDL_Color *pixel;
-            std::uint8_t flagBreaker;
-            for(i = 33; i != 255; ++i)
-            {
-                flagBreaker = 0;
-                optimizedRect = f2d_default->data[i];
-                // pitch это строка (ширина с объеденением в байтах) то есть x по оси
-                // если умножить pitch * на h-высоту то можно получить последний пиксель
-                for(x = 0; x < f2d_default->data[i].w / 2; ++x)
-                {
-                    // оптимизация с левой по правой
-                    if(!(flagBreaker & 1))
-                    {
-                        for(y = optimizedRect.h - 1; y >= 0; --y)
-                        {
-                            cx = optimizedRect.x + x;
-                            cy = optimizedRect.y + y;
-                            // NOTE: Формула пикселей для SDL :: Y Offset * (Pitch/BytesPerPixel) + X Offset
-                            pixel = (SDL_Color *) f2d_default->surfNormal->pixels + (cy * (model->pitch / model->format->BytesPerPixel) + cx);
-                            if(pixel->a) // isn't transparent
-                                break;
-                        }
-                        if(y == ~0)
-                            ++optimizedRect.x;
-                        else
-                            flagBreaker |= 1;
-                    }
-                    // оптимизация с права на лева
-                    if(!(flagBreaker & 2))
-                    {
-                        for(y = optimizedRect.h - 1; y >= 0; --y)
-                        {
-                            // Формула Y Offset * (Pitch/BytesPerPixel) + X Offset
-                            cx = optimizedRect.x + f2d_default->data[i].w - 1 - x;
-                            cy = optimizedRect.y + y;
-                            pixel = (SDL_Color *) f2d_default->surfNormal->pixels + (cy * (model->pitch / model->format->BytesPerPixel) + cx);
-                            if(pixel->a) // isn't transparent
-                                break;
-                        }
-                        if(y == -1)
-                            --optimizedRect.w;
-                        else
-                            flagBreaker |= 2;
-                    }
-
-                    if(flagBreaker == 3)
-                        break;
-                }
-                f2d_default->data[i] = optimizedRect;
-            }
-        }
-        f2d_default->compressed = static_cast<int>(optimizeDeffects);
+        font2d_setup_data(f2d_default, optimizeDeffects);
     }
 
     void font2d_string(Rect rect, const char *text, int len, int fontWidth, RoninEngine::UI::UIAlign textAlign, bool textWrap, bool hilight)
@@ -197,9 +235,11 @@ namespace RoninEngine::Runtime
         temp = (legacyVH[textAlign] & 15);
         if(temp)
         {
-            dst.y += rect.h / temp - fontSize.y / 2;
-            if(temp == 1)
-                dst.y += -textWidth / 2;
+            dst.y += rect.h / temp;
+            if(temp == 2)
+                dst.y += -fontSize.y / 2;
+            else if(temp == 1)
+                dst.y += -fontSize.y;
         }
 
         Vec2Int begin = *reinterpret_cast<Vec2Int *>(&dst);

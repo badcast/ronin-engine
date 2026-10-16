@@ -11,6 +11,16 @@ namespace RoninEngine::Runtime
 
     extern void text_get(std::string &text);
 
+    static void utf8_pop_back(std::string &s)
+    {
+        if(s.empty()) return;
+        while(!s.empty() && ((static_cast<unsigned char>(s.back()) & 0xC0) == 0x80))
+        {
+            s.pop_back();
+        }
+        if(!s.empty())
+            s.pop_back();
+    }
 } // namespace RoninEngine::Runtime
 
 namespace RoninEngine::UI
@@ -19,28 +29,21 @@ namespace RoninEngine::UI
 
     bool general_ui_render(UIElement &element, const UIState &uiState, bool &ui_focus)
     {
-        // TODO: OPTIMIZE HERE (HIGH PRIORITY)
-        static float dropDownLinear = 0;
         bool result = false;
+        bool isEnabled = (element.options & ElementEnableMask) && uiState.gui->handle->interactable;
         SDL_Texture *texture;
         SDL_Surface *surface;
         Rect rect;
-
-        // TODO: general drawing
-        // if (ms_hover) {
-        //     if (Input::get_key_down(SDL_SCANCODE_LCTRL)) {
-        //         element.rect.x = ms.x - element.rect.w / 2;
-        //         element.rect.y = ms.y - element.rect.h / 2;
-        //     }
-        // }
 
         switch(element.prototype)
         {
             case RGUI_TEXT:
             {
-                RenderUtility::SetColor(Color::white);
-                Render_String_ttf(element.text.data(), 15, element.rect.getXY(), Color::white);
-                // Render_String(render, element.rect, element.text.c_str(), element.text.size());
+                RenderUtility::SetColor(isEnabled ? Color::white : colorSpace.defaultInteraction.disabledState);
+                int fSize = element.fontWidth > 0 ? element.fontWidth : 15;
+                Render_String_ttf(element.text.data(), fSize, element.rect.getXY(), false);
+                if(isEnabled && uiState.ms_click)
+                    result = true;
                 break;
             }
 
@@ -48,10 +51,19 @@ namespace RoninEngine::UI
             {
                 static uint8_t pSize = 2; // pen size
                 static Rect inside = Rect(pSize, pSize, -pSize * 2, -pSize * 2);
-                bool show_down_side = Input::GetMouseDown(MouseButton::MouseLeft) == false || !uiState.ms_hover;
+                bool show_down_side = isEnabled && (Input::GetMouseDown(MouseButton::MouseLeft) == false || !uiState.ms_hover);
 
                 // fill
-                Color col(uiState.ms_hover ? colorSpace.defaultInteraction.pressState : colorSpace.defaultInteraction.normalState);
+                Color col;
+                if(!isEnabled)
+                    col = colorSpace.defaultInteraction.disabledState;
+                else if(uiState.ms_hover && Input::GetMouseDown(MouseButton::MouseLeft))
+                    col = colorSpace.defaultInteraction.pressState;
+                else if(uiState.ms_hover)
+                    col = colorSpace.defaultInteraction.hoverState;
+                else
+                    col = colorSpace.defaultInteraction.normalState;
+
                 rect = element.rect;
                 rect += inside / 2;
                 RenderUtility::SetColor(col);
@@ -67,28 +79,21 @@ namespace RoninEngine::UI
                 region.h -= (show_down_side ? 4 : 0);
                 SDL_RenderFillRect(gscope.renderer, reinterpret_cast<SDL_Rect *>(&region));
 
-                // SDL_RenderFillRect(renderer, (SDL_Rect*)&rect);
-
-                // render text
-                // Render_String(render, element.rect, element.text.c_str(), element.text.size(), 13,
-                // TextAlign::MiddleCenter, true, uiHover);
-                RenderUtility::SetColor(Color::gray);
+                RenderUtility::SetColor(isEnabled ? colorSpace.buttonText : Color::gray);
                 Render_String_ttf(element.text.data(), 12, rect.getXY() + (rect.getWH() - (show_down_side ? (Vec2Int::up * 4) : Vec2Int::zero)) / 2, true);
-                if((result = uiState.ms_click))
+                if(isEnabled && (result = uiState.ms_click))
                     uiState.gui->handle->button_clicked.insert(element.id);
                 break;
             }
 
             case RGUI_TEXT_EDIT:
             {
-                // uielement background
                 static const int thickness = 2;
                 static const Rect thick = {thickness, thickness, -thickness, -thickness};
                 static const Rect thickPer {1, 1, -1, -1};
                 rect = element.rect + thick;
 
-                // uielement background
-                RenderUtility::SetColor((uiState.ms_hover) ? colorSpace.defaultInteraction.normalState : colorSpace.defaultInteraction.hoverState);
+                RenderUtility::SetColor(isEnabled ? ((uiState.ms_hover || ui_focus) ? colorSpace.defaultInteraction.hoverState : colorSpace.defaultInteraction.normalState) : colorSpace.defaultInteraction.disabledState);
                 SDL_RenderFillRect(gscope.renderer, (SDL_Rect *) &rect);
                 RenderUtility::SetColor(Color::gray);
                 for(int x = 0; x < thickness; ++x)
@@ -97,38 +102,67 @@ namespace RoninEngine::UI
                     SDL_RenderDrawRect(gscope.renderer, (SDL_Rect *) &rect);
                 }
 
-                // draw main text
-                surface = TTF_RenderUTF8_Solid(pDefaultTTFFont, element.text.c_str(), *reinterpret_cast<SDL_Color *>(&colorSpace.editText));
-                if((texture = SDL_CreateTextureFromSurface(gscope.renderer, surface)) != nullptr)
+                if(isEnabled)
                 {
-                    rect = element.rect;
-                    SDL_QueryTexture(texture, nullptr, nullptr, &rect.w, &rect.h);
-                    rect.x += 5;
-                    rect.y += element.rect.h / 2 - rect.h / 2;
+                    if(!ui_focus && uiState.ms_click)
+                    {
+                        ui_focus = true;
+                        std::string flushInput;
+                        RoninEngine::Runtime::text_get(flushInput); // flush old keypresses
+                    }
+                    else if(ui_focus)
+                    {
+                        if(Input::GetKeyDown(KB_BACKSPACE))
+                        {
+                            utf8_pop_back(element.text);
+                            result = true;
+                        }
+                        if(Input::GetKeyDown(KB_RETURN) || Input::GetKeyDown(KB_KP_ENTER) || Input::GetKeyDown(KB_ESCAPE))
+                        {
+                            ui_focus = false;
+                        }
 
-                    SDL_RenderCopy(gscope.renderer, texture, nullptr, (SDL_Rect *) &(rect));
-
-                    SDL_DestroyTexture(texture);
-                    SDL_FreeSurface(surface);
-                }
-
-                // focusing intersection
-                if(ui_focus)
-                {
-                    std::string linput;
-                    RoninEngine::Runtime::text_get(linput);
-                    element.text += linput;
+                        std::string linput;
+                        RoninEngine::Runtime::text_get(linput);
+                        if(!linput.empty())
+                        {
+                            element.text += linput;
+                            result = true;
+                        }
+                    }
                 }
                 else
                 {
-                    // clik and focused
-                    if((ui_focus = result = uiState.ms_click))
+                    ui_focus = false;
+                }
+
+                // draw main text
+                int editFontSize = element.fontWidth > 0 ? element.fontWidth : 13;
+                TTF_SetFontSize(pDefaultTTFFont, editFontSize);
+                std::string displayText = element.text;
+                if(ui_focus && static_cast<int>(Time::time() * 2.0f) % 2 == 0)
+                    displayText += "|";
+
+                if(!displayText.empty())
+                {
+                    surface = TTF_RenderUTF8_Solid(pDefaultTTFFont, displayText.c_str(), *reinterpret_cast<SDL_Color *>(&colorSpace.editText));
+                    if(surface)
                     {
-                        // SDL_StartTextInput();
-                    }
-                    else
-                    {
-                        // SDL_StopTextInput();
+                        texture = SDL_CreateTextureFromSurface(gscope.renderer, surface);
+                        if(texture)
+                        {
+                            SDL_Rect srcR = {0, 0, surface->w, surface->h};
+                            rect = element.rect;
+                            rect.x += 5;
+                            rect.y += (element.rect.h - surface->h) / 2;
+                            rect.w = std::min(surface->w, std::max(1, element.rect.w - 10));
+                            rect.h = surface->h;
+                            srcR.w = rect.w;
+
+                            SDL_RenderCopy(gscope.renderer, texture, &srcR, (SDL_Rect *) &rect);
+                            SDL_DestroyTexture(texture);
+                        }
+                        SDL_FreeSurface(surface);
                     }
                 }
                 break;
@@ -136,84 +170,112 @@ namespace RoninEngine::UI
 
             case RGUI_HSLIDER:
             {
-                float ratio;
-                Vec2Int ms;
-                // clamp mouse point an inside
-                ms.x = Math::Clamp(uiState.ms.x, element.rect.x, element.rect.x + element.rect.w);
-                ms.y = Math::Clamp(uiState.ms.y, element.rect.y, element.rect.y + element.rect.h);
-                // get rect
+                SliderResource *slider = &element.resource.slider;
+                float prevVal = slider->value;
                 rect = *reinterpret_cast<SDL_Rect *>(&element.rect);
 
-                if(uiState.ms_click)
+                if(isEnabled)
                 {
-                    ui_focus = uiState.ms_click;
-                }
-
-                if(uiState.ms_hover && Input::GetMouseWheel())
-                {
-                    // step wheel mouse = ±0.1
-                    float percentage = ((&element.resource.slider)->min + (&element.resource.slider)->max) * (&element.resource.slider)->stepPercentage * Input::GetMouseWheel();
-                    (&element.resource.slider)->value = Math::Clamp((&element.resource.slider)->value + percentage, (&element.resource.slider)->min, (&element.resource.slider)->max);
-                }
-                else if(ui_focus || uiState.ms_hover)
-                {
-                    if((result = Input::GetMouseDown(MouseButton::MouseLeft)))
+                    if(uiState.ms_hover && Input::GetMouseWheel() != 0)
                     {
-                        // get *x* component from mouse point for set cursor point
-                        (&element.resource.slider)->value = Math::Map<float>((float) ms.x, (float) rect.x, (float) rect.x + rect.w, (&element.resource.slider)->min, (&element.resource.slider)->max);
+                        float delta = (slider->max - slider->min) * slider->stepPercentage * Input::GetMouseWheel();
+                        slider->value = Math::Clamp(slider->value + delta, slider->min, slider->max);
+                        result = (slider->value != prevVal);
+                    }
+                    else if(uiState.ms_hover && Input::GetMouseDown(MouseButton::MouseLeft))
+                    {
+                        ui_focus = true;
+                        int msX = Math::Clamp(uiState.ms.x, element.rect.x, element.rect.x + element.rect.w);
+                        float ratio = (element.rect.w > 0) ? (static_cast<float>(msX - element.rect.x) / element.rect.w) : 0.0f;
+                        slider->value = Math::Clamp(Math::Lerp(slider->min, slider->max, ratio), slider->min, slider->max);
+                        result = (slider->value != prevVal);
                     }
                 }
 
-                // Draw Slider Background
-
-                ratio = Math::Map((&element.resource.slider)->value, (&element.resource.slider)->min, (&element.resource.slider)->max, 0.f, 1.f);
+                float ratio = (slider->max > slider->min) ? ((slider->value - slider->min) / (slider->max - slider->min)) : 0.0f;
+                ratio = Math::Clamp01(ratio);
 
                 rect.h = 4;
                 rect.y += (element.rect.h - rect.h) / 2;
 
-                RenderUtility::SetColor(uiState.ms_hover ? Color::lightgray : Color::gray);
+                RenderUtility::SetColor(isEnabled ? (uiState.ms_hover ? Color::lightgray : Color::gray) : colorSpace.defaultInteraction.disabledState);
                 Color color = RenderUtility::GetColor();
                 boxColor(gscope.renderer, rect.x, rect.y, rect.x + rect.w, rect.y + rect.h, Color::slategray);
                 rectangleColor(gscope.renderer, rect.x, rect.y, rect.x + rect.w, rect.y + rect.h, color);
 
-                // Draw Slider Cursor
-
-                // Cursor width
+                // Cursor
                 rect.w = 20;
-                // Cursor Height
                 rect.h = 11;
-                // Cursor Horizontal position
-                rect.x += (int) element.rect.w * ratio - rect.w / 2;
-                // Cursor Vertical position
+                rect.x = element.rect.x + static_cast<int>(element.rect.w * ratio) - rect.w / 2;
                 rect.y = element.rect.y + (element.rect.h - rect.h) / 2;
 
-                // is mouse down
-                if(result)
-                {
-                    rect.y += 2;
-                }
-
-                // Cursor background
-                color = Color::darkgray;
+                color = isEnabled ? Color::darkgray : Color::lightgray;
                 boxColor(gscope.renderer, rect.x, rect.y, rect.x + rect.w, rect.y + rect.h, color);
-
-                // Cursor thickness
-                color = uiState.ms_hover ? Color::lightgray : Color::gray;
+                color = isEnabled ? (uiState.ms_hover ? Color::lightgray : Color::gray) : Color::darkgray;
                 rectangleColor(gscope.renderer, rect.x, rect.y, rect.x + rect.w + 1, rect.y + rect.h + 1, color);
 
-                // Draw Text under Cursor point
                 RenderUtility::SetColor(Color::black);
                 char buffer[32];
-                snprintf(buffer, sizeof(buffer), "%.1f", (&element.resource.slider)->value);
+                snprintf(buffer, sizeof(buffer), "%.1f", slider->value);
                 rect.x += rect.w / 2;
                 rect.y += rect.h / 2;
                 Render_String_ttf(buffer, 9, rect.getXY(), true);
-
                 break;
             }
 
             case RGUI_VSLIDER:
             {
+                SliderResource *slider = &element.resource.slider;
+                float prevVal = slider->value;
+                rect = *reinterpret_cast<SDL_Rect *>(&element.rect);
+
+                if(isEnabled)
+                {
+                    if(uiState.ms_hover && Input::GetMouseWheel() != 0)
+                    {
+                        float delta = (slider->max - slider->min) * slider->stepPercentage * Input::GetMouseWheel();
+                        slider->value = Math::Clamp(slider->value + delta, slider->min, slider->max);
+                        result = (slider->value != prevVal);
+                    }
+                    else if(uiState.ms_hover && Input::GetMouseDown(MouseButton::MouseLeft))
+                    {
+                        ui_focus = true;
+                        int msY = Math::Clamp(uiState.ms.y, element.rect.y, element.rect.y + element.rect.h);
+                        // Bottom to top
+                        float ratio = (element.rect.h > 0) ? (static_cast<float>((element.rect.y + element.rect.h) - msY) / element.rect.h) : 0.0f;
+                        slider->value = Math::Clamp(Math::Lerp(slider->min, slider->max, ratio), slider->min, slider->max);
+                        result = (slider->value != prevVal);
+                    }
+                }
+
+                float ratio = (slider->max > slider->min) ? ((slider->value - slider->min) / (slider->max - slider->min)) : 0.0f;
+                ratio = Math::Clamp01(ratio);
+
+                rect.w = 4;
+                rect.x += (element.rect.w - rect.w) / 2;
+
+                RenderUtility::SetColor(isEnabled ? (uiState.ms_hover ? Color::lightgray : Color::gray) : colorSpace.defaultInteraction.disabledState);
+                Color color = RenderUtility::GetColor();
+                boxColor(gscope.renderer, rect.x, rect.y, rect.x + rect.w, rect.y + rect.h, Color::slategray);
+                rectangleColor(gscope.renderer, rect.x, rect.y, rect.x + rect.w, rect.y + rect.h, color);
+
+                // Cursor
+                rect.w = 11;
+                rect.h = 20;
+                rect.x = element.rect.x + (element.rect.w - rect.w) / 2;
+                rect.y = element.rect.y + static_cast<int>(element.rect.h * (1.0f - ratio)) - rect.h / 2;
+
+                color = isEnabled ? Color::darkgray : Color::lightgray;
+                boxColor(gscope.renderer, rect.x, rect.y, rect.x + rect.w, rect.y + rect.h, color);
+                color = isEnabled ? (uiState.ms_hover ? Color::lightgray : Color::gray) : Color::darkgray;
+                rectangleColor(gscope.renderer, rect.x, rect.y, rect.x + rect.w + 1, rect.y + rect.h + 1, color);
+
+                RenderUtility::SetColor(Color::black);
+                char buffer[32];
+                snprintf(buffer, sizeof(buffer), "%.1f", slider->value);
+                rect.x += rect.w / 2;
+                rect.y += rect.h / 2;
+                Render_String_ttf(buffer, 9, rect.getXY(), true);
                 break;
             }
 
@@ -227,10 +289,16 @@ namespace RoninEngine::UI
                     sdlr.y = element.rect.y;
                     sdlr.w = element.rect.w == 0 ? sprite->width() : element.rect.w;
                     sdlr.h = element.rect.h == 0 ? sprite->height() : element.rect.h;
-                    SDL_Texture *tex = SDL_CreateTextureFromSurface(gscope.renderer, sprite->surface);
-                    SDL_RenderCopy(gscope.renderer, tex, nullptr, &sdlr);
-                    SDL_DestroyTexture(tex);
+                    SDL_Texture *tex = render_cache_texture(sprite);
+                    if(tex)
+                    {
+                        SDL_Rect srcR = *reinterpret_cast<SDL_Rect *>(&sprite->m_rect);
+                        SDL_RenderCopy(gscope.renderer, tex, &srcR, &sdlr);
+                        render_cache_unref(tex);
+                    }
                 }
+                if(isEnabled && uiState.ms_click)
+                    result = true;
                 break;
             }
 
@@ -238,11 +306,9 @@ namespace RoninEngine::UI
             {
                 static const int thickness = 2;
                 static const Rect thick = {thickness, thickness, -thickness, -thickness};
-                Rect r = element.rect;
-                r += thick;
+                Rect r = element.rect + thick;
 
-                // uielement background
-                RenderUtility::SetColor((uiState.ms_hover) ? colorSpace.defaultInteraction.normalState : colorSpace.defaultInteraction.hoverState);
+                RenderUtility::SetColor(isEnabled ? ((uiState.ms_hover || ui_focus) ? colorSpace.defaultInteraction.hoverState : colorSpace.defaultInteraction.normalState) : colorSpace.defaultInteraction.disabledState);
                 SDL_RenderFillRect(gscope.renderer, (SDL_Rect *) &r);
                 RenderUtility::SetColor(Color::gray);
                 for(int x = 0; x < thickness; ++x)
@@ -251,89 +317,90 @@ namespace RoninEngine::UI
                     SDL_RenderDrawRect(gscope.renderer, (SDL_Rect *) &r);
                 }
 
-                // draw main text
-                SDL_Texture *texture;
+                // draw header text
+                TTF_SetFontSize(pDefaultTTFFont, 13);
                 SDL_Surface *surf = TTF_RenderUTF8_Blended(pDefaultTTFFont, element.text.c_str(), *reinterpret_cast<SDL_Color *>(&colorSpace.dropdownText));
-                if((texture = SDL_CreateTextureFromSurface(gscope.renderer, surf)) != nullptr)
+                if(surf)
                 {
-                    r = element.rect;
-                    r.x += 5;
-                    SDL_QueryTexture(texture, nullptr, nullptr, &r.w, &r.h);
-                    r.y += element.rect.h / 2 - r.h / 2;
-
-                    SDL_RenderCopy(gscope.renderer, texture, nullptr, (SDL_Rect *) &(r));
-
-                    SDL_DestroyTexture(texture);
-                    texture = nullptr;
+                    texture = SDL_CreateTextureFromSurface(gscope.renderer, surf);
+                    if(texture)
+                    {
+                        r = element.rect;
+                        r.x += 5;
+                        SDL_QueryTexture(texture, nullptr, nullptr, &r.w, &r.h);
+                        r.y += (element.rect.h - r.h) / 2;
+                        SDL_RenderCopy(gscope.renderer, texture, nullptr, (SDL_Rect *) &r);
+                        SDL_DestroyTexture(texture);
+                    }
                     SDL_FreeSurface(surf);
                 }
-                // get resources
+
                 DropDownResource *link = element.resource.dropdown;
+                if(!link)
+                    break;
 
-                // show dropdown list
-                if(ui_focus)
+                if(isEnabled && uiState.ms_click && Vec2Int::HasIntersection(uiState.ms, element.rect))
                 {
-                    static int sz = 15;
-                    Rect elrect;
-                    r = element.rect;
-                    r.y += r.h;
+                    ui_focus = !ui_focus;
+                }
 
-                    r.h = dropDownLinear = Math::Ceil(Math::Lerp(dropDownLinear, link->second.size() * sz, Time::deltaTime()));
+                static const int sz = 24;
+                float targetH = (ui_focus && isEnabled) ? static_cast<float>(link->second.size() * sz) : 0.0f;
+                link->animHeight = Math::MoveTowards(link->animHeight, targetH, std::max(1.0f, Time::deltaTime() * 800.0f));
 
-                    RenderUtility::SetColor(colorSpace.defaultInteraction.hoverState);
-                    // draw background
+                if(link->animHeight > 1.0f)
+                {
+                    element.contextRect = Rect(element.rect.x, element.rect.y + element.rect.h, element.rect.w, static_cast<int>(link->animHeight));
+
+                    r = element.contextRect;
+                    RenderUtility::SetColor(colorSpace.defaultInteraction.normalState);
                     SDL_RenderFillRect(gscope.renderer, (SDL_Rect *) &r);
-                    if(link->second.size() * sz == r.h)
-                    {
-                        r.h = sz; // set for height
-                        elrect = r;
-                        r.x += 5;
+                    RenderUtility::SetColor(Color::darkgray);
+                    SDL_RenderDrawRect(gscope.renderer, (SDL_Rect *) &r);
 
-                        int index = 0;
-                        for(auto iter = std::begin(link->second); iter != std::end(link->second); ++iter, ++index)
+                    Rect elrect = {element.rect.x, element.rect.y + element.rect.h, element.rect.w, sz};
+                    int index = 0;
+                    for(auto iter = link->second.begin(); iter != link->second.end(); ++iter, ++index)
+                    {
+                        if(elrect.y + elrect.h > element.contextRect.y + element.contextRect.h + 2)
+                            break;
+
+                        bool itemHover = Vec2Int::HasIntersection(uiState.ms, elrect);
+                        if(itemHover)
                         {
-                            // draw element highligh
-                            if(!result && SDL_PointInRect((SDL_Point *) &(uiState.ms), (SDL_Rect *) &elrect))
-                            {
-                                RenderUtility::SetColor(colorSpace.defaultInteraction.pressState);
-                                SDL_RenderFillRect(gscope.renderer, (SDL_Rect *) &elrect);
-                                if(Input::GetMouseDown(MouseButton::MouseLeft))
-                                {
-                                    link->first = index;
-                                    element.text = *iter;
-                                    result = true;
-                                    ui_focus = false;
-                                    break;
-                                }
-                            }
-
                             RenderUtility::SetColor(colorSpace.defaultInteraction.hoverState);
-                            // Draw element text
-                            surf = TTF_RenderUTF8_Blended(pDefaultTTFFont, iter->c_str(), *reinterpret_cast<SDL_Color *>(&(link->first != index ? colorSpace.dropdownText : colorSpace.dropdownSelectedText)));
-                            texture = SDL_CreateTextureFromSurface(gscope.renderer, surf);
-                            SDL_QueryTexture(texture, nullptr, nullptr, &r.w, &r.h);
-
-                            r.y = elrect.y + elrect.h / 2 - r.h / 2;
-                            SDL_RenderCopy(gscope.renderer, texture, nullptr, (SDL_Rect *) &(r));
-
-                            SDL_DestroyTexture(texture);
-                            texture = nullptr;
-                            SDL_FreeSurface(surf);
-                            elrect.y += sz;
+                            SDL_RenderFillRect(gscope.renderer, (SDL_Rect *) &elrect);
+                            if(isEnabled && Input::GetMouseUp(MouseButton::MouseLeft))
+                            {
+                                link->first = index;
+                                element.text = *iter;
+                                result = true;
+                                ui_focus = false;
+                                link->animHeight = 0.0f;
+                                element.contextRect = Rect::zero;
+                                break;
+                            }
                         }
-                    }
 
-                    if(uiState.ms_click)
-                    {
-                        ui_focus = false;
-                        dropDownLinear = 0;
+                        surf = TTF_RenderUTF8_Blended(pDefaultTTFFont, iter->c_str(), *reinterpret_cast<SDL_Color *>(&(link->first == index ? colorSpace.dropdownSelectedText : colorSpace.dropdownText)));
+                        if(surf)
+                        {
+                            texture = SDL_CreateTextureFromSurface(gscope.renderer, surf);
+                            if(texture)
+                            {
+                                SDL_Rect textR = {elrect.x + 5, elrect.y + (elrect.h - surf->h) / 2, surf->w, surf->h};
+                                SDL_RenderCopy(gscope.renderer, texture, nullptr, &textR);
+                                SDL_DestroyTexture(texture);
+                            }
+                            SDL_FreeSurface(surf);
+                        }
+
+                        elrect.y += sz;
                     }
                 }
                 else
                 {
-                    // clik and shown
-                    if(uiState.ms_click)
-                        ui_focus = uiState.ms_click;
+                    element.contextRect = Rect::zero;
                 }
                 break;
             }
@@ -341,19 +408,19 @@ namespace RoninEngine::UI
             case RGUI_CHECKBOX:
             {
                 Rect startRect = element.rect;
-                if(uiState.ms_hover && Input::GetMouseDown(MouseButton::MouseLeft))
+                if(isEnabled && uiState.ms_hover && Input::GetMouseDown(MouseButton::MouseLeft))
                     startRect.y++;
 
                 rect = startRect;
 
-                RenderUtility::SetColor(uiState.ms_hover ? Color::white : Color::gray);
+                RenderUtility::SetColor(isEnabled ? (uiState.ms_hover ? Color::white : Color::gray) : colorSpace.defaultInteraction.disabledState);
                 Render_String_ttf(element.text.c_str(), 14, rect.getXY() + Vec2Int {17, 0}, false);
 
                 rect.w = 14;
                 rect.h = 14;
                 SDL_RenderFillRect(gscope.renderer, reinterpret_cast<SDL_Rect *>(&rect));
 
-                if((result = uiState.ms_click))
+                if(isEnabled && (result = uiState.ms_click))
                 {
                     element.resource.checkbox = !element.resource.checkbox;
                 }
@@ -362,15 +429,12 @@ namespace RoninEngine::UI
                 {
                     RenderUtility::SetColor(0xFF3a3a3a);
 
-                    // Vertical
                     rect.w = 4;
                     rect.h = 12;
                     rect.x += 7 - 2;
-
                     rect.y++;
                     SDL_RenderFillRect(gscope.renderer, reinterpret_cast<SDL_Rect *>(&rect));
 
-                    // Horizontal
                     rect.h = 4;
                     rect.w = 12;
                     rect.y = startRect.y + 7 - 2;
@@ -382,39 +446,58 @@ namespace RoninEngine::UI
 
             case RGUI_SPRITE_BUTTON:
             {
-                Sprite *sprite = uiState.ms_hover ? element.resource.spriteButton.hover : element.resource.spriteButton.normal;
-
-                SDL_Texture *texture = render_cache_texture(sprite);
+                Sprite *sprite = nullptr;
+                if(!isEnabled && element.resource.spriteButton.disable)
+                    sprite = element.resource.spriteButton.disable;
+                else if(uiState.ms_hover && element.resource.spriteButton.hover)
+                    sprite = element.resource.spriteButton.hover;
+                else
+                    sprite = element.resource.spriteButton.normal;
 
                 Vec2Int baseSize = element.rect.getWH();
-                render_texture_extension(texture, &baseSize, reinterpret_cast<SDL_Rect *>(&sprite->m_rect), reinterpret_cast<SDL_Rect *>(&element.rect), 0.0F);
-                render_cache_unref(texture);
+                if(sprite && sprite->surface)
+                {
+                    SDL_Texture *texture = render_cache_texture(sprite);
+                    if(texture)
+                    {
+                        render_texture_extension(texture, &baseSize, reinterpret_cast<SDL_Rect *>(&sprite->m_rect), reinterpret_cast<SDL_Rect *>(&element.rect), 0.0F);
+                        render_cache_unref(texture);
+                    }
+                }
 
-                sprite = element.resource.spriteButton.icon;
-                if(sprite == nullptr)
-                    break;
+                Sprite *icon = element.resource.spriteButton.icon;
+                if(icon && icon->surface)
+                {
+                    SDL_Texture *texture = render_cache_texture(icon);
+                    if(texture)
+                    {
+                        render_texture_extension(texture, &baseSize, reinterpret_cast<SDL_Rect *>(&icon->m_rect), reinterpret_cast<SDL_Rect *>(&element.rect), 0.0F);
+                        render_cache_unref(texture);
+                    }
+                }
 
-                texture = render_cache_texture(sprite);
-                render_texture_extension(texture, &baseSize, reinterpret_cast<SDL_Rect *>(&sprite->m_rect), reinterpret_cast<SDL_Rect *>(&element.rect), 0.0F);
-                render_cache_unref(texture);
-
-                result = uiState.ms_click;
-
+                if(isEnabled && (result = uiState.ms_click))
+                {
+                    uiState.gui->handle->button_clicked.insert(element.id);
+                }
                 break;
             }
             case RGUI_CUSTOM_OVERLAY:
                 UIData data {};
                 data.id = element.id;
                 data.rect = element.rect;
-                data.isMouseDown = uiState.ms_click;
-                if(data.isMouseHover = uiState.ms_hover)
+                data.isMouseDown = isEnabled && uiState.ms_click;
+                if((data.isMouseHover = uiState.ms_hover))
                     data.mousePoint = uiState.ms;
-                if(!element.resource.overlay.isInit)
+                if(!element.resource.overlay.isInit && element.resource.overlay.inspector)
                 {
                     element.resource.overlay.isInit = true;
                     element.resource.overlay.inspector->OnInit();
                 }
-                element.resource.overlay.inspector->OnDraw(&data);
+                if(element.resource.overlay.inspector)
+                    element.resource.overlay.inspector->OnDraw(&data);
+                if(isEnabled && uiState.ms_click)
+                    result = true;
                 break;
         }
 
@@ -430,19 +513,23 @@ namespace RoninEngine::UI
         {
             case RGUI_BUTTON:
             case RGUI_SPRITE_BUTTON:
+            case RGUI_TEXT:
+            case RGUI_PICTURE_BOX:
+            case RGUI_CUSTOM_OVERLAY:
                 (reinterpret_cast<UIEventVoid>(element->event))(element->id);
                 break;
             case RGUI_DROPDOWN:
-                (reinterpret_cast<UIEventInteger>(element->event))(element->id, (element->resource.dropdown->first));
+                if(element->resource.dropdown)
+                    (reinterpret_cast<UIEventInteger>(element->event))(element->id, (element->resource.dropdown->first));
                 break;
             case RGUI_HSLIDER:
             case RGUI_VSLIDER:
                 (reinterpret_cast<UIEventFloat>(element->event))(element->id, element->resource.slider.value);
                 break;
-            case RGUI_TEXT:
-            case RGUI_TEXT_EDIT:
-            case RGUI_PICTURE_BOX:
             case RGUI_CHECKBOX:
+                (reinterpret_cast<UIEventBool>(element->event))(element->id, element->resource.checkbox);
+                break;
+            case RGUI_TEXT_EDIT:
                 break;
         }
     }

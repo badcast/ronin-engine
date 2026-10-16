@@ -72,6 +72,7 @@ namespace RoninEngine
             T *operator->() const;
             T &operator*() const;
             explicit operator bool() const;
+            operator T*() const noexcept { return ptr_; }
         private:
             T *ptr_;
             void release();

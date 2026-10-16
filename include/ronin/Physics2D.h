@@ -18,5 +18,9 @@ namespace RoninEngine::Runtime
         // Математическая утилита: Спиральный обход (Storm Algorithm) вокруг точки
         // Если fillInside = true, обходит все внутренние ячейки (площадь), иначе только периметр.
         static void SimulateStorm(Vec2Int origin, int edges, std::function<void(const Vec2Int&)> predicate, bool fillInside = true);
+
+        // SAT Oriented Bounding Box collision check
+        static bool CheckCollision(Rectf rectA, float angleRadA, Rectf rectB, float angleRadB);
+        static bool CheckCollision(Transform *a, Vec2 sizeA, Transform *b, Vec2 sizeB);
     };
 } // namespace RoninEngine::Runtime

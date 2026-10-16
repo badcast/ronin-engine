@@ -29,6 +29,7 @@ const std::string Paths::GetRuntimeDir()
     if(baseDir == nullptr)
     {
         ronin_err_sdl2();
+        return "";
     }
 
     std::string str {baseDir};
@@ -44,6 +45,7 @@ const std::string Paths::GetPrefDir()
     if(prefPath == nullptr)
     {
         ronin_err_sdl2();
+        return "";
     }
 
     std::string str {prefPath};

@@ -55,15 +55,22 @@ void Random::SRand(std::uint32_t seed)
     if(seed == 0)
         seed = 1;
     __seed__ = seed;
+    internalRandom = internal_rand_custom;
 }
 
 int Random::Range(int min, int max)
 {
-    return min + internalRandom() % (max - min + 1);
+    if(min > max)
+        std::swap(min, max);
+    if(min == max)
+        return min;
+    return min + static_cast<int>(internalRandom() % static_cast<std::uint32_t>(max - min + 1));
 }
 
 float Random::Range(float min, float max)
 {
+    if(min > max)
+        std::swap(min, max);
     return Value() * (max - min) + min;
 }
 

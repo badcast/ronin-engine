@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Renderer.h"
+#include <vector>
 
 namespace RoninEngine::Runtime
 {
@@ -32,6 +33,9 @@ namespace RoninEngine::Runtime
     private:
         struct T2Data *m_t2data;
 
+        void ensure_root();
+        void update_navmesh_offset();
+
     public:
         Terrain2D();
         Terrain2D(const std::string &name, float width = 10, float height = 10);
@@ -41,9 +45,26 @@ namespace RoninEngine::Runtime
         RoninEngine::AI::NavMesh *get_navmesh2D();
 
         void setMesh(Rectf state, SpriteRef sprite);
+        void setMesh(Rectf state, SpriteRef sprite, bool isCollider);
+        void setMeshTile(int gridX, int gridY, SpriteRef sprite, Vec2 tileSize = Vec2::one, bool isCollider = false);
         void setTextureScale(Vec2 scale);
+        Vec2 getTextureScale() const;
 
-        void loadFrom(const TerrainData &terrainData);
+        void loadFrom(const TerrainData &terrainData, bool clearExisting = false);
+
+        void setCollider(const Rectf &worldRect, bool state = true);
+        void setCollider(const Vec2 &worldPoint, bool state = true);
+        void setColliderCircle(const Vec2 &worldCenter, float radius, bool state = true);
+        void clearColliders();
+        void clearMesh();
+        void clear();
+
+        TransformRef getRoot() const;
+        std::vector<SpriteRendererRef> getTiles() const;
+        std::size_t getTileCount() const;
+
+        void setZOrder(int zOrder);
+        void setLayer(int layer);
 
         const bool is_collider(const Vec2 destination);
 

@@ -27,12 +27,22 @@ namespace RoninEngine
                 RoninMemory::alloc_self(world->irs);
                 RoninMemory::alloc_self(world->irs->gui, world);
 
-                       // set state load
-                world->irs->requestUnloading = false;
+                world->irs->metricPixelsPerPoint = Vec2::one * defaultPixelsPerPoint;
                 // update internal loaded font
                 font2d_update(world);
 
                 loadedWorlds.insert(world);
+
+                if(world->irs->mainObject.isNull())
+                {
+                    World *prev = currentWorld;
+                    currentWorld = world;
+                    world->irs->mainObject = create_empty_gameobject();
+                    world->irs->mainObject->name("Main Object");
+                    world->irs->mainObject->transform()->name("Root");
+                    Matrix::matrix_remove(world->irs->mainObject->transform().ptr_);
+                    currentWorld = (prev != nullptr) ? prev : world;
+                }
             }
         }
 
@@ -100,10 +110,35 @@ namespace RoninEngine
             {
                 RoninMemory::free(cam_res);
             }
+            for(auto &pair : world->irs->renderCache)
+            {
+                if(pair.second.second)
+                    SDL_DestroyTexture(pair.second.second);
+            }
+            world->irs->renderCache.clear();
+            world->irs->renderCacheRefs.clear();
+            if(world->irs->legacy_font_normal)
+            {
+                SDL_DestroyTexture(world->irs->legacy_font_normal);
+                world->irs->legacy_font_normal = nullptr;
+            }
+            if(world->irs->legacy_font_hover)
+            {
+                SDL_DestroyTexture(world->irs->legacy_font_hover);
+                world->irs->legacy_font_hover = nullptr;
+            }
+            for(auto &pair : world->irs->matrix)
+            {
+                delete pair.second;
+            }
+            world->irs->matrix.clear();
             RoninMemory::free(world->irs);
             world->irs = nullptr;
             loadedWorlds.erase(world);
-            currentWorld = prevWorld;
+            if(currentWorld == world)
+                currentWorld = (prevWorld != world) ? prevWorld : nullptr;
+            else
+                currentWorld = prevWorld;
             return true;
         }
 
@@ -151,6 +186,9 @@ namespace RoninEngine
 
     World::World(const std::string &name) : m_name(name), irs(nullptr)
     {
+        internal_load_world(this);
+        if(currentWorld == nullptr)
+            currentWorld = this;
     }
 
     World::~World()
@@ -165,13 +203,13 @@ namespace RoninEngine
         switch(state)
         {
             case CameraEvent::CAM_DELETED:
-                // TODO: find free Camera and set as Main
                 if(mainCamera == target)
+                {
                     mainCamera = nullptr;
-                // BUG: MEMORY LEAK CAM RESOURCES
+                }
                 cameraResources.remove(target->res);
-
                 RoninMemory::free(target->res);
+                target->res = nullptr;
                 break;
             case CameraEvent::CAM_TARGET:
                 mainCamera = target;
@@ -185,11 +223,15 @@ namespace RoninEngine
         if(irs == nullptr)
             throw ronin_world_notloaded_error();
         std::list<Transform *> damaged;
-        for(auto& pair : currentWorld->irs->matrix)
+        for(auto& pair : irs->matrix)
         {
-            for (Transform* obj : pair.second->GetObjects())
+            if(!pair.second)
+                continue;
+            std::set<Transform*> objects;
+            pair.second->GetAllObjects(objects);
+            for(Transform* obj : objects)
             {
-                if (obj->isNull() || obj->_owner->m_layer != pair.first)
+                if(obj == nullptr || obj->isNull() || !obj->_owner || obj->_owner->m_layer != pair.first)
                 {
                     damaged.emplace_back(obj);
                 }
@@ -235,48 +277,151 @@ namespace RoninEngine
 
     int World::MatrixCacheCount()
     {
-        return 0;
+        if(irs == nullptr)
+            return 0;
+        int count = 0;
+        for(auto &pair : irs->matrix)
+        {
+            if(pair.second)
+                count += static_cast<int>(pair.second->CountAllObjects());
+        }
+        return count;
     }
 
     int World::MatrixCacheClear()
     {
-        return 0;
+        if(irs == nullptr)
+            return 0;
+        int cleared = 0;
+        for(auto &pair : irs->matrix)
+        {
+            if(pair.second)
+            {
+                cleared += static_cast<int>(pair.second->CountAllObjects());
+                pair.second->Clear();
+            }
+        }
+        return cleared;
     }
 
-    std::uint64_t World::StatCountRefLinks(){
-        return 0; // Deprecated due to intrusive Ref counting
+    std::uint64_t World::StatCountRefLinks()
+    {
+        if(irs == nullptr || irs->mainObject.isNull())
+            return 0;
+        std::uint64_t count = 0;
+        std::list<TransformRef> queue;
+        queue.push_back(irs->mainObject->transform());
+        while(!queue.empty())
+        {
+            TransformRef cur = queue.front();
+            queue.pop_front();
+            if(!cur) continue;
+            count += cur->hierarchy.size();
+            for(TransformRef &child : cur->hierarchy)
+                queue.push_back(child);
+        }
+        return count;
     }
 
-    std::uint64_t World::StatMaxRefDepth(){
-        return 0; // Deprecated due to intrusive Ref counting
+    std::uint64_t World::StatMaxRefDepth()
+    {
+        if(irs == nullptr || irs->mainObject.isNull())
+            return 0;
+        std::function<std::uint64_t(TransformRef)> getDepth = [&](TransformRef cur) -> std::uint64_t
+        {
+            if(!cur) return 0;
+            std::uint64_t maxChild = 0;
+            for(TransformRef &child : cur->hierarchy)
+                maxChild = std::max(maxChild, getDepth(child));
+            return 1 + maxChild;
+        };
+        return getDepth(irs->mainObject->transform());
+    }
+
+    void World::ObjectMoveTo(GameObject *target, World *newWorld)
+    {
+        if(!target || !newWorld || newWorld == this || !irs || !newWorld->irs || target->transform().isNull())
+            return;
+
+        TransformRef tr = target->transform();
+
+        // 1. Remove from current matrix
+        std::vector<TransformRef> allTransforms = tr->GetAllTransforms();
+        for(TransformRef &t : allTransforms)
+        {
+            if(t && t->_owner && t->_owner->m_active)
+            {
+                Matrix::matrix_remove(t.ptr_);
+            }
+        }
+
+        // 2. Unparent from old hierarchy and attach to newWorld root
+        if(tr->m_parent)
+        {
+            hierarchy_child_remove(tr->m_parent.ptr_, tr.ptr_);
+        }
+        tr->setParent(newWorld->irs->mainObject->transform(), false);
+
+        // 3. Move scripts from this world binders to new world
+        for(TransformRef &t : allTransforms)
+        {
+            if(!t || !t->_owner)
+                continue;
+            for(ComponentRef &comp : t->_owner->m_components)
+            {
+                if(auto beh = dynamic_cast<Behaviour*>(comp.ptr_))
+                {
+                    for(auto &pair : irs->runtimeScriptBinders)
+                    {
+                        if(pair.second.erase(beh) > 0)
+                        {
+                            newWorld->irs->runtimeScriptBinders[pair.first].insert(beh);
+                        }
+                    }
+                }
+            }
+            // 4. Update into new matrix
+            if(t->_owner->m_active)
+            {
+                World *prevWorld = currentWorld;
+                currentWorld = newWorld;
+                Matrix::matrix_update(t.ptr_);
+                currentWorld = prevWorld;
+            }
+        }
+
+        // 5. Transfer object count between worlds (GameObjects + Components)
+        int movedCount = 0;
+        for(TransformRef &t : allTransforms)
+        {
+            if(t && t->_owner)
+            {
+                ++movedCount;
+                movedCount += t->_owner->m_components.size();
+            }
+        }
+        this->irs->objects -= movedCount;
+        newWorld->irs->objects += movedCount;
     }
 
     std::string World::GetTreeOfHierarchy() const
     {
-        if(irs == nullptr)
+        if(irs == nullptr || irs->mainObject.isNull())
             return {};
-        static char delim = 0x32;
-        std::string delims;
         std::string result;
-        std::list<TransformRef> stack;
-        TransformRef target = irs->mainObject->transform();
-        while(target)
+        std::function<void(TransformRef, int)> traverse = [&](TransformRef cur, int depth)
         {
-            for(TransformRef& current : target->hierarchy)
-            {
-                stack.emplace_back(current);
-            }
-            result += delims;
-            result += target->name();
+            if(!cur || !cur->gameObject())
+                return;
+            result.append(depth * 2, ' ');
+            result += cur->name();
             result += "\n";
-            if(!stack.empty())
+            for(TransformRef &child : cur->hierarchy)
             {
-                target = stack.front();
-                stack.pop_front();
+                traverse(child, depth + 1);
             }
-            else
-                target = nullptr;
-        }
+        };
+        traverse(irs->mainObject->transform(), 0);
         return result;
     }
 
@@ -320,17 +465,29 @@ namespace RoninEngine
         if(irs == nullptr)
             throw ronin_world_notloaded_error();
         std::list<GameObjectRef> all_gobjects;
-        GameObjectRef next = irs->mainObject;
-        while(next)
+        if(irs->mainObject.isNull())
+            return all_gobjects;
+
+        std::list<TransformRef> queue;
+        queue.push_back(irs->mainObject->transform());
+
+        while(!queue.empty())
         {
-            for(TransformRef& e : next->transform()->hierarchy)
+            TransformRef cur = queue.front();
+            queue.pop_front();
+            if(cur.isNull() || cur->gameObject().isNull())
+                continue;
+
+            if(cur.ptr_ != irs->mainObject->transform().ptr_)
             {
-                all_gobjects.emplace_front(e->gameObject());
+                all_gobjects.push_back(cur->gameObject());
             }
-            if(next == all_gobjects.front())
-                next = nullptr;
-            else
-                next = all_gobjects.front();
+
+            for(TransformRef &child : cur->hierarchy)
+            {
+                if(!child.isNull())
+                    queue.push_back(child);
+            }
         }
         return all_gobjects;
     }

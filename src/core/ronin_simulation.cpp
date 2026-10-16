@@ -309,6 +309,13 @@ namespace RoninEngine
         Runtime::privateWorlds.clear();
 
 
+        for(SDL_Cursor *cur : gscope.sysCursors)
+        {
+            if(cur)
+                SDL_FreeCursor(cur);
+        }
+        gscope.sysCursors.clear();
+
         internal_input_release();
 
         Mix_Quit();
@@ -639,7 +646,6 @@ namespace RoninEngine
         SDL_MessageBoxButtonData btdt[4];
         std::string _lstrs[3];
         SDL_MessageBoxData msgbd {};
-        SDL_DisplayMode mode;
 
         btdt[0].flags = SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT | SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT;
         btdt[0].buttonid = 0;
@@ -649,19 +655,16 @@ namespace RoninEngine
         __templs[1] = Resolution::GetMidResolution();
         __templs[2] = Resolution::GetMaxResolution();
 
-        for(int s = 0; s < 4; ++s)
+        for(int s = 0; s < 3; ++s)
         {
-            btdt[s].buttonid = s+1;
+            btdt[s + 1].flags = 0;
+            btdt[s + 1].buttonid = s + 1;
 
-            _lstrs[s] += std::to_string(__templs[s].width);
-            _lstrs[s] += "x";
+            _lstrs[s] = std::to_string(__templs[s].width) + "x" +
+                        std::to_string(__templs[s].height) + " " +
+                        std::to_string(__templs[s].hz) + "Hz";
 
-            _lstrs[s] += std::to_string(__templs[s].height);
-            _lstrs[s] += " ";
-
-            _lstrs[s] += std::to_string(__templs[s].hz);
-
-            btdt[s].text = _lstrs[s].data();
+            btdt[s + 1].text = _lstrs[s].c_str();
         }
 
         msgbd.flags = SDL_MESSAGEBOX_INFORMATION;
@@ -670,15 +673,16 @@ namespace RoninEngine
         msgbd.numbuttons = sizeof(btdt) / sizeof(btdt[0]);
         msgbd.buttons = btdt;
 
-        int btId;
-        if(!SDL_ShowMessageBox(&msgbd, &btId) && btId)
+        int btId = 0;
+        if(!SDL_ShowMessageBox(&msgbd, &btId) && btId > 0 && btId <= 3)
         {
             if(applyScreen)
                 Show(__templs[btId - 1], false);
             resultIsOK = true;
+            return {resultIsOK, __templs[btId - 1]};
         }
 
-        return {resultIsOK, __templs[btId]};
+        return {false, Resolution {0, 0, 0}};
     }
 
     void RoninSimulator::RequestQuit()
@@ -910,7 +914,16 @@ namespace RoninEngine
         SDL_version linked;
         SDL_GetVersion(&linked);
 
-        version.Engine_Version = {0, 0, 0}; // TODO: Get Current Linked version
+#ifndef RONINENGINE_VERSION_MAJOR
+#define RONINENGINE_VERSION_MAJOR 0
+#endif
+#ifndef RONINENGINE_VERSION_MINOR
+#define RONINENGINE_VERSION_MINOR 0
+#endif
+#ifndef RONINENGINE_VERSION_PATCH
+#define RONINENGINE_VERSION_PATCH 1
+#endif
+        version.Engine_Version = {RONINENGINE_VERSION_MAJOR, RONINENGINE_VERSION_MINOR, RONINENGINE_VERSION_PATCH};
         SDL_memcpy(&version.SDL_Version, &linked, sizeof(Version));
         SDL_memcpy(&version.SDL_TTF_Version, TTF_Linked_Version(), sizeof(Version));
         SDL_memcpy(&version.SDL_IMG_Version, IMG_Linked_Version(), sizeof(Version));

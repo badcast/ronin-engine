@@ -5,27 +5,50 @@ namespace RoninEngine::Runtime
 {
 
     // TODO: Optimize here
-    bool CheckCollision(Rectf rectA, float angleA, Rectf rectB, float angleB)
+    bool CheckCollision(Rectf rectA, float angleRadA, Rectf rectB, float angleRadB)
     {
-        float angleRadA = angleA * (float) Math::Pi / 180.0f;
-        float angleRadB = angleB * (float) Math::Pi / 180.0f;
+        Vec2 cA {rectA.x + rectA.w / 2.0f, rectA.y + rectA.h / 2.0f};
+        Vec2 cB {rectB.x + rectB.w / 2.0f, rectB.y + rectB.h / 2.0f};
+        Vec2 eA {rectA.w / 2.0f, rectA.h / 2.0f};
+        Vec2 eB {rectB.w / 2.0f, rectB.h / 2.0f};
 
-        float centerX_A = rectA.x + rectA.w / 2.0f;
-        float centerY_A = rectA.y + rectA.h / 2.0f;
-        float centerX_B = rectB.x + rectB.w / 2.0f;
-        float centerY_B = rectB.y + rectB.h / 2.0f;
+        Vec2 uAx {Math::Cos(angleRadA), Math::Sin(angleRadA)};
+        Vec2 uAy {-Math::Sin(angleRadA), Math::Cos(angleRadA)};
+        Vec2 uBx {Math::Cos(angleRadB), Math::Sin(angleRadB)};
+        Vec2 uBy {-Math::Sin(angleRadB), Math::Cos(angleRadB)};
 
-        float sinB = Math::Sin(angleRadB);
-        float cosB = Math::Cos(angleRadB);
+        Vec2 d = cB - cA;
 
-        float xA_inB = cosB * (centerX_A - centerX_B) + sinB * (centerY_A - centerY_B) + centerX_B;
-        float yA_inB = -sinB * (centerX_A - centerX_B) + cosB * (centerY_A - centerY_B) + centerY_B;
-
-        if(xA_inB < rectB.x || xA_inB > rectB.x + rectB.w || yA_inB < rectB.y || yA_inB > rectB.y + rectB.h)
-        {
+        // Axis uAx
+        float rA = eA.x;
+        float rB = eB.x * std::abs(Vec2::Dot(uBx, uAx)) + eB.y * std::abs(Vec2::Dot(uBy, uAx));
+        if(std::abs(Vec2::Dot(d, uAx)) > rA + rB)
             return false;
-        }
+
+        // Axis uAy
+        rA = eA.y;
+        rB = eB.x * std::abs(Vec2::Dot(uBx, uAy)) + eB.y * std::abs(Vec2::Dot(uBy, uAy));
+        if(std::abs(Vec2::Dot(d, uAy)) > rA + rB)
+            return false;
+
+        // Axis uBx
+        rA = eA.x * std::abs(Vec2::Dot(uAx, uBx)) + eA.y * std::abs(Vec2::Dot(uAy, uBx));
+        rB = eB.x;
+        if(std::abs(Vec2::Dot(d, uBx)) > rA + rB)
+            return false;
+
+        // Axis uBy
+        rA = eA.x * std::abs(Vec2::Dot(uAx, uBy)) + eA.y * std::abs(Vec2::Dot(uAy, uBy));
+        rB = eB.y;
+        if(std::abs(Vec2::Dot(d, uBy)) > rA + rB)
+            return false;
+
         return true;
+    }
+
+    bool Collision::CheckCollision(Rectf rectA, float angleRadA, Rectf rectB, float angleRadB)
+    {
+        return RoninEngine::Runtime::CheckCollision(rectA, angleRadA, rectB, angleRadB);
     }
 
     Collision::Collision() : Collision("Collision")
@@ -80,9 +103,15 @@ namespace RoninEngine::Runtime
 
         for(Transform *cast : casts)
         {
+            if(cast == transform().ptr_)
+                continue;
+
             targets = cast->GetComponents<Collision>();
             for(CollisionRef &target : targets)
             {
+                if(target.ptr_ == this)
+                    continue;
+
                 angleRhs = target->transform()->angle() * Math::deg2rad;
                 r2.w = target->collideSize.x;
                 r2.h = target->collideSize.y;
@@ -104,7 +133,6 @@ namespace RoninEngine::Runtime
 
     void Collision::OnGizmos()
     {
-        return;
         RenderUtility::SetColor(Color::lime);
         RenderUtility::DrawRectangleRotate(transform()->position(), collideSize, transform()->angle() * Math::deg2rad);
     }

@@ -69,7 +69,7 @@ namespace RoninEngine::Runtime
                     last_inspected = static_cast<int>((last_inspected + 1) % sources.size());
                     break;
                 case ParticleSourceInspect::InspectRandom:
-                    last_inspected = Random::Range(0, sources.size());
+                    last_inspected = Random::Range(0, static_cast<int>(sources.size()) - 1);
                     break;
             }
 
@@ -166,14 +166,21 @@ namespace RoninEngine::Runtime
 
         if(destroyToo)
         {
-            drain->render->gameObject()->Destroy();
+            if(!drain->render.isNull() && !drain->render->gameObject().isNull())
+            {
+                drain->render->gameObject()->SetActive(false);
+                drain->render->gameObject()->Destroy();
+            }
         }
         else
         {
-            drain->render->gameObject()->SetActive(false);
-            // State clear render cache
-            drain->render->setSprite(nullptr);
-            cachedParticles.emplace_back(drain->render);
+            if(!drain->render.isNull() && !drain->render->gameObject().isNull())
+            {
+                drain->render->gameObject()->SetActive(false);
+                // State clear render cache
+                drain->render->setSprite(nullptr);
+                cachedParticles.emplace_back(drain->render);
+            }
         }
     }
 
@@ -277,64 +284,77 @@ namespace RoninEngine::Runtime
             }
 
                    // Update existing particles (drains)
-            for(std::set<ParticleDrain>::iterator drain = std::begin(impl->activeParticleDrains); drain != std::end(impl->activeParticleDrains); ++drain)
+            std::vector<ParticleDrain> toRemove;
+            for(const ParticleDrain &drain : impl->activeParticleDrains)
             {
-                if(drain->render->isNull())
+                if(drain.render.isNull() || drain.render->gameObject().isNull())
+                {
+                    toRemove.push_back(drain);
                     continue;
-                float drain_lifetime = t - drain->initTime;
+                }
+                float drain_lifetime = t - drain.initTime;
                 if(drain_lifetime >= impl->m_duration)
                 {
-                    impl->unlink_particle(this, &(*drain));
+                    impl->unlink_particle(this, &drain);
+                    toRemove.push_back(drain);
                     continue;
                 }
 
                 float drain_speed = Time::deltaTime() * speed;
 
-                float state_percentage;
-                int interpolateBegin, interpolateEnd;
+                float state_percentage = 0.0f;
+                int interpolateBegin = BEGIN_STATE, interpolateEnd = SIMULATE_STATE;
 
                 if(drain_lifetime <= impl->m_durationStartRange)
                 {
                     interpolateBegin = BEGIN_STATE;
-                    state_percentage = drain_lifetime / impl->m_durationStartRange;
+                    interpolateEnd = SIMULATE_STATE;
+                    state_percentage = (impl->m_durationStartRange > 0.0f) ? (drain_lifetime / impl->m_durationStartRange) : 1.0f;
                 }
                 else if(drain_lifetime >= impl->m_durationEndRange)
                 {
-                    interpolateBegin = END_STATE;
-                    state_percentage = drain_lifetime / impl->m_durationEndRange;
+                    interpolateBegin = SIMULATE_STATE;
+                    interpolateEnd = END_STATE;
+                    float denom = impl->m_duration - impl->m_durationEndRange;
+                    state_percentage = (denom > 0.0f) ? ((drain_lifetime - impl->m_durationEndRange) / denom) : 1.0f;
                 }
                 else
                 {
                     interpolateBegin = SIMULATE_STATE;
-                    state_percentage = drain_lifetime / impl->m_duration;
+                    interpolateEnd = SIMULATE_STATE;
+                    state_percentage = 1.0f;
                 }
+                state_percentage = Math::Clamp01(state_percentage);
 
-                interpolateEnd = Math::Min<int>(Math::Max<int>(interpolateBegin, interpolateBegin + 1), END_STATE);
-
-                       // Colorize
+                // Colorize
                 if(impl->colorable)
                 {
                     Color interpolate_from = InterpolationValue(interpolateBegin, impl->startColor, impl->centerColor, impl->endColor);
                     Color interpolate_to = InterpolationValue(interpolateEnd, impl->startColor, impl->centerColor, impl->endColor);
-                    drain->render->setColor(Color::Lerp(interpolate_from, interpolate_to, state_percentage));
+                    drain.render->setColor(Color::Lerp(interpolate_from, interpolate_to, state_percentage));
                 }
 
-                       // Scaling
+                // Scaling
                 if(impl->scalable)
                 {
                     Vec2 interpolate_from = InterpolationValue(interpolateBegin, impl->startSize, impl->centerSize, impl->endSize);
                     Vec2 interpolate_to = InterpolationValue(interpolateEnd, impl->startSize, impl->centerSize, impl->endSize);
-                    drain->render->setSize(Vec2::Lerp(interpolate_from, interpolate_to, state_percentage));
+                    drain.render->setSize(Vec2::Lerp(interpolate_from, interpolate_to, state_percentage));
                 }
 
-                       // Move, rotate
-                TransformRef particleTransform = drain->render->transform();
-                particleTransform->Translate(drain->direction * drain_speed);
+                // Move, rotate
+                TransformRef particleTransform = drain.render->transform();
+                particleTransform->Translate(drain.direction * drain_speed);
 
                 if(rotate)
                 {
                     particleTransform->angle(particleTransform->angle() + rotatePerFrame * drain_speed);
                 }
+            }
+
+            for(const auto &rem : toRemove)
+            {
+                impl->activeParticleDrains.erase(rem);
             }
 
             ParticleDrain drained;
@@ -420,6 +440,11 @@ namespace RoninEngine::Runtime
         setLimit(0);
     }
 
+    void ParticleSystem::setReservable(bool state)
+    {
+        this->reserving = state;
+    }
+
     void ParticleSystem::setLimit(int max)
     {
         if(max < 0)
@@ -432,10 +457,16 @@ namespace RoninEngine::Runtime
     {
         ClearReserved();
 
-        for(const ParticleDrain &drain : impl->activeParticleDrains)
+        if(currentWorld && currentWorld->irs && !currentWorld->irs->requestUnloading)
         {
-            drain.render->ClearOnDestroy();
-            drain.render->gameObject()->Destroy(); // destroy now
+            for(const ParticleDrain &drain : impl->activeParticleDrains)
+            {
+                if(!drain.render.isNull() && !drain.render->gameObject().isNull())
+                {
+                    drain.render->ClearOnDestroy();
+                    drain.render->gameObject()->Destroy();
+                }
+            }
         }
 
         impl->activeParticleDrains.clear();
@@ -446,12 +477,15 @@ namespace RoninEngine::Runtime
 
     void ParticleSystem::ClearReserved()
     {
-        for(SpriteRendererRef &drain : impl->cachedParticles)
+        if(currentWorld && currentWorld->irs && !currentWorld->irs->requestUnloading)
         {
-            if(drain.isNull())
-                continue;
-            drain->ClearOnDestroy();
-            drain->gameObject()->Destroy(); // destroy now
+            for(SpriteRendererRef &drain : impl->cachedParticles)
+            {
+                if(drain.isNull() || drain->gameObject().isNull())
+                    continue;
+                drain->ClearOnDestroy();
+                drain->gameObject()->Destroy();
+            }
         }
         impl->cachedParticles.clear();
         impl->cachedParticles.shrink_to_fit();

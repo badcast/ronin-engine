@@ -63,7 +63,11 @@ namespace RoninEngine::Runtime
         if(!HasInit())
             return -1;
 
-        auto IRS = World::GetCurrentWorld()->irs;
+        World *world = World::GetCurrentWorld();
+        if(!world || !world->irs)
+            return -1;
+
+        auto IRS = world->irs;
 
         int channel = -1;
         int lastChannel;
@@ -98,7 +102,8 @@ namespace RoninEngine::Runtime
         // if channel is not enough, request get new allocates
         if(channel == -1)
         {
-            int newReserve = Mix_AllocateChannels(Mix_AllocateChannels(SDL_QUERY) * 2);
+            int currentChannels = Mix_AllocateChannels(SDL_QUERY);
+            int newReserve = Mix_AllocateChannels(currentChannels * 2);
             IRS->audioChannels.resize(newReserve, false);
             channel = lastChannel; // it's n-1 ( size is ) +1
         }
@@ -108,7 +113,11 @@ namespace RoninEngine::Runtime
 
     bool RoninAudio::closeChannel(int channel)
     {
-        auto &channels = World::GetCurrentWorld()->irs->audioChannels;
+        World *world = World::GetCurrentWorld();
+        if(!world || !world->irs)
+            return false;
+
+        auto &channels = world->irs->audioChannels;
         if(HasInit() && channel < channels.size() && channel > -1)
         {
             // Request Close

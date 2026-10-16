@@ -1,5 +1,8 @@
 #include "ronin.h"
 #include "ronin_matrix.h"
+#include "Spotlight.h"
+#include "AudioSource.h"
+#include "MoveController2D.h"
 
 using namespace RoninEngine::Exception;
 
@@ -42,6 +45,18 @@ namespace RoninEngine
                 {
                     RoninMemory::alloc_self(instanceNew, *currentInstance);
                 }
+                else if constexpr(std::is_same_v<T, SimpleLight>)
+                {
+                    RoninMemory::alloc_self(instanceNew, *currentInstance);
+                }
+                else if constexpr(std::is_same_v<T, DirectLight>)
+                {
+                    RoninMemory::alloc_self(instanceNew, *currentInstance);
+                }
+                else if constexpr(std::is_same_v<T, Spotlight>)
+                {
+                    RoninMemory::alloc_self(instanceNew, *currentInstance);
+                }
                 else if constexpr(std::is_same_v<T, Behaviour>)
                 {
                     RoninMemory::alloc_self(instanceNew, *currentInstance);
@@ -54,9 +69,6 @@ namespace RoninEngine
             }
 
             Ref<T> result { currentInstance };
-            if(currentInstance)
-            {
-            }
 
             if constexpr(std::is_same_v<T, GameObject>)
             {
@@ -107,10 +119,18 @@ namespace RoninEngine
         GameObjectRef __instantiate(GameObjectRef obj)
         {
             GameObjectRef clone;
-            clone = create_game_object((obj->m_name.find(_cloneStr) != std::string::npos ? obj->m_name + _cloneStr : obj->m_name));
-            for(ComponentRef &replacement : obj->m_components)
+            clone = create_game_object((obj->m_name.find(_cloneStr) == std::string::npos ? obj->m_name + _cloneStr : obj->m_name));
+            clone->m_layer = obj->m_layer;
+            clone->m_zOrder = obj->m_zOrder;
+            clone->m_tag = obj->m_tag;
+            clone->m_active = obj->m_active;
+
+            for(ComponentRef comp : obj->m_components)
             {
-                TransformRef refTransform = DynamicCast<Transform>(replacement);
+                if(comp.isNull())
+                    continue;
+
+                TransformRef refTransform = DynamicCast<Transform>(comp);
                 if(refTransform)
                 {
                     TransformRef clonedTransform = clone->transform();
@@ -118,44 +138,75 @@ namespace RoninEngine
                     clonedTransform->position(refTransform->_position);
                     for(TransformRef &y : refTransform->hierarchy)
                     {
-                        // Clone childs recursive
+                        if(y.isNull() || y->gameObject().isNull())
+                            continue;
+                        // Clone children recursively
                         GameObjectRef yClone = __instantiate(y->gameObject());
                         yClone->transform()->setParent(clonedTransform, false);
-                        yClone->m_name = refTransform->gameObject()->m_name;
+                        yClone->m_name = y->gameObject()->m_name;
                         yClone->m_name.shrink_to_fit();
                     }
                     continue;
                 }
-                else if(CollisionRef cloneIt = DynamicCast<Collision>(replacement))
+
+                if(CollisionRef cloneFrom = DynamicCast<Collision>(comp))
                 {
-                    CollisionRef cloneFrom = cloneIt;
-                    cloneIt = clone->AddComponent<Collision>();
+                    CollisionRef cloneIt = clone->AddComponent<Collision>();
                     cloneIt->targetLayer = cloneFrom->targetLayer;
                     cloneIt->collideSize = cloneFrom->collideSize;
                     cloneIt->_enable = cloneFrom->_enable;
+                    cloneIt->onCollision = cloneFrom->onCollision;
                     continue;
                 }
-                else if(dynamic_cast<SpriteRenderer*>(replacement.ptr_))
+
+                ComponentRef clonedComp = nullptr;
+
+                if(auto sr = dynamic_cast<SpriteRenderer*>(comp.ptr_))
                 {
-                    replacement = StaticCast<Component>(instance_new<SpriteRenderer>(false, reinterpret_cast<SpriteRenderer *>(replacement.ptr_), nullptr));
+                    clonedComp = StaticCast<Component>(instance_new<SpriteRenderer>(false, sr, nullptr));
                 }
-                else if(dynamic_cast<Camera2D*>(replacement.ptr_))
+                else if(auto cam = dynamic_cast<Camera2D*>(comp.ptr_))
                 {
-                    replacement = StaticCast<Component>(instance_new<Camera2D>(false, reinterpret_cast<Camera2D*>(replacement.ptr_), nullptr));
-
-                    //} else if (dynamic_cast<Behaviour*>(replacement)) {
-
-                    /// replacement = instance_new<Behaviour>(false, reinterpret_cast<Behaviour*>(replacement),
-                    /// nullptr);
+                    clonedComp = StaticCast<Component>(instance_new<Camera2D>(false, cam, nullptr));
+                }
+                else if(auto ter = dynamic_cast<Terrain2D*>(comp.ptr_))
+                {
+                    clonedComp = StaticCast<Component>(instance_new<Terrain2D>(false, ter, nullptr));
+                }
+                else if(auto sl = dynamic_cast<SimpleLight*>(comp.ptr_))
+                {
+                    clonedComp = StaticCast<Component>(instance_new<SimpleLight>(false, sl, nullptr));
+                }
+                else if(auto dl = dynamic_cast<DirectLight*>(comp.ptr_))
+                {
+                    clonedComp = StaticCast<Component>(instance_new<DirectLight>(false, dl, nullptr));
+                }
+                else if(auto sp = dynamic_cast<Spotlight*>(comp.ptr_))
+                {
+                    clonedComp = StaticCast<Component>(instance_new<Spotlight>(false, sp, nullptr));
+                }
+                else if(auto as = dynamic_cast<AudioSource*>(comp.ptr_))
+                {
+                    AudioSourceRef toAudio = clone->AddComponent<AudioSource>();
+                    toAudio->setClip(as->getClip());
+                    continue;
+                }
+                else if(auto mc = dynamic_cast<MoveController2D*>(comp.ptr_))
+                {
+                    MoveController2DRef toMC = clone->AddComponent<MoveController2D>();
+                    toMC->speed = mc->speed;
+                    continue;
                 }
                 else
                 {
-                    static_assert(true, "Undefined type");
                     continue;
                 }
 
-                replacement->_owner = nullptr;
-                clone->AddComponent(replacement);
+                if(clonedComp)
+                {
+                    clonedComp->_owner = nullptr;
+                    clone->AddComponent(clonedComp);
+                }
             }
             return clone;
         }

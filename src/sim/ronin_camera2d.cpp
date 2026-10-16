@@ -8,13 +8,12 @@ namespace RoninEngine::Runtime
     {
     }
 
-    Camera2D::Camera2D(const std::string &name) : Camera(DESCRIBE_AS_ONLY_NAME(Camera2D)), visibleBorders(false), visibleGrids(false), visibleObjects(false)
+    Camera2D::Camera2D(const std::string &name) : Camera(DESCRIBE_AS_ONLY_NAME(Camera2D)), distanceEvcall(1), visibleBorders(false), visibleGrids(false), visibleObjects(false), visibleNames(false)
     {
         DESCRIBE_AS_MAIN(Camera2D);
-        distanceEvcall = 1;
     }
 
-    Camera2D::Camera2D(const Camera2D &other) : Camera(other.m_name), visibleBorders(other.visibleBorders), visibleGrids(other.visibleGrids), visibleObjects(other.visibleObjects)
+    Camera2D::Camera2D(const Camera2D &other) : Camera(other.m_name), distanceEvcall(other.distanceEvcall), visibleBorders(other.visibleBorders), visibleGrids(other.visibleGrids), visibleObjects(other.visibleObjects), visibleNames(other.visibleNames)
     {
     }
 

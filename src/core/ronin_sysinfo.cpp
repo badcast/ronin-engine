@@ -119,4 +119,32 @@ namespace RoninEngine::Perfomances
         // Get CPU Count from SDL API
         return SDL_GetCPUCount();
     }
+
+    RONIN_API int GetCPUUsage()
+    {
+#ifdef __linux__
+        static unsigned long long prevTotal = 0, prevIdle = 0;
+        std::ifstream file("/proc/stat");
+        if(file.is_open())
+        {
+            std::string cpu;
+            unsigned long long user, nice, system, idle, iowait, irq, softirq, steal;
+            if(file >> cpu >> user >> nice >> system >> idle >> iowait >> irq >> softirq >> steal)
+            {
+                unsigned long long totalIdle = idle + iowait;
+                unsigned long long total = user + nice + system + totalIdle + irq + softirq + steal;
+                unsigned long long deltaTotal = total - prevTotal;
+                unsigned long long deltaIdle = totalIdle - prevIdle;
+                prevTotal = total;
+                prevIdle = totalIdle;
+                if(deltaTotal > 0)
+                {
+                    int usage = static_cast<int>(100 * (deltaTotal - deltaIdle) / deltaTotal);
+                    return std::max(0, std::min(100, usage));
+                }
+            }
+        }
+#endif
+        return 0;
+    }
 } // namespace RoninEngine::Perfomances

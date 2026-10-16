@@ -6,8 +6,8 @@
 
 #define COLOR_IMPL_EXT API_EXPORT const Color
 
-constexpr const char* HexColorFormatRGB = "%02X%02X%02X%02X";
-constexpr const char* HexColorFormatRGBA = "%02X%02X%02X%02X%02X";
+constexpr const char* HexColorFormatRGB = "#%02X%02X%02X";
+constexpr const char* HexColorFormatRGBA = "#%02X%02X%02X%02X";
 
 using namespace RoninEngine::Runtime;
 using namespace RoninEngine::Exception;
@@ -67,16 +67,12 @@ std::string Color::toHex() const
 
 int Color::toRGBA() const
 {
-    // standart method: static_cast<int>(r) | (g << 8) | (b << 16) | (a << 24);
-    // fast method: ARGB as the pointer
-    return *reinterpret_cast<const int *>(this);
+    return (static_cast<int>(r) << 24) | (static_cast<int>(g) << 16) | (static_cast<int>(b) << 8) | static_cast<int>(a);
 }
 
 int Color::toARGB() const
 {
-    // standart method: static_cast<int>(a) | (r << 8) | (g << 16) | (b << 24);
-    // fast method: RGBA as the pointer
-    return static_cast<int>(a) | ((*reinterpret_cast<const int *>(this)) << 8);
+    return (static_cast<int>(a) << 24) | (static_cast<int>(r) << 16) | (static_cast<int>(g) << 8) | static_cast<int>(b);
 }
 
 std::tuple<float, float, float> Color::toHSV() const
@@ -133,12 +129,12 @@ bool Color::operator!=(const Color &rhs)
 
 Color::operator int() const
 {
-    return toRGBA();
+    return toARGB();
 }
 
 Color::operator native_color_t() const
 {
-    return *reinterpret_cast<const native_color_t *>(this);
+    return native_color_t { r, g, b, a };
 }
 
 Color Color::HexToColor(const char *hex)
@@ -154,14 +150,21 @@ Color Color::HexToColor(const char *hex)
         hex++;
 
     int len = strlen(hex);
-    char *chars = static_cast<char *>(alloca(len));
+    if(len == 0)
+        return Color::black;
+
+    char *chars = static_cast<char *>(alloca(len + 1));
 
     for(int i = 0; hex[i]; ++i)
         chars[i] = std::toupper(hex[i]);
+    chars[len] = '\0';
 
-    sscanf(chars, HexColorFormatRGBA, &red, &green, &blue, &alpha);
+    if(len >= 8)
+        sscanf(chars, "%02X%02X%02X%02X", &red, &green, &blue, &alpha);
+    else if(len >= 6)
+        sscanf(chars, "%02X%02X%02X", &red, &green, &blue);
 
-    return Color(red, green, blue, alpha);
+    return Color(static_cast<value_type>(red), static_cast<value_type>(green), static_cast<value_type>(blue), static_cast<value_type>(alpha));
 }
 
 Color Color::HexToColor(const std::string &hex)
@@ -291,16 +294,20 @@ std::tuple<std::int16_t, std::int16_t, std::int16_t> Color::RGBToHSVHalf(value_t
 
 Color Color::FromRGBA(int rgba)
 {
-    return {rgba};
+    return {
+        static_cast<value_type>((rgba >> 24) & 0xFF),
+        static_cast<value_type>((rgba >> 16) & 0xFF),
+        static_cast<value_type>((rgba >> 8) & 0xFF),
+        static_cast<value_type>(rgba & 0xFF)};
 }
 
 Color Color::FromARGB(int argb)
 {
     return {
-        /*r*/ static_cast<value_type>((argb >> 8) & 0xFF),
-        /*g*/ static_cast<value_type>((argb >> 16) & 0xFF),
-        /*b*/ static_cast<value_type>((argb >> 24) & 0xFF),
-        /*a*/ static_cast<value_type>(argb & 0xFF)};
+        static_cast<value_type>((argb >> 16) & 0xFF),
+        static_cast<value_type>((argb >> 8) & 0xFF),
+        static_cast<value_type>(argb & 0xFF),
+        static_cast<value_type>((argb >> 24) & 0xFF)};
 }
 
 Color Color::FromHSV(float h, float s, float v)
@@ -320,7 +327,8 @@ Color Color::Lerp(Color start, Color end, float t)
 
 std::vector<Color> Color::GetBasicColors()
 {
-    return {Color::red, Color::green, Color::blue, Color::silver, Color::gray, Color::maroon, Color::purple, Color::fuchsia, Color::lime, Color::olive, Color::yellow, Color::navy, Color::teal, Color::aqua, Color::black, Color::white};
+    static const std::vector<Color> basic = {Color::red, Color::green, Color::blue, Color::silver, Color::gray, Color::maroon, Color::purple, Color::fuchsia, Color::lime, Color::olive, Color::yellow, Color::navy, Color::teal, Color::aqua, Color::black, Color::white};
+    return basic;
 }
 
 std::vector<Color> Color::GetExtendedColors()

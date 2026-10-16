@@ -61,24 +61,23 @@ namespace RoninEngine::Runtime
 
     void GameObject::SetZOrderAll(int value, ZOrderBy orderBy)
     {
+        this->m_zOrder = value;
         std::list<GameObject*> __stack;
         __stack.emplace_back(this);
         while(__stack.size())
         {
-            switch(orderBy)
-            {
-                case LinearAdd:
-                    ++value;
-                    break;
-                case Inherit:;
-                default:;
-            }
-            for(TransformRef &h : __stack.front()->transform()->hierarchy)
-            {
-                __stack.emplace_back(h->gameObject().get());
-                h->_owner->m_zOrder = value;
-            }
+            GameObject *front = __stack.front();
             __stack.pop_front();
+            for(TransformRef &h : front->transform()->hierarchy)
+            {
+                if(h && h->_owner)
+                {
+                    if(orderBy == LinearAdd)
+                        ++value;
+                    h->_owner->m_zOrder = value;
+                    __stack.emplace_back(h->_owner.ptr_);
+                }
+            }
         }
     }
 
@@ -139,9 +138,7 @@ namespace RoninEngine::Runtime
 
     bool GameObject::isPrefab()
     {
-        // TODO: Create prefab type
-        throw Exception::ronin_implementation_error();
-        return transform()->m_parent.isNull() && currentWorld->irs->mainObject.ptr_ != this;
+        return transform()->m_parent.isNull() && (!currentWorld || !currentWorld->irs || currentWorld->irs->mainObject.ptr_ != this);
     }
 
     void GameObject::Destroy()
@@ -180,11 +177,13 @@ namespace RoninEngine::Runtime
             }
             else if(_utp.render = dynamic_cast<Renderer *>(component.ptr_))
             {
-              // TODO: awake on renderer
+                if(transform())
+                    Matrix::matrix_update(transform().ptr_);
             }
             else if(_utp.light = dynamic_cast<Light *>(component.ptr_))
             {
-              // TODO: awake on Light
+                if(transform())
+                    Matrix::matrix_update(transform().ptr_);
             }
             else if(_utp.cam = dynamic_cast<Camera*>(component.ptr_))
             {
