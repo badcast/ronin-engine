@@ -36,7 +36,13 @@ namespace RoninEngine::Runtime
             hierarchy_child_remove(lastParent.ptr_, from.ptr_);
         }
         if(!newParent)
-            hierarchy_append(World::GetCurrentWorld()->irs->mainObject->transform(), from); // nullptr as Root
+        {
+            World *cw = World::GetCurrentWorld();
+            if(cw && cw->irs && !cw->irs->mainObject.isNull())
+                hierarchy_append(cw->irs->mainObject->transform(), from); // nullptr as Root
+            else
+                from->m_parent = nullptr;
+        }
         else
         {
             from->m_parent = newParent->GetRef<Transform>();
@@ -46,7 +52,7 @@ namespace RoninEngine::Runtime
 
     void hierarchy_child_remove(Transform *parent, Transform *who)
     {
-        if(who->m_parent.ptr_ != parent)
+        if(!parent || !who || who->m_parent.ptr_ != parent)
             return;
         auto iter = std::find(parent->hierarchy.begin(), parent->hierarchy.end(), who->GetRef<Transform>());
         if(iter == parent->hierarchy.end())
@@ -57,6 +63,8 @@ namespace RoninEngine::Runtime
 
     void hierarchy_childs_remove(Transform *parent)
     {
+        if(!parent)
+            return;
         for(TransformRef &child : parent->hierarchy)
         {
             child->m_parent = nullptr;
@@ -66,6 +74,8 @@ namespace RoninEngine::Runtime
 
     void hierarchy_append(TransformRef parent, TransformRef who)
     {
+        if(!parent || !who)
+            return;
         auto iter = std::find(parent->hierarchy.begin(), parent->hierarchy.end(), who->GetRef<Transform>());
         if(iter == parent->hierarchy.end())
         {
@@ -143,11 +153,15 @@ namespace RoninEngine::Runtime
 
     void Transform::LookAt(TransformRef target)
     {
+        if(!target)
+            return;
         LookAt(target->_position, Vec2::down);
     }
 
     void Transform::LookAt(TransformRef target, Vec2 axis)
     {
+        if(!target)
+            return;
         LookAt(target->_position, axis);
     }
 
@@ -185,11 +199,15 @@ namespace RoninEngine::Runtime
 
     void Transform::LookAtLerp(TransformRef target, float t)
     {
-        LookAtLerp(target, Vec2::zero, t);
+        if(!target)
+            return;
+        LookAtLerp(target->_position, Vec2::zero, t);
     }
 
     void Transform::LookAtLerp(TransformRef target, Vec2 axis, float t)
     {
+        if(!target)
+            return;
         LookAtLerp(target->_position, axis, t);
     }
 
@@ -404,7 +422,8 @@ namespace RoninEngine::Runtime
 
     TransformRef Transform::parent() const
     {
-        if(m_parent.get() == currentWorld->irs->mainObject->transform().get())
+        if(currentWorld && currentWorld->irs && !currentWorld->irs->mainObject.isNull() &&
+           m_parent.get() == currentWorld->irs->mainObject->transform().get())
             return nullptr;
 
         return m_parent;

@@ -716,9 +716,12 @@ namespace RoninEngine::UI
     // It's main GUI drawer
     void native_draw_render(GUI *gui)
     {
+        if(gui == nullptr || gui->handle == nullptr)
+            return;
+
         GUIResources *handle = gui->handle;
 
-        if(handle->visible == false)
+        if(handle->visible == false || handle->owner == nullptr || handle->owner->irs == nullptr)
             return;
 
         uid id;

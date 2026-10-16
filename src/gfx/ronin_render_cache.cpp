@@ -5,6 +5,9 @@ namespace RoninEngine::Runtime
 {
     SDL_Texture *render_make_texture(SDL_Surface *surface)
     {
+        if(gscope.renderer == nullptr || surface == nullptr)
+            return nullptr;
+
         SDL_Texture *texture;
 
 // Use by SDL_CreateTextureFromSurface ...
@@ -258,7 +261,7 @@ namespace RoninEngine::Runtime
         SDL_Texture *destTexture;
         SDL_Texture *prevTargetTexture;
 
-        if(texture == nullptr || extent == nullptr || extent->w <= 0 || extent->h <= 0)
+        if(gscope.renderer == nullptr || texture == nullptr || extent == nullptr || extent->w <= 0 || extent->h <= 0)
         {
             return;
         }

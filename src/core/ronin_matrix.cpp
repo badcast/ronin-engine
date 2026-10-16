@@ -353,9 +353,11 @@ namespace RoninEngine::Runtime::Matrix
 
     void matrix_get_intersects(const Rectf& rect, int layer, std::set<Transform*>& out)
     {
+        if(!currentWorld || !currentWorld->irs)
+            return;
         auto& matrix = currentWorld->irs->matrix;
         auto it = matrix.find(layer);
-        if (it != matrix.end())
+        if (it != matrix.end() && it->second)
         {
             it->second->Retrieve(out, rect);
         }
@@ -363,10 +365,13 @@ namespace RoninEngine::Runtime::Matrix
 
     void matrix_get_intersects(const Rectf& rect, std::set<Transform*>& out)
     {
+        if(!currentWorld || !currentWorld->irs)
+            return;
         auto& matrix = currentWorld->irs->matrix;
         for (auto& pair : matrix)
         {
-            pair.second->Retrieve(out, rect);
+            if (pair.second)
+                pair.second->Retrieve(out, rect);
         }
     }
 } // namespace RoninEngine::Runtime::Matrix

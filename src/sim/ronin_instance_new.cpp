@@ -189,12 +189,15 @@ namespace RoninEngine
                 {
                     AudioSourceRef toAudio = clone->AddComponent<AudioSource>();
                     toAudio->setClip(as->getClip());
+                    toAudio->setVolume(as->getVolume());
+                    toAudio->_enable = as->_enable;
                     continue;
                 }
                 else if(auto mc = dynamic_cast<MoveController2D*>(comp.ptr_))
                 {
                     MoveController2DRef toMC = clone->AddComponent<MoveController2D>();
                     toMC->speed = mc->speed;
+                    toMC->_enable = mc->_enable;
                     continue;
                 }
                 else
@@ -204,6 +207,7 @@ namespace RoninEngine
 
                 if(clonedComp)
                 {
+                    clonedComp->_enable = comp->_enable;
                     clonedComp->_owner = nullptr;
                     clone->AddComponent(clonedComp);
                 }

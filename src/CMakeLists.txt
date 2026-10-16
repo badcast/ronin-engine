@@ -180,4 +180,5 @@ target_compile_definitions(RoninCore
                            PRIVATE RGE_LINKED_TARGETS="${RGE_LINKED_NAMES_STR}"
                                    RONINENGINE_VERSION_MAJOR=${PROJECT_VERSION_MAJOR}
                                    RONINENGINE_VERSION_MINOR=${PROJECT_VERSION_MINOR}
-                                   RONINENGINE_VERSION_PATCH=${PROJECT_VERSION_PATCH})
+                                   RONINENGINE_VERSION_PATCH=${PROJECT_VERSION_PATCH}
+                                   RONINENGINE_VERSION_STRING="${RONINENGINE_VERSION_STRING}")

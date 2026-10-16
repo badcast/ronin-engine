@@ -154,7 +154,7 @@ namespace RoninEngine::AI
         Vec2 vec2(shedule->_xsize / 2.f, shedule->_ysize / 2.f);
         vec2.x = (range.x - vec2.x) * worldScale.x;
         vec2.y = -(range.y - vec2.y) * worldScale.y;
-        return vec2 + worldOffset;
+        return vec2 - worldOffset;
     }
 
     const Vec2 NavMesh::PointToWorldPoint(int x, int y)
@@ -162,7 +162,7 @@ namespace RoninEngine::AI
         Vec2 vec2(shedule->_xsize / 2.f, shedule->_ysize / 2.f);
         vec2.x = (x - vec2.x) * worldScale.x;
         vec2.y = -(y - vec2.y) * worldScale.y;
-        return vec2 + worldOffset;
+        return vec2 - worldOffset;
     }
 
     const Vec2 NavMesh::NeuronToWorldPoint(Neuron *neuron)

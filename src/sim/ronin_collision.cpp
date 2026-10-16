@@ -103,13 +103,13 @@ namespace RoninEngine::Runtime
 
         for(Transform *cast : casts)
         {
-            if(cast == transform().ptr_)
+            if(!cast || cast == transform().ptr_ || !cast->_owner)
                 continue;
 
             targets = cast->GetComponents<Collision>();
             for(CollisionRef &target : targets)
             {
-                if(target.ptr_ == this)
+                if(!target || target.ptr_ == this)
                     continue;
 
                 angleRhs = target->transform()->angle() * Math::deg2rad;

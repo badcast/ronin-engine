@@ -212,7 +212,7 @@ void Terrain2D::loadFrom(const TerrainData &terrainData, bool clearExisting)
     for(int i = 0; i < terrainData.dataCount; ++i)
     {
         const TerrainTextured &textured = terrainData.textured[i];
-        if(textured.atlasIndex < 0 || textured.atlasIndex >= terrainData.atlasCount)
+        if(textured.atlasIndex < 0 || textured.atlasIndex >= terrainData.atlasCount || !textured.texturedRegion)
             continue;
         Atlas &atlas = terrainData.atlases[textured.atlasIndex];
         for(std::uint32_t r = 0; r < textured.regionCount; ++r)

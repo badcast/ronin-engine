@@ -3,11 +3,11 @@
 
 namespace RoninEngine::Runtime
 {
-    Atlas::Atlas() : src(nullptr), _sprites {}, _nameCache {}, _cacheDirty(false)
+    Atlas::Atlas() : src(nullptr), _sprites {}, _nameCache {}, _cacheDirty(true)
     {
     }
 
-    Atlas::Atlas(Image *source) : src(source), _sprites {}, _nameCache {}, _cacheDirty(false)
+    Atlas::Atlas(Image *source) : src(source), _sprites {}, _nameCache {}, _cacheDirty(true)
     {
     }
 
@@ -91,13 +91,18 @@ namespace RoninEngine::Runtime
 
     SpriteRef Atlas::GetSpriteFromName(const std::string &value)
     {
-        if(_cacheDirty)
+        if(_cacheDirty || (_nameCache.empty() && !_sprites.empty()))
         {
             rebuildCache();
         }
         auto it = _nameCache.find(value);
         if(it != _nameCache.end())
             return it->second;
+        for(const auto &sprite : _sprites)
+        {
+            if(sprite && sprite->name == value)
+                return sprite;
+        }
         return nullptr;
     }
 
@@ -181,8 +186,8 @@ namespace RoninEngine::Runtime
         if(tileWidth <= 0 || tileHeight <= 0)
             return {};
 
-        int totalW = src ? src->w : (!_sprites.empty() ? _sprites.front()->m_rect.w : 0);
-        int totalH = src ? src->h : (!_sprites.empty() ? _sprites.front()->m_rect.h : 0);
+        int totalW = src ? src->w : ((!_sprites.empty() && _sprites.front()) ? _sprites.front()->m_rect.w : 0);
+        int totalH = src ? src->h : ((!_sprites.empty() && _sprites.front()) ? _sprites.front()->m_rect.h : 0);
 
         if(totalW <= 0 || totalH <= 0)
             return {};

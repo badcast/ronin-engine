@@ -4,9 +4,9 @@
 
 using namespace RoninEngine;
 
-#ifdef WIN32
+#if defined(_WIN32) || defined(WIN32)
 static const char seperator = '\\';
-#elif __unix__ || __linux__
+#else
 static const char seperator = '/';
 #endif
 
@@ -61,16 +61,16 @@ char Paths::GetPathSeperatorOS()
 
 std::string Paths::MakePathValid(std::string path)
 {
-    for(int x = 0; x < path.length(); ++x)
+    for(size_t x = 0; x < path.length(); ++x)
     {
-        char *left = &path[x];
-#ifdef WIN32
-        if(*left == '/')
-#elif __unix__ || __linux__
-        if(*left == '\\')
+        char &c = path[x];
+#if defined(_WIN32) || defined(WIN32)
+        if(c == '/')
+#else
+        if(c == '\\')
 #endif
         {
-            *left = seperator;
+            c = seperator;
         }
     }
 

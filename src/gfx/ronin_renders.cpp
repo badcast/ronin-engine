@@ -65,9 +65,10 @@ namespace RoninEngine::Runtime
             return;
 
         camera->res->culled = 0;
+        params.orders.clear();
 
         params.camera_position = camera->transform()->position();
-        params.root_transform = World::GetCurrentWorld()->irs->mainObject->transform().ptr_;
+        params.root_transform = (!currentWorld->irs->mainObject.isNull()) ? currentWorld->irs->mainObject->transform().ptr_ : nullptr;
         params.wpLeftTop = Camera::ScreenToWorldPoint(Vec2::zero);
         params.wpRightBottom = Camera::ScreenToWorldPoint(Vec2(gscope.activeResolution.width, gscope.activeResolution.height));
         params.edges = Math::Number(Math::Max(std::fabs(params.wpRightBottom.x - params.camera_position.x), std::fabs(params.wpRightBottom.y - params.camera_position.y))) + 5 + camera->distanceEvcall;

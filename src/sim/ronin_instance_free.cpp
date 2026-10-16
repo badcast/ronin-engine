@@ -188,9 +188,14 @@ namespace RoninEngine
 #define self (_knife.audioSource)
             else if((self = dynamic_cast<AudioSource*>(candidate)))
             {
+                self->Stop();
                 self->setClip(nullptr);
                 // Close opened channel
-                RoninAudio::closeChannel(self->data->targetChannel);
+                if(self->data && self->data->targetChannel != -1)
+                {
+                    RoninAudio::closeChannel(self->data->targetChannel);
+                    self->data->targetChannel = -1;
+                }
             }
 #undef self
 
@@ -283,10 +288,10 @@ namespace RoninEngine
                 if(range_begin != range_end)
                 {
                     COLLECTOR->erase(range_begin, range_end);
-                    do
+                    while(!harakiri_candidates.empty())
                     {
                         sepuku_GameObject((*harakiri_candidates.begin())->GetRef<GameObject>(), &harakiri_candidates);
-                    } while(!harakiri_candidates.empty());
+                    }
                 }
                 if(COLLECTOR->empty())
                 {

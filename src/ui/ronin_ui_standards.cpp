@@ -536,30 +536,35 @@ namespace RoninEngine::UI
 
     void Render_String_ttf(const char *text, int fontSize, const Runtime::Vec2Int &screenPoint, bool alignCenter, bool blend)
     {
-        SDL_Texture *texture;
-        SDL_Surface *surf;
+        if(text == nullptr || *text == '\0' || pDefaultTTFFont == nullptr || gscope.renderer == nullptr)
+            return;
 
         TTF_SetFontSize(pDefaultTTFFont, fontSize);
 
-        surf = blend ? TTF_RenderUTF8_Blended(pDefaultTTFFont, text, RenderUtility::GetColor()) : TTF_RenderUTF8_Solid(pDefaultTTFFont, text, RenderUtility::GetColor());
+        SDL_Surface *surf = blend ? TTF_RenderUTF8_Blended(pDefaultTTFFont, text, RenderUtility::GetColor()) : TTF_RenderUTF8_Solid(pDefaultTTFFont, text, RenderUtility::GetColor());
         if(surf)
         {
-            SDL_Rect r {screenPoint.x, screenPoint.y, surf->w, surf->h};
-            texture = SDL_CreateTextureFromSurface(gscope.renderer, surf);
-
-            if(alignCenter)
+            SDL_Texture *texture = SDL_CreateTextureFromSurface(gscope.renderer, surf);
+            if(texture)
             {
-                r.x -= r.w / 2;
-                r.y -= r.h / 2;
+                SDL_Rect r {screenPoint.x, screenPoint.y, surf->w, surf->h};
+                if(alignCenter)
+                {
+                    r.x -= r.w / 2;
+                    r.y -= r.h / 2;
+                }
+                SDL_RenderCopy(gscope.renderer, texture, nullptr, &r);
+                SDL_DestroyTexture(texture);
             }
-            SDL_RenderCopy(gscope.renderer, texture, nullptr, &r);
-            SDL_DestroyTexture(texture);
             SDL_FreeSurface(surf);
         }
     }
 
     int Single_TextWidth_WithCyrilic(const std::string &text, int fontSize)
     {
+        if(!f2d_default || !f2d_default->data)
+            return 0;
+
         int width = 0;
         for(auto iter = begin(text); iter != end(text); ++iter)
         {

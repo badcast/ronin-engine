@@ -100,18 +100,25 @@ namespace RoninEngine
                 gscope.config.renderBackend = RenderDriverInfo::RenderBackend::CPU;
             else
                 gscope.config.renderBackend = RenderDriverInfo::RenderBackend::GPU;
+
+            if(gscope.renderer != nullptr)
+            {
+                SDL_DestroyRenderer(gscope.renderer);
+                gscope.renderer = nullptr;
+            }
         }
 
         if(gscope.config.conf & CONF_RELOAD_WORLD)
         {
-            lastWorld = currentWorld;    // Switched world first unload after load
-            preloadWorld = currentWorld; // Switched world as Newer is preload
-            if(std::end(privateWorlds) != privateWorlds.find(lastWorld))
+            if(currentWorld)
             {
-                internal_unload_world(lastWorld);
+                World *reloadingWorld = currentWorld;
+                internal_unload_world(reloadingWorld);
+                preloadWorld = reloadingWorld;
+                currentWorld = reloadingWorld;
                 lastWorld = nullptr;
+                gscope.internalWorldLoaded = false;
             }
-            gscope.internalWorldLoaded = false;
         }
 
         gscope.config.conf = CONF_RENDER_NOCONF;
@@ -125,6 +132,9 @@ namespace RoninEngine
 
     void internal_draw_debug()
     {
+        if(currentWorld == nullptr || currentWorld->irs == nullptr || gscope.renderer == nullptr)
+            return;
+
         constexpr int debugFontSize = 11;
 
         static std::uint32_t max_elements = sizeof(debugLabels) / sizeof(debugLabels[0]);
@@ -277,11 +287,14 @@ namespace RoninEngine
 
     void RoninSimulator::Finalize()
     {
-        if(gscope.activeWindow == nullptr)
+        if(!SDL_WasInit(0) && gscope.activeWindow == nullptr)
             return;
 
-        SDL_DestroyWindow(gscope.activeWindow);
-        gscope.activeWindow = nullptr;
+        if(gscope.activeWindow != nullptr)
+        {
+            SDL_DestroyWindow(gscope.activeWindow);
+            gscope.activeWindow = nullptr;
+        }
 
         Runtime::free_legacy_font();
                                      // NOTE: Free Global Resources
@@ -296,13 +309,15 @@ namespace RoninEngine
 
 
                // unload existence worlds
-        for(World *pinned : Runtime::loadedWorlds)
+        std::set<World *> worldsToUnload = Runtime::loadedWorlds;
+        for(World *pinned : worldsToUnload)
         {
             Runtime::internal_unload_world(pinned);
         }
         Runtime::loadedWorlds.clear();
 
-        for(World *pinned : Runtime::privateWorlds)
+        std::set<World *> worldsToFree = Runtime::privateWorlds;
+        for(World *pinned : worldsToFree)
         {
             RoninMemory::free(pinned);
         }
@@ -430,35 +445,34 @@ namespace RoninEngine
                     lastWorld = nullptr;
                 }
 
-                if(gscope.renderer != nullptr)
+                if(preloadWorld == nullptr)
                 {
-                    // Destroy last renderer
-                    SDL_DestroyRenderer(gscope.renderer);
-                    gscope.renderer = nullptr;
-                }
-
-                if(currentWorld == nullptr)
-                {
-                    gscope.queueWatcher.delaySystem = Time::EndWatch();
-                    goto end_simulate;
+                    if(currentWorld == nullptr)
+                    {
+                        gscope.queueWatcher.delaySystem = Time::EndWatch();
+                        goto end_simulate;
+                    }
                 }
                 else
                 {
                     // On Runtime Loading world
-                    std::uint32_t renderFlags = SDL_RENDERER_TARGETTEXTURE;
-                    if(gscope.config.renderBackend == RenderDriverInfo::RenderBackend::CPU)
-                        renderFlags |= SDL_RENDERER_SOFTWARE;
-                    else
-                        renderFlags |= SDL_RENDERER_ACCELERATED;
-                    // on first load level
-                    gscope.renderer = SDL_CreateRenderer(gscope.activeWindow, -1, renderFlags);
                     if(gscope.renderer == nullptr)
-                        ShowMessageFail(SDL_GetError());
-                    // Set blendmode
-                    SDL_SetRenderDrawBlendMode(gscope.renderer, SDL_BLENDMODE_BLEND);
-                    // on swtiched and init resources, even require
-                    Runtime::internal_load_world(preloadWorld);
+                    {
+                        std::uint32_t renderFlags = SDL_RENDERER_TARGETTEXTURE;
+                        if(gscope.config.renderBackend == RenderDriverInfo::RenderBackend::CPU)
+                            renderFlags |= SDL_RENDERER_SOFTWARE;
+                        else
+                            renderFlags |= SDL_RENDERER_ACCELERATED;
+                        gscope.renderer = SDL_CreateRenderer(gscope.activeWindow, -1, renderFlags);
+                        if(gscope.renderer == nullptr)
+                            ShowMessageFail(SDL_GetError());
+                        // Set blendmode
+                        SDL_SetRenderDrawBlendMode(gscope.renderer, SDL_BLENDMODE_BLEND);
+                    }
+                    // on switched and init resources, even require
                     currentWorld = preloadWorld;
+                    preloadWorld = nullptr;
+                    Runtime::internal_load_world(currentWorld);
                     /////////////////////
                     /// Init Internal World Timer IIWT
                     /////////////////////
@@ -478,7 +492,6 @@ namespace RoninEngine
                     currentWorld->irs->metricPixelsPerPoint = Vec2::one * defaultPixelsPerPoint;
                     gscope.internalWorldCanStart = false;
                     currentWorld->OnAwake();
-                    preloadWorld = nullptr;
                     gscope.internalWorldLoaded = true;
                 }
             }
@@ -540,10 +553,10 @@ namespace RoninEngine
                    // begin watcher
             Time::BeginWatch();
 
-            if(gscope.debugMode)
+            if(gscope.debugMode && gscope.renderer != nullptr)
                 internal_draw_debug();
 
-            if(!lastWorld)
+            if(!lastWorld && gscope.renderer != nullptr)
             {
                 SDL_RenderPresent(gscope.renderer);
             }
@@ -596,7 +609,7 @@ namespace RoninEngine
                    // update events
             internal_input_update_after();
 
-            if(currentWorld == nullptr || currentWorld->irs->requestUnloading && preloadWorld == nullptr)
+            if(currentWorld == nullptr || ((currentWorld->irs == nullptr || currentWorld->irs->requestUnloading) && preloadWorld == nullptr))
                 break; // break on unload state
         }
 
@@ -696,7 +709,7 @@ namespace RoninEngine
         const std::function<bool(void)> checks_queue[] {
                                                         [=]() -> bool const
                                                         {
-                                                            bool hasError = gscope.activeWindow == nullptr;
+                                                            bool hasError = !SDL_WasInit(SDL_INIT_EVENTS) && gscope.activeWindow == nullptr;
                                                             if(hasError)
                                                                 ronin_err("Engine not inited");
                                                             return hasError;
@@ -710,7 +723,7 @@ namespace RoninEngine
                                                         },
                                                         [=]() -> bool const
                                                         {
-                                                            bool hasError = currentWorld == world || lastWorld != nullptr || preloadWorld == world;
+                                                            bool hasError = (gscope.internalWorldLoaded && currentWorld == world) || lastWorld != nullptr || preloadWorld == world;
                                                             if(hasError)
                                                                 ronin_err("Current world is loading state. Failed.");
                                                             return hasError;
@@ -725,7 +738,7 @@ namespace RoninEngine
             }
         }
 
-        if(unloadPrevious && currentWorld)
+        if(unloadPrevious && currentWorld && currentWorld != world)
         {
             lastWorld = currentWorld;
             lastWorld->RequestUnload();
@@ -735,7 +748,7 @@ namespace RoninEngine
         CancelReload();
 
                // switching as main
-        if(currentWorld == nullptr)
+        if(currentWorld == nullptr || !gscope.internalWorldLoaded)
             currentWorld = world;
 
                // preload world
@@ -933,6 +946,15 @@ namespace RoninEngine
         return version;
     }
 
+#ifndef RONINENGINE_VERSION_STRING
+#define RONINENGINE_VERSION_STRING "0.0.1"
+#endif
+
+    const char *RoninSimulator::GetVersionString()
+    {
+        return RONINENGINE_VERSION_STRING;
+    }
+
     const char *RoninSimulator::GetLinkedTargets()
     {
         return RGE_LINKED_TARGETS;
@@ -1017,7 +1039,7 @@ namespace RoninEngine
             settings->renderBackend = (info.flags & SDL_RENDERER_SOFTWARE) ? RenderDriverInfo::RenderBackend::CPU : RenderDriverInfo::RenderBackend::GPU;
         }
 
-        settings->brightness = SDL_GetWindowBrightness(gscope.activeWindow);
+        settings->brightness = gscope.activeWindow ? SDL_GetWindowBrightness(gscope.activeWindow) : 1.0f;
 
         if(SDL_GetHint(SDL_HINT_RENDER_SCALE_QUALITY) != nullptr && !SDL_strcmp(SDL_GetHint(SDL_HINT_RENDER_SCALE_QUALITY), "1"))
         {
@@ -1031,7 +1053,10 @@ namespace RoninEngine
         const char *vsyncVal;
         settings->verticalSync = ((vsyncVal = SDL_GetHint(SDL_HINT_RENDER_VSYNC)) != nullptr && !std::strcmp(vsyncVal, "1"));
 
-        SDL_GetWindowOpacity(gscope.activeWindow, &settings->windowOpacity);
+        if(gscope.activeWindow)
+            SDL_GetWindowOpacity(gscope.activeWindow, &settings->windowOpacity);
+        else
+            settings->windowOpacity = 1.0f;
 
         return *settings;
     }

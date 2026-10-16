@@ -277,6 +277,13 @@ namespace RoninEngine
         static VersionInfo GetVersion();
 
         /**
+         * @brief Retrieves the full version string of the engine (e.g. from VERSION file).
+         *
+         * @return Version string.
+         */
+        static const char *GetVersionString();
+
+        /**
          * @brief Retrieves the linked targets system (e.g., ui, ai, res, etc.).
          *
          * @return Linked targets information.

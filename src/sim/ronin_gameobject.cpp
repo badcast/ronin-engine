@@ -26,7 +26,7 @@ namespace RoninEngine::Runtime
     bool GameObject::isActiveInHierarchy()
     {
         TransformRef p = transform();
-        for(; p && p->_owner->m_active;)
+        for(; p && p->_owner && p->_owner->m_active;)
             p = p->m_parent;
         return p.isNull();
     }
@@ -68,6 +68,8 @@ namespace RoninEngine::Runtime
         {
             GameObject *front = __stack.front();
             __stack.pop_front();
+            if(!front || !front->transform())
+                continue;
             for(TransformRef &h : front->transform()->hierarchy)
             {
                 if(h && h->_owner)
@@ -83,11 +85,15 @@ namespace RoninEngine::Runtime
 
     const bool GameObject::CancelDestroy()
     {
+        if(!currentWorld)
+            return false;
         return currentWorld->CancelObjectDestruction(this->GetRef<GameObject>());
     }
 
     const bool GameObject::isDestroying()
     {
+        if(!currentWorld)
+            return false;
         return currentWorld->StateObjectDestruction(this->GetRef<GameObject>());
     }
 
@@ -97,12 +103,18 @@ namespace RoninEngine::Runtime
         __stack.emplace_back(this);
         while(__stack.size())
         {
-            for(TransformRef &h : __stack.front()->transform()->hierarchy)
-            {
-                __stack.emplace_back(h->_owner.ptr_);
-            }
-            __stack.front()->SetActive(state);
+            GameObject *front = __stack.front();
             __stack.pop_front();
+            if(!front || !front->transform())
+                continue;
+            for(TransformRef &h : front->transform()->hierarchy)
+            {
+                if(h && h->_owner)
+                {
+                    __stack.emplace_back(h->_owner.ptr_);
+                }
+            }
+            front->SetActive(state);
         }
     }
 

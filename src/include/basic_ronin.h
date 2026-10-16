@@ -238,44 +238,44 @@ namespace RoninEngine
         struct WorldResources
         {
             // object instanced
-            int objects;
+            int objects = 0;
 
             // state is unloading
-            bool requestUnloading;
+            bool requestUnloading = false;
 
-            std::list<SDL_Surface *> preloadeSurfaces;
+            std::list<SDL_Surface *> preloadeSurfaces {};
 
-            SDL_Texture *legacy_font_normal;
-            SDL_Texture *legacy_font_hover;
+            SDL_Texture *legacy_font_normal = nullptr;
+            SDL_Texture *legacy_font_hover = nullptr;
 
-            std::vector<bool> audioChannels;
+            std::vector<bool> audioChannels {};
 
-            Vec2 metricPixelsPerPoint;
+            Vec2 metricPixelsPerPoint = Vec2::zero;
 
             // destroyed queue object
-            int _destroyedGameObject;
+            int _destroyedGameObject = 0;
 
             // Pointer refs (removed for intrusive Ref counting)
 
             // Script Behaviours
-            std::map<GameObject::BindType, std::set<Behaviour*>> runtimeScriptBinders;
+            std::map<GameObject::BindType, std::set<Behaviour*>> runtimeScriptBinders {};
 
             // destruction task (queue object)
-            std::map<float, std::set<GameObject*>> *runtimeCollectors;
+            std::map<float, std::set<GameObject*>> *runtimeCollectors = nullptr;
 
             // Matrix
-            Matrix::matrix_map_t matrix;
+            Matrix::matrix_map_t matrix {};
 
-            std::list<CameraResource *> cameraResources;
+            std::list<CameraResource *> cameraResources {};
 
             // External resources
-            GroupResources externalLocalResources;
+            GroupResources externalLocalResources {};
 
             // Main UI Object
-            UI::GUI *gui;
+            UI::GUI *gui = nullptr;
 
             // Main camera for render
-            CameraRef mainCamera;
+            CameraRef mainCamera = nullptr;
 
             // Main or Root object
             GameObjectRef mainObject;

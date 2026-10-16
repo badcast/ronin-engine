@@ -30,7 +30,18 @@ AudioSource::AudioSource(const std::string &name) : Component(DESCRIBE_AS_ONLY_N
 
 AudioSource::~AudioSource()
 {
-    RoninMemory::free(data);
+    if(data)
+    {
+        Stop();
+        if(data->targetChannel != -1)
+        {
+            RoninAudio::closeChannel(data->targetChannel);
+            data->targetChannel = -1;
+        }
+        setClip(nullptr);
+        RoninMemory::free(data);
+        data = nullptr;
+    }
 }
 
 AudioClip *AudioSource::getClip() const

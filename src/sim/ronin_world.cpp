@@ -12,6 +12,8 @@ namespace RoninEngine
     {
         extern std::set<World *> loadedWorlds;
         extern std::set<World *> privateWorlds;
+        extern World *preloadWorld;
+        extern World *lastWorld;
 
         void internal_load_world(World *world)
         {
@@ -25,6 +27,8 @@ namespace RoninEngine
                 Mix_AllocateChannels(MIX_CHANNELS);
 
                 RoninMemory::alloc_self(world->irs);
+                world->irs->requestUnloading = false;
+                world->irs->objects = 0;
                 RoninMemory::alloc_self(world->irs->gui, world);
 
                 world->irs->metricPixelsPerPoint = Vec2::one * defaultPixelsPerPoint;
@@ -44,11 +48,15 @@ namespace RoninEngine
                     currentWorld = (prev != nullptr) ? prev : world;
                 }
             }
+            else
+            {
+                font2d_update(world);
+            }
         }
 
         bool internal_unload_world(World *world)
         {
-            if(world->irs == nullptr)
+            if(world == nullptr || world->irs == nullptr)
                 return false;
             World *prevWorld = currentWorld;
             currentWorld = world;
@@ -57,23 +65,11 @@ namespace RoninEngine
             /////////////////////
             /// Free Game Objects
             /////////////////////
-            TransformRef target = world->irs->mainObject->transform();
-            std::list<TransformRef> stacks;
-            while(target)
+            if(!world->irs->mainObject.isNull())
             {
-                stacks.insert(stacks.end(), target->hierarchy.begin(), target->hierarchy.end());
-                sepuku_GameObject(target->_owner, nullptr);
-                if(stacks.empty())
-                {
-                    target = nullptr;
-                }
-                else
-                {
-                    target = stacks.front();
-                    stacks.pop_front();
-                }
+                sepuku_GameObject(world->irs->mainObject, nullptr);
+                world->irs->mainObject = nullptr;
             }
-            world->irs->mainObject = nullptr;
             if(world->irs->objects != 0)
             {
                 ronin_log(("World is have leak objects: " + std::to_string(world->irs->objects)).c_str());
@@ -93,23 +89,25 @@ namespace RoninEngine
             }
             /////////////////////
             /// NOTE: Free Local Resources
-            /// world->irs->external_local_resources = nullptr;
             /////////////////////
             gid_resources_free(&world->irs->externalLocalResources);
 
-                   // Halt all channels
+            // Halt all channels
             Mix_HaltChannel(-1);
             // reallocate channels
             Mix_AllocateChannels(MIX_CHANNELS);
             // free native resources
             for(SDL_Surface *surface : world->irs->preloadeSurfaces)
             {
-                SDL_FreeSurface(surface);
+                if(surface)
+                    SDL_FreeSurface(surface);
             }
+            world->irs->preloadeSurfaces.clear();
             for(CameraResource *cam_res : world->irs->cameraResources)
             {
                 RoninMemory::free(cam_res);
             }
+            world->irs->cameraResources.clear();
             for(auto &pair : world->irs->renderCache)
             {
                 if(pair.second.second)
@@ -135,6 +133,10 @@ namespace RoninEngine
             RoninMemory::free(world->irs);
             world->irs = nullptr;
             loadedWorlds.erase(world);
+            if(preloadWorld == world)
+                preloadWorld = nullptr;
+            if(lastWorld == world)
+                lastWorld = nullptr;
             if(currentWorld == world)
                 currentWorld = (prevWorld != world) ? prevWorld : nullptr;
             else

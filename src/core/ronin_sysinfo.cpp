@@ -44,38 +44,37 @@ extern "C"
 
 int parseLine(char *line)
 {
-    // This assumes that a digit will be found and the line ends in " Kb".
+    if(!line)
+        return 0;
     int i = strlen(line);
+    if(i < 3)
+        return 0;
     const char *p = line;
-    while(*(p) < '0' || *(p) > '9')
+    while(*p && (*p < '0' || *p > '9'))
         p++;
+    if(!*p)
+        return 0;
     line[i - 3] = '\0';
-    i = atoi(p);
-    return i;
+    return atoi(p);
 }
 
 size_t get_memory_used()
 {
-    char line[64];
-    size_t result;
+    char line[128];
+    size_t result = static_cast<size_t>(-1);
     std::ifstream file("/proc/self/status");
     if(file.is_open())
     {
-        while(!file.eof())
+        while(file.getline(line, sizeof(line)))
         {
-            file.getline(line, sizeof(line));
             if(strncmp(line, "VmRSS:", 6) == 0)
             {
-                result = parseLine(line);
+                result = static_cast<size_t>(parseLine(line)) * 1024;
                 break;
             }
         }
         file.close();
-        // Unit (KB) To bytes
-        result *= 1024;
     }
-    else
-        result = -1;
     return result;
 }
 #else // USE_PROCFS == 0

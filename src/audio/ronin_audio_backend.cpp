@@ -120,6 +120,7 @@ namespace RoninEngine::Runtime
         auto &channels = world->irs->audioChannels;
         if(HasInit() && channel < channels.size() && channel > -1)
         {
+            Mix_HaltChannel(channel);
             // Request Close
             channels[channel] = false;
             return true;

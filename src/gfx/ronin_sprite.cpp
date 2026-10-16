@@ -74,8 +74,8 @@ namespace RoninEngine::Runtime
 
         SDL_LockSurface(surface);
         int bpp = surface->format->BytesPerPixel;
-        int startX = m_rect.x;
-        int startY = m_rect.y;
+        int startX = std::max(0, m_rect.x);
+        int startY = std::max(0, m_rect.y);
         int endX = std::min(m_rect.x + m_rect.w, surface->w);
         int endY = std::min(m_rect.y + m_rect.h, surface->h);
 

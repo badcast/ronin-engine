@@ -23,6 +23,7 @@ namespace RoninEngine::Runtime
             // 2ndHandle free
             RoninMemory::free(ac_res);
         }
+        gid->gid_audio_clips.clear();
         for(MusicClip *mus_res : gid->gid_music_clips)
         {
             // Handle free
@@ -31,19 +32,22 @@ namespace RoninEngine::Runtime
             // 2ndHandle free
             RoninMemory::free(mus_res);
         }
+        gid->gid_music_clips.clear();
         for(SDL_Surface *surf_res : gid->gid_surfaces)
         {
             SDL_FreeSurface(surf_res);
         }
+        gid->gid_surfaces.clear();
         for(void *mem : gid->gid_privates)
         {
             RoninMemory::mem_free(mem);
         }
+        gid->gid_privates.clear();
     }
 
     GroupResources *gid_get(bool local)
     {
-        return (local ? &(currentWorld->irs->externalLocalResources) : external_global_resources);
+        return (local ? (currentWorld && currentWorld->irs ? &(currentWorld->irs->externalLocalResources) : nullptr) : external_global_resources);
     }
 
     inline GroupResources *get_resource(ResId id)

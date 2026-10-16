@@ -52,7 +52,7 @@ namespace RoninEngine::Runtime
         std::set<Transform*> intersects;
         for(auto &findedIter : currentWorld->irs->matrix)
         {
-            if(layer == -1 || (findedIter.first & layer) || findedIter.first == layer)
+            if(findedIter.second && (layer == -1 || (findedIter.first & layer) || findedIter.first == layer))
             {
                 findedIter.second->Retrieve(intersects, rect);
             }
@@ -60,6 +60,8 @@ namespace RoninEngine::Runtime
         
         for (auto obj : intersects)
         {
+            if(!obj)
+                continue;
             if constexpr(std::is_same<container_result, std::set<Transform *>>::value)
                 result.insert(obj);
             else
@@ -77,7 +79,7 @@ namespace RoninEngine::Runtime
         
         for (auto& obj : candidates)
         {
-            if (Vec2::Distance(origin, obj->position()) <= distance)
+            if (obj && Vec2::Distance(origin, obj->position()) <= distance)
             {
                 if constexpr(std::is_same<container_result, std::set<Transform *>>::value)
                     result.insert(obj);

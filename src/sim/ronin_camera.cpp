@@ -167,7 +167,7 @@ namespace RoninEngine::Runtime
     Vec2 Camera::ScreenToViewportPoint(Vec2 screenPoint)
     {
         Vec2 scr;
-        if(gscope.activeWindow)
+        if(gscope.activeWindow && gscope.activeResolution.width > 0 && gscope.activeResolution.height > 0)
         {
             scr.x = gscope.activeResolution.width;
             scr.y = gscope.activeResolution.height;
@@ -202,7 +202,7 @@ namespace RoninEngine::Runtime
 
     CameraRef Camera::mainCamera()
     {
-        if(currentWorld)
+        if(currentWorld && currentWorld->irs)
             return currentWorld->irs->mainCamera;
         return CameraRef{nullptr};
     }
