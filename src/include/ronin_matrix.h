@@ -21,6 +21,8 @@ namespace RoninEngine::Runtime::Matrix
         void Retrieve(std::set<Transform*>& returnObjects, const Rectf& bounds);
         
         const std::set<Transform*>& GetObjects() const { return objects; }
+        void GetAllObjects(std::set<Transform*>& out) const;
+        std::size_t CountAllObjects() const;
 
     private:
         void split();

@@ -5,6 +5,7 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/RoninEngine.pc.in
 
 install(TARGETS RoninEngine
     EXPORT RoninEngineTargets
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}
 )
 
 install(EXPORT RoninEngineTargets
@@ -12,8 +13,6 @@ install(EXPORT RoninEngineTargets
     NAMESPACE RoninEngine::
     DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/RoninEngine
 )
-
-install(TARGETS RoninEngine DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
 install(DIRECTORY ${CMAKE_SOURCE_DIR}/include/
         DESTINATION ${CMAKE_INSTALL_LIBDIR}/RoninEngine)

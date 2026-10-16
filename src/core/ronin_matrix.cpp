@@ -8,43 +8,76 @@ namespace RoninEngine::Runtime::Matrix
     // AABB Calculation
     Rectf matrix_get_bounds(Transform* target)
     {
-        Rectf bbox = {target->position().x, target->position().y, 0, 0};
+        if(!target || !target->_owner)
+            return Rectf(0.f, 0.f, 0.1f, 0.1f);
+
+        Vec2 pos = target->position();
+        float minX = pos.x;
+        float minY = pos.y;
+        float maxX = pos.x;
+        float maxY = pos.y;
         bool hasBounds = false;
 
-        for(ComponentRef& comp : target->gameObject()->m_components)
-        {
-            if(!comp->_enable) continue;
+        float angleRad = target->angle() * Math::deg2rad;
+        float cosA = std::fabs(std::cos(angleRad));
+        float sinA = std::fabs(std::sin(angleRad));
 
-            if(auto renderer = dynamic_cast<Renderer*>(comp.ptr_))
+        for(ComponentRef& comp : target->_owner->m_components)
+        {
+            if(!comp || !comp->_enable)
+                continue;
+
+            if(auto renderer = comp->get_renderer())
             {
-                Vec2 size = renderer->getSize();
-                // AABB is centered at position
-                bbox.x = std::min(bbox.x, target->position().x - size.x);
-                bbox.y = std::min(bbox.y, target->position().y - size.y);
-                bbox.w = std::max(bbox.w, size.x * 2.f);
-                bbox.h = std::max(bbox.h, size.y * 2.f);
+                Vec2 size;
+                if(auto sr = dynamic_cast<SpriteRenderer*>(renderer))
+                {
+                    size = (sr->getSprite() && currentWorld && currentWorld->irs)
+                               ? Vec2::Scale(sr->getSprite()->size(), sr->getSize())
+                               : sr->getSize();
+                }
+                else
+                {
+                    size = renderer->getSize();
+                }
+                size = Vec2::Abs(size);
+                Vec2 center = pos + renderer->get_offset();
+                float hw = size.x * 0.5f;
+                float hh = size.y * 0.5f;
+                float extX = std::max(hw * cosA + hh * sinA, size.x);
+                float extY = std::max(hw * sinA + hh * cosA, size.y);
+                minX = std::min(minX, center.x - extX);
+                minY = std::min(minY, center.y - extY);
+                maxX = std::max(maxX, center.x + extX);
+                maxY = std::max(maxY, center.y + extY);
                 hasBounds = true;
             }
             else if(auto collider = dynamic_cast<Collision*>(comp.ptr_))
             {
-                Vec2 size = collider->collideSize;
-                Vec2 center = target->position();
-                bbox.x = std::min(bbox.x, center.x - size.x);
-                bbox.y = std::min(bbox.y, center.y - size.y);
-                bbox.w = std::max(bbox.w, size.x * 2.f);
-                bbox.h = std::max(bbox.h, size.y * 2.f);
+                Vec2 size = Vec2::Abs(collider->collideSize);
+                minX = std::min(minX, pos.x - size.x);
+                minY = std::min(minY, pos.y - size.y);
+                maxX = std::max(maxX, pos.x + size.x);
+                maxY = std::max(maxY, pos.y + size.y);
+                hasBounds = true;
+            }
+            else if(auto light = comp->get_light_component())
+            {
+                float r = std::max(0.1f, light->range);
+                minX = std::min(minX, pos.x - r);
+                minY = std::min(minY, pos.y - r);
+                maxX = std::max(maxX, pos.x + r);
+                maxY = std::max(maxY, pos.y + r);
                 hasBounds = true;
             }
         }
 
-        if(!hasBounds)
+        if(!hasBounds || (maxX - minX < 0.1f && maxY - minY < 0.1f))
         {
-            // Fallback for empty objects
-            bbox.w = 0.1f;
-            bbox.h = 0.1f;
+            return Rectf(pos.x - 0.05f, pos.y - 0.05f, 0.1f, 0.1f);
         }
 
-        return bbox;
+        return Rectf(minX, minY, maxX - minX, maxY - minY);
     }
 
     // QuadTree Implementation
@@ -245,8 +278,41 @@ namespace RoninEngine::Runtime::Matrix
         }
     }
 
+    void QuadTree::GetAllObjects(std::set<Transform*>& out) const
+    {
+        out.insert(objects.begin(), objects.end());
+        if (nodes[0] != nullptr)
+        {
+            for (int i = 0; i < 4; i++)
+            {
+                if (nodes[i] != nullptr)
+                {
+                    nodes[i]->GetAllObjects(out);
+                }
+            }
+        }
+    }
+
+    std::size_t QuadTree::CountAllObjects() const
+    {
+        std::size_t count = objects.size();
+        if (nodes[0] != nullptr)
+        {
+            for (int i = 0; i < 4; i++)
+            {
+                if (nodes[i] != nullptr)
+                {
+                    count += nodes[i]->CountAllObjects();
+                }
+            }
+        }
+        return count;
+    }
+
     void matrix_update(Transform *target)
     {
+        if(!currentWorld || !currentWorld->irs || !target || !target->_owner)
+            return;
         matrix_remove(target);
         
         int layer = target->_owner->m_layer;
@@ -263,11 +329,19 @@ namespace RoninEngine::Runtime::Matrix
 
     bool matrix_remove(Transform *target)
     {
+        if(!currentWorld || !currentWorld->irs || !target || !target->_owner)
+            return false;
         auto& matrix = currentWorld->irs->matrix;
         auto it = matrix.find(target->_owner->m_layer);
         if (it != matrix.end())
         {
-            return it->second->Remove(target);
+            if (it->second->Remove(target))
+                return true;
+        }
+        for (auto& pair : matrix)
+        {
+            if (pair.first != target->_owner->m_layer && pair.second && pair.second->Remove(target))
+                return true;
         }
         return false;
     }

@@ -73,7 +73,7 @@ namespace RoninEngine::Runtime
         SDL_Texture *texture = nullptr;
         std::map<SDL_Surface *, std::pair<int, SDL_Texture *>> *_cache;
 
-        if(sprite == nullptr || sprite->surface == nullptr)
+        if(sprite == nullptr || sprite->surface == nullptr || currentWorld == nullptr || currentWorld->irs == nullptr)
             return nullptr;
 
         for(;;)
@@ -318,11 +318,14 @@ namespace RoninEngine::Runtime
 
     void render_cache_unref(SDL_Texture *texture)
     {
-        // TODO: FIXME - release unused texture
-        return; // DO NOT REMOVE
-
         if(texture == nullptr)
             return;
+
+        if(currentWorld == nullptr || currentWorld->irs == nullptr)
+        {
+            SDL_DestroyTexture(texture);
+            return;
+        }
 
         auto &_refs = currentWorld->irs->renderCacheRefs;
         auto &_cache = currentWorld->irs->renderCache;
@@ -333,9 +336,8 @@ namespace RoninEngine::Runtime
             if(iter2 != std::end(_cache))
             {
                 // Rem ref
-                if(--iter2->second.first == 0)
+                if(--iter2->second.first <= 0)
                 {
-
                     SDL_DestroyTexture(texture);
                     _cache.erase(iter2);
                     _refs.erase(iter1);
@@ -343,9 +345,30 @@ namespace RoninEngine::Runtime
             }
             else
             {
+                SDL_DestroyTexture(texture);
                 _refs.erase(iter1);
             }
         }
+        else
+        {
+            SDL_DestroyTexture(texture);
+        }
+    }
+
+    void cache_render_flush_all()
+    {
+        if(currentWorld == nullptr || currentWorld->irs == nullptr)
+            return;
+
+        for(auto &pair : currentWorld->irs->renderCache)
+        {
+            if(pair.second.second != nullptr)
+            {
+                SDL_DestroyTexture(pair.second.second);
+            }
+        }
+        currentWorld->irs->renderCache.clear();
+        currentWorld->irs->renderCacheRefs.clear();
     }
 
 } // namespace RoninEngine::Runtime

@@ -13,7 +13,7 @@ namespace RoninEngine::Runtime
     struct IGameObject_t
     {
         std::list<Component *> m_components;
-        std::list<Event> ev_destroy;
+        std::list<GameObject::Event> ev_destroy;
         int m_layer;
         int m_zOrder;
         bool m_active;
@@ -24,7 +24,7 @@ namespace RoninEngine::Runtime
     template <typename T, typename V>
     struct iget_instance
     {
-        static T *operator()(V const &_obj) const
+        T *operator()(V &_obj) const
         {
             return static_cast<T *>(&_obj.inst);
         }
@@ -33,20 +33,20 @@ namespace RoninEngine::Runtime
     template <typename T>
     struct iget_header
     {
-        static void operator()(T const *instance)
+        void operator()(T const *instance) const
         {
-            ;
+            (void)instance;
         }
     };
 
     template <>
     struct iget_header<GameObject>
     {
-        constexpr auto _instPos = offsetof(IGameObject_t, inst);
+        static constexpr auto _instPos = offsetof(IGameObject_t, inst);
 
-        static IGameObject_t *operator()(GameObject *ref)
+        IGameObject_t *operator()(GameObject *ref) const
         {
-            return reinterpret_cast<IGameObject_t *>(static_cast<std::int8_t *>(ref) - _instPos);
+            return reinterpret_cast<IGameObject_t *>(reinterpret_cast<std::int8_t *>(ref) - _instPos);
         }
     };
 

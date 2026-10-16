@@ -35,6 +35,7 @@ namespace RoninEngine::Runtime
     public:
         Terrain2D();
         Terrain2D(const std::string &name, float width = 10, float height = 10);
+        Terrain2D(const Terrain2D &other);
         ~Terrain2D();
 
         RoninEngine::AI::NavMesh *get_navmesh2D();

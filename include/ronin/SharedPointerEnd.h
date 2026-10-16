@@ -214,4 +214,12 @@ namespace RoninEngine::Runtime
         Ref<RoninPointer> ref = GetRefMain(static_cast<RoninPointer*>(this));
         return DynamicCast<T>(ref);
     }
+
+    template<typename T, typename U>
+    Ref<T> GetRefMain(U *ptr)
+    {
+        if(!ptr)
+            return nullptr;
+        return ptr->template GetRef<T>();
+    }
 } // namespace RoninEngine::Runtime

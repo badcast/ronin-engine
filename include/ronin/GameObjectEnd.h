@@ -19,23 +19,9 @@ namespace RoninEngine
             if constexpr(std::is_base_of_v<Behaviour, T>)
             {
                 int flags = 0;
-#if 1
-#ifdef __clang__ // it's work only Clang
-#define CHECK_BASE_OVERRIDDEN(BASE, BINDER, METHOD) \
-    if((&BASE::METHOD) != (&T::METHOD))             \
+#define CHECK_BASE_OVERRIDDEN(BASE, BINDER, METHOD)                            \
+    if constexpr(!std::is_same_v<decltype(&T::METHOD), decltype(&BASE::METHOD)>) \
         flags |= BINDER;
-#else // it's work on GCC
-#define CHECK_BASE_OVERRIDDEN(BASE, BINDER, METHOD)                                               \
-    if constexpr(reinterpret_cast<void *>(&BASE::METHOD) != reinterpret_cast<void *>(&T::METHOD)) \
-        flags |= BINDER;
-#endif
-
-#else // if the not 0
-
-#define CHECK_BASE_OVERRIDDEN(BASE, BINDER, METHOD) \
-    if((&T::METHOD) != (&BASE::METHOD))             \
-        flags |= BINDER;
-#endif
                 CHECK_BASE_OVERRIDDEN(Behaviour, Bind_Start, OnStart);
                 CHECK_BASE_OVERRIDDEN(Behaviour, Bind_Update, OnUpdate);
                 CHECK_BASE_OVERRIDDEN(Behaviour, Bind_LateUpdate, OnLateUpdate);
@@ -81,7 +67,7 @@ namespace RoninEngine
             stacks.push_back(this->GetRef<GameObject>());
             while(!stacks.empty())
             {
-                types.merge(stacks.front()->GetComponents<T>());
+                types.splice(types.end(), stacks.front()->GetComponents<T>());
                 for(TransformRef &t : stacks.front()->transform()->GetChilds())
                 {
                     stacks.push_back(t->gameObject());

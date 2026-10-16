@@ -54,7 +54,9 @@ add_subdirectory(src)
 
 add_library(RoninEngine ${ronin_targets} ${RONIN_ENGINE_HEADERS})
 
-target_link_directories(RoninEngine PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_include_directories(
+  RoninEngine PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+                     $<INSTALL_INTERFACE:include>)
 
 set_target_properties(RoninEngine PROPERTIES OUTPUT_NAME ${RUNTIME_OUTPUT_NAME})
 
@@ -75,10 +77,6 @@ if(WIN32)
   target_sources(RoninEngine PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/RoninEngine.rc)
 endif()
 
-if(${RONIN_NO_CONFIG})
-  target_include_directories(
-    RoninEngine PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-                       $<INSTALL_INTERFACE:include>)
-else()
+if(NOT ${RONIN_NO_CONFIG})
   add_subdirectory(config)
 endif()

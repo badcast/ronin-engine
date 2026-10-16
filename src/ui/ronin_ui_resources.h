@@ -19,6 +19,7 @@ namespace RoninEngine::UI
     {
         int first;
         std::list<std::string> second;
+        float animHeight = 0.0f;
     };
 
     struct ElementInteraction
@@ -70,6 +71,8 @@ namespace RoninEngine::UI
         uid id;
         uid parentId;
         std::uint8_t options;
+        bool removed = false;
+        int fontWidth = 13;
         std::vector<uid> childs;
         Runtime::Rect rect;
         Runtime::Rect contextRect;

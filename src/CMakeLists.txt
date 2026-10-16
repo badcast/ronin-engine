@@ -19,9 +19,8 @@ function (custom_findpkg PKGNAME)
 
         message(STATUS "Using Windows deps for MSVC compiller")
 
-        set(CMAKE_PREFIX_PATH "${CMAKE_CURRENT_LIST_DIR}/src/windows/deps")
+        set(CMAKE_PREFIX_PATH "${PROJECT_SOURCE_DIR}/src/windows/deps")
         set(SDL2_DIR ${CMAKE_PREFIX_PATH}/SDL2-2.30.1)
-        message(FATAL_ERROR ${CMAKE_PREFIX_PATH})
 
         find_package(${PKGNAME} REQUIRED NO_DEFAULT_PATH)
 
@@ -74,7 +73,9 @@ function(custom_find_deps MainTarget)
   target_compile_definitions(${MainTarget} PRIVATE RONIN_COMPILLING=1)
   target_include_directories(${MainTarget} PRIVATE ${LIST_INCLUDE_PKGS})
   target_link_libraries(${MainTarget} PRIVATE ${LIST_LIBS_PKGS})
-  target_compile_options(${MainTarget} PRIVATE -mrdrnd)
+  if(NOT MSVC AND (CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64|AMD64|i686|i386"))
+    target_compile_options(${MainTarget} PRIVATE -mrdrnd)
+  endif()
 
 endfunction(custom_find_deps)
 
@@ -115,7 +116,8 @@ function(custom_load_sources libname localPath)
       "${RGE_LIBS}" "${libname}"
       PARENT_SCOPE)
 
-  list(APPEND RGE_LINKED_NAMES "${RGE_LINKED_NAMES}" PARENT_SCOPE)
+  list(APPEND RGE_LINKED_NAMES "${libname}")
+  set(RGE_LINKED_NAMES "${RGE_LINKED_NAMES}" PARENT_SCOPE)
 
 endfunction(custom_load_sources)
 
@@ -135,7 +137,9 @@ custom_load_sources(Ronin3rdParty "3rdparty")
 # simulation sources
 if(RGSIMULATION)
   custom_load_sources(RoninSimulations "sim")
-  target_compile_options(RoninSimulations PRIVATE -mrdrnd)
+  if(NOT MSVC AND (CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64|AMD64|i686|i386"))
+    target_compile_options(RoninSimulations PRIVATE -mrdrnd)
+  endif()
 endif()
 # res sources
 if(RGRESOURCES)
@@ -157,9 +161,9 @@ endif()
 if(RGAI)
   custom_load_sources(RoninArtInteleg "ai")
   if(${LibraryBrainMap_FOUND})
-    target_include_directories(ronin_aif
+    target_include_directories(RoninArtInteleg
                                PRIVATE ${LibraryBrainMap_INCLUDE_DIRS})
-    target_compile_definitions(ronin_aif PRIVATE OVERRIDE_LIBBRAINMAP)
+    target_compile_definitions(RoninArtInteleg PRIVATE OVERRIDE_LIBBRAINMAP)
   endif()
 endif()
 # audio sources
@@ -171,5 +175,9 @@ set(ronin_targets
     "${ronin_targets}"
     PARENT_SCOPE)
 
+string(REPLACE ";" " " RGE_LINKED_NAMES_STR "${RGE_LINKED_NAMES}")
 target_compile_definitions(RoninCore
-                           PRIVATE RGE_LINKED_TARGETS="${RGE_LINKED_NAMES}")
+                           PRIVATE RGE_LINKED_TARGETS="${RGE_LINKED_NAMES_STR}"
+                                   RONINENGINE_VERSION_MAJOR=${PROJECT_VERSION_MAJOR}
+                                   RONINENGINE_VERSION_MINOR=${PROJECT_VERSION_MINOR}
+                                   RONINENGINE_VERSION_PATCH=${PROJECT_VERSION_PATCH})

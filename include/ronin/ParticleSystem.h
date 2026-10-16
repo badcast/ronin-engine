@@ -268,5 +268,6 @@ namespace RoninEngine::Runtime
         void OnDestroy();
     };
 
+} // namespace RoninEngine::Runtime
+
 #endif
-}

@@ -86,6 +86,8 @@ namespace RoninEngine
         // derived component
         class Transform;
         class Light;
+        class SimpleLight;
+        class DirectLight;
         class Spotlight;
         class SpriteRenderer;
         class Terrain2D;
@@ -108,6 +110,8 @@ namespace RoninEngine
         using BehaviourRef = Ref<Behaviour>;
         using CollisionRef = Ref<Collision>;
         using LightRef = Ref<Light>;
+        using SimpleLightRef = Ref<SimpleLight>;
+        using DirectLightRef = Ref<DirectLight>;
         using SpotlightRef = Ref<Spotlight>;
         using SpriteRendererRef = Ref<SpriteRenderer>;
         using Terrain2DRef = Ref<Terrain2D>;

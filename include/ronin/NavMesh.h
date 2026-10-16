@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include "begin.h"
 
@@ -41,8 +41,18 @@ namespace RoninEngine::AI
     {
         RecursiveBacktracer = 0,
         RecursiveDivison = 1,
+        RecursiveDivision = 1,
         SelectiveStormChaos = 2,
-        ForcedChaos = 3
+        ForcedChaos = 3,
+        RandomizedPrim = 4,
+        RandomizedKruskal = 5,
+        Ellers = 6,
+        HuntAndKill = 7,
+        BinaryTree = 8,
+        Sidewinder = 9,
+        AldousBroder = 10,
+        Wilsons = 11,
+        CellularAutomata = 12
     };
 
     template <typename ResultList>
@@ -104,6 +114,10 @@ namespace RoninEngine::AI
         Neuron *get(const Runtime::Vec2 &worldPoint);
         Neuron *get(const Runtime::Vec2 &worldPoint, Runtime::Vec2Int &outPoint);
 
+        Neuron *operator[](const Runtime::Vec2Int &point);
+
+        Runtime::Vec2Int FindFreeSpace(const Runtime::Vec2Int &origin, int maxEdges = 10);
+
         bool Contains(const Runtime::Vec2Int &point) const;
 
         const Runtime::Vec2Int getPoint(const Neuron *neuron) const;
@@ -142,7 +156,5 @@ namespace RoninEngine::AI
         void SaveTo(NavMeshData *navmeshData);
 
         std::uint32_t getCached();
-
-        // TODO: add operator for Vec2Int -> get Neuron
     };
 } // namespace RoninEngine::AI

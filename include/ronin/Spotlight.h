@@ -1,21 +1,21 @@
 #pragma once
-#include "begin.h"
+#include "Light.h"
 
 namespace RoninEngine::Runtime
 {
     class RONIN_API Spotlight final : public Light
     {
     public:
-        // Range of the light (world space)
-        float range;
-        // Intensity light
-        float intensity;
+        // Cone angle in degrees (default 60)
+        float angle;
 
         Spotlight();
         Spotlight(const std::string &name);
+        Spotlight(const Spotlight &other);
         ~Spotlight();
 
     protected:
-        virtual void get_light();
+        void get_light() override;
+        void get_light(Rendering *render_info) override;
     };
 } // namespace RoninEngine::Runtime

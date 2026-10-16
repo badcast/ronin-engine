@@ -43,8 +43,10 @@ namespace RoninEngine
             template <typename oth_rect>
             TRect(const oth_rect &other)
             {
-                static_assert(std::is_same<T, int>::value && std::is_same<oth_rect, native_rect_t>::value, "Rect not set from SDL_FRect");
-                static_assert(std::is_same<T, float>::value && std::is_same<oth_rect, native_frect_t>::value, "Rectf not set from SDL_Rect");
+                if constexpr(std::is_same<T, int>::value)
+                    static_assert(std::is_same<oth_rect, native_rect_t>::value, "Rect not set from SDL_FRect");
+                else if constexpr(std::is_same<T, float>::value)
+                    static_assert(std::is_same<oth_rect, native_frect_t>::value, "Rectf not set from SDL_Rect");
                 this->x = other.x;
                 this->y = other.y;
                 this->w = other.w;
@@ -72,24 +74,34 @@ namespace RoninEngine
                         other.y + other.h <= y + h);
             }
 
-            TRect<T> operator+(const TRect<T> &rhs)
+            TRect<T> operator+(const TRect<T> &rhs) const
             {
                 return {this->x + rhs.x, this->y + rhs.y, this->w + rhs.w, this->h + rhs.h};
             }
 
-            TRect<T> operator-(const TRect<T> &rhs)
+            TRect<T> operator-(const TRect<T> &rhs) const
             {
-                return {this->x - rhs.x, this->y + rhs.y, this->w - rhs.w, this->h - rhs.h};
+                return {this->x - rhs.x, this->y - rhs.y, this->w - rhs.w, this->h - rhs.h};
             }
 
-            TRect<T> operator*(const T &rhs)
+            TRect<T> operator*(const T &rhs) const
             {
                 return {this->x * rhs, this->y * rhs, this->w * rhs, this->h * rhs};
             }
 
-            TRect<T> operator/(const T &rhs)
+            TRect<T> operator/(const T &rhs) const
             {
                 return {this->x / rhs, this->y / rhs, this->w / rhs, this->h / rhs};
+            }
+
+            bool operator==(const TRect<T> &rhs) const
+            {
+                return x == rhs.x && y == rhs.y && w == rhs.w && h == rhs.h;
+            }
+
+            bool operator!=(const TRect<T> &rhs) const
+            {
+                return !(*this == rhs);
             }
 
             TRect<T> &operator+=(const TRect<T> &rhs)
@@ -191,8 +203,8 @@ namespace RoninEngine
         template <typename T>
         struct IRoninBaseEvents
         {
-            void AddOnDestroy(RoninBaseEvent<T> callback);
-            void ClearOnDestroy();
+            virtual void AddOnDestroy(RoninBaseEvent<T> callback) = 0;
+            virtual void ClearOnDestroy() = 0;
         };
     } // namespace Runtime
 

@@ -143,6 +143,7 @@ namespace RoninEngine
             Rect src;
             Rectf dst;
             SDL_Texture *texture;
+            SDL_RendererFlip flip;
         };
 
         struct CameraResource
