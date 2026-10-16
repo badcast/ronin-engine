@@ -33,6 +33,7 @@ enum
     NEURON_CAPTURE_CLOSED_LIST = 2,
     // Captured, capitalize Neuron for MAZE
     NEURON_CAPTURE_CAPITALIZED = 4
+
 };
 
 // site state
@@ -163,6 +164,7 @@ BRAIN_DEFINE::basic_brain_map(std::uint32_t xlength, std::uint32_t ylength)
     if(1 > xlength || 1 > ylength)
         throw std::runtime_error("dimensions is zero");
 
+    this->neurons = nullptr;
     this->_xsize = xlength;
     this->_ysize = ylength;
 
@@ -211,7 +213,10 @@ void BRAIN_DEFINE::randomize_hardware(int flagFilter)
     do
     {
         lhs = static_cast<std::uint32_t>(_rand_() & flagFilter);
-        memcpy(reinterpret_cast<void *>(reinterpret_cast<std::size_t>(neurons) + _seg_off - rhs), &lhs, std::min(rhs, (std::uint32_t) sizeof(std::uint32_t)));
+        memcpy(
+            reinterpret_cast<void *>(reinterpret_cast<std::size_t>(neurons) + _seg_off - rhs),
+            &lhs,
+            std::min(rhs, (std::uint32_t) sizeof(std::uint32_t)));
         rhs -= std::min(rhs, static_cast<std::uint32_t>(sizeof(std::uint32_t)));
     } while(rhs > 0);
 }
@@ -320,7 +325,7 @@ std::uint32_t BRAIN_DEFINE::get_height()
 BRAIN_TEMPLATE
 void *BRAIN_DEFINE::data() const
 {
-    return static_cast<void *>(neurons);
+    return static_cast<void*>(neurons);
 }
 
 BRAIN_TEMPLATE
@@ -368,7 +373,8 @@ INeuron *BRAIN_DEFINE::get(const ISite &range)
 {
     INeuron *result = nullptr;
     if(contains(range))
-        result = reinterpret_cast<INeuron *>(reinterpret_cast<std::size_t>(neurons) + _seg_off + (range.x * _ysize + range.y) * sizeof(INeuron));
+        result =
+            reinterpret_cast<INeuron *>(reinterpret_cast<std::size_t>(neurons) + _seg_off + (range.x * _ysize + range.y) * sizeof(INeuron));
     return result;
 }
 
@@ -539,6 +545,8 @@ list_type BRAIN_DEFINE::get_neighbours(MatrixIdentity matrixIdentity, const targ
 BRAIN_TEMPLATE
 int BRAIN_DEFINE::random_number(int min, int max)
 {
+    if(max <= min)
+        return min;
     return min + std::abs(_rand_()) % (max - min);
 }
 
@@ -719,14 +727,21 @@ bool BRAIN_DEFINE::find(navigate_result<list_type> &navigationResult, INeuron *f
     return navigationResult.status == NavigationStatus::Opened;
 }
 
-bool operator!=(const the_site &a, const the_site &b)
+inline bool operator!=(const brain::the_site &a, const brain::the_site &b)
 {
-    return static_cast<bool>(std::memcmp(&a, &b, sizeof(the_site)));
+    return static_cast<bool>(std::memcmp(&a, &b, sizeof(brain::the_site)));
 }
 
-bool operator==(const the_site &a, const the_site &b)
+inline bool operator==(const brain::the_site &a, const brain::the_site &b)
 {
-    return static_cast<bool>(!std::memcmp(&a, &b, sizeof(the_site)));
+    return static_cast<bool>(!std::memcmp(&a, &b, sizeof(brain::the_site)));
+}
+
+inline brain::the_site &operator+=(brain::the_site &lhs, const brain::the_site &rhs)
+{
+    lhs.x += rhs.x;
+    lhs.y += rhs.y;
+    return lhs;
 }
 
 #undef BLOCK_SITE

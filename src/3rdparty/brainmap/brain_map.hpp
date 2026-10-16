@@ -1,4 +1,4 @@
-﻿/************************************************************************   *** *** *** *** *** *** *** *** ***  ***   *********************
+/************************************************************************   *** *** *** *** *** *** *** *** ***  ***   *********************
  *                                                                          ***                                  ***
  * ASTAR Algorithm composed to RoninEngine (Navigation AI)                  ***         badcast for cast         ***
  * creation date: 18.01.2023                                                ***                                  ***
@@ -57,8 +57,18 @@ namespace brain
     {
         RecursiveBacktracer = 0,
         RecursiveDivison = 1,
+        RecursiveDivision = 1,
         SelectiveStormChaos = 2,
-        ForcedChaos = 3
+        ForcedChaos = 3,
+        RandomizedPrim = 4,
+        RandomizedKruskal = 5,
+        Ellers = 6,
+        HuntAndKill = 7,
+        BinaryTree = 8,
+        Sidewinder = 9,
+        AldousBroder = 10,
+        Wilsons = 11,
+        CellularAutomata = 12
     };
 
     typedef int weight_t;
@@ -86,9 +96,11 @@ namespace brain
         std::int8_t *g_weight;
     };
 
-    bool operator==(const the_site &lhs, const the_site &rhs);
+    inline bool operator==(const the_site &lhs, const the_site &rhs);
 
-    bool operator!=(const the_site &lhs, const the_site &rhs);
+    inline bool operator!=(const the_site &lhs, const the_site &rhs);
+
+    inline the_site &operator+=(the_site &lhs, const the_site &rhs);
 
     struct brain_breakfast
     {
@@ -151,7 +163,7 @@ namespace brain
          * @brief get the raw brain data (with locks)
          * @return raw data of the brain map (with locks)
          */
-        inline void *data() const;
+        inline void* data() const;
 
         /**
          * @brief clear neurons
@@ -194,7 +206,7 @@ namespace brain
          * @param startOf The candidate for start generation
          * @param endOf The candidate for end generation
          */
-        inline void create_maze_ex(MazeAlgorithm mazeAlgoritm, ISite startOf, ISite endOf);
+        inline void create_maze_ex(MazeAlgorithm mazeAlgoritm, ISite startOf = {0, 0}, ISite endOf = {0, 0});
 
         /**
          * @brief size of the neurons
@@ -378,7 +390,7 @@ namespace brain
         inline int random_number(int min, int max);
 
     protected:
-        INeuron *neurons;
+        INeuron *neurons = nullptr;
         randomize_function _rand_ = std::rand;
         weight_t (*__heuristic__)(weight_t dx, weight_t dy);
         std::uint32_t _seg_off;
