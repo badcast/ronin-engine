@@ -82,3 +82,11 @@ endif()
 if(NOT ${RONIN_NO_CONFIG})
   add_subdirectory(config)
 endif()
+
+# TESTS
+option(RONIN_BUILD_TESTS "Build RoninEngine tests" ON)
+if(RONIN_BUILD_TESTS)
+  enable_testing()
+  add_subdirectory(tests)
+endif()
+
