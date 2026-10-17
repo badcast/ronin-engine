@@ -158,9 +158,15 @@ void Terrain2D::setMesh(Rectf state, SpriteRef sprite, bool isCollider)
     TransformRef relative = render->transform();
     relative->setParent(m_t2data->root, false);
     render->setSprite(sprite);
-    render->renderPresentMode = SpriteRenderPresentMode::Place;
+    render->renderPresentMode = SpriteRenderPresentMode::Fixed;
     render->renderType = SpriteRenderType::Simple;
-    render->setSize(Vec2::Scale(state.getWH(), m_t2data->textureScale));
+    Vec2 sprSize = sprite->size();
+    Vec2 tileScale = Vec2::one;
+    if(sprSize.x > 0.0f)
+        tileScale.x = state.w / sprSize.x;
+    if(sprSize.y > 0.0f)
+        tileScale.y = state.h / sprSize.y;
+    render->setSize(Vec2::Scale(tileScale, m_t2data->textureScale));
 
     relative->localPosition(state.getXY() + state.getWH() / 2.0f);
 

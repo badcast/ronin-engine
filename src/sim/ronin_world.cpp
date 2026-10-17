@@ -161,8 +161,16 @@ namespace RoninEngine
             if(!currentWorld->irs->requestUnloading && cam && cam->enable())
             {
                 // draw world in world size
-                native_render_2D(reinterpret_cast<Camera2D *>(cam));
-                       // Set scale to default
+                Camera2D *cam2d = dynamic_cast<Camera2D *>(cam);
+                if(cam2d)
+                {
+                    native_render_2D(cam2d);
+                }
+                else
+                {
+                    native_render_3D(cam);
+                }
+                // Set scale to default
                 SDL_RenderSetScale(gscope.renderer, 1.f, 1.f);
             }
             gscope.queueWatcher.delayPresent = Time::EndWatch();

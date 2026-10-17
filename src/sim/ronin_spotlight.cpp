@@ -28,13 +28,14 @@ namespace RoninEngine::Runtime
         SDL_Surface *surf = SDL_CreateRGBSurfaceWithFormat(0, size, size, 32, SDL_PIXELFORMAT_RGBA32);
         if(!surf)
             return nullptr;
-        Uint32 *pixels = static_cast<Uint32 *>(surf->pixels);
+        SDL_LockSurface(surf);
         float cx = (size - 1) * 0.5f;
         float cy = (size - 1) * 0.5f;
         float maxRadius = cx;
         float halfConeRad = (coneAngleDeg * 0.5f) * Math::deg2rad;
         for(int y = 0; y < size; ++y)
         {
+            Uint32 *row = reinterpret_cast<Uint32 *>(static_cast<Uint8 *>(surf->pixels) + y * surf->pitch);
             for(int x = 0; x < size; ++x)
             {
                 float dx = x - cx;
@@ -51,9 +52,10 @@ namespace RoninEngine::Runtime
                         a = static_cast<Uint8>(std::clamp(radFalloff * angFalloff * 255.0f, 0.0f, 255.0f));
                     }
                 }
-                pixels[y * size + x] = SDL_MapRGBA(surf->format, 255, 255, 255, a);
+                row[x] = SDL_MapRGBA(surf->format, 255, 255, 255, a);
             }
         }
+        SDL_UnlockSurface(surf);
         return surf;
     }
 

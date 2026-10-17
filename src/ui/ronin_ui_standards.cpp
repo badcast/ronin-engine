@@ -200,8 +200,8 @@ namespace RoninEngine::UI
 
                 RenderUtility::SetColor(isEnabled ? (uiState.ms_hover ? Color::lightgray : Color::gray) : colorSpace.defaultInteraction.disabledState);
                 Color color = RenderUtility::GetColor();
-                boxColor(gscope.renderer, rect.x, rect.y, rect.x + rect.w, rect.y + rect.h, Color::slategray);
-                rectangleColor(gscope.renderer, rect.x, rect.y, rect.x + rect.w, rect.y + rect.h, color);
+                boxRGBA(gscope.renderer, rect.x, rect.y, rect.x + rect.w, rect.y + rect.h, Color::slategray.r, Color::slategray.g, Color::slategray.b, Color::slategray.a);
+                rectangleRGBA(gscope.renderer, rect.x, rect.y, rect.x + rect.w, rect.y + rect.h, color.r, color.g, color.b, color.a);
 
                 // Cursor
                 rect.w = 20;
@@ -210,9 +210,9 @@ namespace RoninEngine::UI
                 rect.y = element.rect.y + (element.rect.h - rect.h) / 2;
 
                 color = isEnabled ? Color::darkgray : Color::lightgray;
-                boxColor(gscope.renderer, rect.x, rect.y, rect.x + rect.w, rect.y + rect.h, color);
+                boxRGBA(gscope.renderer, rect.x, rect.y, rect.x + rect.w, rect.y + rect.h, color.r, color.g, color.b, color.a);
                 color = isEnabled ? (uiState.ms_hover ? Color::lightgray : Color::gray) : Color::darkgray;
-                rectangleColor(gscope.renderer, rect.x, rect.y, rect.x + rect.w + 1, rect.y + rect.h + 1, color);
+                rectangleRGBA(gscope.renderer, rect.x, rect.y, rect.x + rect.w + 1, rect.y + rect.h + 1, color.r, color.g, color.b, color.a);
 
                 RenderUtility::SetColor(Color::black);
                 char buffer[32];
@@ -256,8 +256,8 @@ namespace RoninEngine::UI
 
                 RenderUtility::SetColor(isEnabled ? (uiState.ms_hover ? Color::lightgray : Color::gray) : colorSpace.defaultInteraction.disabledState);
                 Color color = RenderUtility::GetColor();
-                boxColor(gscope.renderer, rect.x, rect.y, rect.x + rect.w, rect.y + rect.h, Color::slategray);
-                rectangleColor(gscope.renderer, rect.x, rect.y, rect.x + rect.w, rect.y + rect.h, color);
+                boxRGBA(gscope.renderer, rect.x, rect.y, rect.x + rect.w, rect.y + rect.h, Color::slategray.r, Color::slategray.g, Color::slategray.b, Color::slategray.a);
+                rectangleRGBA(gscope.renderer, rect.x, rect.y, rect.x + rect.w, rect.y + rect.h, color.r, color.g, color.b, color.a);
 
                 // Cursor
                 rect.w = 11;
@@ -266,9 +266,9 @@ namespace RoninEngine::UI
                 rect.y = element.rect.y + static_cast<int>(element.rect.h * (1.0f - ratio)) - rect.h / 2;
 
                 color = isEnabled ? Color::darkgray : Color::lightgray;
-                boxColor(gscope.renderer, rect.x, rect.y, rect.x + rect.w, rect.y + rect.h, color);
+                boxRGBA(gscope.renderer, rect.x, rect.y, rect.x + rect.w, rect.y + rect.h, color.r, color.g, color.b, color.a);
                 color = isEnabled ? (uiState.ms_hover ? Color::lightgray : Color::gray) : Color::darkgray;
-                rectangleColor(gscope.renderer, rect.x, rect.y, rect.x + rect.w + 1, rect.y + rect.h + 1, color);
+                rectangleRGBA(gscope.renderer, rect.x, rect.y, rect.x + rect.w + 1, rect.y + rect.h + 1, color.r, color.g, color.b, color.a);
 
                 RenderUtility::SetColor(Color::black);
                 char buffer[32];

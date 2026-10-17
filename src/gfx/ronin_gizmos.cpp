@@ -46,6 +46,9 @@ namespace RoninEngine::Runtime
 
     void drawBox()
     {
+        if(!currentWorld || !currentWorld->irs)
+            return;
+
         Vec2 a, b;
 
         a = currentWorld->irs->metricPixelsPerPoint;
@@ -93,28 +96,35 @@ namespace RoninEngine::Runtime
 
     void RenderUtility::DrawRectangle(Vec2 origin, float width, float height)
     {
+        if(gscope.renderer == nullptr)
+            return;
         origin = Camera::WorldToScreenPoint(origin);
         Vec2 camScale = (currentWorld && currentWorld->irs && currentWorld->irs->mainCamera) ? currentWorld->irs->mainCamera->res->scale : Vec2::one;
-        width *= currentWorld->irs->metricPixelsPerPoint.x * camScale.x;
-        height *= currentWorld->irs->metricPixelsPerPoint.y * camScale.y;
+        Vec2 mpp = (currentWorld && currentWorld->irs) ? currentWorld->irs->metricPixelsPerPoint : Vec2(100.0f, 100.0f);
+        width *= mpp.x * camScale.x;
+        height *= mpp.y * camScale.y;
         float x = origin.x - width / 2.f;
         float y = origin.y - height / 2.f;
 
-        rectangleColor(gscope.renderer, static_cast<Sint16>(x), static_cast<Sint16>(y), static_cast<Sint16>(x + width), static_cast<Sint16>(y + height), GetColor());
+        Color color = GetColor();
+        rectangleRGBA(gscope.renderer, static_cast<Sint16>(x), static_cast<Sint16>(y), static_cast<Sint16>(x + width), static_cast<Sint16>(y + height), color.r, color.g, color.b, color.a);
     }
 
     void RenderUtility::DrawRectangleRotate(Vec2 origin, Vec2 size, float angleRadian)
     {
+        if(gscope.renderer == nullptr)
+            return;
         float cos, sin;
         int i;
         float dx, dy, cx, cy;
         Vec2 camScale = (currentWorld && currentWorld->irs && currentWorld->irs->mainCamera) ? currentWorld->irs->mainCamera->res->scale : Vec2::one;
+        Vec2 mpp = (currentWorld && currentWorld->irs) ? currentWorld->irs->metricPixelsPerPoint : Vec2(100.0f, 100.0f);
 
         cos = Math::Cos(angleRadian);
         sin = Math::Sin(angleRadian);
 
         origin = Camera::WorldToScreenPoint(origin);
-        size = Vec2::Scale(size, Vec2::Scale(currentWorld->irs->metricPixelsPerPoint, camScale));
+        size = Vec2::Scale(size, Vec2::Scale(mpp, camScale));
         cx = origin.x;
         cy = origin.y;
         origin -= size / 2.f;
@@ -142,14 +152,18 @@ namespace RoninEngine::Runtime
 
     void RenderUtility::DrawRectangleRounded(Vec2 origin, float width, float height, std::uint16_t radius)
     {
+        if(gscope.renderer == nullptr)
+            return;
         origin = Camera::WorldToScreenPoint(origin);
         Vec2 camScale = (currentWorld && currentWorld->irs && currentWorld->irs->mainCamera) ? currentWorld->irs->mainCamera->res->scale : Vec2::one;
-        width *= currentWorld->irs->metricPixelsPerPoint.x * camScale.x;
-        height *= currentWorld->irs->metricPixelsPerPoint.y * camScale.y;
+        Vec2 mpp = (currentWorld && currentWorld->irs) ? currentWorld->irs->metricPixelsPerPoint : Vec2(100.0f, 100.0f);
+        width *= mpp.x * camScale.x;
+        height *= mpp.y * camScale.y;
         float x = origin.x - width / 2.f;
         float y = origin.y - height / 2.f;
 
-        roundedRectangleColor(gscope.renderer, static_cast<Sint16>(x), static_cast<Sint16>(y), static_cast<Sint16>(x + width), static_cast<Sint16>(y + height), radius, GetColor());
+        Color color = GetColor();
+        roundedRectangleRGBA(gscope.renderer, static_cast<Sint16>(x), static_cast<Sint16>(y), static_cast<Sint16>(x + width), static_cast<Sint16>(y + height), radius, color.r, color.g, color.b, color.a);
     }
 
     void RenderUtility::Draw2DWorldSpace(const Vec2 &origin, int depth)
@@ -262,10 +276,13 @@ namespace RoninEngine::Runtime
 
         if(fill)
         {
+            if(gscope.renderer == nullptr)
+                return;
             Vec2 s1 = Camera::WorldToScreenPoint(point1);
             Vec2 s2 = Camera::WorldToScreenPoint(point2);
             Vec2 s3 = Camera::WorldToScreenPoint(point3);
-            filledTrigonColor(gscope.renderer, static_cast<Sint16>(s1.x), static_cast<Sint16>(s1.y), static_cast<Sint16>(s2.x), static_cast<Sint16>(s2.y), static_cast<Sint16>(s3.x), static_cast<Sint16>(s3.y), GetColor());
+            Color color = GetColor();
+            filledTrigonRGBA(gscope.renderer, static_cast<Sint16>(s1.x), static_cast<Sint16>(s1.y), static_cast<Sint16>(s2.x), static_cast<Sint16>(s2.y), static_cast<Sint16>(s3.x), static_cast<Sint16>(s3.y), color.r, color.g, color.b, color.a);
         }
         else
         {
@@ -296,19 +313,25 @@ namespace RoninEngine::Runtime
 
     void RenderUtility::DrawTextClassic(Vec2 origin, const std::string &text)
     {
+        if(gscope.renderer == nullptr)
+            return;
         // relative to
         origin = Camera::WorldToScreenPoint(origin);
 
-        stringColor(gscope.renderer, origin.x, origin.y, text.c_str(), GetColor());
+        Color color = GetColor();
+        stringRGBA(gscope.renderer, origin.x, origin.y, text.c_str(), color.r, color.g, color.b, color.a);
     }
 
     void RenderUtility::DrawCircle(Vec2 origin, float distance)
     {
+        if(gscope.renderer == nullptr)
+            return;
         origin = Camera::WorldToScreenPoint(origin);
         Vec2 camScale = (currentWorld && currentWorld->irs && currentWorld->irs->mainCamera) ? currentWorld->irs->mainCamera->res->scale : Vec2::one;
+        Vec2 mpp = (currentWorld && currentWorld->irs) ? currentWorld->irs->metricPixelsPerPoint : Vec2(100.0f, 100.0f);
         Sint16 x = static_cast<Sint16>(origin.x);
         Sint16 y = static_cast<Sint16>(origin.y);
-        Sint16 r = static_cast<Sint16>(distance * currentWorld->irs->metricPixelsPerPoint.x * camScale.x);
+        Sint16 r = static_cast<Sint16>(distance * mpp.x * camScale.x);
         Color m_color = GetColor();
 
         circleRGBA(gscope.renderer, x, y, r, m_color.r, m_color.g, m_color.b, m_color.a);
@@ -338,11 +361,12 @@ namespace RoninEngine::Runtime
         Rect rect;
         origin = Camera::WorldToScreenPoint(origin);
         Vec2 camScale = (currentWorld && currentWorld->irs && currentWorld->irs->mainCamera) ? currentWorld->irs->mainCamera->res->scale : Vec2::one;
+        Vec2 c = sprite->center();
 
         rect.w = static_cast<int>(sprite->width() * size.x * camScale.x);
         rect.h = static_cast<int>(sprite->height() * size.y * camScale.y);
-        rect.x = static_cast<int>(origin.x - rect.w * sprite->m_center.x);
-        rect.y = static_cast<int>(origin.y - rect.h * sprite->m_center.y);
+        rect.x = static_cast<int>(origin.x - rect.w * c.x);
+        rect.y = static_cast<int>(origin.y - rect.h * c.y);
 
         DrawSpriteToScreen(sprite, rect, angleRadian);
     }
@@ -351,13 +375,15 @@ namespace RoninEngine::Runtime
     {
         SDL_Texture *texture;
 
-        if(sprite == nullptr || sprite->surface == nullptr)
+        if(gscope.renderer == nullptr || sprite == nullptr || sprite->surface == nullptr)
             return;
 
         texture = render_cache_texture(sprite.ptr_);
         if(texture)
         {
-            SDL_RenderCopyEx(gscope.renderer, texture, reinterpret_cast<const SDL_Rect *>(&sprite->m_rect), reinterpret_cast<const SDL_Rect *>(&rect), angleRadian * Math::rad2deg, nullptr, SDL_RendererFlip::SDL_FLIP_NONE);
+            Vec2 c = sprite->center();
+            SDL_Point rotCenter = { static_cast<int>(rect.w * c.x), static_cast<int>(rect.h * c.y) };
+            SDL_RenderCopyEx(gscope.renderer, texture, reinterpret_cast<const SDL_Rect *>(&sprite->m_rect), reinterpret_cast<const SDL_Rect *>(&rect), angleRadian * Math::rad2deg, &rotCenter, SDL_RendererFlip::SDL_FLIP_NONE);
             render_cache_unref(texture);
         }
     }
@@ -384,10 +410,13 @@ namespace RoninEngine::Runtime
 
     void RenderUtility::DrawFillRect(Vec2 center, float width, float height)
     {
+        if(gscope.renderer == nullptr)
+            return;
         center = Camera::WorldToScreenPoint(center);
         Vec2 camScale = (currentWorld && currentWorld->irs && currentWorld->irs->mainCamera) ? currentWorld->irs->mainCamera->res->scale : Vec2::one;
-        width *= currentWorld->irs->metricPixelsPerPoint.x * camScale.x;
-        height *= currentWorld->irs->metricPixelsPerPoint.y * camScale.y;
+        Vec2 mpp = (currentWorld && currentWorld->irs) ? currentWorld->irs->metricPixelsPerPoint : Vec2(100.0f, 100.0f);
+        width *= mpp.x * camScale.x;
+        height *= mpp.y * camScale.y;
         SDL_FRect rect {center.x - width / 2.f, center.y - height / 2.f, width, height};
 
         SDL_RenderFillRectF(gscope.renderer, &rect);
@@ -395,14 +424,18 @@ namespace RoninEngine::Runtime
 
     void RenderUtility::DrawFillRectRounded(Vec2 origin, float width, float height, uint16_t radius)
     {
+        if(gscope.renderer == nullptr)
+            return;
         origin = Camera::WorldToScreenPoint(origin);
         Vec2 camScale = (currentWorld && currentWorld->irs && currentWorld->irs->mainCamera) ? currentWorld->irs->mainCamera->res->scale : Vec2::one;
-        width *= currentWorld->irs->metricPixelsPerPoint.x * camScale.x;
-        height *= currentWorld->irs->metricPixelsPerPoint.y * camScale.y;
+        Vec2 mpp = (currentWorld && currentWorld->irs) ? currentWorld->irs->metricPixelsPerPoint : Vec2(100.0f, 100.0f);
+        width *= mpp.x * camScale.x;
+        height *= mpp.y * camScale.y;
         float x = origin.x - width / 2.f;
         float y = origin.y - height / 2.f;
 
-        roundedBoxColor(gscope.renderer, static_cast<Sint16>(x), static_cast<Sint16>(y), static_cast<Sint16>(x + width), static_cast<Sint16>(y + height), radius, GetColor());
+        Color color = GetColor();
+        roundedBoxRGBA(gscope.renderer, static_cast<Sint16>(x), static_cast<Sint16>(y), static_cast<Sint16>(x + width), static_cast<Sint16>(y + height), radius, color.r, color.g, color.b, color.a);
     }
 
     void RenderUtility::DrawFillSquare(Vec2 origin, float width)
@@ -417,14 +450,17 @@ namespace RoninEngine::Runtime
 
     void RenderUtility::DrawFillCircle(Vec2 origin, float distance)
     {
+        if(gscope.renderer == nullptr)
+            return;
         origin = Camera::WorldToScreenPoint(origin);
         Vec2 camScale = (currentWorld && currentWorld->irs && currentWorld->irs->mainCamera) ? currentWorld->irs->mainCamera->res->scale : Vec2::one;
+        Vec2 mpp = (currentWorld && currentWorld->irs) ? currentWorld->irs->metricPixelsPerPoint : Vec2(100.0f, 100.0f);
         Sint16 x = static_cast<Sint16>(origin.x);
         Sint16 y = static_cast<Sint16>(origin.y);
-        Sint16 r = static_cast<Sint16>(distance * currentWorld->irs->metricPixelsPerPoint.x * camScale.x);
+        Sint16 r = static_cast<Sint16>(distance * mpp.x * camScale.x);
         Color m_color = GetColor();
 
-        filledCircleColor(gscope.renderer, x, y, r, m_color);
+        filledCircleRGBA(gscope.renderer, x, y, r, m_color.r, m_color.g, m_color.b, m_color.a);
     }
 
     void RenderUtility::DrawTextToScreen(Vec2Int screenPoint, const std::string &text, int font_size)

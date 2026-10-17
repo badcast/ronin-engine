@@ -1,5 +1,6 @@
 #include "ronin_render_cache.h"
 #include "ronin_debug.h"
+#include <algorithm>
 
 namespace RoninEngine::Runtime
 {
@@ -112,7 +113,7 @@ namespace RoninEngine::Runtime
         SDL_Texture *extentTexture;
         SDL_Surface *extentSurface;
 
-        if(texture == nullptr || extent == nullptr || extent->w <= 0 || extent->h <= 0 || (baseSize && (baseSize->x < 1 || baseSize->y < 1)))
+        if(gscope.renderer == nullptr || texture == nullptr || extent == nullptr || extent->w <= 0 || extent->h <= 0 || (baseSize && (baseSize->x < 1 || baseSize->y < 1)))
         {
             return;
         }
@@ -200,49 +201,40 @@ namespace RoninEngine::Runtime
             if(extentTexture == nullptr)
                 break;
 
+            int tileW = (baseSize != nullptr) ? baseSize->x : srcFrom->w;
+            int tileH = (baseSize != nullptr) ? baseSize->y : srcFrom->h;
+            if(tileW <= 0 || tileH <= 0)
+            {
+                SDL_DestroyTexture(extentTexture);
+                break;
+            }
+
             SDL_Texture *prevTarget = SDL_GetRenderTarget(gscope.renderer);
             SDL_SetTextureBlendMode(extentTexture, SDL_BLENDMODE_BLEND);
             SDL_SetRenderTarget(gscope.renderer, extentTexture);
-            SDL_SetRenderDrawColor(gscope.renderer, 0, 0, 255, 0);
+            SDL_SetRenderDrawColor(gscope.renderer, 0, 0, 0, 0);
             SDL_RenderClear(gscope.renderer);
 
-            if(baseSize != nullptr)
+            for(int y = 0; y < extent->h; y += tileH)
             {
-                src.w = baseSize->x;
-                src.h = baseSize->y;
+                int curH = std::min(tileH, extent->h - y);
+                for(int x = 0; x < extent->w; x += tileW)
+                {
+                    int curW = std::min(tileW, extent->w - x);
+                    SDL_Rect s = *srcFrom;
+                    if(curW < tileW)
+                        s.w = (s.w * curW) / tileW;
+                    if(curH < tileH)
+                        s.h = (s.h * curH) / tileH;
+                    SDL_Rect d = {x, y, curW, curH};
+                    SDL_RenderCopy(gscope.renderer, texture, &s, &d);
+                }
             }
 
-            // First Render
-            srcCopy = src;
-            SDL_RenderCopy(gscope.renderer, texture, srcFrom, &srcCopy);
-
-            dst = src;
-            dst.x += src.w;
-            for(; dst.x < extent->w;)
-            {
-                SDL_RenderCopy(gscope.renderer, extentTexture, &src, &dst);
-                dst.x += src.w;
-                src.w *= 2;
-                dst.w = src.w;
-            }
-
-            dst.x = 0;
-            dst.y = src.h;
-            for(; dst.y < extent->h;)
-            {
-                // Recover width
-                dst.w = extent->w;
-                SDL_RenderCopy(gscope.renderer, extentTexture, &src, &dst);
-                dst.y += src.h;
-                src.h *= 2;
-                dst.h = src.h;
-            }
-
-            // Recover previuos target
+            // Recover previous target
             SDL_SetRenderTarget(gscope.renderer, prevTarget);
             SDL_RenderCopyEx(gscope.renderer, extentTexture, nullptr, extent, Math::rad2deg * angleRad, nullptr, SDL_FLIP_NONE);
 
-            // SDL_DestroyTexture(texture);
             SDL_DestroyTexture(extentTexture);
 #endif
             break;
@@ -257,66 +249,7 @@ namespace RoninEngine::Runtime
 
     void render_texture_extension2(SDL_Texture *texture, const Vec2Int *baseSize, const SDL_Rect *extent, float angleRad)
     {
-        SDL_Rect dest, src;
-        SDL_Texture *destTexture;
-        SDL_Texture *prevTargetTexture;
-
-        if(gscope.renderer == nullptr || texture == nullptr || extent == nullptr || extent->w <= 0 || extent->h <= 0)
-        {
-            return;
-        }
-
-        src.x = 0;
-        src.y = 0;
-        SDL_QueryTexture(texture, nullptr, nullptr, &src.w, &src.h);
-
-        destTexture = SDL_CreateTexture(gscope.renderer, defaultPixelFormat, SDL_TEXTUREACCESS_TARGET, extent->w, extent->h);
-        if(destTexture == nullptr)
-            return;
-
-        if(baseSize == nullptr)
-            baseSize = reinterpret_cast<const Vec2Int *>(&src.w);
-        else
-        {
-            src.w = baseSize->x;
-            src.h = baseSize->y;
-        }
-
-        SDL_SetTextureBlendMode(destTexture, SDL_BLENDMODE_BLEND);
-
-        prevTargetTexture = SDL_GetRenderTarget(gscope.renderer);
-        SDL_SetRenderTarget(gscope.renderer, destTexture);
-        SDL_SetRenderDrawColor(gscope.renderer, 0, 0, 0, 0);
-        SDL_RenderClear(gscope.renderer);
-
-        // Set first draw
-        dest = src;
-
-        SDL_RenderCopy(gscope.renderer, texture, nullptr, &dest);
-        dest.x += src.w;
-        for(; dest.x < extent->w;)
-        {
-            SDL_RenderCopy(gscope.renderer, destTexture, &src, &dest);
-            dest.x += src.w;
-            src.w *= 2;
-            dest.w = src.w;
-        }
-
-        dest.x = 0;
-        dest.y = src.h;
-        // Recover width
-        dest.w = extent->w;
-        for(; dest.y < extent->h;)
-        {
-            SDL_RenderCopy(gscope.renderer, destTexture, &src, &dest);
-            dest.y += src.h;
-            src.h *= 2;
-            dest.h = src.h;
-        }
-
-        SDL_SetRenderTarget(gscope.renderer, prevTargetTexture);
-        SDL_RenderCopyEx(gscope.renderer, destTexture, nullptr, extent, Math::rad2deg * angleRad, nullptr, SDL_FLIP_NONE);
-        SDL_DestroyTexture(destTexture);
+        render_texture_extension(texture, baseSize, nullptr, extent, angleRad);
     }
 
     void render_cache_unref(SDL_Texture *texture)

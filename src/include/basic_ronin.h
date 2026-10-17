@@ -296,6 +296,7 @@ namespace RoninEngine
         GameObjectRef create_game_object(const std::string &name);
 
         void native_render_2D(Camera2D *camera);
+        void native_render_3D(Camera *camera);
 
         int sepuku_run();
         void sepuku_Component(ComponentRef &CND);

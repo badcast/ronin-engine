@@ -27,11 +27,12 @@ namespace RoninEngine::Runtime
         SDL_Surface *surf = SDL_CreateRGBSurfaceWithFormat(0, size, size, 32, SDL_PIXELFORMAT_RGBA32);
         if(!surf)
             return nullptr;
-        Uint32 *pixels = static_cast<Uint32 *>(surf->pixels);
+        SDL_LockSurface(surf);
         float center = (size - 1) * 0.5f;
         float maxRadius = center;
         for(int y = 0; y < size; ++y)
         {
+            Uint32 *row = reinterpret_cast<Uint32 *>(static_cast<Uint8 *>(surf->pixels) + y * surf->pitch);
             for(int x = 0; x < size; ++x)
             {
                 float dx = (x - center) / maxRadius;
@@ -43,9 +44,10 @@ namespace RoninEngine::Runtime
                     float falloff = (1.0f - dist);
                     a = static_cast<Uint8>(std::clamp(falloff * falloff * 255.0f, 0.0f, 255.0f));
                 }
-                pixels[y * size + x] = SDL_MapRGBA(surf->format, 255, 255, 255, a);
+                row[x] = SDL_MapRGBA(surf->format, 255, 255, 255, a);
             }
         }
+        SDL_UnlockSurface(surf);
         return surf;
     }
 
@@ -54,11 +56,12 @@ namespace RoninEngine::Runtime
         SDL_Surface *surf = SDL_CreateRGBSurfaceWithFormat(0, size, size, 32, SDL_PIXELFORMAT_RGBA32);
         if(!surf)
             return nullptr;
-        Uint32 *pixels = static_cast<Uint32 *>(surf->pixels);
+        SDL_LockSurface(surf);
         float center = (size - 1) * 0.5f;
         float maxRadius = center;
         for(int y = 0; y < size; ++y)
         {
+            Uint32 *row = reinterpret_cast<Uint32 *>(static_cast<Uint8 *>(surf->pixels) + y * surf->pitch);
             float fy = 1.0f - static_cast<float>(y) / (size - 1);
             for(int x = 0; x < size; ++x)
             {
@@ -66,9 +69,10 @@ namespace RoninEngine::Runtime
                 float fx = std::max(0.0f, 1.0f - dx);
                 float a_val = fx * fx * fy * 255.0f;
                 Uint8 a = static_cast<Uint8>(std::clamp(a_val, 0.0f, 255.0f));
-                pixels[y * size + x] = SDL_MapRGBA(surf->format, 255, 255, 255, a);
+                row[x] = SDL_MapRGBA(surf->format, 255, 255, 255, a);
             }
         }
+        SDL_UnlockSurface(surf);
         return surf;
     }
 

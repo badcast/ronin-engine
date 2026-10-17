@@ -25,4 +25,5 @@ namespace RoninEngine::Runtime
     void cache_render_flush_all();
 
     void native_render_2D(Camera2D *camera);
+    void native_render_3D(Camera *camera);
 } // namespace RoninEngine::Runtime

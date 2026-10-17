@@ -53,9 +53,7 @@ SpriteRef Primitive::CreateSpriteRectangle(Vec2 size, Color fillColor)
     {
         RoninSimulator::Kill();
     }
-    SDL_LockSurface(surface);
-    SDL_memset4(surface->pixels, static_cast<std::uint32_t>(fillColor), surface->w * surface->h);
-    SDL_UnlockSurface(surface);
+    SDL_FillRect(surface, nullptr, SDL_MapRGBA(surface->format, fillColor.r, fillColor.g, fillColor.b, fillColor.a));
     if(currentWorld && currentWorld->irs)
         currentWorld->irs->preloadeSurfaces.push_back(surface);
     RoninMemory::alloc_self(sprite, surface, Rect(0, 0, static_cast<int>(size.x), static_cast<int>(size.y)));
@@ -78,7 +76,7 @@ SpriteRef Primitive::CreateSpriteCircle(Vec2 size, float radius, Color fillColor
     SDL_Renderer *renderer = SDL_CreateSoftwareRenderer(surface);
 
     // draw circle
-    filledCircleColor(renderer, static_cast<Sint16>(size.x / 2), static_cast<Sint16>(size.y / 2), static_cast<std::uint16_t>(radius * mpp.x / 2) - 1, fillColor);
+    filledCircleRGBA(renderer, static_cast<Sint16>(size.x / 2), static_cast<Sint16>(size.y / 2), static_cast<std::uint16_t>(radius * mpp.x / 2) - 1, fillColor.r, fillColor.g, fillColor.b, fillColor.a);
 
     SDL_DestroyRenderer(renderer);
     RoninMemory::alloc_self(sprite, surface, Rect(0, 0, static_cast<int>(size.x), static_cast<int>(size.y)));
@@ -101,7 +99,7 @@ SpriteRef Primitive::CreateSpriteTriangle(Vec2 size, float height, Color fillCol
     float topY = std::max(0.0f, size.y - height);
     // drawing triangle
     SDL_Renderer *renderer = SDL_CreateSoftwareRenderer(surface);
-    filledTrigonColor(renderer, 0, static_cast<Sint16>(size.y), static_cast<Sint16>(size.x), static_cast<Sint16>(size.y), static_cast<Sint16>(size.x / 2), static_cast<Sint16>(topY), fillColor);
+    filledTrigonRGBA(renderer, 0, static_cast<Sint16>(size.y), static_cast<Sint16>(size.x), static_cast<Sint16>(size.y), static_cast<Sint16>(size.x / 2), static_cast<Sint16>(topY), fillColor.r, fillColor.g, fillColor.b, fillColor.a);
     SDL_DestroyRenderer(renderer);
 
     if(currentWorld && currentWorld->irs)

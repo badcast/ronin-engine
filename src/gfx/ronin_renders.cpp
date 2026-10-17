@@ -69,8 +69,13 @@ namespace RoninEngine::Runtime
 
         params.camera_position = camera->transform()->position();
         params.root_transform = (!currentWorld->irs->mainObject.isNull()) ? currentWorld->irs->mainObject->transform().ptr_ : nullptr;
-        params.wpLeftTop = Camera::ScreenToWorldPoint(Vec2::zero);
-        params.wpRightBottom = Camera::ScreenToWorldPoint(Vec2(gscope.activeResolution.width, gscope.activeResolution.height));
+        Vec2 camScale = Vec2::Scale(camera->res->scale, currentWorld->irs->metricPixelsPerPoint);
+        if(camScale.x == 0.0f) camScale.x = 1.0f;
+        if(camScale.y == 0.0f) camScale.y = 1.0f;
+        Vec2 halfRes = Vec2(gscope.activeResolution.width, gscope.activeResolution.height) * 0.5f;
+        Vec2 wpOffset(halfRes.x / camScale.x, halfRes.y / camScale.y);
+        params.wpLeftTop = Vec2(params.camera_position.x - wpOffset.x, params.camera_position.y + wpOffset.y);
+        params.wpRightBottom = Vec2(params.camera_position.x + wpOffset.x, params.camera_position.y - wpOffset.y);
         params.edges = Math::Number(Math::Max(std::fabs(params.wpRightBottom.x - params.camera_position.x), std::fabs(params.wpRightBottom.y - params.camera_position.y))) + 5 + camera->distanceEvcall;
 
                // Clearing
@@ -148,8 +153,20 @@ namespace RoninEngine::Runtime
                     // Vertical
                     params.wrapper.dst.y += ((gscope.activeResolution.height - params.wrapper.dst.h) / 2.0f + (params.camera_position.y - params.sourcePoint.y) * currentWorld->irs->metricPixelsPerPoint.y * camera->res->scale.y);
 
-                           // draw to backbuffer
-                    SDL_RenderCopyExF(gscope.renderer, params.wrapper.texture, reinterpret_cast<SDL_Rect *>(&(params.wrapper.src)), reinterpret_cast<SDL_FRect *>(&(params.wrapper.dst)), render_transform->_angle_, nullptr, params.wrapper.flip);
+                           SDL_FPoint rotCenter = { params.wrapper.dst.w * 0.5f, params.wrapper.dst.h * 0.5f };
+                    if(renderRef->_class == REND_SPRITE)
+                    {
+                        SpriteRenderer *sr = static_cast<SpriteRenderer *>(renderRef);
+                        if(sr->sprite)
+                        {
+                            Vec2 c = sr->sprite->center();
+                            rotCenter.x = params.wrapper.dst.w * c.x;
+                            rotCenter.y = params.wrapper.dst.h * c.y;
+                        }
+                    }
+
+                    // draw to backbuffer
+                    SDL_RenderCopyExF(gscope.renderer, params.wrapper.texture, reinterpret_cast<SDL_Rect *>(&(params.wrapper.src)), reinterpret_cast<SDL_FRect *>(&(params.wrapper.dst)), render_transform->_angle_, &rotCenter, params.wrapper.flip);
 
                     ++(camera->res->culled);
                 }
@@ -295,6 +312,8 @@ namespace RoninEngine::Runtime
                                 case SpriteRenderPresentMode::Place:
                                     rendering->src.w = std::min(rendering->src.w, static_cast<int>( target->sprite->width() * std::fabs(target->m_size.x)));
                                     rendering->src.h = std::min(rendering->src.h, static_cast<int>( target->sprite->height() * std::fabs(target->m_size.y)));
+                                    rendering->dst.w = static_cast<float>(rendering->src.w);
+                                    rendering->dst.h = static_cast<float>(rendering->src.h);
                                     break;
                             }
                             break;
@@ -331,79 +350,22 @@ namespace RoninEngine::Runtime
                             SDL_SetRenderDrawColor(gscope.renderer, 0, 0, 0, 0);
                             SDL_RenderClear(gscope.renderer);
 
-                            dest.w = tileW;
-                            dest.h = tileH;
-
-                            int tilesX = totalW / dest.w;
-                            int tilesY = totalH / dest.h;
-
                             SDL_Texture *temp_texture = render_cache_texture(target->sprite.ptr_);
                             if(temp_texture != nullptr)
                             {
-                                // render tile
-                                switch(target->renderPresentMode)
+                                for(int ty = 0; ty < totalH; ty += tileH)
                                 {
-                                    case SpriteRenderPresentMode::Fixed:
+                                    int curH = std::min(tileH, totalH - ty);
+                                    for(int tx = 0; tx < totalW; tx += tileW)
                                     {
-                                        for(x = 0; x < tilesX; ++x)
-                                        {
-                                            for(y = 0; y < tilesY; ++y)
-                                            {
-                                                dest.x = x * dest.w;
-                                                dest.y = y * dest.h;
-                                                SDL_RenderCopy(gscope.renderer, temp_texture, reinterpret_cast<const SDL_Rect *>(&target->sprite->m_rect), &dest);
-                                            }
-                                        }
-                                        break;
-                                    }
-                                    case SpriteRenderPresentMode::Place:
-                                    {
-                                        for(x = 0; x < tilesX; ++x)
-                                        {
-                                            for(y = 0; y < tilesY; ++y)
-                                            {
-                                                dest.x = x * dest.w;
-                                                dest.y = y * dest.h;
-                                                SDL_RenderCopy(gscope.renderer, temp_texture, reinterpret_cast<const SDL_Rect *>(&target->sprite->m_rect), &dest);
-                                            }
-                                        }
-                                        // place remained
-                                        int remW = totalW - tilesX * dest.w;
-                                        int remH = totalH - tilesY * dest.h;
-                                        if(remH > 0)
-                                        {
-                                            SDL_Rect srcPart = reinterpret_cast<const SDL_Rect &>(target->sprite->m_rect);
-                                            srcPart.h = std::min(srcPart.h, remH);
-                                            dest.y = tilesY * tileH;
-                                            dest.h = remH;
-                                            dest.w = tileW;
-                                            for(x = 0; x < tilesX; ++x)
-                                            {
-                                                dest.x = x * tileW;
-                                                SDL_RenderCopy(gscope.renderer, temp_texture, &srcPart, &dest);
-                                            }
-                                        }
-                                        if(remW > 0)
-                                        {
-                                            SDL_Rect srcPart = reinterpret_cast<const SDL_Rect &>(target->sprite->m_rect);
-                                            srcPart.w = std::min(srcPart.w, remW);
-                                            dest.x = tilesX * tileW;
-                                            dest.w = remW;
-                                            dest.h = tileH;
-                                            for(y = 0; y < tilesY; ++y)
-                                            {
-                                                dest.y = y * tileH;
-                                                SDL_RenderCopy(gscope.renderer, temp_texture, &srcPart, &dest);
-                                            }
-                                            if(remH > 0)
-                                            {
-                                                srcPart.h = std::min(target->sprite->m_rect.h, remH);
-                                                dest.y = tilesY * tileH;
-                                                dest.h = remH;
-                                                SDL_RenderCopy(gscope.renderer, temp_texture, &srcPart, &dest);
-                                            }
-                                        }
-                                        break;
+                                        int curW = std::min(tileW, totalW - tx);
+                                        SDL_Rect srcPart = reinterpret_cast<const SDL_Rect &>(target->sprite->m_rect);
+                                        if(curW < tileW)
+                                            srcPart.w = (srcPart.w * curW) / tileW;
+                                        if(curH < tileH)
+                                            srcPart.h = (srcPart.h * curH) / tileH;
+                                        SDL_Rect d = {tx, ty, curW, curH};
+                                        SDL_RenderCopy(gscope.renderer, temp_texture, &srcPart, &d);
                                     }
                                 }
                                 render_cache_unref(temp_texture);
@@ -433,8 +395,16 @@ namespace RoninEngine::Runtime
                     SDL_SetTextureAlphaMod(target->save_texture, target->color.a);
                 }
 
-                rendering->dst.w = rendering->dst.w * std::fabs(target->m_size.x) / currentWorld->irs->metricPixelsPerPoint.x;
-                rendering->dst.h = rendering->dst.h * std::fabs(target->m_size.y) / currentWorld->irs->metricPixelsPerPoint.y;
+                if(target->renderType == SpriteRenderType::Simple && target->renderPresentMode == SpriteRenderPresentMode::Place)
+                {
+                    rendering->dst.w = rendering->dst.w / currentWorld->irs->metricPixelsPerPoint.x;
+                    rendering->dst.h = rendering->dst.h / currentWorld->irs->metricPixelsPerPoint.y;
+                }
+                else
+                {
+                    rendering->dst.w = rendering->dst.w * std::fabs(target->m_size.x) / currentWorld->irs->metricPixelsPerPoint.x;
+                    rendering->dst.h = rendering->dst.h * std::fabs(target->m_size.y) / currentWorld->irs->metricPixelsPerPoint.y;
+                }
                 rendering->flip = static_cast<SDL_RendererFlip>(target->flip);
 
                 rendering->texture = target->save_texture;
