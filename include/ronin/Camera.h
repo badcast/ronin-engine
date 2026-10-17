@@ -13,15 +13,32 @@ namespace RoninEngine::Runtime
         bool backclear;
         Color backcolor;
 
+        Camera();
         Camera(const std::string &name);
+        Camera(const Camera &other);
 
         virtual ~Camera();
 
         bool isFocused();
         void Focus();
 
+        /**
+         * @brief Get camera scaling factor.
+         * @return The 2D scale vector.
+         */
         Vec2 GetScale();
+
+        /**
+         * @brief Set camera scaling factor along both axes.
+         * @param scale 2D scale vector.
+         */
         void SetScale(Vec2 scale);
+
+        /**
+         * @brief Set uniform camera scaling factor.
+         * @param scale Uniform scale factor.
+         */
+        void SetScale(float scale);
         /**
          * @brief Convert Screen Pixels Point to World Point.
          *

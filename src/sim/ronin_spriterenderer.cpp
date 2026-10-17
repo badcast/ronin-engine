@@ -11,13 +11,36 @@ namespace RoninEngine::Runtime
     }
 
     SpriteRenderer::SpriteRenderer(const std::string &name)
-        : Renderer(DESCRIBE_AS_ONLY_NAME(SpriteRenderer)), sprite(nullptr), save_texture(nullptr), m_size(Vec2::one), renderType(SpriteRenderType::Simple), renderOut(SpriteRenderOut::Centering), flip(SpriteRenderFlip::FlipNone), renderPresentMode(SpriteRenderPresentMode::Fixed), color(Color::white)
+        : Renderer(DESCRIBE_AS_ONLY_NAME(SpriteRenderer)),
+          sprite(nullptr),
+          save_src(),
+          save_dst(),
+          prevColorTexture(Color::white),
+          save_texture(nullptr),
+          m_size(Vec2::one),
+          renderType(SpriteRenderType::Simple),
+          renderOut(SpriteRenderOut::Centering),
+          flip(SpriteRenderFlip::FlipNone),
+          renderPresentMode(SpriteRenderPresentMode::Fixed),
+          color(Color::white)
     {
         _class = render_getclass<SpriteRenderer>();
         DESCRIBE_AS_MAIN(SpriteRenderer);
     }
 
-    SpriteRenderer::SpriteRenderer(const SpriteRenderer &proto) : Renderer(proto.m_name), sprite(proto.sprite), save_texture(nullptr), m_size(proto.m_size), renderType(proto.renderType), renderOut(proto.renderOut), flip(proto.flip), renderPresentMode(proto.renderPresentMode), color(proto.color)
+    SpriteRenderer::SpriteRenderer(const SpriteRenderer &proto)
+        : Renderer(proto.m_name),
+          sprite(proto.sprite),
+          save_src(),
+          save_dst(),
+          prevColorTexture(Color::white),
+          save_texture(nullptr),
+          m_size(proto.m_size),
+          renderType(proto.renderType),
+          renderOut(proto.renderOut),
+          flip(proto.flip),
+          renderPresentMode(proto.renderPresentMode),
+          color(proto.color)
     {
         _class = render_getclass<SpriteRenderer>();
     }
@@ -34,8 +57,13 @@ namespace RoninEngine::Runtime
 
     void SpriteRenderer::setRenderType(SpriteRenderType value)
     {
-        free_render_cache();
-        renderType = value;
+        if(renderType != value)
+        {
+            free_render_cache();
+            renderType = value;
+            if(_owner && transform())
+                Matrix::matrix_update(transform().ptr_);
+        }
     }
 
     const SpriteRenderOut SpriteRenderer::getRenderOut() const
@@ -45,8 +73,12 @@ namespace RoninEngine::Runtime
 
     void SpriteRenderer::setRenderOut(SpriteRenderOut value)
     {
-        free_render_cache();
-        renderOut = value;
+        if(renderOut != value)
+        {
+            renderOut = value;
+            if(_owner && transform())
+                Matrix::matrix_update(transform().ptr_);
+        }
     }
 
     const SpriteRenderPresentMode SpriteRenderer::getPresentMode() const
@@ -56,8 +88,12 @@ namespace RoninEngine::Runtime
 
     void SpriteRenderer::setPresentMode(SpriteRenderPresentMode value)
     {
-        free_render_cache();
-        renderPresentMode = value;
+        if(renderPresentMode != value)
+        {
+            renderPresentMode = value;
+            if(_owner && transform())
+                Matrix::matrix_update(transform().ptr_);
+        }
     }
 
     const Color SpriteRenderer::getColor() const
@@ -80,7 +116,10 @@ namespace RoninEngine::Runtime
         Vec2 absSize = Vec2::Abs(newSize);
         if(m_size != absSize)
         {
-            free_render_cache();
+            if(renderType == SpriteRenderType::Tile)
+            {
+                free_render_cache();
+            }
             m_size = absSize;
             if(_owner && transform())
                 Matrix::matrix_update(transform().ptr_);
@@ -98,7 +137,9 @@ namespace RoninEngine::Runtime
         Vec2 outOffset = Vec2::zero;
         if(sprite)
         {
-            outOffset = Vec2::Scale(Vec2::half - sprite->center(), m_size);
+            Vec2 c = sprite->center();
+            Vec2 worldSize = Vec2::Scale(sprite->size(), m_size);
+            outOffset = Vec2((0.5f - c.x) * worldSize.x, (c.y - 0.5f) * worldSize.y);
         }
         switch(renderOut)
         {

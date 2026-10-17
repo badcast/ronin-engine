@@ -42,6 +42,9 @@
 #include "NavMesh.h"
 #include "RenderUtility.h"
 #include "Physics2D.h"
+#include "Rigidbody2D.h"
+#include "BoxCollider2D.h"
+#include "CircleCollider2D.h"
 
 #include "end.h"
 

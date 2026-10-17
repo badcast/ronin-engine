@@ -7,11 +7,12 @@ namespace RoninEngine::Runtime
 {
     void hierarchy_childs_move(Transform *oldParent, Transform *newParent)
     {
-        if(oldParent == newParent)
+        if(!oldParent || !newParent || oldParent == newParent)
             return;
         for(TransformRef& child : oldParent->hierarchy)
         {
-            child->m_parent = newParent->GetRef<Transform>();
+            if(child)
+                child->m_parent = newParent->GetRef<Transform>();
         }
         newParent->hierarchy.insert(newParent->hierarchy.end(), oldParent->hierarchy.begin(), oldParent->hierarchy.end());
         oldParent->hierarchy.clear();
@@ -38,7 +39,7 @@ namespace RoninEngine::Runtime
         if(!newParent)
         {
             World *cw = World::GetCurrentWorld();
-            if(cw && cw->irs && !cw->irs->mainObject.isNull())
+            if(cw && cw->irs && !cw->irs->mainObject.isNull() && cw->irs->mainObject->transform() != from)
                 hierarchy_append(cw->irs->mainObject->transform(), from); // nullptr as Root
             else
                 from->m_parent = nullptr;
@@ -67,14 +68,15 @@ namespace RoninEngine::Runtime
             return;
         for(TransformRef &child : parent->hierarchy)
         {
-            child->m_parent = nullptr;
+            if(child)
+                child->m_parent = nullptr;
         }
         parent->hierarchy.clear();
     }
 
     void hierarchy_append(TransformRef parent, TransformRef who)
     {
-        if(!parent || !who)
+        if(!parent || !who || parent == who)
             return;
         auto iter = std::find(parent->hierarchy.begin(), parent->hierarchy.end(), who->GetRef<Transform>());
         if(iter == parent->hierarchy.end())
@@ -86,7 +88,7 @@ namespace RoninEngine::Runtime
 
     void hierarchy_sibiling(Transform *parent, Transform *who, int index)
     {
-        if (index < 0 || index >= parent->hierarchy.size())
+        if(!parent || !who || index < 0 || static_cast<size_t>(index) >= parent->hierarchy.size())
             return;
         auto iter = std::find(parent->hierarchy.begin(), parent->hierarchy.end(), who->GetRef<Transform>());
         if (iter != parent->hierarchy.end())
@@ -105,33 +107,33 @@ namespace RoninEngine::Runtime
     {
     }
 
-    Transform::Transform(const std::string &name) : Component(DESCRIBE_AS_ONLY_NAME(Transform))
+    Transform::Transform(const std::string &name) : Component(DESCRIBE_AS_ONLY_NAME(Transform)), m_parent(nullptr), _position(Vec2::zero), _angle_(0.0f)
     {
         DESCRIBE_AS_MAIN(Transform);
-        m_parent = nullptr;
-        _angle_ = 0;
     }
 
     int Transform::childCount() const
     {
-        return hierarchy.size();
+        return static_cast<int>(hierarchy.size());
     }
 
-    TransformRef Transform::childOf(int index)
+    TransformRef Transform::childOf(int index) const
     {
         if(index < 0 || childCount() <= index)
             throw std::out_of_range("index");
         return hierarchy[index];
     }
 
-    bool Transform::childContain(TransformRef child)
+    bool Transform::childContain(TransformRef child) const
     {
         return std::find(std::begin(hierarchy), std::end(hierarchy), child) != std::end(hierarchy);
     }
 
     void Transform::childAdd(TransformRef child)
     {
-        hierarchy_append(this->GetRef<Transform>(), child);
+        if(!child || child.ptr_ == this)
+            return;
+        hierarchy_parent_change(child, this->GetRef<Transform>());
     }
 
     void Transform::childRemove(TransformRef child)
@@ -146,7 +148,7 @@ namespace RoninEngine::Runtime
 
     TransformRef Transform::root()
     {
-        if(currentWorld == nullptr || currentWorld->irs == nullptr)
+        if(currentWorld == nullptr || currentWorld->irs == nullptr || currentWorld->irs->mainObject.isNull())
             return nullptr;
         return currentWorld->irs->mainObject->transform();
     }
@@ -155,7 +157,7 @@ namespace RoninEngine::Runtime
     {
         if(!target)
             return;
-        LookAt(target->_position, Vec2::down);
+        LookAt(target->_position, Vec2::up);
     }
 
     void Transform::LookAt(TransformRef target, Vec2 axis)
@@ -167,14 +169,18 @@ namespace RoninEngine::Runtime
 
     void Transform::LookAt(Vec2 target)
     {
-        LookAt(target, Vec2::down);
+        LookAt(target, Vec2::up);
     }
 
     void Transform::LookAt(Vec2 target, Vec2 axis)
     {
-        float a = Vec2::Angle(axis, target - _position) * Math::rad2deg;
-
         Vec2 dir = target - _position;
+        if(dir == Vec2::zero)
+            return;
+        if(axis == Vec2::zero)
+            axis = Vec2::up;
+
+        float a = Vec2::Angle(axis, dir) * Math::rad2deg;
         float cross = axis.x * dir.y - axis.y * dir.x;
         if(cross > 0)
             a = -a;
@@ -184,24 +190,30 @@ namespace RoninEngine::Runtime
 
     void Transform::LookAtLerp(Vec2 target, float t)
     {
-        LookAtLerp(target, Vec2::zero, t);
+        LookAtLerp(target, Vec2::up, t);
     }
 
     void Transform::LookAtLerp(Vec2 target, Vec2 axis, float t)
     {
-        target.x -= _position.x - axis.x;
-        target.y -= _position.y - axis.y;
+        Vec2 dir = target - _position;
+        if(dir == Vec2::zero)
+            return;
+        if(axis == Vec2::zero)
+            axis = Vec2::up;
 
-        float newAngle = Math::Atan2(target.y, target.x);
+        float targetAngle = Vec2::Angle(axis, dir) * Math::rad2deg;
+        float cross = axis.x * dir.y - axis.y * dir.x;
+        if(cross > 0)
+            targetAngle = -targetAngle;
 
-        angle(Math::LerpAngle(_angle_, (Math::Pi / 2 - newAngle) * Math::rad2deg, t));
+        angle(Math::LerpAngle(_angle_, targetAngle, t));
     }
 
     void Transform::LookAtLerp(TransformRef target, float t)
     {
         if(!target)
             return;
-        LookAtLerp(target->_position, Vec2::zero, t);
+        LookAtLerp(target->_position, Vec2::up, t);
     }
 
     void Transform::LookAtLerp(TransformRef target, Vec2 axis, float t)
@@ -220,9 +232,9 @@ namespace RoninEngine::Runtime
 
     void Transform::AsLastChild()
     {
-        if(this->m_parent == nullptr)
+        if(this->m_parent == nullptr || m_parent->hierarchy.empty())
             return;
-        hierarchy_sibiling(m_parent.ptr_, this, m_parent->hierarchy.size() - 1); // N-1 is last
+        hierarchy_sibiling(m_parent.ptr_, this, static_cast<int>(m_parent->hierarchy.size()) - 1); // N-1 is last
     }
 
     const Vec2 Transform::forward() const
@@ -272,6 +284,15 @@ namespace RoninEngine::Runtime
 
     const bool Transform::LookOfAngle(Transform *target, float angle) const
     {
+        if(!target)
+            return false;
+        return LookOfAngle(target->_position, angle);
+    }
+
+    const bool Transform::LookOfAngle(TransformRef target, float angle) const
+    {
+        if(!target)
+            return false;
         return LookOfAngle(target->_position, angle);
     }
 
@@ -283,12 +304,27 @@ namespace RoninEngine::Runtime
 
     Vec2 Transform::localPosition() const
     {
-        return (this->m_parent ? _position - this->m_parent->_position : _position);
+        if(!this->m_parent)
+            return _position;
+        Vec2 offset = _position - this->m_parent->_position;
+        if(this->m_parent->_angle_ != 0.0f)
+            offset = Vec2::Rotate(offset, this->m_parent->_angle_ * Math::deg2rad);
+        return offset;
     }
 
     const Vec2 Transform::localPosition(Vec2 value)
     {
-        position(this->m_parent ? this->m_parent->_position + value : value);
+        if(!this->m_parent)
+        {
+            position(value);
+        }
+        else
+        {
+            Vec2 worldOffset = (this->m_parent->_angle_ != 0.0f)
+                                   ? Vec2::Rotate(value, -this->m_parent->_angle_ * Math::deg2rad)
+                                   : value;
+            position(this->m_parent->_position + worldOffset);
+        }
         return value;
     }
 
@@ -307,7 +343,7 @@ namespace RoninEngine::Runtime
         // set the new position
         _position = value;
 
-        if(_owner->m_active)
+        if(_owner && _owner->isActiveInHierarchy())
             Matrix::matrix_update(this);
 
         if(localPos != Vec2::zero)
@@ -319,7 +355,7 @@ namespace RoninEngine::Runtime
                 if(child.isNull())
                     continue;
                 child->_position += localPos;
-                if(child->_owner && child->_owner->m_active)
+                if(child->_owner && child->_owner->isActiveInHierarchy())
                     Matrix::matrix_update(child.ptr_);
                 for(TransformRef& gc : child->hierarchy)
                     descendants.push_back(gc);
@@ -342,7 +378,7 @@ namespace RoninEngine::Runtime
         float diffRad = diffAngle * Math::deg2rad;
         _angle_ = value;
 
-        if(_owner->m_active)
+        if(_owner && _owner->isActiveInHierarchy())
             Matrix::matrix_update(this);
 
         std::vector<TransformRef> descendants = hierarchy;
@@ -357,7 +393,7 @@ namespace RoninEngine::Runtime
             // update child angle
             child->_angle_ -= diffAngle;
             
-            if(child->_owner && child->_owner->m_active)
+            if(child->_owner && child->_owner->isActiveInHierarchy())
                 Matrix::matrix_update(child.ptr_);
             
             for(TransformRef& gc : child->hierarchy)
@@ -377,47 +413,59 @@ namespace RoninEngine::Runtime
 
     void Transform::parent_notify_active_state(GameObjectRef from)
     {
-        if(!from->m_active)
+        bool isRoot = (currentWorld && currentWorld->irs && !currentWorld->irs->mainObject.isNull() &&
+                       currentWorld->irs->mainObject->transform().ptr_ == this);
+        if(!isRoot)
         {
-            // Delete from matrix, for is not active object
-            Matrix::matrix_remove(this);
-        }
-        else
-        {
-            // Add to matrix, for active object
-            Matrix::matrix_update(this);
+            if(!from || !from->m_active || !_owner || !_owner->isActiveInHierarchy())
+            {
+                // Delete from matrix, for is not active object
+                Matrix::matrix_remove(this);
+            }
+            else
+            {
+                // Add to matrix, for active object
+                Matrix::matrix_update(this);
+            }
         }
         // send in hierarchy
         for(TransformRef &chlid : hierarchy)
-            chlid->parent_notify_active_state(from);
+        {
+            if(chlid)
+                chlid->parent_notify_active_state(from);
+        }
     }
 
     int Transform::layer() const
     {
-        return _owner->m_layer;
+        return _owner ? _owner->m_layer : 0;
     }
 
     void Transform::layer(int value)
     {
+        if(!_owner || _owner->m_layer == value)
+            return;
+
         // Delete from matrix, for is not active object
-        if(_owner->m_active)
+        if(_owner->isActiveInHierarchy())
             Matrix::matrix_remove(this);
 
         _owner->m_layer = value;
 
         // Add to matrix, for active object
-        if(_owner->m_active)
+        if(_owner->isActiveInHierarchy())
             Matrix::matrix_update(this);
     }
 
     int Transform::zOrder() const
     {
-        return _owner->m_zOrder;
+        return _owner ? _owner->m_zOrder : 0;
     }
 
     void Transform::zOrder(int value)
     {
-        _owner->m_zOrder = value;
+        if(_owner)
+            _owner->m_zOrder = value;
     }
 
     TransformRef Transform::parent() const
@@ -431,21 +479,30 @@ namespace RoninEngine::Runtime
 
     void Transform::setParent(TransformRef parent, bool worldPositionStays)
     {
-        if(parent == nullptr && currentWorld && currentWorld->irs)
+        if(parent == nullptr && currentWorld && currentWorld->irs && !currentWorld->irs->mainObject.isNull())
             parent = currentWorld->irs->mainObject->transform();
 
         if(parent == this->GetRef<Transform>())
             return;
 
+        for(TransformRef p = parent; p; p = p->m_parent)
+        {
+            if(p.ptr_ == this)
+                return;
+        }
+
         Vec2 oldLocalPos = localPosition();
+        float oldLocalAngle = localAngle();
 
         hierarchy_parent_change(this->GetRef<Transform>(), parent);
 
         if(!worldPositionStays && parent)
         {
             localPosition(oldLocalPos);
+            localAngle(oldLocalAngle);
         }
-        parent_notify_active_state(this->_owner);
+        if(this->_owner)
+            parent_notify_active_state(this->_owner);
     }
 
     void Transform::Detach()
@@ -459,9 +516,12 @@ namespace RoninEngine::Runtime
         result.push_back(this->GetRef<Transform>());
         for(size_t i = 0; i < result.size(); ++i)
         {
+            if(!result[i])
+                continue;
             for(TransformRef& child : result[i]->hierarchy)
             {
-                result.push_back(child);
+                if(child)
+                    result.push_back(child);
             }
         }
         return result;

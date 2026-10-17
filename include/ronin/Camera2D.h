@@ -18,7 +18,7 @@ namespace RoninEngine::Runtime
 
         /**
          * @brief Set the out zoom in scales.
-         * @param zoomLevel of the outzooming. The param default zoomLevel is 100.0 (Range from 0.0 to 100.0).
+         * @param zoomLevel of the outzooming. Default zoomLevel is 100.0 (where 100.0 corresponds to scale 1.0).
          */
         void SetZoomOut(float zoomLevel);
         float GetZoomOut();

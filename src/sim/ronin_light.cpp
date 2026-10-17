@@ -11,13 +11,21 @@ namespace RoninEngine::Runtime
             return nullptr;
         auto &cache = currentWorld->irs->renderCache;
         auto it = cache.find(surf);
-        if(it != cache.end())
+        if(it != cache.end() && it->second.second != nullptr)
             return it->second.second;
         SDL_Texture *tex = render_make_texture(surf);
         if(tex)
         {
-            cache.insert({surf, {1, tex}});
-            currentWorld->irs->renderCacheRefs.insert({tex, surf});
+            if(it != cache.end())
+            {
+                it->second.first = std::max(1, it->second.first);
+                it->second.second = tex;
+            }
+            else
+            {
+                cache.insert({surf, {1, tex}});
+            }
+            currentWorld->irs->renderCacheRefs[tex] = surf;
         }
         return tex;
     }
@@ -95,8 +103,44 @@ namespace RoninEngine::Runtime
     {
     }
 
+    static SDL_Surface *s_radialSurf = nullptr;
+    static SDL_Surface *s_directSurf = nullptr;
+    struct LightCacheCleanup
+    {
+        ~LightCacheCleanup()
+        {
+            if(s_radialSurf)
+            {
+                SDL_FreeSurface(s_radialSurf);
+                s_radialSurf = nullptr;
+            }
+            if(s_directSurf)
+            {
+                SDL_FreeSurface(s_directSurf);
+                s_directSurf = nullptr;
+            }
+        }
+    };
+    static LightCacheCleanup s_lightCleaner;
+
     void Light::get_light(Rendering *render_info)
     {
+        if(!render_info)
+            return;
+        if(!s_radialSurf)
+            s_radialSurf = create_radial_surface();
+        SDL_Surface *surf = s_radialSurf;
+        SDL_Texture *tex = get_light_texture(surf);
+        if(!tex)
+            return;
+        SDL_SetTextureBlendMode(tex, SDL_BLENDMODE_ADD);
+        SDL_SetTextureColorMod(tex, color.r, color.g, color.b);
+        SDL_SetTextureAlphaMod(tex, static_cast<Uint8>(std::clamp(intensity, 0.f, 1.f) * color.a));
+
+        render_info->texture = tex;
+        render_info->src = {0, 0, surf->w, surf->h};
+        float dia = std::max(0.0f, range * 2.0f);
+        render_info->dst = {0, 0, dia, dia};
     }
 
     void Light::get_light_source(Rendering *render)
@@ -125,7 +169,9 @@ namespace RoninEngine::Runtime
     {
         if(!render_info)
             return;
-        static SDL_Surface *surf = create_radial_surface();
+        if(!s_radialSurf)
+            s_radialSurf = create_radial_surface();
+        SDL_Surface *surf = s_radialSurf;
         SDL_Texture *tex = get_light_texture(surf);
         if(!tex)
             return;
@@ -156,7 +202,9 @@ namespace RoninEngine::Runtime
     {
         if(!render_info)
             return;
-        static SDL_Surface *surf = create_direct_surface();
+        if(!s_directSurf)
+            s_directSurf = create_direct_surface();
+        SDL_Surface *surf = s_directSurf;
         SDL_Texture *tex = get_light_texture(surf);
         if(!tex)
             return;

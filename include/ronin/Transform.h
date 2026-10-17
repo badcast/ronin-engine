@@ -26,7 +26,7 @@ namespace RoninEngine::Runtime
         void Detach();
 
         int childCount() const;
-        TransformRef childOf(int index);
+        TransformRef childOf(int index) const;
 
         void LookAt(Vec2 target, Vec2 axis);
         void LookAt(Vec2 target);
@@ -40,7 +40,7 @@ namespace RoninEngine::Runtime
         void AsFirstChild();
         void AsLastChild();
 
-        bool childContain(TransformRef child);
+        bool childContain(TransformRef child) const;
         void childAdd(TransformRef child);
         void childRemove(TransformRef child);
 
@@ -72,6 +72,7 @@ namespace RoninEngine::Runtime
          * @return result of viewed sector
          */
         const bool LookOfAngle(Transform *target, float angle) const;
+        const bool LookOfAngle(TransformRef target, float angle) const;
         /**
          * @brief Looks at the target
          * @param target the target candidate for look

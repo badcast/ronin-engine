@@ -1,5 +1,7 @@
 #include "ronin.h"
 #include "ronin_matrix.h"
+#include <algorithm>
+#include <cmath>
 
 using namespace RoninEngine::Runtime;
 
@@ -41,24 +43,30 @@ namespace RoninEngine::Runtime::Matrix
                     size = renderer->getSize();
                 }
                 size = Vec2::Abs(size);
-                Vec2 center = pos + renderer->get_offset();
+                Vec2 offset = renderer->get_offset();
+                Vec2 rotatedOffset = (angleRad != 0.0f) ? Vec2::Rotate(offset, -angleRad) : offset;
+                Vec2 center = pos + rotatedOffset;
                 float hw = size.x * 0.5f;
                 float hh = size.y * 0.5f;
-                float extX = std::max(hw * cosA + hh * sinA, size.x);
-                float extY = std::max(hw * sinA + hh * cosA, size.y);
-                minX = std::min(minX, center.x - extX);
-                minY = std::min(minY, center.y - extY);
-                maxX = std::max(maxX, center.x + extX);
-                maxY = std::max(maxY, center.y + extY);
+                float extX = std::max(hw * cosA + hh * sinA, hw);
+                float extY = std::max(hw * sinA + hh * cosA, hh);
+                minX = std::min({minX, center.x - extX, pos.x + offset.x - extX});
+                minY = std::min({minY, center.y - extY, pos.y + offset.y - extY});
+                maxX = std::max({maxX, center.x + extX, pos.x + offset.x + extX});
+                maxY = std::max({maxY, center.y + extY, pos.y + offset.y + extY});
                 hasBounds = true;
             }
             else if(auto collider = dynamic_cast<Collision*>(comp.ptr_))
             {
                 Vec2 size = Vec2::Abs(collider->collideSize);
-                minX = std::min(minX, pos.x - size.x);
-                minY = std::min(minY, pos.y - size.y);
-                maxX = std::max(maxX, pos.x + size.x);
-                maxY = std::max(maxY, pos.y + size.y);
+                float hw = size.x * 0.5f;
+                float hh = size.y * 0.5f;
+                float extX = std::max(hw * cosA + hh * sinA, size.x);
+                float extY = std::max(hw * sinA + hh * cosA, size.y);
+                minX = std::min(minX, pos.x - extX);
+                minY = std::min(minY, pos.y - extY);
+                maxX = std::max(maxX, pos.x + extX);
+                maxY = std::max(maxY, pos.y + extY);
                 hasBounds = true;
             }
             else if(auto light = comp->get_light_component())
@@ -80,13 +88,8 @@ namespace RoninEngine::Runtime::Matrix
         return Rectf(minX, minY, maxX - minX, maxY - minY);
     }
 
-    // QuadTree Implementation
-    QuadTree::QuadTree(int level, const Rectf& bounds) : level(level), bounds(bounds)
+    QuadTree::QuadTree(int /*level*/, const Rectf& /*bounds*/)
     {
-        for (int i = 0; i < 4; i++)
-        {
-            nodes[i] = nullptr;
-        }
     }
 
     QuadTree::~QuadTree()
@@ -96,235 +99,235 @@ namespace RoninEngine::Runtime::Matrix
 
     void QuadTree::Clear()
     {
-        objects.clear();
-        for (int i = 0; i < 4; i++)
+        entries.clear();
+        cells.clear();
+        largeObjects.clear();
+    }
+
+    void QuadTree::computeCellRange(const Rectf& rect, std::int32_t& minX, std::int32_t& minY, std::int32_t& maxX, std::int32_t& maxY, bool& isLarge) noexcept
+    {
+        float x0 = std::min(rect.x, rect.x + rect.w);
+        float y0 = std::min(rect.y, rect.y + rect.h);
+        float x1 = std::max(rect.x, rect.x + rect.w);
+        float y1 = std::max(rect.y, rect.y + rect.h);
+
+        minX = static_cast<std::int32_t>(std::floor(x0 * INV_CELL_SIZE));
+        minY = static_cast<std::int32_t>(std::floor(y0 * INV_CELL_SIZE));
+        maxX = static_cast<std::int32_t>(std::floor(x1 * INV_CELL_SIZE));
+        maxY = static_cast<std::int32_t>(std::floor(y1 * INV_CELL_SIZE));
+
+        std::int64_t spanX = static_cast<std::int64_t>(maxX) - static_cast<std::int64_t>(minX) + 1;
+        std::int64_t spanY = static_cast<std::int64_t>(maxY) - static_cast<std::int64_t>(minY) + 1;
+        isLarge = (spanX <= 0 || spanY <= 0 || spanX > MAX_CELL_SPAN || spanY > MAX_CELL_SPAN || (spanX * spanY) > MAX_CELL_SPAN);
+    }
+
+    void QuadTree::insertIntoCells(Transform* target, const ObjectEntry& entry)
+    {
+        if(entry.isLarge)
         {
-            if (nodes[i] != nullptr)
+            largeObjects.insert(target);
+            return;
+        }
+
+        for(std::int32_t cy = entry.minY; cy <= entry.maxY; ++cy)
+        {
+            for(std::int32_t cx = entry.minX; cx <= entry.maxX; ++cx)
             {
-                nodes[i]->Clear();
-                delete nodes[i];
-                nodes[i] = nullptr;
+                auto& bucket = cells[makeCellKey(cx, cy)];
+                bucket.push_back(target);
             }
         }
     }
 
-    void QuadTree::split()
+    void QuadTree::removeFromCells(Transform* target, const ObjectEntry& entry)
     {
-        float subWidth = bounds.w / 2.0f;
-        float subHeight = bounds.h / 2.0f;
-        float x = bounds.x;
-        float y = bounds.y;
-
-        nodes[0] = new QuadTree(level + 1, Rectf(x + subWidth, y, subWidth, subHeight));
-        nodes[1] = new QuadTree(level + 1, Rectf(x, y, subWidth, subHeight));
-        nodes[2] = new QuadTree(level + 1, Rectf(x, y + subHeight, subWidth, subHeight));
-        nodes[3] = new QuadTree(level + 1, Rectf(x + subWidth, y + subHeight, subWidth, subHeight));
-    }
-
-    int QuadTree::getIndex(const Rectf& pRect)
-    {
-        int index = -1;
-        double verticalMidpoint = bounds.x + (bounds.w / 2.0f);
-        double horizontalMidpoint = bounds.y + (bounds.h / 2.0f);
-
-        bool topQuadrant = (pRect.y < horizontalMidpoint && pRect.y + pRect.h < horizontalMidpoint);
-        bool bottomQuadrant = (pRect.y > horizontalMidpoint);
-
-        if (pRect.x < verticalMidpoint && pRect.x + pRect.w < verticalMidpoint)
+        if(entry.isLarge)
         {
-            if (topQuadrant)
-            {
-                index = 1;
-            }
-            else if (bottomQuadrant)
-            {
-                index = 2;
-            }
-        }
-        else if (pRect.x > verticalMidpoint)
-        {
-            if (topQuadrant)
-            {
-                index = 0;
-            }
-            else if (bottomQuadrant)
-            {
-                index = 3;
-            }
+            largeObjects.erase(target);
+            return;
         }
 
-        return index;
+        for(std::int32_t cy = entry.minY; cy <= entry.maxY; ++cy)
+        {
+            for(std::int32_t cx = entry.minX; cx <= entry.maxX; ++cx)
+            {
+                std::uint64_t key = makeCellKey(cx, cy);
+                auto cellIt = cells.find(key);
+                if(cellIt != cells.end())
+                {
+                    auto& bucket = cellIt->second;
+                    auto it = std::find(bucket.begin(), bucket.end(), target);
+                    if(it != bucket.end())
+                    {
+                        *it = bucket.back();
+                        bucket.pop_back();
+                    }
+                    if(bucket.empty())
+                    {
+                        cells.erase(cellIt);
+                    }
+                }
+            }
+        }
     }
 
     void QuadTree::Insert(Transform* target)
     {
-        if (nodes[0] != nullptr)
-        {
-            int index = getIndex(matrix_get_bounds(target));
+        if(!target)
+            return;
 
-            if (index != -1)
+        ObjectEntry newEntry;
+        newEntry.aabb = matrix_get_bounds(target);
+        computeCellRange(newEntry.aabb, newEntry.minX, newEntry.minY, newEntry.maxX, newEntry.maxY, newEntry.isLarge);
+
+        auto it = entries.find(target);
+        if(it != entries.end())
+        {
+            ObjectEntry& oldEntry = it->second;
+            if(oldEntry.isLarge == newEntry.isLarge &&
+               (newEntry.isLarge ||
+                (oldEntry.minX == newEntry.minX && oldEntry.minY == newEntry.minY &&
+                 oldEntry.maxX == newEntry.maxX && oldEntry.maxY == newEntry.maxY)))
             {
-                nodes[index]->Insert(target);
+                // Object stayed in the exact same grid cells: O(1) AABB update in-place
+                oldEntry.aabb = newEntry.aabb;
                 return;
             }
+
+            removeFromCells(target, oldEntry);
+            oldEntry = newEntry;
+            insertIntoCells(target, oldEntry);
+            return;
         }
 
-        objects.insert(target);
-
-        if (objects.size() > MAX_OBJECTS && level < MAX_LEVELS)
-        {
-            if (nodes[0] == nullptr)
-            {
-                split();
-            }
-
-            auto i = objects.begin();
-            while (i != objects.end())
-            {
-                int index = getIndex(matrix_get_bounds(*i));
-                if (index != -1)
-                {
-                    nodes[index]->Insert(*i);
-                    i = objects.erase(i);
-                }
-                else
-                {
-                    ++i;
-                }
-            }
-        }
+        entries.emplace(target, newEntry);
+        insertIntoCells(target, newEntry);
     }
 
     bool QuadTree::Remove(Transform* target)
     {
-        int index = getIndex(matrix_get_bounds(target));
-        if (index != -1 && nodes[0] != nullptr)
-        {
-            if (nodes[index]->Remove(target)) return true;
-        }
+        if(!target)
+            return false;
 
-        auto it = objects.find(target);
-        if (it != objects.end())
-        {
-            objects.erase(it);
-            return true;
-        }
+        auto it = entries.find(target);
+        if(it == entries.end())
+            return false;
 
-        // Fallback: search all nodes if AABB was inaccurate during removal
-        if (nodes[0] != nullptr)
-        {
-            for (int i = 0; i < 4; i++)
-            {
-                if (nodes[i]->Remove(target)) return true;
-            }
-        }
+        removeFromCells(target, it->second);
+        entries.erase(it);
+        return true;
+    }
 
-        return false;
+    bool QuadTree::Contains(Transform* target) const
+    {
+        return target != nullptr && entries.find(target) != entries.end();
     }
 
     void QuadTree::Retrieve(std::vector<Transform*>& returnObjects, const Rectf& pRect)
     {
-        int index = getIndex(pRect);
-        if (index != -1 && nodes[0] != nullptr)
-        {
-            nodes[index]->Retrieve(returnObjects, pRect);
-        }
-        else if (nodes[0] != nullptr)
-        {
-            // Overlaps multiple quadrants
-            for (int i = 0; i < 4; i++)
-            {
-                if (nodes[i]->bounds.Intersects(pRect))
-                {
-                    nodes[i]->Retrieve(returnObjects, pRect);
-                }
-            }
-        }
-
-        for (auto& obj : objects)
-        {
-            if (matrix_get_bounds(obj).Intersects(pRect))
-            {
-                returnObjects.push_back(obj);
-            }
-        }
+        std::set<Transform*> uniqueSet;
+        Retrieve(uniqueSet, pRect);
+        returnObjects.insert(returnObjects.end(), uniqueSet.begin(), uniqueSet.end());
     }
 
     void QuadTree::Retrieve(std::set<Transform*>& returnObjects, const Rectf& pRect)
     {
-        int index = getIndex(pRect);
-        if (index != -1 && nodes[0] != nullptr)
+        if(entries.empty())
+            return;
+
+        std::int32_t qMinX = 0, qMinY = 0, qMaxX = 0, qMaxY = 0;
+        bool queryIsLarge = false;
+        computeCellRange(pRect, qMinX, qMinY, qMaxX, qMaxY, queryIsLarge);
+
+        std::int64_t spanX = static_cast<std::int64_t>(qMaxX) - static_cast<std::int64_t>(qMinX) + 1;
+        std::int64_t spanY = static_cast<std::int64_t>(qMaxY) - static_cast<std::int64_t>(qMinY) + 1;
+        std::int64_t queryCellCount = (spanX > 0 && spanY > 0 && spanX <= 65536 && spanY <= 65536) ? (spanX * spanY) : (static_cast<std::int64_t>(cells.size()) + 1);
+
+        // If the query area spans more cells than exist in the world, scan entries directly
+        if(static_cast<std::size_t>(queryCellCount) > cells.size())
         {
-            nodes[index]->Retrieve(returnObjects, pRect);
-        }
-        else if (nodes[0] != nullptr)
-        {
-            // Overlaps multiple quadrants
-            for (int i = 0; i < 4; i++)
+            for(const auto& pair : entries)
             {
-                if (nodes[i]->bounds.Intersects(pRect))
+                if(pair.second.aabb.Intersects(pRect))
                 {
-                    nodes[i]->Retrieve(returnObjects, pRect);
+                    returnObjects.insert(pair.first);
                 }
+            }
+            return;
+        }
+
+        for(Transform* obj : largeObjects)
+        {
+            auto it = entries.find(obj);
+            if(it != entries.end() && it->second.aabb.Intersects(pRect))
+            {
+                returnObjects.insert(obj);
             }
         }
 
-        for (auto& obj : objects)
+        for(std::int32_t cy = qMinY; cy <= qMaxY; ++cy)
         {
-            if (matrix_get_bounds(obj).Intersects(pRect))
+            for(std::int32_t cx = qMinX; cx <= qMaxX; ++cx)
             {
-                returnObjects.insert(obj);
+                auto cellIt = cells.find(makeCellKey(cx, cy));
+                if(cellIt == cells.end())
+                    continue;
+
+                for(Transform* obj : cellIt->second)
+                {
+                    auto entryIt = entries.find(obj);
+                    if(entryIt != entries.end() && entryIt->second.aabb.Intersects(pRect))
+                    {
+                        returnObjects.insert(obj);
+                    }
+                }
             }
         }
     }
 
     void QuadTree::GetAllObjects(std::set<Transform*>& out) const
     {
-        out.insert(objects.begin(), objects.end());
-        if (nodes[0] != nullptr)
+        for(const auto& pair : entries)
         {
-            for (int i = 0; i < 4; i++)
-            {
-                if (nodes[i] != nullptr)
-                {
-                    nodes[i]->GetAllObjects(out);
-                }
-            }
+            out.insert(pair.first);
         }
     }
 
     std::size_t QuadTree::CountAllObjects() const
     {
-        std::size_t count = objects.size();
-        if (nodes[0] != nullptr)
-        {
-            for (int i = 0; i < 4; i++)
-            {
-                if (nodes[i] != nullptr)
-                {
-                    count += nodes[i]->CountAllObjects();
-                }
-            }
-        }
-        return count;
+        return entries.size();
     }
 
     void matrix_update(Transform *target)
     {
         if(!currentWorld || !currentWorld->irs || !target || !target->_owner)
             return;
-        matrix_remove(target);
-        
+
+        if(!currentWorld->irs->mainObject.isNull() && currentWorld->irs->mainObject->transform().ptr_ == target)
+            return;
+
         int layer = target->_owner->m_layer;
         auto& matrix = currentWorld->irs->matrix;
-        
-        if (matrix.find(layer) == matrix.end())
+
+        auto it = matrix.find(layer);
+        if(it == matrix.end() || it->second == nullptr)
         {
-            // Create root QuadTree with a large bound. It could be expanded dynamically, but fixed is easier for now.
-            matrix[layer] = new QuadTree(0, Rectf(-100000.f, -100000.f, 200000.f, 200000.f));
+            matrix[layer] = new QuadTree();
+            it = matrix.find(layer);
         }
-        
-        matrix[layer]->Insert(target);
+
+        if(!it->second->Contains(target))
+        {
+            for(auto& pair : matrix)
+            {
+                if(pair.first != layer && pair.second)
+                {
+                    pair.second->Remove(target);
+                }
+            }
+        }
+
+        it->second->Insert(target);
     }
 
     bool matrix_remove(Transform *target)
@@ -333,7 +336,7 @@ namespace RoninEngine::Runtime::Matrix
             return false;
         auto& matrix = currentWorld->irs->matrix;
         auto it = matrix.find(target->_owner->m_layer);
-        if (it != matrix.end())
+        if (it != matrix.end() && it->second)
         {
             if (it->second->Remove(target))
                 return true;

@@ -372,13 +372,32 @@ namespace RoninEngine
         }
         tr->setParent(newWorld->irs->mainObject->transform(), false);
 
-        // 3. Move scripts from this world binders to new world
+        // 3. Move scripts and resources from this world to new world
         for(TransformRef &t : allTransforms)
         {
             if(!t || !t->_owner)
                 continue;
             for(ComponentRef &comp : t->_owner->m_components)
             {
+                if(!comp)
+                    continue;
+                if(Renderer *rend = comp->get_renderer())
+                {
+                    World *prevWorld = currentWorld;
+                    currentWorld = this;
+                    rend->free_render_cache();
+                    currentWorld = prevWorld;
+                }
+                if(auto cam = dynamic_cast<Camera*>(comp.ptr_))
+                {
+                    if(irs->mainCamera.ptr_ == cam)
+                        irs->mainCamera = nullptr;
+                    if(cam->res)
+                    {
+                        irs->cameraResources.remove(cam->res);
+                        newWorld->irs->cameraResources.emplace_front(cam->res);
+                    }
+                }
                 if(auto beh = dynamic_cast<Behaviour*>(comp.ptr_))
                 {
                     for(auto &pair : irs->runtimeScriptBinders)
@@ -391,7 +410,7 @@ namespace RoninEngine
                 }
             }
             // 4. Update into new matrix
-            if(t->_owner->m_active)
+            if(t->_owner->isActiveInHierarchy())
             {
                 World *prevWorld = currentWorld;
                 currentWorld = newWorld;

@@ -142,7 +142,7 @@ namespace RoninEngine
                             continue;
                         // Clone children recursively
                         GameObjectRef yClone = __instantiate(y->gameObject());
-                        yClone->transform()->setParent(clonedTransform, false);
+                        yClone->transform()->setParent(clonedTransform, true);
                         yClone->m_name = y->gameObject()->m_name;
                         yClone->m_name.shrink_to_fit();
                     }

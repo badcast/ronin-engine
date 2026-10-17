@@ -4,6 +4,7 @@
 #include "ronin_audio.h"
 #include "ronin_debug.h"
 #include "ronin_splash_world.h"
+#include "ronin_render_cache.h"
 
 #ifdef __linux__
 // For malloc_trim
@@ -103,8 +104,25 @@ namespace RoninEngine
 
             if(gscope.renderer != nullptr)
             {
+                cache_render_flush_all();
                 SDL_DestroyRenderer(gscope.renderer);
                 gscope.renderer = nullptr;
+            }
+
+            if(gscope.activeWindow != nullptr && gscope.internalWorldLoaded && !(gscope.config.conf & CONF_RELOAD_WORLD))
+            {
+                std::uint32_t renderFlags = SDL_RENDERER_TARGETTEXTURE;
+                if(gscope.config.renderBackend == RenderDriverInfo::RenderBackend::CPU)
+                    renderFlags |= SDL_RENDERER_SOFTWARE;
+                else
+                    renderFlags |= SDL_RENDERER_ACCELERATED;
+                gscope.renderer = SDL_CreateRenderer(gscope.activeWindow, -1, renderFlags);
+                if(gscope.renderer != nullptr)
+                {
+                    SDL_SetRenderDrawBlendMode(gscope.renderer, SDL_BLENDMODE_BLEND);
+                    if(currentWorld != nullptr && currentWorld->irs != nullptr)
+                        font2d_update(currentWorld);
+                }
             }
         }
 
@@ -358,7 +376,7 @@ namespace RoninEngine
         }
 
         memory_leak = SDL_GetNumAllocations();
-        if(memory_leak != 0)
+        if(memory_leak > 0)
         {
             SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "sdl-memory-leak count: %d", memory_leak);
         }

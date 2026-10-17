@@ -53,6 +53,21 @@ public:
         assert(redRect->center().y == 1.0f);
         sr->setPresentMode(SpriteRenderPresentMode::Place);
         sr->setSize(Vec2(2.0f, 2.0f));
+        Vec2 pivotOffset = sr->get_offset();
+        assert(std::fabs(pivotOffset.x - 0.0f) < 1e-4f);
+        assert(std::fabs(pivotOffset.y - 1.0f) < 1e-4f);
+
+        // Test Tile mode SpriteRenderer
+        GameObjectRef tileObj = Primitive::CreateEmptyGameObject(Vec2(-2.0f, 0.0f));
+        SpriteRenderer *tileSr = tileObj->AddComponent<SpriteRenderer>();
+        tileSr->setSprite(blueCircle);
+        tileSr->setRenderType(SpriteRenderType::Tile);
+        tileSr->setSize(Vec2(2.5f, 1.5f));
+
+        // Enable camera debug overlays to exercise visibleBorders, visibleObjects, visibleNames
+        cam->visibleBorders = true;
+        cam->visibleObjects = true;
+        cam->visibleNames = true;
 
         // 3. Test Terrain2D sizing
         terrainObj = Primitive::CreateEmptyGameObject();
@@ -80,6 +95,11 @@ public:
     void OnUpdate() override
     {
         ++frameCount;
+        if(spriteObj && spriteObj->spriteRenderer())
+        {
+            // Dynamically scale Simple mode sprite each frame without texture thrashing
+            spriteObj->spriteRenderer()->setSize(Vec2(1.5f + 0.2f * frameCount, 1.5f + 0.2f * frameCount));
+        }
         // Exercise RenderUtility Gizmo calls during frame
         RenderUtility::SetColor(Color::green);
         RenderUtility::DrawRectangle(Vec2::zero, 2.0f, 2.0f);
@@ -89,6 +109,7 @@ public:
 
         if(frameCount >= 5)
         {
+            assert(GetCulled() >= 2);
             std::cout << "  [RenderTestWorld] Rendered 5 frames cleanly without glitches or crashes. Requesting quit." << std::endl;
             RoninSimulator::RequestQuit();
         }

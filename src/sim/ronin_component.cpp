@@ -31,6 +31,8 @@ namespace RoninEngine
 
         TransformRef Component::transform()
         {
+            if(_owner.isNull() || _owner->m_components.empty())
+                return TransformRef();
             return StaticCast<Transform>(_owner->m_components.front());
         }
 
@@ -41,27 +43,27 @@ namespace RoninEngine
 
         Camera2DRef Component::camera2D()
         {
-            return _owner->camera2D();
+            return _owner ? _owner->camera2D() : Camera2DRef();
         }
 
         SpriteRendererRef Component::spriteRenderer()
         {
-            return _owner->spriteRenderer();
+            return _owner ? _owner->spriteRenderer() : SpriteRendererRef();
         }
 
         Terrain2DRef Component::terrain2D()
         {
-            return _owner->terrain2D();
+            return _owner ? _owner->terrain2D() : Terrain2DRef();
         }
 
         ComponentRef Component::AddComponent(ComponentRef component)
         {
-            return gameObject()->AddComponent(component);
+            return _owner ? _owner->AddComponent(component) : ComponentRef();
         }
 
         bool Component::RemoveComponent(ComponentRef component)
         {
-            return gameObject()->RemoveComponent(component);
+            return _owner ? _owner->RemoveComponent(component) : false;
         }
 
         void Component::AddOnDestroy(Event callback)

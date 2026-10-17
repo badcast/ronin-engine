@@ -99,7 +99,8 @@ function(custom_load_sources libname localPath)
 
   target_include_directories(
     ${libname} PRIVATE $<BUILD_INTERFACE:${RONIN_INCLUDE_DIRS}/ronin>
-                       ${CMAKE_CURRENT_SOURCE_DIR}/include)
+                       ${CMAKE_CURRENT_SOURCE_DIR}/include
+                       ${CMAKE_CURRENT_SOURCE_DIR}/3rdparty)
 
   target_compile_features(${libname} PUBLIC cxx_std_17)
 

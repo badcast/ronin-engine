@@ -20,3 +20,15 @@ foreach(test_name ${TEST_TARGETS})
     target_include_directories(${test_name} PRIVATE ${CMAKE_SOURCE_DIR}/include ${SDL2_INCLUDE_DIRS})
     add_test(NAME ${test_name} COMMAND ${test_name})
 endforeach()
+
+if(RONIN_EDITOR_BUILD)
+    add_executable(test_editor test_editor.cpp ${CMAKE_SOURCE_DIR}/editor/src/project_manager.cpp ${CMAKE_SOURCE_DIR}/editor/src/editor_state.cpp)
+    target_link_libraries(test_editor PRIVATE RoninEngine ${SDL2_LIBRARIES})
+    target_include_directories(test_editor PRIVATE
+        ${CMAKE_SOURCE_DIR}/include
+        ${CMAKE_SOURCE_DIR}/editor/include
+        ${CMAKE_SOURCE_DIR}/src/3rdparty
+        ${SDL2_INCLUDE_DIRS}
+    )
+    add_test(NAME test_editor COMMAND test_editor)
+endif()

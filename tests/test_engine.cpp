@@ -99,13 +99,38 @@ int main()
     assert(slice0->width() == 16);
     assert(slice0->height() == 16);
 
-    // 6. Terrain2D & Colliders
-    std::cout << "[6/8] Testing Terrain2D Mesh & Colliders..." << std::endl;
+    // 6. Terrain2D & Colliders & Surface Painting
+    std::cout << "[6/8] Testing Terrain2D Mesh, Colliders & Surface Painting..." << std::endl;
     GameObjectRef terrainObj = Primitive::CreateEmptyGameObject("TerrainObj");
     Ref<Terrain2D> terrain = terrainObj->AddComponent<Terrain2D>();
     assert(!terrain.isNull());
+    terrain->setSize(Vec2(64.0f, 64.0f));
     terrain->setMeshTile(0, 0, slice0);
     terrain->setMeshTile(1, 0, slice0);
+    assert(!terrain->getMeshTile(0, 0).isNull());
+    assert(!terrain->getMeshTile(1, 0).isNull());
+    assert(terrain->removeMeshTile(1, 0) == true);
+    assert(terrain->getMeshTile(1, 0).isNull());
+
+    terrain->fillMeshTiles(0, 0, 4, 4, slice0, Vec2::one, false);
+    assert(terrain->getTileCount() >= 16);
+
+    // Surface Canvas & Texture Painting API
+    terrain->createSurface(128, 128, Color(20, 40, 60, 255));
+    assert(terrain->hasSurface() == true);
+    assert(terrain->getSurface() != nullptr);
+
+    terrain->paintPixel(10, 10, Color(255, 0, 128, 255));
+    Color px = terrain->getPixel(10, 10);
+    assert(px.r == 255 && px.b == 128);
+
+    terrain->paintRect(Rectf(15.0f, 15.0f, 10.0f, 10.0f), Color(0, 255, 0, 255));
+    terrain->paintBrush(Vec2(35.0f, 35.0f), 8.0f, Color(255, 255, 0, 255), 0.75f);
+    terrain->eraseBrush(Vec2(35.0f, 35.0f), 4.0f, 0.9f);
+
+    SpriteRef surfSpr = terrain->getSurfaceSprite();
+    assert(!surfSpr.isNull());
+
     terrain->setCollider(Rectf(0, 0, 4, 4), true);
     assert(terrain->is_collider(Vec2(2, 2)) == true);
     assert(terrain->is_collider(Vec2(25, 25)) == false);

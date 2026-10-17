@@ -97,6 +97,9 @@ namespace RoninEngine
         class AudioSource;
         class ParticleSystem;
         class Asset;
+        class Rigidbody2D;
+        class BoxCollider2D;
+        class CircleCollider2D;
 
         class RoninPointer;
 
@@ -120,6 +123,9 @@ namespace RoninEngine
         using MoveController2DRef = Ref<MoveController2D>;
         using AudioSourceRef = Ref<AudioSource>;
         using ParticleSystemRef = Ref<ParticleSystem>;
+        using Rigidbody2DRef = Ref<Rigidbody2D>;
+        using BoxCollider2DRef = Ref<BoxCollider2D>;
+        using CircleCollider2DRef = Ref<CircleCollider2D>;
         using GameObjectRef = Ref<GameObject>;
         using SpriteRef = Ref<Sprite>;
         using AtlasRef = Ref<Atlas>;

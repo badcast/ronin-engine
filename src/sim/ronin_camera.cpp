@@ -3,27 +3,71 @@
 namespace RoninEngine::Runtime
 {
 
-    Camera::Camera(const std::string &name) : backclear(true), backcolor(0x111111, 255), Component(DESCRIBE_AS_ONLY_NAME(Camera))
+    Camera::Camera() : Camera(DESCRIBE_AS_MAIN_OFF(Camera))
+    {
+    }
+
+    Camera::Camera(const std::string &name) : Component(DESCRIBE_AS_ONLY_NAME(Camera)), res(nullptr), backclear(true), backcolor(0x111111, 255)
     {
         DESCRIBE_AS_MAIN(Camera);
 
-        // using this camera as main
-        World::GetCurrentWorld()->irs->cameraResources.emplace_front(RoninMemory::alloc_self(res));
+        RoninMemory::alloc_self(res);
         res->scale = Vec2::one;
         res->culled = 0;
+        if(World *w = World::GetCurrentWorld(); w && w->irs)
+        {
+            w->irs->cameraResources.emplace_front(res);
+        }
     }
+
+    Camera::Camera(const Camera &other) : Component(other.m_name), res(nullptr), backclear(other.backclear), backcolor(other.backcolor)
+    {
+        DESCRIBE_AS_MAIN(Camera);
+
+        RoninMemory::alloc_self(res);
+        res->scale = other.res ? other.res->scale : Vec2::one;
+        res->offsetScaling = other.res ? other.res->offsetScaling : Vec2::zero;
+        res->culled = 0;
+        if(World *w = World::GetCurrentWorld(); w && w->irs)
+        {
+            w->irs->cameraResources.emplace_front(res);
+        }
+    }
+
     Camera::~Camera()
     {
+        if(res)
+        {
+            if(currentWorld && currentWorld->irs)
+            {
+                if(currentWorld->irs->mainCamera.ptr_ == this)
+                    currentWorld->irs->mainCamera = nullptr;
+                currentWorld->irs->cameraResources.remove(res);
+            }
+            RoninMemory::free(res);
+            res = nullptr;
+        }
     }
 
     Vec2 Camera::GetScale()
     {
-        return res->scale;
+        return res ? res->scale : Vec2::one;
     }
 
     void Camera::SetScale(Vec2 scale)
     {
-        res->scale = scale;
+        if(res)
+        {
+            // Safeguard against absolute zero to prevent division by zero in projection
+            if(std::abs(scale.x) < 1e-6f) scale.x = (scale.x < 0.0f ? -1e-6f : 1e-6f);
+            if(std::abs(scale.y) < 1e-6f) scale.y = (scale.y < 0.0f ? -1e-6f : 1e-6f);
+            res->scale = scale;
+        }
+    }
+
+    void Camera::SetScale(float scale)
+    {
+        SetScale(Vec2(scale, scale));
     }
 
     bool Camera::isFocused()
@@ -33,7 +77,7 @@ namespace RoninEngine::Runtime
 
     void Camera::Focus()
     {
-        if(currentWorld)
+        if(currentWorld && currentWorld->irs)
             currentWorld->irs->event_camera_changed(this->GetRef<Camera>(), CameraEvent::CAM_TARGET);
     }
 
@@ -42,24 +86,19 @@ namespace RoninEngine::Runtime
         if(!currentWorld || !currentWorld->irs)
             return screenPoint;
 
-        Vec2 scale;
-
-        if(currentWorld->irs->mainCamera)
-        {
-            scale = currentWorld->irs->mainCamera->res->scale;
-        }
-        else
-        {
-            scale = Vec2::one;
-        }
+        Vec2 scale = (currentWorld->irs->mainCamera && currentWorld->irs->mainCamera->res)
+                         ? currentWorld->irs->mainCamera->res->scale
+                         : Vec2::one;
 
         scale = Vec2::Scale(scale, currentWorld->irs->metricPixelsPerPoint);
+        if(std::abs(scale.x) < 1e-6f) scale.x = (scale.x < 0.0f ? -1e-6f : 1e-6f);
+        if(std::abs(scale.y) < 1e-6f) scale.y = (scale.y < 0.0f ? -1e-6f : 1e-6f);
 
         screenPoint.x = -(gscope.activeResolution.width / 2.f - screenPoint.x) / scale.x;
         screenPoint.y = (gscope.activeResolution.height / 2.f - screenPoint.y) / scale.y;
 
         // Difference at Main Camera
-        if(currentWorld->irs->mainCamera)
+        if(currentWorld->irs->mainCamera && currentWorld->irs->mainCamera->transform())
             screenPoint += currentWorld->irs->mainCamera->transform()->_position;
 
         return screenPoint;
@@ -72,7 +111,7 @@ namespace RoninEngine::Runtime
 
         Vec2 scale;
         // Difference at Main Camera
-        if(currentWorld->irs->mainCamera)
+        if(currentWorld->irs->mainCamera && currentWorld->irs->mainCamera->transform() && currentWorld->irs->mainCamera->res)
         {
             worldPoint = currentWorld->irs->mainCamera->transform()->_position - worldPoint;
             scale = currentWorld->irs->mainCamera->res->scale;
@@ -98,21 +137,20 @@ namespace RoninEngine::Runtime
         if(!currentWorld || !currentWorld->irs)
             return viewportPoint;
 
-        Vec2 scale;
-
-        if(currentWorld->irs->mainCamera)
-            scale = currentWorld->irs->mainCamera->res->scale;
-        else
-            scale = Vec2::one;
+        Vec2 scale = (currentWorld->irs->mainCamera && currentWorld->irs->mainCamera->res)
+                         ? currentWorld->irs->mainCamera->res->scale
+                         : Vec2::one;
 
         scale = Vec2::Scale(scale, currentWorld->irs->metricPixelsPerPoint);
+        if(std::abs(scale.x) < 1e-6f) scale.x = (scale.x < 0.0f ? -1e-6f : 1e-6f);
+        if(std::abs(scale.y) < 1e-6f) scale.y = (scale.y < 0.0f ? -1e-6f : 1e-6f);
 
         // Horizontal position
         viewportPoint.x = (gscope.activeResolution.width / 2.f - gscope.activeResolution.width * viewportPoint.x) * -1.f / scale.x;
         // Vertical position
         viewportPoint.y = (gscope.activeResolution.height / 2.f - gscope.activeResolution.height * (1.0f - viewportPoint.y)) / scale.y;
         // Offset of Main Camera
-        if(currentWorld->irs->mainCamera)
+        if(currentWorld->irs->mainCamera && currentWorld->irs->mainCamera->transform())
             viewportPoint += currentWorld->irs->mainCamera->transform()->_position;
         return viewportPoint;
     }
@@ -125,7 +163,7 @@ namespace RoninEngine::Runtime
         Vec2 scale;
 
         // Difference at Main Camera
-        if(currentWorld->irs->mainCamera)
+        if(currentWorld->irs->mainCamera && currentWorld->irs->mainCamera->transform() && currentWorld->irs->mainCamera->res)
         {
             worldPoint = mainCamera()->transform()->position() - worldPoint;
             scale = currentWorld->irs->mainCamera->res->scale;
@@ -138,10 +176,13 @@ namespace RoninEngine::Runtime
 
         scale = Vec2::Scale(scale, currentWorld->irs->metricPixelsPerPoint);
 
+        float w = gscope.activeResolution.width > 0 ? static_cast<float>(gscope.activeResolution.width) : 1.0f;
+        float h = gscope.activeResolution.height > 0 ? static_cast<float>(gscope.activeResolution.height) : 1.0f;
+
         // Horizontal position
-        worldPoint.x = (gscope.activeResolution.width / 2.0f - worldPoint.x * scale.x) / gscope.activeResolution.width;
+        worldPoint.x = (w / 2.0f - worldPoint.x * scale.x) / w;
         // Vertical position
-        worldPoint.y = 1.0f - (gscope.activeResolution.height / 2.0f + worldPoint.y * scale.y) / gscope.activeResolution.height;
+        worldPoint.y = 1.0f - (h / 2.0f + worldPoint.y * scale.y) / h;
         return worldPoint;
     }
 

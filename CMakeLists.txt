@@ -90,3 +90,10 @@ if(RONIN_BUILD_TESTS)
   add_subdirectory(tests)
 endif()
 
+# RONIN EDITOR
+option(RONIN_EDITOR_BUILD "Build Ronin Editor" ON)
+if(RONIN_EDITOR_BUILD)
+  add_subdirectory(editor)
+endif()
+
+

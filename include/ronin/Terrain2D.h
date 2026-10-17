@@ -47,8 +47,29 @@ namespace RoninEngine::Runtime
         void setMesh(Rectf state, SpriteRef sprite);
         void setMesh(Rectf state, SpriteRef sprite, bool isCollider);
         void setMeshTile(int gridX, int gridY, SpriteRef sprite, Vec2 tileSize = Vec2::one, bool isCollider = false);
+        SpriteRendererRef getMeshTile(int gridX, int gridY) const;
+        bool removeMeshTile(int gridX, int gridY, Vec2 tileSize = Vec2::one);
+        void fillMeshTiles(int startX, int startY, int width, int height, SpriteRef sprite, Vec2 tileSize = Vec2::one, bool isCollider = false);
         void setTextureScale(Vec2 scale);
         Vec2 getTextureScale() const;
+
+        // Surface Canvas & Texture Painting API
+        void createSurface(int pixelWidth = 0, int pixelHeight = 0, Color clearColor = Color(0, 0, 0, 0));
+        Image *getSurface() const;
+        SpriteRef getSurfaceSprite();
+        bool hasSurface() const;
+        void clearSurface(Color clearColor = Color(0, 0, 0, 0));
+        void fillSurface(Color color);
+        void paintPixel(int px, int py, Color color, bool blend = true);
+        Color getPixel(int px, int py) const;
+        void paintRect(Rectf localRect, Color color, bool blend = true);
+        void paintCircle(Vec2 localPos, float radiusWorld, Color color, bool blend = true);
+        void paintBrush(Vec2 localPos, float radiusWorld, Color color, float hardness = 0.7f);
+        void paintLine(Vec2 localFrom, Vec2 localTo, float radiusWorld, Color color, float hardness = 0.7f);
+        void paintTexture(Rectf localRect, SpriteRef textureSprite, Color tint = Color::white, bool tileRepeat = true);
+        void paintBrushTexture(Vec2 localPos, float radiusWorld, SpriteRef textureSprite, Color tint = Color::white, float hardness = 0.7f);
+        void eraseBrush(Vec2 localPos, float radiusWorld, float hardness = 0.8f);
+        native_texture_t *get_render_texture();
 
         void loadFrom(const TerrainData &terrainData, bool clearExisting = false);
 

@@ -12,13 +12,21 @@ namespace RoninEngine::Runtime
             return nullptr;
         auto &cache = currentWorld->irs->renderCache;
         auto it = cache.find(surf);
-        if(it != cache.end())
+        if(it != cache.end() && it->second.second != nullptr)
             return it->second.second;
         SDL_Texture *tex = render_make_texture(surf);
         if(tex)
         {
-            cache.insert({surf, {1, tex}});
-            currentWorld->irs->renderCacheRefs.insert({tex, surf});
+            if(it != cache.end())
+            {
+                it->second.first = std::max(1, it->second.first);
+                it->second.second = tex;
+            }
+            else
+            {
+                cache.insert({surf, {1, tex}});
+            }
+            currentWorld->irs->renderCacheRefs[tex] = surf;
         }
         return tex;
     }
@@ -32,7 +40,7 @@ namespace RoninEngine::Runtime
         float cx = (size - 1) * 0.5f;
         float cy = (size - 1) * 0.5f;
         float maxRadius = cx;
-        float halfConeRad = (coneAngleDeg * 0.5f) * Math::deg2rad;
+        float halfConeRad = std::max(0.001f, ( std::clamp(coneAngleDeg, 1.0f, 360.0f) * 0.5f) * Math::deg2rad);
         for(int y = 0; y < size; ++y)
         {
             Uint32 *row = reinterpret_cast<Uint32 *>(static_cast<Uint8 *>(surf->pixels) + y * surf->pitch);
@@ -42,13 +50,13 @@ namespace RoninEngine::Runtime
                 float dy = cy - y; // upward is positive Y
                 float dist = std::hypot(dx, dy) / maxRadius;
                 Uint8 a = 0;
-                if(dist <= 1.0f && dy > 0.0f)
+                if(dist <= 1.0f && (dx != 0.0f || dy != 0.0f))
                 {
-                    float angle = std::atan2(std::abs(dx), dy);
-                    if(angle <= halfConeRad)
+                    float pxAngle = std::atan2(std::abs(dx), dy);
+                    if(pxAngle <= halfConeRad)
                     {
                         float radFalloff = (1.0f - dist) * (1.0f - dist);
-                        float angFalloff = std::cos((angle / halfConeRad) * (Math::Pi * 0.5f));
+                        float angFalloff = std::cos((pxAngle / halfConeRad) * (Math::Pi * 0.5f));
                         a = static_cast<Uint8>(std::clamp(radFalloff * angFalloff * 255.0f, 0.0f, 255.0f));
                     }
                 }
@@ -82,11 +90,40 @@ namespace RoninEngine::Runtime
     {
     }
 
+    static std::map<int, SDL_Surface *> s_spotlightSurfCache;
+    struct SpotlightCacheCleanup
+    {
+        ~SpotlightCacheCleanup()
+        {
+            for(auto &pair : s_spotlightSurfCache)
+            {
+                if(pair.second)
+                    SDL_FreeSurface(pair.second);
+            }
+            s_spotlightSurfCache.clear();
+        }
+    };
+    static SpotlightCacheCleanup s_spotlightCleaner;
+
     void Spotlight::get_light(Rendering *render_info)
     {
         if(!render_info)
             return;
-        static SDL_Surface *surf = create_spotlight_surface();
+        int angleKey = std::clamp(static_cast<int>(std::round(angle)), 1, 360);
+        SDL_Surface *surf = nullptr;
+        auto it = s_spotlightSurfCache.find(angleKey);
+        if(it != s_spotlightSurfCache.end())
+        {
+            surf = it->second;
+        }
+        else
+        {
+            surf = create_spotlight_surface(128, static_cast<float>(angleKey));
+            if(surf)
+                s_spotlightSurfCache[angleKey] = surf;
+        }
+        if(!surf)
+            return;
         SDL_Texture *tex = get_light_texture(surf);
         if(!tex)
             return;

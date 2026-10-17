@@ -74,12 +74,43 @@ int main()
         auto circleCast = Physics2D::GetCircleCast<std::vector<Transform*>>(Vec2(5, 5), 5.0f);
         assert(!circleCast.empty());
 
-        // 5. Instantiation state preservation (volume, enable)
-        std::cout << "[5/6] Testing Instantiate state preservation..." << std::endl;
+        // 5. Instantiation state preservation (volume, enable, hierarchy, Camera2D, Transform)
+        std::cout << "[5/6] Testing Instantiate & Transform consistency..." << std::endl;
         GameObjectRef sourceObj = Primitive::CreateEmptyGameObject(Vec2(10, 10));
         AudioSourceRef srcAudio = sourceObj->AddComponent<AudioSource>();
         srcAudio->setVolume(0.42f);
         srcAudio->enable(false);
+
+        Camera2DRef srcCam = sourceObj->AddComponent<Camera2D>();
+        srcCam->backclear = false;
+        srcCam->backcolor = Color::red;
+        srcCam->SetScale(Vec2(2.5f, 2.5f));
+
+        // Test arbitrary scaling without hard limiters
+        srcCam->SetScale(25.0f);
+        assert(std::fabs(srcCam->GetScale().x - 25.0f) < 1e-4f);
+        assert(std::fabs(srcCam->GetScale().y - 25.0f) < 1e-4f);
+
+        srcCam->SetScale(Vec2(0.005f, 50.0f));
+        assert(std::fabs(srcCam->GetScale().x - 0.005f) < 1e-5f);
+        assert(std::fabs(srcCam->GetScale().y - 50.0f) < 1e-4f);
+
+        // Test SetZoomOut unconstrained behavior
+        srcCam->SetZoomOut(-900.0f); // 1.0 - (-1000/100) = 11.0f (previously clamped to 3.0f or 10.0f)
+        assert(std::fabs(srcCam->GetScale().x - 11.0f) < 1e-3f);
+        assert(std::fabs(srcCam->GetZoomOut() - (-900.0f)) < 1e-2f);
+
+        // Test safe floor (no crash / div by zero on extreme zoom-out)
+        srcCam->SetZoomOut(100000.0f);
+        assert(srcCam->GetScale().x > 0.0f);
+
+        // Reset to 2.5f for clone test
+        srcCam->SetScale(Vec2(2.5f, 2.5f));
+
+        GameObjectRef childSrc = Primitive::CreateEmptyGameObject(Vec2(12, 15));
+        childSrc->transform()->setParent(sourceObj->transform(), true);
+        assert(std::fabs(childSrc->transform()->localPosition().x - 2.0f) < 1e-4f);
+        assert(std::fabs(childSrc->transform()->localPosition().y - 5.0f) < 1e-4f);
 
         GameObjectRef clonedObj = Instantiate(sourceObj);
         assert(!clonedObj.isNull());
@@ -87,6 +118,31 @@ int main()
         assert(!clonedAudio.isNull());
         assert(!clonedAudio->enable());
         assert(std::abs(clonedAudio->getVolume() - 0.42f) < 0.05f);
+
+        Camera2DRef clonedCam = clonedObj->GetComponent<Camera2D>();
+        assert(!clonedCam.isNull());
+        assert(clonedCam->backclear == false);
+        assert(clonedCam->backcolor == Color::red);
+        assert(clonedCam->GetScale() == Vec2(2.5f, 2.5f));
+
+        assert(clonedObj->transform()->childCount() == 1);
+        TransformRef clonedChild = clonedObj->transform()->childOf(0);
+        assert(std::fabs(clonedChild->position().x - 12.0f) < 1e-4f);
+        assert(std::fabs(clonedChild->position().y - 15.0f) < 1e-4f);
+        assert(std::fabs(clonedChild->localPosition().x - 2.0f) < 1e-4f);
+        assert(std::fabs(clonedChild->localPosition().y - 5.0f) < 1e-4f);
+
+        // Test Transform LookAt, LookAtLerp, LookOfAngle(TransformRef), and rotated localPosition
+        obj1->transform()->position(Vec2(0, 0));
+        obj2->transform()->position(Vec2(10, 0));
+        obj1->transform()->LookAt(obj2->transform());
+        assert(std::fabs(obj1->transform()->angle() - 90.0f) < 1e-3f);
+        assert(obj1->transform()->LookOfAngle(obj2->transform(), 5.0f));
+
+        // Rotate parent by 90 degrees and verify child localPosition remains constant
+        sourceObj->transform()->angle(90.0f);
+        assert(std::fabs(childSrc->transform()->localPosition().x - 2.0f) < 1e-3f);
+        assert(std::fabs(childSrc->transform()->localPosition().y - 5.0f) < 1e-3f);
 
         // 6. UI safety
         std::cout << "[6/6] Testing UI safety..." << std::endl;
