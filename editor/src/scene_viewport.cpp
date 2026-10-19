@@ -1060,6 +1060,65 @@ namespace RoninEditor
                 ImVec2 imgPos = ImGui::GetCursorScreenPos();
                 ImGui::Image((ImTextureID)(intptr_t)m_sceneTexture, ImVec2(static_cast<float>(w), static_cast<float>(h)));
 
+                // Drag & Drop Target for World Viewport:
+                // Dragging a Prefab (or Sprite/Texture) onto the World instantiates it at the mouse coordinates!
+                if (ImGui::BeginDragDropTarget())
+                {
+                    if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("ASSET_PREFAB"))
+                    {
+                        std::string prefabPath((const char *)payload->Data);
+                        ImVec2 mousePos = ImGui::GetMousePos();
+                        RoninEngine::Runtime::Vec2 mouseScreen = {mousePos.x - imgPos.x, mousePos.y - imgPos.y};
+                        RoninEngine::Runtime::Vec2 worldPos = ScreenToWorld(mouseScreen, m_cameraPos, {avail.x, avail.y});
+                        state.instantiatePrefab(prefabPath, worldPos);
+                    }
+                    else if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("RONIN_ASSET_PATH"))
+                    {
+                        std::string assetPath((const char *)payload->Data);
+                        ImVec2 mousePos = ImGui::GetMousePos();
+                        RoninEngine::Runtime::Vec2 mouseScreen = {mousePos.x - imgPos.x, mousePos.y - imgPos.y};
+                        RoninEngine::Runtime::Vec2 worldPos = ScreenToWorld(mouseScreen, m_cameraPos, {avail.x, avail.y});
+
+                        std::string ext = std::filesystem::path(assetPath).extension().string();
+                        std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
+
+                        if (ext == ".prefab")
+                        {
+                            state.instantiatePrefab(assetPath, worldPos);
+                        }
+                        else if (ext == ".world")
+                        {
+                            state.loadWorldFromFile(assetPath);
+                        }
+                        else if (ext == ".sprite" || ext == ".png" || ext == ".jpg" || ext == ".bmp")
+                        {
+                            EditorObject &newObj = state.createObject(std::filesystem::path(assetPath).stem().string());
+                            newObj.position = worldPos;
+                            newObj.sprite.enabled = true;
+                            newObj.sprite.spritePath = assetPath;
+                            state.ensureComponentIds(newObj);
+                            state.selectObject(newObj.id);
+                            state.isDirty = true;
+                            state.logInfo("Spawned Sprite object from: " + std::filesystem::path(assetPath).filename().string());
+                        }
+                    }
+                    else if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("ASSET_SPRITE"))
+                    {
+                        std::string assetPath((const char *)payload->Data);
+                        ImVec2 mousePos = ImGui::GetMousePos();
+                        RoninEngine::Runtime::Vec2 mouseScreen = {mousePos.x - imgPos.x, mousePos.y - imgPos.y};
+                        RoninEngine::Runtime::Vec2 worldPos = ScreenToWorld(mouseScreen, m_cameraPos, {avail.x, avail.y});
+                        EditorObject &newObj = state.createObject(std::filesystem::path(assetPath).stem().string());
+                        newObj.position = worldPos;
+                        newObj.sprite.enabled = true;
+                        newObj.sprite.spritePath = assetPath;
+                        state.ensureComponentIds(newObj);
+                        state.selectObject(newObj.id);
+                        state.isDirty = true;
+                    }
+                    ImGui::EndDragDropTarget();
+                }
+
                 handleSceneInput(state, {imgPos.x, imgPos.y}, {avail.x, avail.y});
 
                 // Top Toolbar Overlay in World Viewport

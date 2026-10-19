@@ -49,6 +49,7 @@ namespace RoninEditor
 
         AssetType determineAssetType(const std::filesystem::path &path) const;
         const char *getAssetTypeIcon(AssetType type) const;
+        void createPrefabFromObject(EditorState &state, const EditorObject &obj, const std::filesystem::path &targetDir);
 
         std::filesystem::path m_assetsRoot;
         std::filesystem::path m_currentDir;

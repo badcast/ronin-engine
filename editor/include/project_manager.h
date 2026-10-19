@@ -70,6 +70,7 @@ namespace RoninEditor
         std::filesystem::path GetProjectSettingsPath() const { return m_currentConfig.projectSettingsPath; }
         std::filesystem::path GetLibraryPath() const { return m_currentConfig.libraryPath; }
         std::filesystem::path GetDefaultScenePath() const;
+        std::filesystem::path GetDefaultWorldPath() const;
 
         // Recent projects
         const std::vector<RecentProject> &GetRecentProjects();
@@ -80,6 +81,7 @@ namespace RoninEditor
         // Project scaffolding generators
         static bool GenerateProjectScaffolding(const ProjectConfig &cfg, ProjectTemplate tmpl, std::string &outError);
         static bool GenerateDefaultScene(const std::filesystem::path &scenePath, ProjectTemplate tmpl, std::string &outError);
+        static bool GenerateDefaultWorld(const std::filesystem::path &worldPath, ProjectTemplate tmpl, std::string &outError);
         static bool GenerateCMakeLists(const std::filesystem::path &scriptsDir, const std::string &projectName, std::string &outError);
         static bool GenerateSampleScript(const std::filesystem::path &scriptsDir, std::string &outError);
         static bool GenerateProjectSettings(const std::filesystem::path &settingsDir, const std::string &projectName, std::string &outError);

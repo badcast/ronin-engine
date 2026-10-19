@@ -453,6 +453,10 @@ namespace RoninEditor
         bool saveWorldToFile(const std::string &filePath, int worldIdx = -1);
         bool loadWorldFromFile(const std::string &filePath);
 
+        // Prefab management
+        bool savePrefab(const EditorObject &obj, const std::string &filePath);
+        EditorObject *instantiatePrefab(const std::string &filePath, const RoninEngine::Runtime::Vec2 &spawnPos = {0.0f, 0.0f}, int parentId = -1);
+
         // World management
         EditorWorld &activeWorld();
         const EditorWorld &activeWorld() const;

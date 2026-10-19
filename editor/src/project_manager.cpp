@@ -93,10 +93,12 @@ namespace RoninEditor
         std::filesystem::path altWorld = m_currentConfig.rootPath / "Assets" / "Worlds" / "SampleWorld.world";
         if (std::filesystem::exists(altWorld))
             return altWorld;
-        std::filesystem::path altScene = m_currentConfig.rootPath / "Assets" / "Scenes" / "SampleScene.roninscene";
-        if (std::filesystem::exists(altScene))
-            return altScene;
         return primary;
+    }
+
+    std::filesystem::path ProjectManager::GetDefaultWorldPath() const
+    {
+        return GetDefaultScenePath();
     }
 
     bool ProjectManager::CreateProject(const std::string &parentDir, const std::string &projectName,
@@ -301,7 +303,6 @@ namespace RoninEditor
         std::vector<std::filesystem::path> dirs = {
             cfg.assetsPath,
             cfg.assetsPath / "Worlds",
-            cfg.assetsPath / "Scenes", // Kept for compatibility
             cfg.assetsPath / "Textures",
             cfg.assetsPath / "Audio",
             cfg.assetsPath / "Fonts",
@@ -345,10 +346,8 @@ namespace RoninEditor
 
         // 7. Generate default world (Assets/Worlds/SampleWorld.world)
         std::filesystem::path worldPath = cfg.assetsPath / "Worlds" / "SampleWorld.world";
-        if (!GenerateDefaultScene(worldPath, tmpl, outError))
+        if (!GenerateDefaultWorld(worldPath, tmpl, outError))
             return false;
-        std::filesystem::path scenePath = cfg.assetsPath / "Scenes" / "SampleScene.roninscene";
-        GenerateDefaultScene(scenePath, tmpl, outError);
 
         return true;
     }
@@ -376,7 +375,7 @@ namespace RoninEditor
         obj["companyName"] = "DefaultCompany";
         obj["productName"] = projectName;
         obj["version"] = "0.1.0";
-        obj["defaultScene"] = "Assets/Scenes/SampleScene.roninscene";
+        obj["defaultScene"] = "Assets/Worlds/SampleWorld.world";
 
         json::JSON res = json::Object();
         res["defaultWidth"] = 1280;
@@ -651,6 +650,11 @@ namespace RoninEditor
 
         scene["objects"] = objects;
         return writeTextFile(scenePath, scene.dump(1, "  "), outError);
+    }
+
+    bool ProjectManager::GenerateDefaultWorld(const std::filesystem::path &worldPath, ProjectTemplate tmpl, std::string &outError)
+    {
+        return GenerateDefaultScene(worldPath, tmpl, outError);
     }
 
     std::filesystem::path ProjectManager::getRecentProjectsFilePath() const

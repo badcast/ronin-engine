@@ -140,7 +140,7 @@ namespace RoninEditor
                 ImGui::EndDragDropSource();
             }
 
-            // Drag and Drop Target (Drop another object onto this as parent)
+            // Drag and Drop Target (Drop another object onto this as parent, or drop Prefab to instantiate as child)
             if (ImGui::BeginDragDropTarget())
             {
                 if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("RONIN_GAMEOBJECT_REPARENT"))
@@ -154,6 +154,19 @@ namespace RoninEditor
                             draggedObj->parentId = obj.id;
                             state.isDirty = true;
                         }
+                    }
+                }
+                else if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("ASSET_PREFAB"))
+                {
+                    std::string prefabPath((const char *)payload->Data);
+                    state.instantiatePrefab(prefabPath, obj.position, obj.id);
+                }
+                else if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("RONIN_ASSET_PATH"))
+                {
+                    std::string assetPath((const char *)payload->Data);
+                    if (std::filesystem::path(assetPath).extension() == ".prefab")
+                    {
+                        state.instantiatePrefab(assetPath, obj.position, obj.id);
                     }
                 }
                 ImGui::EndDragDropTarget();
@@ -376,7 +389,7 @@ namespace RoninEditor
                 ImGui::EndPopup();
             }
 
-            // Drag-and-drop to root (empty area)
+            // Drag-and-drop to root (empty area): unparent GameObject or instantiate Prefab at root
             if (ImGui::BeginDragDropTargetCustom(ImGui::GetCurrentWindow()->ContentRegionRect, ImGui::GetID("HierarchyEmptyDropTarget")))
             {
                 if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("RONIN_GAMEOBJECT_REPARENT"))
@@ -387,6 +400,19 @@ namespace RoninEditor
                     {
                         draggedObj->parentId = -1;
                         state.isDirty = true;
+                    }
+                }
+                else if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("ASSET_PREFAB"))
+                {
+                    std::string prefabPath((const char *)payload->Data);
+                    state.instantiatePrefab(prefabPath, {0.0f, 0.0f}, -1);
+                }
+                else if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("RONIN_ASSET_PATH"))
+                {
+                    std::string assetPath((const char *)payload->Data);
+                    if (std::filesystem::path(assetPath).extension() == ".prefab")
+                    {
+                        state.instantiatePrefab(assetPath, {0.0f, 0.0f}, -1);
                     }
                 }
                 ImGui::EndDragDropTarget();

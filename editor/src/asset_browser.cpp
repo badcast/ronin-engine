@@ -19,6 +19,34 @@ namespace RoninEditor
         return MetaManager::DetermineAssetType(path);
     }
 
+    void AssetBrowser::createPrefabFromObject(EditorState &state, const EditorObject &obj, const std::filesystem::path &targetDir)
+    {
+        std::string baseName = obj.name.empty() ? "GameObject" : obj.name;
+        std::string cleanName;
+        for (char c : baseName)
+        {
+            if (c == '/' || c == '\\' || c == ':' || c == '*' || c == '?' || c == '"' || c == '<' || c == '>' || c == '|')
+                cleanName += '_';
+            else
+                cleanName += c;
+        }
+        if (cleanName.empty()) cleanName = "GameObject";
+
+        std::filesystem::path prefabPath = targetDir / (cleanName + ".prefab");
+        int counter = 1;
+        while (std::filesystem::exists(prefabPath))
+        {
+            prefabPath = targetDir / (cleanName + "_" + std::to_string(counter++) + ".prefab");
+        }
+
+        if (state.savePrefab(obj, prefabPath.string()))
+        {
+            refreshCurrentDirectory();
+            selectPath(prefabPath, false);
+            state.logInfo("Created Prefab '" + prefabPath.filename().string() + "' from GameObject '" + obj.name + "'");
+        }
+    }
+
     const char *AssetBrowser::getAssetTypeIcon(AssetType type) const
     {
         switch (type)
@@ -496,7 +524,25 @@ namespace RoninEditor
                     }
                 }
 
-                // Drag & Drop
+                // Drag & Drop Target for Folders (Drop GameObject from hierarchy to create prefab in folder)
+                if (entry.isDirectory || entry.type == AssetType::Folder)
+                {
+                    if (ImGui::BeginDragDropTarget())
+                    {
+                        if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("RONIN_GAMEOBJECT_REPARENT"))
+                        {
+                            int objId = *(const int *)payload->Data;
+                            EditorObject *obj = state.findObject(objId);
+                            if (obj)
+                            {
+                                createPrefabFromObject(state, *obj, entry.fullPath);
+                            }
+                        }
+                        ImGui::EndDragDropTarget();
+                    }
+                }
+
+                // Drag & Drop Source
                 if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID))
                 {
                     std::string pathStr = entry.fullPath.string();
@@ -510,6 +556,8 @@ namespace RoninEditor
                         ImGui::SetDragDropPayload("ASSET_AUDIO", pathStr.c_str(), pathStr.size() + 1);
                     else if (entry.type == AssetType::World)
                         ImGui::SetDragDropPayload("ASSET_WORLD", pathStr.c_str(), pathStr.size() + 1);
+                    else if (entry.type == AssetType::Prefab)
+                        ImGui::SetDragDropPayload("ASSET_PREFAB", pathStr.c_str(), pathStr.size() + 1);
 
                     ImGui::Text("Asset: %s", entry.filename.c_str());
                     ImGui::EndDragDropSource();
@@ -643,7 +691,25 @@ namespace RoninEditor
                         }
                     }
 
-                    // Drag & Drop
+                    // Drag & Drop Target for Folders
+                    if (entry.isDirectory || entry.type == AssetType::Folder)
+                    {
+                        if (ImGui::BeginDragDropTarget())
+                        {
+                            if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("RONIN_GAMEOBJECT_REPARENT"))
+                            {
+                                int objId = *(const int *)payload->Data;
+                                EditorObject *obj = state.findObject(objId);
+                                if (obj)
+                                {
+                                    createPrefabFromObject(state, *obj, entry.fullPath);
+                                }
+                            }
+                            ImGui::EndDragDropTarget();
+                        }
+                    }
+
+                    // Drag & Drop Source
                     if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID))
                     {
                         std::string pathStr = entry.fullPath.string();
@@ -656,6 +722,8 @@ namespace RoninEditor
                             ImGui::SetDragDropPayload("ASSET_AUDIO", pathStr.c_str(), pathStr.size() + 1);
                         else if (entry.type == AssetType::World)
                             ImGui::SetDragDropPayload("ASSET_WORLD", pathStr.c_str(), pathStr.size() + 1);
+                        else if (entry.type == AssetType::Prefab)
+                            ImGui::SetDragDropPayload("ASSET_PREFAB", pathStr.c_str(), pathStr.size() + 1);
                         ImGui::Text("Asset: %s", entry.filename.c_str());
                         ImGui::EndDragDropSource();
                     }
@@ -987,6 +1055,21 @@ namespace RoninEditor
             }
 
             renderFileGrid(state);
+
+            // Drag-and-drop GameObject from Hierarchy into empty Asset area -> create Prefab!
+            if (ImGui::BeginDragDropTargetCustom(ImGui::GetCurrentWindow()->ContentRegionRect, ImGui::GetID("AssetFilesAreaDropTarget")))
+            {
+                if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("RONIN_GAMEOBJECT_REPARENT"))
+                {
+                    int objId = *(const int *)payload->Data;
+                    EditorObject *obj = state.findObject(objId);
+                    if (obj)
+                    {
+                        createPrefabFromObject(state, *obj, m_currentDir);
+                    }
+                }
+                ImGui::EndDragDropTarget();
+            }
 
             ImGui::EndChild();
 

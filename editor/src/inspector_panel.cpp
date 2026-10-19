@@ -2023,16 +2023,9 @@ namespace RoninEditor
             ImGui::TextColored(ImVec4(1.0f, 0.5f, 0.8f, 1.0f), "Prefab Inspector");
             ImGui::Spacing();
             ImGui::TextWrapped("Prefab template: %s", stem.c_str());
-            if (ImGui::Button("Instantiate Prefab in Scene", ImVec2(180.0f, 30.0f)))
+            if (ImGui::Button("Instantiate Prefab in World", ImVec2(180.0f, 30.0f)))
             {
-                EditorObject newObj;
-                newObj.id = state.activeWorld().allocateObjectId();
-                newObj.name = stem;
-                newObj.position = {0.0f, 0.0f};
-                state.activeWorld().objects.push_back(newObj);
-                state.selectObject(newObj.id);
-                state.isDirty = true;
-                state.logInfo("Instantiated prefab: " + stem);
+                state.instantiatePrefab(p.string(), {0.0f, 0.0f});
             }
         }
         else if (assetType == AssetType::Terrain)

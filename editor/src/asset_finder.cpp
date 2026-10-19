@@ -266,6 +266,8 @@ namespace RoninEditor
                             ImGui::SetDragDropPayload("ASSET_AUDIO", pathStr.c_str(), pathStr.size() + 1);
                         else if (item.type == AssetType::World)
                             ImGui::SetDragDropPayload("ASSET_WORLD", pathStr.c_str(), pathStr.size() + 1);
+                        else if (item.type == AssetType::Prefab)
+                            ImGui::SetDragDropPayload("ASSET_PREFAB", pathStr.c_str(), pathStr.size() + 1);
                         ImGui::Text("Asset: %s", item.filename.c_str());
                         ImGui::EndDragDropSource();
                     }

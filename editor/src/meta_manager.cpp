@@ -80,7 +80,7 @@ namespace RoninEditor
         std::string ext = path.extension().string();
         std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
 
-        if (ext == ".world" || ext == ".scene" || ext == ".roninscene") return AssetType::World;
+        if (ext == ".world") return AssetType::World;
         if (ext == ".sprite") return AssetType::Sprite;
         if (ext == ".prefab") return AssetType::Prefab;
         if (ext == ".terrain") return AssetType::Terrain;

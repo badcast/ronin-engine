@@ -42,7 +42,6 @@ int main()
     assert(std::filesystem::exists(expectedRoot));
     assert(std::filesystem::is_directory(expectedRoot / "Assets"));
     assert(std::filesystem::is_directory(expectedRoot / "Assets" / "Worlds"));
-    assert(std::filesystem::is_directory(expectedRoot / "Assets" / "Scenes"));
     assert(std::filesystem::is_directory(expectedRoot / "Assets" / "Textures"));
     assert(std::filesystem::is_directory(expectedRoot / "Assets" / "Audio"));
     assert(std::filesystem::is_directory(expectedRoot / "Assets" / "Fonts"));
@@ -116,20 +115,7 @@ int main()
     }
     std::cout << "  [PASS] Scripts scaffolding validated" << std::endl;
 
-    // 8. Verify Assets/Scenes/SampleScene.roninscene
-    {
-        std::ifstream ifs(expectedRoot / "Assets" / "Scenes" / "SampleScene.roninscene");
-        assert(ifs.is_open());
-        std::stringstream ss;
-        ss << ifs.rdbuf();
-        json::JSON scJson = json::JSON::Load(ss.str());
-        assert(!scJson.IsNull());
-        assert(scJson["sceneName"].ToString() == "SampleScene");
-        assert(scJson["objects"].size() >= 2);
-    }
-    std::cout << "  [PASS] SampleScene.roninscene validated" << std::endl;
-
-    // 8b. Verify Assets/Worlds/SampleWorld.world
+    // 8. Verify Assets/Worlds/SampleWorld.world
     {
         std::ifstream ifs(expectedRoot / "Assets" / "Worlds" / "SampleWorld.world");
         assert(ifs.is_open());
@@ -180,7 +166,7 @@ int main()
     // 12. Test Module 2: EditorState, Hierarchy & Component Systems
     {
         EditorState editorState;
-        std::filesystem::path scenePath = expectedRoot / "Assets" / "Scenes" / "SampleScene.roninscene";
+        std::filesystem::path scenePath = expectedRoot / "Assets" / "Worlds" / "SampleWorld.world";
         assert(std::filesystem::exists(scenePath));
         assert(editorState.loadWorldFromFile(scenePath.string()));
         auto &world = editorState.activeWorld();
@@ -258,8 +244,8 @@ int main()
             editorState.applyTerrainBorderColliders(terrainObj.terrain, true);
             assert(terrainObj.terrain.cellColliders[0] == true);
 
-            // Test scene save & reload roundtrip with terrain
-            std::filesystem::path tempScene = expectedRoot / "Assets" / "Scenes" / "TerrainScene.roninscene";
+            // Test world save & reload roundtrip with terrain
+            std::filesystem::path tempScene = expectedRoot / "Assets" / "Worlds" / "TerrainWorld.world";
             assert(editorState.saveWorldToFile(tempScene.string()));
 
             EditorState reloadState;
@@ -326,7 +312,7 @@ int main()
             physObj.boxCollider2D.size = {1.5f, 1.5f};
 
             // Test serialization and deserialization
-            std::filesystem::path physScene = expectedRoot / "Assets" / "Scenes" / "PhysicsScene.roninscene";
+            std::filesystem::path physScene = expectedRoot / "Assets" / "Worlds" / "PhysicsWorld.world";
             assert(editorState.saveWorldToFile(physScene.string()));
 
             EditorState physReload;
@@ -615,6 +601,87 @@ int main()
             assert(!std::filesystem::exists(spriteAsset));
             assert(!std::filesystem::exists(spriteAsset.string() + ".meta"));
             std::cout << "  [PASS] Test 24: AssetDatabase pipeline and stem resolution validated" << std::endl;
+        }
+
+        // 25. Validate Prefab serialization & instantiation pipeline
+        {
+            EditorState editorState;
+            std::filesystem::path worldPath = expectedRoot / "Assets" / "Worlds" / "SampleWorld.world";
+            assert(editorState.loadWorldFromFile(worldPath.string()));
+
+            // Create a compound object hierarchy: SamuraiHero with KatanaSword child
+            auto &rootObj = editorState.createObject("SamuraiHero");
+            rootObj.position = {2.0f, 3.0f};
+            rootObj.sprite.enabled = true;
+            rootObj.sprite.primitiveShape = 0;
+            rootObj.rigidbody2D.enabled = true;
+            rootObj.rigidbody2D.mass = 5.0f;
+            editorState.ensureComponentIds(rootObj);
+
+            auto &childObj = editorState.createObject("KatanaSword", rootObj.id);
+            childObj.position = {2.8f, 3.4f};
+            childObj.sprite.enabled = true;
+            editorState.ensureComponentIds(childObj);
+
+            // Save Prefab
+            std::filesystem::path prefabPath = expectedRoot / "Assets" / "Prefabs" / "SamuraiHero.prefab";
+            assert(editorState.savePrefab(rootObj, prefabPath.string()));
+
+            // Verify .prefab and .prefab.meta exist
+            assert(std::filesystem::exists(prefabPath));
+            std::filesystem::path metaPath = prefabPath.string() + ".meta";
+            assert(std::filesystem::exists(metaPath));
+
+            // Verify .meta contents
+            MetaFile mf;
+            assert(MetaManager::LoadMetaFile(metaPath, mf));
+            assert(mf.type == AssetType::Prefab);
+            assert(!mf.guid.empty());
+
+            // Verify AssetDatabase knows about the prefab
+            AssetDatabase &adb = AssetDatabase::GetInstance();
+            adb.Refresh();
+            assert(adb.GetStemByPath(prefabPath) == "SamuraiHero");
+            assert(adb.HasAssetByGuid(mf.guid));
+
+            // Instantiate Prefab at a new spawn location
+            RoninEngine::Runtime::Vec2 spawnPos = {10.0f, -5.0f};
+            size_t countBefore = editorState.activeWorld().objects.size();
+            EditorObject *instantiated = editorState.instantiatePrefab(prefabPath.string(), spawnPos, -1);
+            assert(instantiated != nullptr);
+            assert(editorState.activeWorld().objects.size() == countBefore + 2); // root + 1 child
+
+            // Check instantiated root
+            assert(instantiated->id != rootObj.id);
+            assert(instantiated->name == "SamuraiHero");
+            assert(std::abs(instantiated->position.x - 10.0f) < 0.001f);
+            assert(std::abs(instantiated->position.y - (-5.0f)) < 0.001f);
+            assert(instantiated->rigidbody2D.enabled);
+            assert(std::abs(instantiated->rigidbody2D.mass - 5.0f) < 0.001f);
+            assert(instantiated->sprite.enabled);
+            assert(instantiated->sprite.componentId != rootObj.sprite.componentId);
+
+            // Check instantiated child
+            EditorObject *instChild = nullptr;
+            for (auto &o : editorState.activeWorld().objects)
+            {
+                if (o.parentId == instantiated->id)
+                {
+                    instChild = &o;
+                    break;
+                }
+            }
+            assert(instChild != nullptr);
+            assert(instChild->name == "KatanaSword");
+            assert(instChild->id != childObj.id);
+            // Child position was (2.8, 3.4), root was (2.0, 3.0), delta is (+0.8, +0.4)
+            // Spawn pos is (10.0, -5.0) -> child pos is (10.8, -4.6)
+            assert(std::abs(instChild->position.x - 10.8f) < 0.001f);
+            assert(std::abs(instChild->position.y - (-4.6f)) < 0.001f);
+            assert(instChild->sprite.enabled);
+            assert(instChild->sprite.componentId != childObj.sprite.componentId);
+
+            std::cout << "  [PASS] Test 25: Prefab save & instantiation pipeline validated" << std::endl;
         }
     }
 
