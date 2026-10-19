@@ -6,6 +6,7 @@
 #include <box2d/b2_body.h>
 
 #include <algorithm>
+#include <cctype>
 #include <chrono>
 #include <clocale>
 #include <cmath>
@@ -732,6 +733,110 @@ namespace RoninEditor
         if (obj.script.enabled) obj.script.componentId = w.allocateComponentId();
     }
 
+    static std::string extractCloneBaseName(const std::string &name)
+    {
+        std::string current = name;
+        while (true)
+        {
+            while (!current.empty() && std::isspace(static_cast<unsigned char>(current.back())))
+                current.pop_back();
+
+            if (current.empty() || current.back() != ')')
+                break;
+
+            size_t openParen = current.rfind('(');
+            if (openParen == std::string::npos)
+                break;
+
+            std::string inside = current.substr(openParen + 1, current.length() - openParen - 2);
+            size_t start = inside.find_first_not_of(" \t");
+            size_t end = inside.find_last_not_of(" \t");
+            if (start == std::string::npos)
+                break;
+            inside = inside.substr(start, end - start + 1);
+
+            bool matches = false;
+            if (inside == "Clone" || inside == "clone" || inside == "Copy" || inside == "copy")
+            {
+                matches = true;
+            }
+            else
+            {
+                size_t spacePos = inside.find(' ');
+                if (spacePos != std::string::npos)
+                {
+                    std::string prefix = inside.substr(0, spacePos);
+                    std::string numStr = inside.substr(spacePos + 1);
+                    if ((prefix == "Clone" || prefix == "clone" || prefix == "Copy" || prefix == "copy") &&
+                        !numStr.empty() &&
+                        std::all_of(numStr.begin(), numStr.end(), [](char c) { return std::isdigit(static_cast<unsigned char>(c)); }))
+                    {
+                        matches = true;
+                    }
+                }
+            }
+
+            if (matches)
+            {
+                current = current.substr(0, openParen);
+                while (!current.empty() && std::isspace(static_cast<unsigned char>(current.back())))
+                    current.pop_back();
+            }
+            else
+            {
+                break;
+            }
+        }
+        return current.empty() ? (name.empty() ? "GameObject" : name) : current;
+    }
+
+    std::string EditorState::generateCloneObjectName(const std::string &srcName) const
+    {
+        const EditorWorld &w = activeWorld();
+        std::string baseName = extractCloneBaseName(srcName);
+
+        int maxIndex = 0;
+        const std::string prefix = baseName + " (Clone ";
+        for (const auto &obj : w.objects)
+        {
+            if (obj.name.rfind(prefix, 0) == 0 && !obj.name.empty() && obj.name.back() == ')')
+            {
+                std::string numStr = obj.name.substr(prefix.length(), obj.name.length() - prefix.length() - 1);
+                if (!numStr.empty() && std::all_of(numStr.begin(), numStr.end(), [](char c) { return std::isdigit(static_cast<unsigned char>(c)); }))
+                {
+                    try
+                    {
+                        int n = std::stoi(numStr);
+                        if (n > maxIndex)
+                            maxIndex = n;
+                    }
+                    catch (...)
+                    {
+                    }
+                }
+            }
+        }
+
+        int nextIndex = maxIndex + 1;
+        if (nextIndex < 1)
+            nextIndex = 1;
+
+        auto nameExists = [&](const std::string &candidate) {
+            return std::any_of(w.objects.begin(), w.objects.end(), [&](const EditorObject &o) {
+                return o.name == candidate;
+            });
+        };
+
+        std::string candidate = baseName + " (Clone " + std::to_string(nextIndex) + ")";
+        while (nameExists(candidate))
+        {
+            nextIndex++;
+            candidate = baseName + " (Clone " + std::to_string(nextIndex) + ")";
+        }
+
+        return candidate;
+    }
+
     int EditorState::duplicateObject(int id)
     {
         const EditorObject *src = findObject(id);
@@ -742,7 +847,7 @@ namespace RoninEditor
         EditorWorld &w = activeWorld();
         EditorObject copy = *src;
         copy.id = w.allocateObjectId();
-        copy.name = src->name + " (Copy)";
+        copy.name = generateCloneObjectName(src->name);
         copy.position.x += 0.5f;
         copy.position.y -= 0.5f;
         reassignComponentIds(w, copy);

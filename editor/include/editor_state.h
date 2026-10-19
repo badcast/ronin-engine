@@ -542,6 +542,7 @@ namespace RoninEditor
         EditorObject *findObject(int id);
         const EditorObject *findObject(int id) const;
         int duplicateObject(int id);
+        std::string generateCloneObjectName(const std::string &srcName) const;
         bool deleteObject(int id);
 
         // Hierarchy & Transform helpers

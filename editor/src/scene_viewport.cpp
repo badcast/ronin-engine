@@ -526,6 +526,13 @@ namespace RoninEditor
                     m_cameraPos = selObj->position;
                 }
             }
+            else if (ImGui::GetIO().KeyCtrl && ImGui::IsKeyPressed(ImGuiKey_D))
+            {
+                if (state.selectedObjectId != -1)
+                {
+                    state.duplicateObject(state.selectedObjectId);
+                }
+            }
             else if (ImGui::IsKeyPressed(ImGuiKey_Delete))
             {
                 if (!state.selectedObjectIds.empty())

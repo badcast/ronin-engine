@@ -208,16 +208,30 @@ int main()
         childObj.sprite.color = RoninEngine::Runtime::Color{200, 200, 255, 255};
         assert(childObj.sprite.enabled);
 
-        // Verify object duplication
+        // Verify object duplication sequence: (Clone 1), (Clone 2), (Clone 3)
         int dupId = editorState.duplicateObject(childObj.id);
         assert(dupId != -1);
         EditorObject *dupObj = editorState.findObject(dupId);
         assert(dupObj != nullptr);
-        assert(dupObj->name == "SwordWeapon (Copy)");
+        assert(dupObj->name == "SwordWeapon (Clone 1)");
         assert(dupObj->parentId == parentObj.id);
+
+        int dupId2 = editorState.duplicateObject(dupObj->id);
+        assert(dupId2 != -1);
+        EditorObject *dupObj2 = editorState.findObject(dupId2);
+        assert(dupObj2 != nullptr);
+        assert(dupObj2->name == "SwordWeapon (Clone 2)");
+
+        int dupId3 = editorState.duplicateObject(childObj.id);
+        assert(dupId3 != -1);
+        EditorObject *dupObj3 = editorState.findObject(dupId3);
+        assert(dupObj3 != nullptr);
+        assert(dupObj3->name == "SwordWeapon (Clone 3)");
 
         // Verify object deletion
         assert(editorState.deleteObject(dupId));
+        assert(editorState.deleteObject(dupId2));
+        assert(editorState.deleteObject(dupId3));
         assert(editorState.findObject(dupId) == nullptr);
 
         std::cout << "  [PASS] Module 2: Hierarchy, Transform, Components & Picking validated" << std::endl;
@@ -399,6 +413,7 @@ int main()
             assert(dupParentId != parentId);
             EditorObject *dupParent = editorState.findObject(dupParentId);
             assert(dupParent != nullptr);
+            assert(dupParent->name == "ParentHier (Clone 1)");
             assert(dupParent->sprite.enabled);
             assert(dupParent->sprite.componentId != pObj->sprite.componentId);
 
@@ -1046,6 +1061,58 @@ int main()
             ImGui::DestroyContext(imguiCtx);
 
             std::cout << "  [PASS] Test 33: RoninEngine::UI ImGui styling & GUI controls pipeline validated" << std::endl;
+        }
+
+        // 34. Validate Duplicate GameObject naming pipeline: GameObject (Clone 1), (Clone 2), etc.
+        {
+            EditorState testState;
+            int rootId = testState.createObject("PlayerEntity").id;
+            assert(testState.findObject(rootId)->name == "PlayerEntity");
+
+            // First duplication -> PlayerEntity (Clone 1)
+            int c1Id = testState.duplicateObject(rootId);
+            EditorObject *c1 = testState.findObject(c1Id);
+            assert(c1 != nullptr);
+            assert(c1->name == "PlayerEntity (Clone 1)");
+
+            // Second duplication from c1 -> PlayerEntity (Clone 2) (NO chaining like PlayerEntity (Clone 1) (Clone 1))
+            int c2Id = testState.duplicateObject(c1Id);
+            EditorObject *c2 = testState.findObject(c2Id);
+            assert(c2 != nullptr);
+            assert(c2->name == "PlayerEntity (Clone 2)");
+
+            // Third duplication from root -> PlayerEntity (Clone 3)
+            int c3Id = testState.duplicateObject(rootId);
+            EditorObject *c3 = testState.findObject(c3Id);
+            assert(c3 != nullptr);
+            assert(c3->name == "PlayerEntity (Clone 3)");
+
+            // Test legacy chained names: "Monster (Clone) (Clone)" -> should strip to "Monster" base and yield "Monster (Clone 1)"
+            int legacyChainedId = testState.createObject("Monster (Clone) (Clone)").id;
+            int chainedDupId = testState.duplicateObject(legacyChainedId);
+            EditorObject *chainedDup = testState.findObject(chainedDupId);
+            assert(chainedDup != nullptr);
+            assert(chainedDup->name == "Monster (Clone 1)");
+
+            // Duplicating chainedDup -> "Monster (Clone 2)"
+            int chainedDup2Id = testState.duplicateObject(chainedDupId);
+            EditorObject *chainedDup2 = testState.findObject(chainedDup2Id);
+            assert(chainedDup2 != nullptr);
+            assert(chainedDup2->name == "Monster (Clone 2)");
+
+            // Test custom parenthesized names: "Treasure (Gold)" -> "Treasure (Gold) (Clone 1)"
+            int customParenId = testState.createObject("Treasure (Gold)").id;
+            int customDupId = testState.duplicateObject(customParenId);
+            EditorObject *customDup = testState.findObject(customDupId);
+            assert(customDup != nullptr);
+            assert(customDup->name == "Treasure (Gold) (Clone 1)");
+
+            int customDup2Id = testState.duplicateObject(customDupId);
+            EditorObject *customDup2 = testState.findObject(customDup2Id);
+            assert(customDup2 != nullptr);
+            assert(customDup2->name == "Treasure (Gold) (Clone 2)");
+
+            std::cout << "  [PASS] Test 34: Duplicate GameObject naming pipeline validated (Clone 1, Clone 2, no chaining)" << std::endl;
         }
     }
 
