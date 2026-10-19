@@ -20,7 +20,7 @@ namespace RoninEditor
         std::string lastModified;
         std::string filename;
         std::string stem;
-        json::JSON importerSettings;
+        nlohmann::json importerSettings;
     };
 
     class AssetDatabase

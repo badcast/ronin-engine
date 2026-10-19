@@ -4,7 +4,7 @@
 #include "asset_database.h"
 #include <imgui.h>
 #include <SDL2/SDL_image.h>
-#include <SimpleJSON/json.hpp>
+#include <nlohmann/json.hpp>
 #include <fstream>
 #include <sstream>
 #include <algorithm>
@@ -89,18 +89,16 @@ namespace RoninEditor
         std::ifstream ifs(jsonPath);
         if (!ifs.is_open()) return false;
 
-        std::stringstream ss;
-        ss << ifs.rdbuf();
-        json::JSON j = json::JSON::Load(ss.str());
-        if (j.IsNull()) return false;
+        nlohmann::json j = nlohmann::json::parse(ifs, nullptr, false);
+        if (j.is_discarded() || !j.is_object()) return false;
 
-        if (j.hasKey("name")) m_meta.name = j["name"].ToString();
+        if (j.contains("name") && j["name"].is_string()) m_meta.name = j["name"].get<std::string>();
         else m_meta.name = jsonPath.stem().string();
 
         bool loadedTex = false;
-        if (j.hasKey("textureGuid"))
+        if (j.contains("textureGuid") && j["textureGuid"].is_string())
         {
-            std::filesystem::path resolved = AssetDatabase::GetInstance().GetPathByGuid(j["textureGuid"].ToString());
+            std::filesystem::path resolved = AssetDatabase::GetInstance().GetPathByGuid(j["textureGuid"].get<std::string>());
             if (!resolved.empty() && std::filesystem::exists(resolved))
             {
                 m_meta.texturePath = resolved.string();
@@ -108,38 +106,38 @@ namespace RoninEditor
                 loadedTex = true;
             }
         }
-        if (!loadedTex && j.hasKey("texturePath"))
+        if (!loadedTex && j.contains("texturePath") && j["texturePath"].is_string())
         {
-            m_meta.texturePath = j["texturePath"].ToString();
+            m_meta.texturePath = j["texturePath"].get<std::string>();
             loadTexture(m_meta.texturePath);
         }
 
-        if (j.hasKey("rect") && j["rect"].JSONType() == json::JSON::Class::Object)
+        if (j.contains("rect") && j["rect"].is_object())
         {
             auto &jr = j["rect"];
-            m_meta.rect.x = jr.hasKey("x") ? jr["x"].ToInt() : 0;
-            m_meta.rect.y = jr.hasKey("y") ? jr["y"].ToInt() : 0;
-            m_meta.rect.w = jr.hasKey("w") ? jr["w"].ToInt() : m_texWidth;
-            m_meta.rect.h = jr.hasKey("h") ? jr["h"].ToInt() : m_texHeight;
+            m_meta.rect.x = jr.value("x", 0);
+            m_meta.rect.y = jr.value("y", 0);
+            m_meta.rect.w = jr.value("w", m_texWidth);
+            m_meta.rect.h = jr.value("h", m_texHeight);
         }
 
-        if (j.hasKey("pivot") && j["pivot"].JSONType() == json::JSON::Class::Object)
+        if (j.contains("pivot") && j["pivot"].is_object())
         {
             auto &jp = j["pivot"];
-            m_meta.pivot.x = jp.hasKey("x") ? static_cast<float>(jp["x"].ToFloat()) : 0.5f;
-            m_meta.pivot.y = jp.hasKey("y") ? static_cast<float>(jp["y"].ToFloat()) : 0.5f;
+            m_meta.pivot.x = jp.value("x", 0.5f);
+            m_meta.pivot.y = jp.value("y", 0.5f);
         }
 
-        if (j.hasKey("pixelsPerUnit"))
-            m_meta.pixelsPerUnit = static_cast<float>(j["pixelsPerUnit"].ToFloat());
+        if (j.contains("pixelsPerUnit") && j["pixelsPerUnit"].is_number())
+            m_meta.pixelsPerUnit = j["pixelsPerUnit"].get<float>();
 
-        if (j.hasKey("border") && j["border"].JSONType() == json::JSON::Class::Object)
+        if (j.contains("border") && j["border"].is_object())
         {
             auto &jb = j["border"];
-            m_meta.borderLeft = jb.hasKey("l") ? jb["l"].ToInt() : 0;
-            m_meta.borderBottom = jb.hasKey("b") ? jb["b"].ToInt() : 0;
-            m_meta.borderRight = jb.hasKey("r") ? jb["r"].ToInt() : 0;
-            m_meta.borderTop = jb.hasKey("t") ? jb["t"].ToInt() : 0;
+            m_meta.borderLeft = jb.value("l", 0);
+            m_meta.borderBottom = jb.value("b", 0);
+            m_meta.borderRight = jb.value("r", 0);
+            m_meta.borderTop = jb.value("t", 0);
         }
 
         m_currentFile = jsonPath;
@@ -149,7 +147,7 @@ namespace RoninEditor
 
     bool SpriteEditor::saveSpriteJson(const std::filesystem::path &jsonPath)
     {
-        json::JSON j = json::JSON::Make(json::JSON::Class::Object);
+        nlohmann::json j = nlohmann::json::object();
         j["formatVersion"] = 1;
         j["name"] = m_meta.name;
         j["texturePath"] = m_meta.texturePath;
@@ -160,21 +158,21 @@ namespace RoninEditor
             j["textureGuid"] = texGuid;
         }
 
-        json::JSON jr = json::JSON::Make(json::JSON::Class::Object);
+        nlohmann::json jr = nlohmann::json::object();
         jr["x"] = m_meta.rect.x;
         jr["y"] = m_meta.rect.y;
         jr["w"] = m_meta.rect.w;
         jr["h"] = m_meta.rect.h;
         j["rect"] = jr;
 
-        json::JSON jp = json::JSON::Make(json::JSON::Class::Object);
+        nlohmann::json jp = nlohmann::json::object();
         jp["x"] = static_cast<double>(m_meta.pivot.x);
         jp["y"] = static_cast<double>(m_meta.pivot.y);
         j["pivot"] = jp;
 
         j["pixelsPerUnit"] = static_cast<double>(m_meta.pixelsPerUnit);
 
-        json::JSON jb = json::JSON::Make(json::JSON::Class::Object);
+        nlohmann::json jb = nlohmann::json::object();
         jb["l"] = m_meta.borderLeft;
         jb["b"] = m_meta.borderBottom;
         jb["r"] = m_meta.borderRight;
@@ -183,7 +181,7 @@ namespace RoninEditor
 
         std::ofstream ofs(jsonPath);
         if (!ofs.is_open()) return false;
-        ofs << j.dump(1, "  ");
+        ofs << j.dump(2) << "\n";
         ofs.close();
 
         // Ensure companion .meta file is generated
@@ -288,19 +286,19 @@ namespace RoninEditor
                 sm.pivot = m_meta.pivot;
                 sm.pixelsPerUnit = m_meta.pixelsPerUnit;
 
-                json::JSON j = json::JSON::Make(json::JSON::Class::Object);
+                nlohmann::json j = nlohmann::json::object();
                 j["formatVersion"] = 1;
                 j["name"] = sm.name;
                 j["texturePath"] = sm.texturePath;
 
-                json::JSON jr = json::JSON::Make(json::JSON::Class::Object);
+                nlohmann::json jr = nlohmann::json::object();
                 jr["x"] = sm.rect.x;
                 jr["y"] = sm.rect.y;
                 jr["w"] = sm.rect.w;
                 jr["h"] = sm.rect.h;
                 j["rect"] = jr;
 
-                json::JSON jp = json::JSON::Make(json::JSON::Class::Object);
+                nlohmann::json jp = nlohmann::json::object();
                 jp["x"] = static_cast<double>(sm.pivot.x);
                 jp["y"] = static_cast<double>(sm.pivot.y);
                 j["pivot"] = jp;
@@ -314,7 +312,7 @@ namespace RoninEditor
                 std::ofstream ofs(outFile);
                 if (ofs.is_open())
                 {
-                    ofs << j.dump(1, "  ");
+                    ofs << j.dump(2) << "\n";
                     ofs.close();
                     MetaFile mf;
                     MetaManager::EnsureMetaFile(outFile, mf);

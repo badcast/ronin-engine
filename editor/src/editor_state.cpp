@@ -1,7 +1,7 @@
 #include "editor_state.h"
 #include "meta_manager.h"
 #include "asset_database.h"
-#include <SimpleJSON/json.hpp>
+#include <nlohmann/json.hpp>
 #include <box2d/b2_world.h>
 #include <box2d/b2_body.h>
 
@@ -21,6 +21,7 @@ using namespace RoninEngine::Runtime;
 
 namespace RoninEditor
 {
+    using json = nlohmann::json;
     static std::string currentTimestamp()
     {
         auto now = std::chrono::system_clock::now();
@@ -1769,51 +1770,59 @@ namespace RoninEditor
         }
     }
 
-    static float jsonToFloat(const json::JSON &node, float fallback = 0.0f)
+    static float jsonToFloat(const json &node, float fallback = 0.0f)
     {
-        if (node.JSONType() == json::JSON::Class::Floating)
-            return static_cast<float>(node.ToFloat());
-        if (node.JSONType() == json::JSON::Class::Integral)
-            return static_cast<float>(node.ToInt());
+        if (node.is_number())
+            return node.get<float>();
+        if (node.is_string())
+        {
+            try { return std::stof(node.get<std::string>()); } catch (...) {}
+        }
         return fallback;
     }
 
-    static int jsonToInt(const json::JSON &node, int fallback = 0)
+    static int jsonToInt(const json &node, int fallback = 0)
     {
-        if (node.JSONType() == json::JSON::Class::Integral)
-            return static_cast<int>(node.ToInt());
-        if (node.JSONType() == json::JSON::Class::Floating)
-            return static_cast<int>(std::round(node.ToFloat()));
+        if (node.is_number_integer())
+            return node.get<int>();
+        if (node.is_number())
+            return static_cast<int>(std::round(node.get<double>()));
+        if (node.is_string())
+        {
+            try { return std::stoi(node.get<std::string>()); } catch (...) {}
+        }
         return fallback;
     }
 
-    static uint32_t jsonToUint32(const json::JSON &node, uint32_t fallback = 0)
+    static uint32_t jsonToUint32(const json &node, uint32_t fallback = 0)
     {
-        if (node.JSONType() == json::JSON::Class::Integral)
-            return static_cast<uint32_t>(node.ToInt());
-        if (node.JSONType() == json::JSON::Class::Floating)
-            return static_cast<uint32_t>(std::round(node.ToFloat()));
-        if (node.JSONType() == json::JSON::Class::String)
+        if (node.is_number_unsigned())
+            return node.get<uint32_t>();
+        if (node.is_number_integer())
+            return static_cast<uint32_t>(node.get<int64_t>());
+        if (node.is_number())
+            return static_cast<uint32_t>(std::round(node.get<double>()));
+        if (node.is_string())
         {
             try {
-                return static_cast<uint32_t>(std::stoul(node.ToString()));
+                return static_cast<uint32_t>(std::stoul(node.get<std::string>()));
             } catch (...) {}
         }
         return fallback;
     }
 
-    static bool jsonToBool(const json::JSON &node, bool fallback = false)
+    static bool jsonToBool(const json &node, bool fallback = false)
     {
-        if (node.JSONType() == json::JSON::Class::Boolean)
-            return node.ToBool();
-        if (node.JSONType() == json::JSON::Class::Integral)
-            return node.ToInt() != 0;
+        if (node.is_boolean())
+            return node.get<bool>();
+        if (node.is_number_integer())
+            return node.get<int64_t>() != 0;
         return fallback;
     }
 
-    static json::JSON colorToJson(const Color &c)
+    static json colorToJson(const Color &c)
     {
-        json::JSON j = json::JSON::Make(json::JSON::Class::Object);
+        json j = json::object();
         j["r"] = static_cast<int>(c.r);
         j["g"] = static_cast<int>(c.g);
         j["b"] = static_cast<int>(c.b);
@@ -1821,37 +1830,37 @@ namespace RoninEditor
         return j;
     }
 
-    static Color jsonToColor(const json::JSON &j, const Color &fallback = Color::white)
+    static Color jsonToColor(const json &j, const Color &fallback = Color::white)
     {
-        if (j.JSONType() != json::JSON::Class::Object)
+        if (!j.is_object())
             return fallback;
-        int r = j.hasKey("r") ? jsonToInt(j.at("r"), fallback.r) : fallback.r;
-        int g = j.hasKey("g") ? jsonToInt(j.at("g"), fallback.g) : fallback.g;
-        int b = j.hasKey("b") ? jsonToInt(j.at("b"), fallback.b) : fallback.b;
-        int a = j.hasKey("a") ? jsonToInt(j.at("a"), fallback.a) : fallback.a;
+        int r = j.contains("r") ? jsonToInt(j.at("r"), fallback.r) : fallback.r;
+        int g = j.contains("g") ? jsonToInt(j.at("g"), fallback.g) : fallback.g;
+        int b = j.contains("b") ? jsonToInt(j.at("b"), fallback.b) : fallback.b;
+        int a = j.contains("a") ? jsonToInt(j.at("a"), fallback.a) : fallback.a;
         return Color(r, g, b, a);
     }
 
-    static json::JSON vec2ToJson(const Vec2 &v)
+    static json vec2ToJson(const Vec2 &v)
     {
-        json::JSON j = json::JSON::Make(json::JSON::Class::Object);
+        json j = json::object();
         j["x"] = static_cast<double>(v.x);
         j["y"] = static_cast<double>(v.y);
         return j;
     }
 
-    static Vec2 jsonToVec2(const json::JSON &j, const Vec2 &fallback = Vec2::zero)
+    static Vec2 jsonToVec2(const json &j, const Vec2 &fallback = Vec2::zero)
     {
-        if (j.JSONType() != json::JSON::Class::Object)
+        if (!j.is_object())
             return fallback;
-        float x = j.hasKey("x") ? jsonToFloat(j.at("x"), fallback.x) : fallback.x;
-        float y = j.hasKey("y") ? jsonToFloat(j.at("y"), fallback.y) : fallback.y;
+        float x = j.contains("x") ? jsonToFloat(j.at("x"), fallback.x) : fallback.x;
+        float y = j.contains("y") ? jsonToFloat(j.at("y"), fallback.y) : fallback.y;
         return Vec2(x, y);
     }
 
-    static json::JSON serializeTerrainToJson(const Terrain2DData &ter)
+    static json serializeTerrainToJson(const Terrain2DData &ter)
     {
-        json::JSON jter = json::JSON::Make(json::JSON::Class::Object);
+        json jter = json::object();
         jter["componentId"] = ter.componentId;
         jter["enabled"] = ter.enabled;
         jter["width"] = ter.width;
@@ -1861,25 +1870,25 @@ namespace RoninEditor
         jter["generateBorderColliders"] = ter.generateBorderColliders;
         jter["customTexturePath"] = ter.customTexturePath;
 
-        json::JSON jmats = json::JSON::Make(json::JSON::Class::Array);
+        json jmats = json::array();
         for (int m : ter.cellMaterials)
-            jmats.append(m);
+            jmats.push_back(m);
         jter["cellMaterials"] = jmats;
 
-        json::JSON jcols = json::JSON::Make(json::JSON::Class::Array);
+        json jcols = json::array();
         for (const auto &cc : ter.cellColors)
-            jcols.append(colorToJson(cc));
+            jcols.push_back(colorToJson(cc));
         jter["cellColors"] = jcols;
 
-        json::JSON jcoll = json::JSON::Make(json::JSON::Class::Array);
+        json jcoll = json::array();
         for (bool b : ter.cellColliders)
-            jcoll.append(b ? 1 : 0);
+            jcoll.push_back(b ? 1 : 0);
         jter["cellColliders"] = jcoll;
 
-        json::JSON jstrokes = json::JSON::Make(json::JSON::Class::Array);
+        json jstrokes = json::array();
         for (const auto &st : ter.paintStrokes)
         {
-            json::JSON js = json::JSON::Make(json::JSON::Class::Object);
+            json js = json::object();
             js["uvPos"] = vec2ToJson(st.uvPos);
             js["radiusNormalized"] = static_cast<double>(st.radiusNormalized);
             js["radiusCells"] = static_cast<double>(st.radiusCells);
@@ -1887,79 +1896,79 @@ namespace RoninEditor
             js["opacity"] = static_cast<double>(st.opacity);
             js["materialId"] = st.materialId;
             js["color"] = colorToJson(st.color);
-            jstrokes.append(js);
+            jstrokes.push_back(js);
         }
         jter["paintStrokes"] = jstrokes;
         return jter;
     }
 
-    static void deserializeTerrainFromJson(const json::JSON &jt, Terrain2DData &ter)
+    static void deserializeTerrainFromJson(const json &jt, Terrain2DData &ter)
     {
-        if (jt.hasKey("componentId"))
+        if (jt.contains("componentId"))
             ter.componentId = jsonToInt(jt.at("componentId"), ter.componentId);
-        if (jt.hasKey("enabled"))
+        if (jt.contains("enabled"))
             ter.enabled = jsonToBool(jt.at("enabled"), true);
-        if (jt.hasKey("width"))
+        if (jt.contains("width"))
             ter.width = jsonToInt(jt.at("width"), ter.width);
-        if (jt.hasKey("length"))
+        if (jt.contains("length"))
             ter.length = jsonToInt(jt.at("length"), ter.length);
-        if (jt.hasKey("cellScale"))
+        if (jt.contains("cellScale"))
             ter.cellScale = jsonToFloat(jt.at("cellScale"), ter.cellScale);
-        if (jt.hasKey("tileColor"))
+        if (jt.contains("tileColor"))
             ter.tileColor = jsonToColor(jt.at("tileColor"), ter.tileColor);
-        if (jt.hasKey("generateBorderColliders"))
+        if (jt.contains("generateBorderColliders"))
             ter.generateBorderColliders = jsonToBool(jt.at("generateBorderColliders"), true);
-        if (jt.hasKey("customTexturePath"))
-            ter.customTexturePath = jt.at("customTexturePath").ToString();
+        if (jt.contains("customTexturePath") && jt.at("customTexturePath").is_string())
+            ter.customTexturePath = jt.at("customTexturePath").get<std::string>();
 
-        if (jt.hasKey("cellMaterials") && jt.at("cellMaterials").JSONType() == json::JSON::Class::Array)
+        if (jt.contains("cellMaterials") && jt.at("cellMaterials").is_array())
         {
             ter.cellMaterials.clear();
-            for (const auto &jm : jt.at("cellMaterials").ArrayRange())
+            for (const auto &jm : jt.at("cellMaterials"))
                 ter.cellMaterials.push_back(jsonToInt(jm, 0));
         }
-        if (jt.hasKey("cellColors") && jt.at("cellColors").JSONType() == json::JSON::Class::Array)
+        if (jt.contains("cellColors") && jt.at("cellColors").is_array())
         {
             ter.cellColors.clear();
-            for (const auto &jc : jt.at("cellColors").ArrayRange())
+            for (const auto &jc : jt.at("cellColors"))
                 ter.cellColors.push_back(jsonToColor(jc, ter.tileColor));
         }
-        if (jt.hasKey("cellColliders") && jt.at("cellColliders").JSONType() == json::JSON::Class::Array)
+        if (jt.contains("cellColliders") && jt.at("cellColliders").is_array())
         {
             ter.cellColliders.clear();
-            for (const auto &jb : jt.at("cellColliders").ArrayRange())
+            for (const auto &jb : jt.at("cellColliders"))
                 ter.cellColliders.push_back(jsonToBool(jb, false));
         }
-        if (jt.hasKey("paintStrokes") && jt.at("paintStrokes").JSONType() == json::JSON::Class::Array)
+        if (jt.contains("paintStrokes") && jt.at("paintStrokes").is_array())
         {
             ter.paintStrokes.clear();
-            for (const auto &jst : jt.at("paintStrokes").ArrayRange())
+            for (const auto &jst : jt.at("paintStrokes"))
             {
-                if (jst.JSONType() != json::JSON::Class::Object)
+                if (!jst.is_object())
                     continue;
                 TerrainPaintStroke st;
-                if (jst.hasKey("uvPos"))
+                if (jst.contains("uvPos"))
                     st.uvPos = jsonToVec2(jst.at("uvPos"), st.uvPos);
-                if (jst.hasKey("radiusNormalized"))
+                if (jst.contains("radiusNormalized"))
                     st.radiusNormalized = jsonToFloat(jst.at("radiusNormalized"), 0.08f);
-                if (jst.hasKey("radiusCells"))
+                if (jst.contains("radiusCells"))
                     st.radiusCells = jsonToFloat(jst.at("radiusCells"), 1.0f);
-                if (jst.hasKey("hardness"))
+                if (jst.contains("hardness"))
                     st.hardness = jsonToFloat(jst.at("hardness"), 0.65f);
-                if (jst.hasKey("opacity"))
+                if (jst.contains("opacity"))
                     st.opacity = jsonToFloat(jst.at("opacity"), 1.0f);
-                if (jst.hasKey("materialId"))
+                if (jst.contains("materialId"))
                     st.materialId = jsonToInt(jst.at("materialId"), 0);
-                if (jst.hasKey("color"))
+                if (jst.contains("color"))
                     st.color = jsonToColor(jst.at("color"), st.color);
                 ter.paintStrokes.push_back(st);
             }
         }
     }
 
-    static json::JSON serializeObjectToJson(const EditorObject &obj)
+    static json serializeObjectToJson(const EditorObject &obj)
     {
-        json::JSON jo = json::JSON::Make(json::JSON::Class::Object);
+        json jo = json::object();
         jo["id"] = obj.id;
         jo["name"] = obj.name;
         jo["tag"] = obj.tag;
@@ -1972,7 +1981,7 @@ namespace RoninEditor
         jo["zOrder"] = obj.zOrder;
 
         // SpriteRenderer
-        json::JSON jspr = json::JSON::Make(json::JSON::Class::Object);
+        json jspr = json::object();
         jspr["componentId"] = obj.sprite.componentId;
         jspr["assetId"] = static_cast<long>(obj.sprite.assetId);
         jspr["enabled"] = obj.sprite.enabled;
@@ -1988,7 +1997,7 @@ namespace RoninEditor
         jo["spriteRenderer"] = jspr;
 
         // Camera2D
-        json::JSON jcam = json::JSON::Make(json::JSON::Class::Object);
+        json jcam = json::object();
         jcam["componentId"] = obj.camera.componentId;
         jcam["enabled"] = obj.camera.enabled;
         jcam["mainCamera"] = obj.camera.mainCamera;
@@ -2006,7 +2015,7 @@ namespace RoninEditor
         jo["camera2D"] = jcam;
 
         // Light2D
-        json::JSON jlgt = json::JSON::Make(json::JSON::Class::Object);
+        json jlgt = json::object();
         jlgt["componentId"] = obj.light.componentId;
         jlgt["enabled"] = obj.light.enabled;
         jlgt["lightType"] = obj.light.lightType;
@@ -2020,7 +2029,7 @@ namespace RoninEditor
         jo["terrain2D"] = serializeTerrainToJson(obj.terrain);
 
         // ParticleSystem
-        json::JSON jprt = json::JSON::Make(json::JSON::Class::Object);
+        json jprt = json::object();
         jprt["componentId"] = obj.particles.componentId;
         jprt["enabled"] = obj.particles.enabled;
         jprt["emit"] = obj.particles.emit;
@@ -2041,7 +2050,7 @@ namespace RoninEditor
         jo["particleSystem"] = jprt;
 
         // Physics & MoveController2D
-        json::JSON jphy = json::JSON::Make(json::JSON::Class::Object);
+        json jphy = json::object();
         jphy["componentId"] = obj.physics.componentId;
         jphy["moveControllerEnabled"] = obj.physics.moveControllerEnabled;
         jphy["moveSpeed"] = static_cast<double>(obj.physics.moveSpeed);
@@ -2053,7 +2062,7 @@ namespace RoninEditor
         jo["physics2D"] = jphy;
 
         // Rigidbody2D
-        json::JSON jrb = json::JSON::Make(json::JSON::Class::Object);
+        json jrb = json::object();
         jrb["componentId"] = obj.rigidbody2D.componentId;
         jrb["enabled"] = obj.rigidbody2D.enabled;
         jrb["bodyType"] = obj.rigidbody2D.bodyType;
@@ -2068,7 +2077,7 @@ namespace RoninEditor
         jo["rigidbody2D"] = jrb;
 
         // BoxCollider2D
-        json::JSON jbox = json::JSON::Make(json::JSON::Class::Object);
+        json jbox = json::object();
         jbox["componentId"] = obj.boxCollider2D.componentId;
         jbox["enabled"] = obj.boxCollider2D.enabled;
         jbox["size"] = vec2ToJson(obj.boxCollider2D.size);
@@ -2080,13 +2089,13 @@ namespace RoninEditor
         jo["boxCollider2D"] = jbox;
 
         // MultiCollider2D
-        json::JSON jmulti = json::JSON::Make(json::JSON::Class::Object);
+        json jmulti = json::object();
         jmulti["componentId"] = obj.multiCollider2D.componentId;
         jmulti["enabled"] = obj.multiCollider2D.enabled;
-        json::JSON jpoints = json::JSON::Make(json::JSON::Class::Array);
+        json jpoints = json::array();
         for (const auto &pt : obj.multiCollider2D.points)
         {
-            jpoints.append(vec2ToJson(pt));
+            jpoints.push_back(vec2ToJson(pt));
         }
         jmulti["points"] = jpoints;
         jmulti["offset"] = vec2ToJson(obj.multiCollider2D.offset);
@@ -2098,7 +2107,7 @@ namespace RoninEditor
         jo["multiCollider2D"] = jmulti;
 
         // NavMeshAgent
-        json::JSON jagent = json::JSON::Make(json::JSON::Class::Object);
+        json jagent = json::object();
         jagent["componentId"] = obj.navMeshAgent.componentId;
         jagent["enabled"] = obj.navMeshAgent.enabled;
         jagent["speed"] = static_cast<double>(obj.navMeshAgent.speed);
@@ -2113,7 +2122,7 @@ namespace RoninEditor
         jo["navMeshAgent"] = jagent;
 
         // AudioSource
-        json::JSON jaud = json::JSON::Make(json::JSON::Class::Object);
+        json jaud = json::object();
         jaud["componentId"] = obj.audio.componentId;
         jaud["clipAssetId"] = static_cast<long>(obj.audio.clipAssetId);
         jaud["enabled"] = obj.audio.enabled;
@@ -2124,7 +2133,7 @@ namespace RoninEditor
         jo["audioSource"] = jaud;
 
         // MotionScript
-        json::JSON jscr = json::JSON::Make(json::JSON::Class::Object);
+        json jscr = json::object();
         jscr["componentId"] = obj.script.componentId;
         jscr["enabled"] = obj.script.enabled;
         jscr["linearVelocity"] = vec2ToJson(obj.script.linearVelocity);
@@ -2136,14 +2145,14 @@ namespace RoninEditor
         return jo;
     }
 
-    static json::JSON serializeWorldToJson(const EditorWorld &w)
+    static json serializeWorldToJson(const EditorWorld &w)
     {
-        json::JSON jw = json::JSON::Make(json::JSON::Class::Object);
+        json jw = json::object();
         jw["name"] = w.name;
         jw["ambientColor"] = colorToJson(w.ambientColor);
 
         // NavMesh
-        json::JSON jnav = json::JSON::Make(json::JSON::Class::Object);
+        json jnav = json::object();
         jnav["width"] = w.navMesh.width;
         jnav["height"] = w.navMesh.height;
         jnav["heuristicMethod"] = w.navMesh.heuristicMethod;
@@ -2156,18 +2165,18 @@ namespace RoninEditor
         jw["navMesh"] = jnav;
 
         // GameObjects
-        json::JSON jobjects = json::JSON::Make(json::JSON::Class::Array);
+        json jobjects = json::array();
         for (const auto &obj : w.objects)
         {
-            jobjects.append(serializeObjectToJson(obj));
+            jobjects.push_back(serializeObjectToJson(obj));
         }
         jw["objects"] = jobjects;
 
         // UI::GUI Elements
-        json::JSON jgui = json::JSON::Make(json::JSON::Class::Array);
+        json jgui = json::array();
         for (const auto &ui : w.guiElements)
         {
-            json::JSON ju = json::JSON::Make(json::JSON::Class::Object);
+            json ju = json::object();
             ju["id"] = ui.id;
             ju["name"] = ui.name;
             ju["type"] = ui.type;
@@ -2186,62 +2195,62 @@ namespace RoninEditor
             ju["selectedIndex"] = ui.selectedIndex;
             ju["itemsCsv"] = ui.itemsCsv;
             ju["targetWorldOnClick"] = ui.targetWorldOnClick;
-            jgui.append(ju);
+            jgui.push_back(ju);
         }
         jw["guiElements"] = jgui;
 
         return jw;
     }
 
-    static void deserializeObjectFromJson(const json::JSON &jo, EditorObject &obj)
+    static void deserializeObjectFromJson(const json &jo, EditorObject &obj)
     {
-        if (jo.hasKey("id"))
+        if (jo.contains("id"))
             obj.id = jsonToInt(jo.at("id"), 1);
-        if (jo.hasKey("name"))
-            obj.name = jo.at("name").ToString();
-        if (jo.hasKey("tag"))
-            obj.tag = jo.at("tag").ToString();
-        if (jo.hasKey("layer"))
+        if (jo.contains("name") && jo.at("name").is_string())
+            obj.name = jo.at("name").get<std::string>();
+        if (jo.contains("tag") && jo.at("tag").is_string())
+            obj.tag = jo.at("tag").get<std::string>();
+        if (jo.contains("layer"))
             obj.layer = jsonToInt(jo.at("layer"), 0);
-        if (jo.hasKey("active"))
+        if (jo.contains("active"))
             obj.active = jsonToBool(jo.at("active"), true);
-        if (jo.hasKey("parentId"))
+        if (jo.contains("parentId"))
             obj.parentId = jsonToInt(jo.at("parentId"), -1);
-        if (jo.hasKey("position"))
+        if (jo.contains("position"))
             obj.position = jsonToVec2(jo.at("position"), obj.position);
-        if (jo.hasKey("angle"))
+        if (jo.contains("angle"))
             obj.angle = jsonToFloat(jo.at("angle"), 0.0f);
-        if (jo.hasKey("scale"))
+        if (jo.contains("scale"))
             obj.scale = jsonToVec2(jo.at("scale"), obj.scale);
-        if (jo.hasKey("zOrder"))
+        if (jo.contains("zOrder"))
             obj.zOrder = jsonToInt(jo.at("zOrder"), 0);
 
-        if (jo.hasKey("transform") && jo.at("transform").JSONType() == json::JSON::Class::Object)
+        if (jo.contains("transform") && jo.at("transform").is_object())
         {
-            const json::JSON &jt = jo.at("transform");
-            if (jt.hasKey("parentId"))
+            const json &jt = jo.at("transform");
+            if (jt.contains("parentId"))
                 obj.parentId = jsonToInt(jt.at("parentId"), obj.parentId);
-            if (jt.hasKey("position"))
+            if (jt.contains("position"))
                 obj.position = jsonToVec2(jt.at("position"), obj.position);
-            if (jt.hasKey("angle"))
+            if (jt.contains("angle"))
                 obj.angle = jsonToFloat(jt.at("angle"), obj.angle);
-            if (jt.hasKey("scale"))
+            if (jt.contains("scale"))
                 obj.scale = jsonToVec2(jt.at("scale"), obj.scale);
         }
 
-        if (jo.hasKey("components") && jo.at("components").JSONType() == json::JSON::Class::Array)
+        if (jo.contains("components") && jo.at("components").is_array())
         {
-            for (const auto &jc : jo.at("components").ArrayRange())
+            for (const auto &jc : jo.at("components"))
             {
-                if (jc.JSONType() != json::JSON::Class::Object || !jc.hasKey("type"))
+                if (!jc.is_object() || !jc.contains("type") || !jc.at("type").is_string())
                     continue;
-                std::string compType = jc.at("type").ToString();
+                std::string compType = jc.at("type").get<std::string>();
                 if (compType == "Camera2D" || compType == "Camera")
                 {
                     obj.camera.enabled = true;
-                    if (jc.hasKey("mainCamera")) obj.camera.mainCamera = jsonToBool(jc.at("mainCamera"), true);
-                    if (jc.hasKey("zoom")) obj.camera.zoom = jsonToFloat(jc.at("zoom"), 1.0f);
-                    if (jc.hasKey("backcolor")) obj.camera.backcolor = jsonToColor(jc.at("backcolor"), obj.camera.backcolor);
+                    if (jc.contains("mainCamera")) obj.camera.mainCamera = jsonToBool(jc.at("mainCamera"), true);
+                    if (jc.contains("zoom")) obj.camera.zoom = jsonToFloat(jc.at("zoom"), 1.0f);
+                    if (jc.contains("backcolor")) obj.camera.backcolor = jsonToColor(jc.at("backcolor"), obj.camera.backcolor);
                 }
                 else if (compType == "Light" || compType == "Light2D" || compType == "SimpleLight" || compType == "DirectLight")
                 {
@@ -2249,18 +2258,18 @@ namespace RoninEditor
                     if (compType == "DirectLight") obj.light.lightType = 1;
                     else if (compType == "Spotlight") obj.light.lightType = 2;
                     else obj.light.lightType = 0;
-                    if (jc.hasKey("color")) obj.light.color = jsonToColor(jc.at("color"), obj.light.color);
-                    if (jc.hasKey("range")) obj.light.range = jsonToFloat(jc.at("range"), 3.5f);
-                    if (jc.hasKey("intensity")) obj.light.intensity = jsonToFloat(jc.at("intensity"), 1.0f);
+                    if (jc.contains("color")) obj.light.color = jsonToColor(jc.at("color"), obj.light.color);
+                    if (jc.contains("range")) obj.light.range = jsonToFloat(jc.at("range"), 3.5f);
+                    if (jc.contains("intensity")) obj.light.intensity = jsonToFloat(jc.at("intensity"), 1.0f);
                 }
                 else if (compType == "SpriteRenderer")
                 {
                     obj.sprite.enabled = true;
-                    if (jc.hasKey("size")) obj.sprite.size = jsonToVec2(jc.at("size"), obj.sprite.size);
-                    if (jc.hasKey("color")) obj.sprite.color = jsonToColor(jc.at("color"), obj.sprite.color);
-                    if (jc.hasKey("primitiveShape"))
+                    if (jc.contains("size")) obj.sprite.size = jsonToVec2(jc.at("size"), obj.sprite.size);
+                    if (jc.contains("color")) obj.sprite.color = jsonToColor(jc.at("color"), obj.sprite.color);
+                    if (jc.contains("primitiveShape") && jc.at("primitiveShape").is_string())
                     {
-                        std::string shape = jc.at("primitiveShape").ToString();
+                        std::string shape = jc.at("primitiveShape").get<std::string>();
                         if (shape == "Circle") obj.sprite.primitiveShape = 1;
                         else if (shape == "Triangle") obj.sprite.primitiveShape = 2;
                         else obj.sprite.primitiveShape = 0;
@@ -2269,16 +2278,16 @@ namespace RoninEditor
                 else if (compType == "Terrain2D")
                 {
                     obj.terrain.enabled = true;
-                    if (jc.hasKey("width")) obj.terrain.width = jsonToInt(jc.at("width"), 12);
-                    if (jc.hasKey("length")) obj.terrain.length = jsonToInt(jc.at("length"), 8);
-                    if (jc.hasKey("cellScale")) obj.terrain.cellScale = jsonToFloat(jc.at("cellScale"), 1.0f);
+                    if (jc.contains("width")) obj.terrain.width = jsonToInt(jc.at("width"), 12);
+                    if (jc.contains("length")) obj.terrain.length = jsonToInt(jc.at("length"), 8);
+                    if (jc.contains("cellScale")) obj.terrain.cellScale = jsonToFloat(jc.at("cellScale"), 1.0f);
                     obj.terrain.ensureGridInitialized(0);
                 }
                 else if (compType == "AudioSource")
                 {
                     obj.audio.enabled = true;
-                    if (jc.hasKey("volume")) obj.audio.volume = jsonToFloat(jc.at("volume"), 0.85f);
-                    if (jc.hasKey("loop")) obj.audio.loop = jsonToBool(jc.at("loop"), true);
+                    if (jc.contains("volume")) obj.audio.volume = jsonToFloat(jc.at("volume"), 0.85f);
+                    if (jc.contains("loop")) obj.audio.loop = jsonToBool(jc.at("loop"), true);
                 }
                 else if (compType == "Physics2D" || compType == "Collider2D" || compType == "BoxCollider2D")
                 {
@@ -2287,776 +2296,340 @@ namespace RoninEditor
             }
         }
 
-        if (jo.hasKey("spriteRenderer"))
+        if (jo.contains("spriteRenderer") && jo.at("spriteRenderer").is_object())
         {
-            const json::JSON &js = jo.at("spriteRenderer");
-            if (js.hasKey("componentId"))
+            const json &js = jo.at("spriteRenderer");
+            if (js.contains("componentId"))
                 obj.sprite.componentId = jsonToInt(js.at("componentId"));
-            if (js.hasKey("assetId"))
+            if (js.contains("assetId"))
                 obj.sprite.assetId = jsonToUint32(js.at("assetId"));
-            if (js.hasKey("enabled"))
+            if (js.contains("enabled"))
                 obj.sprite.enabled = jsonToBool(js.at("enabled"));
-            if (js.hasKey("primitiveShape"))
+            if (js.contains("primitiveShape"))
                 obj.sprite.primitiveShape = jsonToInt(js.at("primitiveShape"));
-            if (js.hasKey("size"))
+            if (js.contains("size"))
                 obj.sprite.size = jsonToVec2(js.at("size"), obj.sprite.size);
-            if (js.hasKey("pivot"))
+            if (js.contains("pivot"))
                 obj.sprite.pivot = jsonToVec2(js.at("pivot"), obj.sprite.pivot);
-            if (js.hasKey("color"))
+            if (js.contains("color"))
                 obj.sprite.color = jsonToColor(js.at("color"), obj.sprite.color);
-            if (js.hasKey("renderType"))
+            if (js.contains("renderType"))
                 obj.sprite.renderType = jsonToInt(js.at("renderType"));
-            if (js.hasKey("renderOut"))
+            if (js.contains("renderOut"))
                 obj.sprite.renderOut = jsonToInt(js.at("renderOut"));
-            if (js.hasKey("presentMode"))
+            if (js.contains("presentMode"))
                 obj.sprite.presentMode = jsonToInt(js.at("presentMode"));
-            if (js.hasKey("flip"))
+            if (js.contains("flip"))
                 obj.sprite.flip = jsonToInt(js.at("flip"));
-            if (js.hasKey("spritePath"))
-                obj.sprite.spritePath = js.at("spritePath").ToString();
+            if (js.contains("spritePath") && js.at("spritePath").is_string())
+                obj.sprite.spritePath = js.at("spritePath").get<std::string>();
         }
 
-        if (jo.hasKey("camera2D"))
+        if (jo.contains("camera2D") && jo.at("camera2D").is_object())
         {
-            const json::JSON &jc = jo.at("camera2D");
-            if (jc.hasKey("componentId"))
+            const json &jc = jo.at("camera2D");
+            if (jc.contains("componentId"))
                 obj.camera.componentId = jsonToInt(jc.at("componentId"));
-            if (jc.hasKey("enabled"))
+            if (jc.contains("enabled"))
                 obj.camera.enabled = jsonToBool(jc.at("enabled"));
-            if (jc.hasKey("mainCamera"))
+            if (jc.contains("mainCamera"))
                 obj.camera.mainCamera = jsonToBool(jc.at("mainCamera"), true);
-            if (jc.hasKey("backclear"))
+            if (jc.contains("backclear"))
                 obj.camera.backclear = jsonToBool(jc.at("backclear"), true);
-            if (jc.hasKey("backcolor"))
+            if (jc.contains("backcolor"))
                 obj.camera.backcolor = jsonToColor(jc.at("backcolor"), obj.camera.backcolor);
-            if (jc.hasKey("zoom"))
+            if (jc.contains("zoom"))
                 obj.camera.zoom = jsonToFloat(jc.at("zoom"), 1.0f);
-            if (jc.hasKey("scale"))
+            if (jc.contains("scale"))
                 obj.camera.scale = jsonToVec2(jc.at("scale"), RoninEngine::Runtime::Vec2(obj.camera.zoom, obj.camera.zoom));
             else
                 obj.camera.scale = RoninEngine::Runtime::Vec2(obj.camera.zoom, obj.camera.zoom);
-            if (jc.hasKey("zoomOut"))
+            if (jc.contains("zoomOut"))
                 obj.camera.zoomOut = jsonToFloat(jc.at("zoomOut"), 100.0f);
-            if (jc.hasKey("distanceEvcall"))
+            if (jc.contains("distanceEvcall"))
                 obj.camera.distanceEvcall = jsonToInt(jc.at("distanceEvcall"));
-            if (jc.hasKey("visibleBorders"))
+            if (jc.contains("visibleBorders"))
                 obj.camera.visibleBorders = jsonToBool(jc.at("visibleBorders"));
-            if (jc.hasKey("visibleGrids"))
+            if (jc.contains("visibleGrids"))
                 obj.camera.visibleGrids = jsonToBool(jc.at("visibleGrids"));
-            if (jc.hasKey("visibleObjects"))
+            if (jc.contains("visibleObjects"))
                 obj.camera.visibleObjects = jsonToBool(jc.at("visibleObjects"), true);
-            if (jc.hasKey("visibleNames"))
+            if (jc.contains("visibleNames"))
                 obj.camera.visibleNames = jsonToBool(jc.at("visibleNames"));
-            if (jc.hasKey("cullResources"))
+            if (jc.contains("cullResources"))
                 obj.camera.cullResources = jsonToBool(jc.at("cullResources"), true);
         }
 
-        if (jo.hasKey("light2D"))
+        if (jo.contains("light2D") && jo.at("light2D").is_object())
         {
-            const json::JSON &jl = jo.at("light2D");
-            if (jl.hasKey("componentId"))
+            const json &jl = jo.at("light2D");
+            if (jl.contains("componentId"))
                 obj.light.componentId = jsonToInt(jl.at("componentId"));
-            if (jl.hasKey("enabled"))
+            if (jl.contains("enabled"))
                 obj.light.enabled = jsonToBool(jl.at("enabled"));
-            if (jl.hasKey("lightType"))
+            if (jl.contains("lightType"))
                 obj.light.lightType = jsonToInt(jl.at("lightType"));
-            if (jl.hasKey("intensity"))
+            if (jl.contains("intensity"))
                 obj.light.intensity = jsonToFloat(jl.at("intensity"), 1.0f);
-            if (jl.hasKey("range"))
+            if (jl.contains("range"))
                 obj.light.range = jsonToFloat(jl.at("range"), 3.5f);
-            if (jl.hasKey("angleDegrees"))
+            if (jl.contains("angleDegrees"))
                 obj.light.angleDegrees = jsonToFloat(jl.at("angleDegrees"), 45.0f);
-            if (jl.hasKey("color"))
+            if (jl.contains("color"))
                 obj.light.color = jsonToColor(jl.at("color"), obj.light.color);
         }
 
-        if (jo.hasKey("terrain2D"))
+        if (jo.contains("terrain2D") && jo.at("terrain2D").is_object())
         {
-            const json::JSON &jt = jo.at("terrain2D");
-            if (jt.hasKey("componentId"))
-                obj.terrain.componentId = jsonToInt(jt.at("componentId"));
-            if (jt.hasKey("enabled"))
-                obj.terrain.enabled = jsonToBool(jt.at("enabled"));
-            if (jt.hasKey("width"))
-                obj.terrain.width = jsonToInt(jt.at("width"), 12);
-            if (jt.hasKey("length"))
-                obj.terrain.length = jsonToInt(jt.at("length"), 8);
-            if (jt.hasKey("cellScale"))
-                obj.terrain.cellScale = jsonToFloat(jt.at("cellScale"), 1.0f);
-            if (jt.hasKey("tileColor"))
-                obj.terrain.tileColor = jsonToColor(jt.at("tileColor"), obj.terrain.tileColor);
-            if (jt.hasKey("generateBorderColliders"))
-                obj.terrain.generateBorderColliders = jsonToBool(jt.at("generateBorderColliders"));
-            if (jt.hasKey("customTexturePath"))
-                obj.terrain.customTexturePath = jt.at("customTexturePath").ToString();
-
-            obj.terrain.ensureGridInitialized(0);
-
-            if (jt.hasKey("cellMaterials") && jt.at("cellMaterials").JSONType() == json::JSON::Class::Array)
-            {
-                size_t sz = std::min(obj.terrain.cellMaterials.size(), (size_t)jt.at("cellMaterials").size());
-                for (size_t i = 0; i < sz; ++i)
-                    obj.terrain.cellMaterials[i] = jsonToInt(jt.at("cellMaterials").at(static_cast<int>(i)));
-            }
-
-            if (jt.hasKey("cellColors") && jt.at("cellColors").JSONType() == json::JSON::Class::Array)
-            {
-                size_t sz = std::min(obj.terrain.cellColors.size(), (size_t)jt.at("cellColors").size());
-                for (size_t i = 0; i < sz; ++i)
-                    obj.terrain.cellColors[i] = jsonToColor(jt.at("cellColors").at(static_cast<int>(i)), obj.terrain.cellColors[i]);
-            }
-
-            if (jt.hasKey("cellColliders") && jt.at("cellColliders").JSONType() == json::JSON::Class::Array)
-            {
-                size_t sz = std::min(obj.terrain.cellColliders.size(), (size_t)jt.at("cellColliders").size());
-                for (size_t i = 0; i < sz; ++i)
-                    obj.terrain.cellColliders[i] = (jsonToInt(jt.at("cellColliders").at(static_cast<int>(i))) != 0);
-            }
-
-            if (jt.hasKey("paintStrokes") && jt.at("paintStrokes").JSONType() == json::JSON::Class::Array)
-            {
-                obj.terrain.paintStrokes.clear();
-                for (const auto &js : jt.at("paintStrokes").ArrayRange())
-                {
-                    if (js.JSONType() != json::JSON::Class::Object)
-                        continue;
-                    TerrainPaintStroke st;
-                    if (js.hasKey("uvPos")) st.uvPos = jsonToVec2(js.at("uvPos"), st.uvPos);
-                    if (js.hasKey("radiusNormalized")) st.radiusNormalized = jsonToFloat(js.at("radiusNormalized"), st.radiusNormalized);
-                    if (js.hasKey("radiusCells")) st.radiusCells = jsonToFloat(js.at("radiusCells"), st.radiusCells);
-                    if (js.hasKey("hardness")) st.hardness = jsonToFloat(js.at("hardness"), st.hardness);
-                    if (js.hasKey("opacity")) st.opacity = jsonToFloat(js.at("opacity"), st.opacity);
-                    if (js.hasKey("materialId")) st.materialId = jsonToInt(js.at("materialId"), st.materialId);
-                    if (js.hasKey("color")) st.color = jsonToColor(js.at("color"), st.color);
-                    obj.terrain.paintStrokes.push_back(st);
-                }
-            }
+            deserializeTerrainFromJson(jo.at("terrain2D"), obj.terrain);
+            if (obj.terrain.enabled)
+                obj.terrain.ensureGridInitialized(0);
         }
 
-        if (jo.hasKey("particleSystem"))
+        if (jo.contains("particleSystem") && jo.at("particleSystem").is_object())
         {
-            const json::JSON &jp = jo.at("particleSystem");
-            if (jp.hasKey("componentId"))
+            const json &jp = jo.at("particleSystem");
+            if (jp.contains("componentId"))
                 obj.particles.componentId = jsonToInt(jp.at("componentId"));
-            if (jp.hasKey("enabled"))
+            if (jp.contains("enabled"))
                 obj.particles.enabled = jsonToBool(jp.at("enabled"));
-            if (jp.hasKey("emit"))
+            if (jp.contains("emit"))
                 obj.particles.emit = jsonToBool(jp.at("emit"), true);
-            if (jp.hasKey("loop"))
+            if (jp.contains("loop"))
                 obj.particles.loop = jsonToBool(jp.at("loop"), true);
-            if (jp.hasKey("rotate"))
+            if (jp.contains("rotate"))
                 obj.particles.rotate = jsonToBool(jp.at("rotate"));
-            if (jp.hasKey("worldSpace"))
+            if (jp.contains("worldSpace"))
                 obj.particles.worldSpace = jsonToBool(jp.at("worldSpace"));
-            if (jp.hasKey("randomDirection"))
+            if (jp.contains("randomDirection"))
                 obj.particles.randomDirection = jsonToBool(jp.at("randomDirection"));
-            if (jp.hasKey("interval"))
+            if (jp.contains("interval"))
                 obj.particles.interval = jsonToFloat(jp.at("interval"), 0.05f);
-            if (jp.hasKey("speed"))
+            if (jp.contains("speed"))
                 obj.particles.speed = jsonToFloat(jp.at("speed"), 1.8f);
-            if (jp.hasKey("duration"))
+            if (jp.contains("duration"))
                 obj.particles.duration = jsonToFloat(jp.at("duration"), 1.6f);
-            if (jp.hasKey("maxLimit"))
+            if (jp.contains("maxLimit"))
                 obj.particles.maxLimit = jsonToInt(jp.at("maxLimit"), 64);
-            if (jp.hasKey("primitiveSource"))
+            if (jp.contains("primitiveSource"))
                 obj.particles.primitiveSource = jsonToInt(jp.at("primitiveSource"), 0);
-            if (jp.hasKey("direction"))
+            if (jp.contains("direction"))
                 obj.particles.direction = jsonToVec2(jp.at("direction"), obj.particles.direction);
-            if (jp.hasKey("startSize"))
+            if (jp.contains("startSize"))
                 obj.particles.startSize = jsonToVec2(jp.at("startSize"), obj.particles.startSize);
-            if (jp.hasKey("endSize"))
+            if (jp.contains("endSize"))
                 obj.particles.endSize = jsonToVec2(jp.at("endSize"), obj.particles.endSize);
-            if (jp.hasKey("startColor"))
+            if (jp.contains("startColor"))
                 obj.particles.startColor = jsonToColor(jp.at("startColor"), obj.particles.startColor);
-            if (jp.hasKey("endColor"))
+            if (jp.contains("endColor"))
                 obj.particles.endColor = jsonToColor(jp.at("endColor"), obj.particles.endColor);
         }
 
-        if (jo.hasKey("physics2D"))
+        if (jo.contains("physics2D") && jo.at("physics2D").is_object())
         {
-            const json::JSON &jph = jo.at("physics2D");
-            if (jph.hasKey("componentId"))
+            const json &jph = jo.at("physics2D");
+            if (jph.contains("componentId"))
                 obj.physics.componentId = jsonToInt(jph.at("componentId"));
-            if (jph.hasKey("moveControllerEnabled"))
+            if (jph.contains("moveControllerEnabled"))
                 obj.physics.moveControllerEnabled = jsonToBool(jph.at("moveControllerEnabled"));
-            if (jph.hasKey("moveSpeed"))
+            if (jph.contains("moveSpeed"))
                 obj.physics.moveSpeed = jsonToFloat(jph.at("moveSpeed"), 3.5f);
-            if (jph.hasKey("colliderEnabled"))
+            if (jph.contains("colliderEnabled"))
                 obj.physics.colliderEnabled = jsonToBool(jph.at("colliderEnabled"));
-            if (jph.hasKey("colliderType"))
+            if (jph.contains("colliderType"))
                 obj.physics.colliderType = jsonToInt(jph.at("colliderType"));
-            if (jph.hasKey("colliderSize"))
+            if (jph.contains("colliderSize"))
                 obj.physics.colliderSize = jsonToVec2(jph.at("colliderSize"), obj.physics.colliderSize);
-            if (jph.hasKey("colliderRadius"))
+            if (jph.contains("colliderRadius"))
                 obj.physics.colliderRadius = jsonToFloat(jph.at("colliderRadius"), 0.5f);
-            if (jph.hasKey("collisionLayer"))
+            if (jph.contains("collisionLayer"))
                 obj.physics.collisionLayer = jsonToInt(jph.at("collisionLayer"), 0);
         }
 
-        if (jo.hasKey("rigidbody2D"))
+        if (jo.contains("rigidbody2D") && jo.at("rigidbody2D").is_object())
         {
-            const json::JSON &jrb = jo.at("rigidbody2D");
-            if (jrb.hasKey("componentId"))
+            const json &jrb = jo.at("rigidbody2D");
+            if (jrb.contains("componentId"))
                 obj.rigidbody2D.componentId = jsonToInt(jrb.at("componentId"));
-            if (jrb.hasKey("enabled"))
+            if (jrb.contains("enabled"))
                 obj.rigidbody2D.enabled = jsonToBool(jrb.at("enabled"));
-            if (jrb.hasKey("bodyType"))
+            if (jrb.contains("bodyType"))
                 obj.rigidbody2D.bodyType = jsonToInt(jrb.at("bodyType"), 0);
-            if (jrb.hasKey("mass"))
+            if (jrb.contains("mass"))
                 obj.rigidbody2D.mass = jsonToFloat(jrb.at("mass"), 1.0f);
-            if (jrb.hasKey("linearDamping"))
+            if (jrb.contains("linearDamping"))
                 obj.rigidbody2D.linearDamping = jsonToFloat(jrb.at("linearDamping"), 0.0f);
-            if (jrb.hasKey("angularDamping"))
+            if (jrb.contains("angularDamping"))
                 obj.rigidbody2D.angularDamping = jsonToFloat(jrb.at("angularDamping"), 0.05f);
-            if (jrb.hasKey("gravityScale"))
+            if (jrb.contains("gravityScale"))
                 obj.rigidbody2D.gravityScale = jsonToFloat(jrb.at("gravityScale"), 1.0f);
-            if (jrb.hasKey("freezeRotation"))
+            if (jrb.contains("freezeRotation"))
                 obj.rigidbody2D.freezeRotation = jsonToBool(jrb.at("freezeRotation"), false);
-            if (jrb.hasKey("simulated"))
+            if (jrb.contains("simulated"))
                 obj.rigidbody2D.simulated = jsonToBool(jrb.at("simulated"), true);
-            if (jrb.hasKey("velocity"))
+            if (jrb.contains("velocity"))
                 obj.rigidbody2D.velocity = jsonToVec2(jrb.at("velocity"), obj.rigidbody2D.velocity);
-            if (jrb.hasKey("angularVelocity"))
+            if (jrb.contains("angularVelocity"))
                 obj.rigidbody2D.angularVelocity = jsonToFloat(jrb.at("angularVelocity"), 0.0f);
         }
 
-        if (jo.hasKey("boxCollider2D"))
+        if (jo.contains("boxCollider2D") && jo.at("boxCollider2D").is_object())
         {
-            const json::JSON &jbox = jo.at("boxCollider2D");
-            if (jbox.hasKey("componentId"))
+            const json &jbox = jo.at("boxCollider2D");
+            if (jbox.contains("componentId"))
                 obj.boxCollider2D.componentId = jsonToInt(jbox.at("componentId"));
-            if (jbox.hasKey("enabled"))
+            if (jbox.contains("enabled"))
                 obj.boxCollider2D.enabled = jsonToBool(jbox.at("enabled"));
-            if (jbox.hasKey("size"))
+            if (jbox.contains("size"))
                 obj.boxCollider2D.size = jsonToVec2(jbox.at("size"), obj.boxCollider2D.size);
-            if (jbox.hasKey("offset"))
+            if (jbox.contains("offset"))
                 obj.boxCollider2D.offset = jsonToVec2(jbox.at("offset"), obj.boxCollider2D.offset);
-            if (jbox.hasKey("isTrigger"))
+            if (jbox.contains("isTrigger"))
                 obj.boxCollider2D.isTrigger = jsonToBool(jbox.at("isTrigger"), false);
-            if (jbox.hasKey("density"))
+            if (jbox.contains("density"))
                 obj.boxCollider2D.density = jsonToFloat(jbox.at("density"), 1.0f);
-            if (jbox.hasKey("friction"))
+            if (jbox.contains("friction"))
                 obj.boxCollider2D.friction = jsonToFloat(jbox.at("friction"), 0.3f);
-            if (jbox.hasKey("bounciness"))
+            if (jbox.contains("bounciness"))
                 obj.boxCollider2D.bounciness = jsonToFloat(jbox.at("bounciness"), 0.0f);
         }
 
-        if (jo.hasKey("multiCollider2D"))
+        if (jo.contains("multiCollider2D") && jo.at("multiCollider2D").is_object())
         {
-            const json::JSON &jmulti = jo.at("multiCollider2D");
-            if (jmulti.hasKey("componentId"))
+            const json &jmulti = jo.at("multiCollider2D");
+            if (jmulti.contains("componentId"))
                 obj.multiCollider2D.componentId = jsonToInt(jmulti.at("componentId"));
-            if (jmulti.hasKey("enabled"))
+            if (jmulti.contains("enabled"))
                 obj.multiCollider2D.enabled = jsonToBool(jmulti.at("enabled"));
-            if (jmulti.hasKey("points") && jmulti.at("points").JSONType() == json::JSON::Class::Array)
+            if (jmulti.contains("points") && jmulti.at("points").is_array())
             {
                 obj.multiCollider2D.points.clear();
-                for (const auto &item : jmulti.at("points").ArrayRange())
+                for (const auto &item : jmulti.at("points"))
                 {
                     obj.multiCollider2D.points.push_back(jsonToVec2(item, {0.0f, 0.0f}));
                 }
             }
-            if (jmulti.hasKey("offset"))
+            if (jmulti.contains("offset"))
                 obj.multiCollider2D.offset = jsonToVec2(jmulti.at("offset"), obj.multiCollider2D.offset);
-            if (jmulti.hasKey("isTrigger"))
+            if (jmulti.contains("isTrigger"))
                 obj.multiCollider2D.isTrigger = jsonToBool(jmulti.at("isTrigger"), false);
-            if (jmulti.hasKey("density"))
+            if (jmulti.contains("density"))
                 obj.multiCollider2D.density = jsonToFloat(jmulti.at("density"), 1.0f);
-            if (jmulti.hasKey("friction"))
+            if (jmulti.contains("friction"))
                 obj.multiCollider2D.friction = jsonToFloat(jmulti.at("friction"), 0.4f);
-            if (jmulti.hasKey("bounciness"))
+            if (jmulti.contains("bounciness"))
                 obj.multiCollider2D.bounciness = jsonToFloat(jmulti.at("bounciness"), 0.1f);
-            if (jmulti.hasKey("isClosed"))
+            if (jmulti.contains("isClosed"))
                 obj.multiCollider2D.isClosed = jsonToBool(jmulti.at("isClosed"), true);
         }
 
-        if (jo.hasKey("navMeshAgent"))
+        if (jo.contains("navMeshAgent") && jo.at("navMeshAgent").is_object())
         {
-            const json::JSON &jagent = jo.at("navMeshAgent");
-            if (jagent.hasKey("componentId"))
+            const json &jagent = jo.at("navMeshAgent");
+            if (jagent.contains("componentId"))
                 obj.navMeshAgent.componentId = jsonToInt(jagent.at("componentId"));
-            if (jagent.hasKey("enabled"))
+            if (jagent.contains("enabled"))
                 obj.navMeshAgent.enabled = jsonToBool(jagent.at("enabled"));
-            if (jagent.hasKey("speed"))
+            if (jagent.contains("speed"))
                 obj.navMeshAgent.speed = jsonToFloat(jagent.at("speed"), 3.5f);
-            if (jagent.hasKey("angularSpeed"))
+            if (jagent.contains("angularSpeed"))
                 obj.navMeshAgent.angularSpeed = jsonToFloat(jagent.at("angularSpeed"), 120.0f);
-            if (jagent.hasKey("acceleration"))
+            if (jagent.contains("acceleration"))
                 obj.navMeshAgent.acceleration = jsonToFloat(jagent.at("acceleration"), 8.0f);
-            if (jagent.hasKey("stoppingDistance"))
+            if (jagent.contains("stoppingDistance"))
                 obj.navMeshAgent.stoppingDistance = jsonToFloat(jagent.at("stoppingDistance"), 0.25f);
-            if (jagent.hasKey("radius"))
+            if (jagent.contains("radius"))
                 obj.navMeshAgent.radius = jsonToFloat(jagent.at("radius"), 0.4f);
-            if (jagent.hasKey("destination"))
+            if (jagent.contains("destination"))
                 obj.navMeshAgent.destination = jsonToVec2(jagent.at("destination"), obj.navMeshAgent.destination);
-            if (jagent.hasKey("hasDestination"))
+            if (jagent.contains("hasDestination"))
                 obj.navMeshAgent.hasDestination = jsonToBool(jagent.at("hasDestination"), false);
-            if (jagent.hasKey("updateRotation"))
+            if (jagent.contains("updateRotation"))
                 obj.navMeshAgent.updateRotation = jsonToBool(jagent.at("updateRotation"), false);
-            if (jagent.hasKey("autoRepath"))
+            if (jagent.contains("autoRepath"))
                 obj.navMeshAgent.autoRepath = jsonToBool(jagent.at("autoRepath"), true);
         }
 
-        if (jo.hasKey("audioSource"))
+        if (jo.contains("audioSource") && jo.at("audioSource").is_object())
         {
-            const json::JSON &ja = jo.at("audioSource");
-            if (ja.hasKey("componentId"))
+            const json &ja = jo.at("audioSource");
+            if (ja.contains("componentId"))
                 obj.audio.componentId = jsonToInt(ja.at("componentId"));
-            if (ja.hasKey("clipAssetId"))
+            if (ja.contains("clipAssetId"))
                 obj.audio.clipAssetId = jsonToUint32(ja.at("clipAssetId"));
-            if (ja.hasKey("enabled"))
+            if (ja.contains("enabled"))
                 obj.audio.enabled = jsonToBool(ja.at("enabled"));
-            if (ja.hasKey("volume"))
+            if (ja.contains("volume"))
                 obj.audio.volume = jsonToFloat(ja.at("volume"), 0.85f);
-            if (ja.hasKey("loop"))
+            if (ja.contains("loop"))
                 obj.audio.loop = jsonToBool(ja.at("loop"), true);
-            if (ja.hasKey("playOnAwake"))
+            if (ja.contains("playOnAwake"))
                 obj.audio.playOnAwake = jsonToBool(ja.at("playOnAwake"), true);
-            if (ja.hasKey("clipPath"))
-                obj.audio.clipPath = ja.at("clipPath").ToString();
+            if (ja.contains("clipPath") && ja.at("clipPath").is_string())
+                obj.audio.clipPath = ja.at("clipPath").get<std::string>();
         }
 
-        if (jo.hasKey("motionScript"))
+        if (jo.contains("motionScript") && jo.at("motionScript").is_object())
         {
-            const json::JSON &jm = jo.at("motionScript");
-            if (jm.hasKey("componentId"))
+            const json &jm = jo.at("motionScript");
+            if (jm.contains("componentId"))
                 obj.script.componentId = jsonToInt(jm.at("componentId"));
-            if (jm.hasKey("enabled"))
+            if (jm.contains("enabled"))
                 obj.script.enabled = jsonToBool(jm.at("enabled"));
-            if (jm.hasKey("linearVelocity"))
+            if (jm.contains("linearVelocity"))
                 obj.script.linearVelocity = jsonToVec2(jm.at("linearVelocity"), obj.script.linearVelocity);
-            if (jm.hasKey("angularVelocity"))
+            if (jm.contains("angularVelocity"))
                 obj.script.angularVelocity = jsonToFloat(jm.at("angularVelocity"));
-            if (jm.hasKey("pulseSpeed"))
+            if (jm.contains("pulseSpeed"))
                 obj.script.pulseSpeed = jsonToFloat(jm.at("pulseSpeed"));
-            if (jm.hasKey("pulseAmplitude"))
+            if (jm.contains("pulseAmplitude"))
                 obj.script.pulseAmplitude = jsonToFloat(jm.at("pulseAmplitude"));
         }
     }
 
-    static EditorWorld deserializeWorldFromJson(const json::JSON &jw)
+    static EditorWorld deserializeWorldFromJson(const json &jw)
     {
         EditorWorld w;
         initDefaultNavMesh(w.navMesh);
 
-        if (jw.hasKey("name"))
-            w.name = jw.at("name").ToString();
-        if (jw.hasKey("ambientColor"))
+        if (jw.contains("name") && jw.at("name").is_string())
+            w.name = jw.at("name").get<std::string>();
+        if (jw.contains("ambientColor"))
             w.ambientColor = jsonToColor(jw.at("ambientColor"), w.ambientColor);
 
-        if (jw.hasKey("navMesh") && jw.at("navMesh").JSONType() == json::JSON::Class::Object)
+        if (jw.contains("navMesh") && jw.at("navMesh").is_object())
         {
-            const json::JSON &jn = jw.at("navMesh");
-            if (jn.hasKey("width"))
+            const json &jn = jw.at("navMesh");
+            if (jn.contains("width"))
                 w.navMesh.width = jsonToInt(jn.at("width"), 16);
-            if (jn.hasKey("height"))
+            if (jn.contains("height"))
                 w.navMesh.height = jsonToInt(jn.at("height"), 10);
-            if (jn.hasKey("heuristicMethod"))
+            if (jn.contains("heuristicMethod"))
                 w.navMesh.heuristicMethod = jsonToInt(jn.at("heuristicMethod"), 0);
-            if (jn.hasKey("identityMethod"))
+            if (jn.contains("identityMethod"))
                 w.navMesh.identityMethod = jsonToInt(jn.at("identityMethod"), 0);
-            if (jn.hasKey("mazeAlgorithm"))
+            if (jn.contains("mazeAlgorithm"))
                 w.navMesh.mazeAlgorithm = jsonToInt(jn.at("mazeAlgorithm"), 0);
-            if (jn.hasKey("startX"))
+            if (jn.contains("startX"))
                 w.navMesh.start.x = jsonToInt(jn.at("startX"), 1);
-            if (jn.hasKey("startY"))
+            if (jn.contains("startY"))
                 w.navMesh.start.y = jsonToInt(jn.at("startY"), 1);
-            if (jn.hasKey("goalX"))
+            if (jn.contains("goalX"))
                 w.navMesh.goal.x = jsonToInt(jn.at("goalX"), 14);
-            if (jn.hasKey("goalY"))
+            if (jn.contains("goalY"))
                 w.navMesh.goal.y = jsonToInt(jn.at("goalY"), 8);
             initDefaultNavMesh(w.navMesh);
         }
 
         int maxObjId = 0;
-        if (jw.hasKey("objects") && jw.at("objects").JSONType() == json::JSON::Class::Array)
+        if (jw.contains("objects") && jw.at("objects").is_array())
         {
-            for (const auto &jo : jw.at("objects").ArrayRange())
+            for (const auto &jo : jw.at("objects"))
             {
-                if (jo.JSONType() != json::JSON::Class::Object)
+                if (!jo.is_object())
                     continue;
                 EditorObject obj;
-                if (jo.hasKey("id"))
-                    obj.id = jsonToInt(jo.at("id"), 1);
-                if (jo.hasKey("name"))
-                    obj.name = jo.at("name").ToString();
-                if (jo.hasKey("tag"))
-                    obj.tag = jo.at("tag").ToString();
-                if (jo.hasKey("layer"))
-                    obj.layer = jsonToInt(jo.at("layer"), 0);
-                if (jo.hasKey("active"))
-                    obj.active = jsonToBool(jo.at("active"), true);
-                if (jo.hasKey("parentId"))
-                    obj.parentId = jsonToInt(jo.at("parentId"), -1);
-                if (jo.hasKey("position"))
-                    obj.position = jsonToVec2(jo.at("position"), obj.position);
-                if (jo.hasKey("angle"))
-                    obj.angle = jsonToFloat(jo.at("angle"), 0.0f);
-                if (jo.hasKey("scale"))
-                    obj.scale = jsonToVec2(jo.at("scale"), obj.scale);
-                if (jo.hasKey("zOrder"))
-                    obj.zOrder = jsonToInt(jo.at("zOrder"), 0);
-
-                if (jo.hasKey("transform") && jo.at("transform").JSONType() == json::JSON::Class::Object)
-                {
-                    const json::JSON &jt = jo.at("transform");
-                    if (jt.hasKey("parentId"))
-                        obj.parentId = jsonToInt(jt.at("parentId"), obj.parentId);
-                    if (jt.hasKey("position"))
-                        obj.position = jsonToVec2(jt.at("position"), obj.position);
-                    if (jt.hasKey("angle"))
-                        obj.angle = jsonToFloat(jt.at("angle"), obj.angle);
-                    if (jt.hasKey("scale"))
-                        obj.scale = jsonToVec2(jt.at("scale"), obj.scale);
-                }
-
-                if (jo.hasKey("components") && jo.at("components").JSONType() == json::JSON::Class::Array)
-                {
-                    for (const auto &jc : jo.at("components").ArrayRange())
-                    {
-                        if (jc.JSONType() != json::JSON::Class::Object || !jc.hasKey("type"))
-                            continue;
-                        std::string compType = jc.at("type").ToString();
-                        if (compType == "Camera2D" || compType == "Camera")
-                        {
-                            obj.camera.enabled = true;
-                            if (jc.hasKey("mainCamera")) obj.camera.mainCamera = jsonToBool(jc.at("mainCamera"), true);
-                            if (jc.hasKey("zoom")) obj.camera.zoom = jsonToFloat(jc.at("zoom"), 1.0f);
-                            if (jc.hasKey("backcolor")) obj.camera.backcolor = jsonToColor(jc.at("backcolor"), obj.camera.backcolor);
-                        }
-                        else if (compType == "Light" || compType == "Light2D" || compType == "SimpleLight" || compType == "DirectLight")
-                        {
-                            obj.light.enabled = true;
-                            if (compType == "DirectLight") obj.light.lightType = 1;
-                            else if (compType == "Spotlight") obj.light.lightType = 2;
-                            else obj.light.lightType = 0;
-                            if (jc.hasKey("color")) obj.light.color = jsonToColor(jc.at("color"), obj.light.color);
-                            if (jc.hasKey("range")) obj.light.range = jsonToFloat(jc.at("range"), 3.5f);
-                            if (jc.hasKey("intensity")) obj.light.intensity = jsonToFloat(jc.at("intensity"), 1.0f);
-                        }
-                        else if (compType == "SpriteRenderer")
-                        {
-                            obj.sprite.enabled = true;
-                            if (jc.hasKey("size")) obj.sprite.size = jsonToVec2(jc.at("size"), obj.sprite.size);
-                            if (jc.hasKey("color")) obj.sprite.color = jsonToColor(jc.at("color"), obj.sprite.color);
-                            if (jc.hasKey("primitiveShape"))
-                            {
-                                std::string shape = jc.at("primitiveShape").ToString();
-                                if (shape == "Circle") obj.sprite.primitiveShape = 1;
-                                else if (shape == "Triangle") obj.sprite.primitiveShape = 2;
-                                else obj.sprite.primitiveShape = 0;
-                            }
-                        }
-                        else if (compType == "Terrain2D")
-                        {
-                            obj.terrain.enabled = true;
-                            if (jc.hasKey("width")) obj.terrain.width = jsonToInt(jc.at("width"), 12);
-                            if (jc.hasKey("length")) obj.terrain.length = jsonToInt(jc.at("length"), 8);
-                            if (jc.hasKey("cellScale")) obj.terrain.cellScale = jsonToFloat(jc.at("cellScale"), 1.0f);
-                            obj.terrain.ensureGridInitialized(0);
-                        }
-                        else if (compType == "AudioSource")
-                        {
-                            obj.audio.enabled = true;
-                            if (jc.hasKey("volume")) obj.audio.volume = jsonToFloat(jc.at("volume"), 0.85f);
-                            if (jc.hasKey("loop")) obj.audio.loop = jsonToBool(jc.at("loop"), true);
-                        }
-                        else if (compType == "Physics2D" || compType == "Collider2D" || compType == "BoxCollider2D")
-                        {
-                            obj.physics.colliderEnabled = true;
-                        }
-                    }
-                }
-
-                if (jo.hasKey("spriteRenderer"))
-                {
-                    const json::JSON &js = jo.at("spriteRenderer");
-                    if (js.hasKey("componentId"))
-                        obj.sprite.componentId = jsonToInt(js.at("componentId"));
-                    if (js.hasKey("assetId"))
-                        obj.sprite.assetId = jsonToUint32(js.at("assetId"));
-                    if (js.hasKey("enabled"))
-                        obj.sprite.enabled = jsonToBool(js.at("enabled"));
-                    if (js.hasKey("primitiveShape"))
-                        obj.sprite.primitiveShape = jsonToInt(js.at("primitiveShape"));
-                    if (js.hasKey("size"))
-                        obj.sprite.size = jsonToVec2(js.at("size"), obj.sprite.size);
-                    if (js.hasKey("pivot"))
-                        obj.sprite.pivot = jsonToVec2(js.at("pivot"), obj.sprite.pivot);
-                    if (js.hasKey("color"))
-                        obj.sprite.color = jsonToColor(js.at("color"), obj.sprite.color);
-                    if (js.hasKey("renderType"))
-                        obj.sprite.renderType = jsonToInt(js.at("renderType"));
-                    if (js.hasKey("renderOut"))
-                        obj.sprite.renderOut = jsonToInt(js.at("renderOut"));
-                    if (js.hasKey("presentMode"))
-                        obj.sprite.presentMode = jsonToInt(js.at("presentMode"));
-                    if (js.hasKey("flip"))
-                        obj.sprite.flip = jsonToInt(js.at("flip"));
-                    if (js.hasKey("spritePath"))
-                        obj.sprite.spritePath = js.at("spritePath").ToString();
-                }
-
-                if (jo.hasKey("camera2D"))
-                {
-                    const json::JSON &jc = jo.at("camera2D");
-                    if (jc.hasKey("componentId"))
-                        obj.camera.componentId = jsonToInt(jc.at("componentId"));
-                    if (jc.hasKey("enabled"))
-                        obj.camera.enabled = jsonToBool(jc.at("enabled"));
-                    if (jc.hasKey("mainCamera"))
-                        obj.camera.mainCamera = jsonToBool(jc.at("mainCamera"), true);
-                    if (jc.hasKey("backclear"))
-                        obj.camera.backclear = jsonToBool(jc.at("backclear"), true);
-                    if (jc.hasKey("backcolor"))
-                        obj.camera.backcolor = jsonToColor(jc.at("backcolor"), obj.camera.backcolor);
-                    if (jc.hasKey("zoom"))
-                        obj.camera.zoom = jsonToFloat(jc.at("zoom"), 1.0f);
-                    if (jc.hasKey("scale"))
-                        obj.camera.scale = jsonToVec2(jc.at("scale"), RoninEngine::Runtime::Vec2(obj.camera.zoom, obj.camera.zoom));
-                    else
-                        obj.camera.scale = RoninEngine::Runtime::Vec2(obj.camera.zoom, obj.camera.zoom);
-                    if (jc.hasKey("zoomOut"))
-                        obj.camera.zoomOut = jsonToFloat(jc.at("zoomOut"), 100.0f);
-                    if (jc.hasKey("distanceEvcall"))
-                        obj.camera.distanceEvcall = jsonToInt(jc.at("distanceEvcall"));
-                    if (jc.hasKey("visibleBorders"))
-                        obj.camera.visibleBorders = jsonToBool(jc.at("visibleBorders"));
-                    if (jc.hasKey("visibleGrids"))
-                        obj.camera.visibleGrids = jsonToBool(jc.at("visibleGrids"));
-                    if (jc.hasKey("visibleObjects"))
-                        obj.camera.visibleObjects = jsonToBool(jc.at("visibleObjects"), true);
-                    if (jc.hasKey("visibleNames"))
-                        obj.camera.visibleNames = jsonToBool(jc.at("visibleNames"));
-                    if (jc.hasKey("cullResources"))
-                        obj.camera.cullResources = jsonToBool(jc.at("cullResources"), true);
-                }
-
-                if (jo.hasKey("light2D"))
-                {
-                    const json::JSON &jl = jo.at("light2D");
-                    if (jl.hasKey("componentId"))
-                        obj.light.componentId = jsonToInt(jl.at("componentId"));
-                    if (jl.hasKey("enabled"))
-                        obj.light.enabled = jsonToBool(jl.at("enabled"));
-                    if (jl.hasKey("lightType"))
-                        obj.light.lightType = jsonToInt(jl.at("lightType"));
-                    if (jl.hasKey("intensity"))
-                        obj.light.intensity = jsonToFloat(jl.at("intensity"), 1.0f);
-                    if (jl.hasKey("range"))
-                        obj.light.range = jsonToFloat(jl.at("range"), 3.5f);
-                    if (jl.hasKey("angleDegrees"))
-                        obj.light.angleDegrees = jsonToFloat(jl.at("angleDegrees"), 55.0f);
-                    if (jl.hasKey("color"))
-                        obj.light.color = jsonToColor(jl.at("color"), obj.light.color);
-                }
-
-                if (jo.hasKey("terrain2D"))
-                {
-                    deserializeTerrainFromJson(jo.at("terrain2D"), obj.terrain);
-                    if (obj.terrain.enabled)
-                        obj.terrain.ensureGridInitialized(0);
-                }
-
-                if (jo.hasKey("particleSystem"))
-                {
-                    const json::JSON &jp = jo.at("particleSystem");
-                    if (jp.hasKey("componentId"))
-                        obj.particles.componentId = jsonToInt(jp.at("componentId"));
-                    if (jp.hasKey("enabled"))
-                        obj.particles.enabled = jsonToBool(jp.at("enabled"));
-                    if (jp.hasKey("emit"))
-                        obj.particles.emit = jsonToBool(jp.at("emit"), true);
-                    if (jp.hasKey("loop"))
-                        obj.particles.loop = jsonToBool(jp.at("loop"), true);
-                    if (jp.hasKey("rotate"))
-                        obj.particles.rotate = jsonToBool(jp.at("rotate"), true);
-                    if (jp.hasKey("worldSpace"))
-                        obj.particles.worldSpace = jsonToBool(jp.at("worldSpace"), true);
-                    if (jp.hasKey("randomDirection"))
-                        obj.particles.randomDirection = jsonToBool(jp.at("randomDirection"), true);
-                    if (jp.hasKey("interval"))
-                        obj.particles.interval = jsonToFloat(jp.at("interval"), 0.08f);
-                    if (jp.hasKey("speed"))
-                        obj.particles.speed = jsonToFloat(jp.at("speed"), 1.8f);
-                    if (jp.hasKey("duration"))
-                        obj.particles.duration = jsonToFloat(jp.at("duration"), 1.6f);
-                    if (jp.hasKey("maxLimit"))
-                        obj.particles.maxLimit = jsonToInt(jp.at("maxLimit"), 64);
-                    if (jp.hasKey("primitiveSource"))
-                        obj.particles.primitiveSource = jsonToInt(jp.at("primitiveSource"), 0);
-                    if (jp.hasKey("direction"))
-                        obj.particles.direction = jsonToVec2(jp.at("direction"), obj.particles.direction);
-                    if (jp.hasKey("startSize"))
-                        obj.particles.startSize = jsonToVec2(jp.at("startSize"), obj.particles.startSize);
-                    if (jp.hasKey("endSize"))
-                        obj.particles.endSize = jsonToVec2(jp.at("endSize"), obj.particles.endSize);
-                    if (jp.hasKey("startColor"))
-                        obj.particles.startColor = jsonToColor(jp.at("startColor"), obj.particles.startColor);
-                    if (jp.hasKey("endColor"))
-                        obj.particles.endColor = jsonToColor(jp.at("endColor"), obj.particles.endColor);
-                }
-
-                if (jo.hasKey("physics2D"))
-                {
-                    const json::JSON &jph = jo.at("physics2D");
-                    if (jph.hasKey("componentId"))
-                        obj.physics.componentId = jsonToInt(jph.at("componentId"));
-                    if (jph.hasKey("moveControllerEnabled"))
-                        obj.physics.moveControllerEnabled = jsonToBool(jph.at("moveControllerEnabled"));
-                    if (jph.hasKey("moveSpeed"))
-                        obj.physics.moveSpeed = jsonToFloat(jph.at("moveSpeed"), 3.5f);
-                    if (jph.hasKey("colliderEnabled"))
-                        obj.physics.colliderEnabled = jsonToBool(jph.at("colliderEnabled"));
-                    if (jph.hasKey("colliderType"))
-                        obj.physics.colliderType = jsonToInt(jph.at("colliderType"));
-                    if (jph.hasKey("colliderSize"))
-                        obj.physics.colliderSize = jsonToVec2(jph.at("colliderSize"), obj.physics.colliderSize);
-                    if (jph.hasKey("colliderRadius"))
-                        obj.physics.colliderRadius = jsonToFloat(jph.at("colliderRadius"), 0.5f);
-                    if (jph.hasKey("collisionLayer"))
-                        obj.physics.collisionLayer = jsonToInt(jph.at("collisionLayer"), 0);
-                }
-
-                if (jo.hasKey("rigidbody2D"))
-                {
-                    const json::JSON &jrb = jo.at("rigidbody2D");
-                    if (jrb.hasKey("componentId"))
-                        obj.rigidbody2D.componentId = jsonToInt(jrb.at("componentId"));
-                    if (jrb.hasKey("enabled"))
-                        obj.rigidbody2D.enabled = jsonToBool(jrb.at("enabled"));
-                    if (jrb.hasKey("bodyType"))
-                        obj.rigidbody2D.bodyType = jsonToInt(jrb.at("bodyType"), 0);
-                    if (jrb.hasKey("mass"))
-                        obj.rigidbody2D.mass = jsonToFloat(jrb.at("mass"), 1.0f);
-                    if (jrb.hasKey("linearDamping"))
-                        obj.rigidbody2D.linearDamping = jsonToFloat(jrb.at("linearDamping"), 0.0f);
-                    if (jrb.hasKey("angularDamping"))
-                        obj.rigidbody2D.angularDamping = jsonToFloat(jrb.at("angularDamping"), 0.05f);
-                    if (jrb.hasKey("gravityScale"))
-                        obj.rigidbody2D.gravityScale = jsonToFloat(jrb.at("gravityScale"), 1.0f);
-                    if (jrb.hasKey("freezeRotation"))
-                        obj.rigidbody2D.freezeRotation = jsonToBool(jrb.at("freezeRotation"), false);
-                    if (jrb.hasKey("simulated"))
-                        obj.rigidbody2D.simulated = jsonToBool(jrb.at("simulated"), true);
-                    if (jrb.hasKey("velocity"))
-                        obj.rigidbody2D.velocity = jsonToVec2(jrb.at("velocity"), obj.rigidbody2D.velocity);
-                    if (jrb.hasKey("angularVelocity"))
-                        obj.rigidbody2D.angularVelocity = jsonToFloat(jrb.at("angularVelocity"), 0.0f);
-                }
-
-                if (jo.hasKey("boxCollider2D"))
-                {
-                    const json::JSON &jbox = jo.at("boxCollider2D");
-                    if (jbox.hasKey("componentId"))
-                        obj.boxCollider2D.componentId = jsonToInt(jbox.at("componentId"));
-                    if (jbox.hasKey("enabled"))
-                        obj.boxCollider2D.enabled = jsonToBool(jbox.at("enabled"));
-                    if (jbox.hasKey("size"))
-                        obj.boxCollider2D.size = jsonToVec2(jbox.at("size"), obj.boxCollider2D.size);
-                    if (jbox.hasKey("offset"))
-                        obj.boxCollider2D.offset = jsonToVec2(jbox.at("offset"), obj.boxCollider2D.offset);
-                    if (jbox.hasKey("isTrigger"))
-                        obj.boxCollider2D.isTrigger = jsonToBool(jbox.at("isTrigger"), false);
-                    if (jbox.hasKey("density"))
-                        obj.boxCollider2D.density = jsonToFloat(jbox.at("density"), 1.0f);
-                    if (jbox.hasKey("friction"))
-                        obj.boxCollider2D.friction = jsonToFloat(jbox.at("friction"), 0.3f);
-                    if (jbox.hasKey("bounciness"))
-                        obj.boxCollider2D.bounciness = jsonToFloat(jbox.at("bounciness"), 0.0f);
-                }
-
-                if (jo.hasKey("multiCollider2D"))
-                {
-                    const json::JSON &jmulti = jo.at("multiCollider2D");
-                    if (jmulti.hasKey("componentId"))
-                        obj.multiCollider2D.componentId = jsonToInt(jmulti.at("componentId"));
-                    if (jmulti.hasKey("enabled"))
-                        obj.multiCollider2D.enabled = jsonToBool(jmulti.at("enabled"));
-                    if (jmulti.hasKey("points") && jmulti.at("points").JSONType() == json::JSON::Class::Array)
-                    {
-                        obj.multiCollider2D.points.clear();
-                        for (const auto &item : jmulti.at("points").ArrayRange())
-                        {
-                            obj.multiCollider2D.points.push_back(jsonToVec2(item, {0.0f, 0.0f}));
-                        }
-                    }
-                    if (jmulti.hasKey("offset"))
-                        obj.multiCollider2D.offset = jsonToVec2(jmulti.at("offset"), obj.multiCollider2D.offset);
-                    if (jmulti.hasKey("isTrigger"))
-                        obj.multiCollider2D.isTrigger = jsonToBool(jmulti.at("isTrigger"), false);
-                    if (jmulti.hasKey("density"))
-                        obj.multiCollider2D.density = jsonToFloat(jmulti.at("density"), 1.0f);
-                    if (jmulti.hasKey("friction"))
-                        obj.multiCollider2D.friction = jsonToFloat(jmulti.at("friction"), 0.4f);
-                    if (jmulti.hasKey("bounciness"))
-                        obj.multiCollider2D.bounciness = jsonToFloat(jmulti.at("bounciness"), 0.1f);
-                    if (jmulti.hasKey("isClosed"))
-                        obj.multiCollider2D.isClosed = jsonToBool(jmulti.at("isClosed"), true);
-                }
-
-                if (jo.hasKey("navMeshAgent"))
-                {
-                    const json::JSON &jagent = jo.at("navMeshAgent");
-                    if (jagent.hasKey("componentId"))
-                        obj.navMeshAgent.componentId = jsonToInt(jagent.at("componentId"));
-                    if (jagent.hasKey("enabled"))
-                        obj.navMeshAgent.enabled = jsonToBool(jagent.at("enabled"));
-                    if (jagent.hasKey("speed"))
-                        obj.navMeshAgent.speed = jsonToFloat(jagent.at("speed"), 3.5f);
-                    if (jagent.hasKey("angularSpeed"))
-                        obj.navMeshAgent.angularSpeed = jsonToFloat(jagent.at("angularSpeed"), 120.0f);
-                    if (jagent.hasKey("acceleration"))
-                        obj.navMeshAgent.acceleration = jsonToFloat(jagent.at("acceleration"), 8.0f);
-                    if (jagent.hasKey("stoppingDistance"))
-                        obj.navMeshAgent.stoppingDistance = jsonToFloat(jagent.at("stoppingDistance"), 0.25f);
-                    if (jagent.hasKey("radius"))
-                        obj.navMeshAgent.radius = jsonToFloat(jagent.at("radius"), 0.4f);
-                    if (jagent.hasKey("destination"))
-                        obj.navMeshAgent.destination = jsonToVec2(jagent.at("destination"), obj.navMeshAgent.destination);
-                    if (jagent.hasKey("hasDestination"))
-                        obj.navMeshAgent.hasDestination = jsonToBool(jagent.at("hasDestination"), false);
-                    if (jagent.hasKey("updateRotation"))
-                        obj.navMeshAgent.updateRotation = jsonToBool(jagent.at("updateRotation"), false);
-                    if (jagent.hasKey("autoRepath"))
-                        obj.navMeshAgent.autoRepath = jsonToBool(jagent.at("autoRepath"), true);
-                }
-
-                if (jo.hasKey("audioSource"))
-                {
-                    const json::JSON &ja = jo.at("audioSource");
-                    if (ja.hasKey("componentId"))
-                        obj.audio.componentId = jsonToInt(ja.at("componentId"));
-                    if (ja.hasKey("clipAssetId"))
-                        obj.audio.clipAssetId = jsonToUint32(ja.at("clipAssetId"));
-                    if (ja.hasKey("enabled"))
-                        obj.audio.enabled = jsonToBool(ja.at("enabled"));
-                    if (ja.hasKey("volume"))
-                        obj.audio.volume = jsonToFloat(ja.at("volume"), 0.85f);
-                    if (ja.hasKey("loop"))
-                        obj.audio.loop = jsonToBool(ja.at("loop"), true);
-                    if (ja.hasKey("playOnAwake"))
-                        obj.audio.playOnAwake = jsonToBool(ja.at("playOnAwake"), true);
-                    if (ja.hasKey("clipPath"))
-                        obj.audio.clipPath = ja.at("clipPath").ToString();
-                }
-
-                if (jo.hasKey("motionScript"))
-                {
-                    const json::JSON &jm = jo.at("motionScript");
-                    if (jm.hasKey("componentId"))
-                        obj.script.componentId = jsonToInt(jm.at("componentId"));
-                    if (jm.hasKey("enabled"))
-                        obj.script.enabled = jsonToBool(jm.at("enabled"));
-                    if (jm.hasKey("linearVelocity"))
-                        obj.script.linearVelocity = jsonToVec2(jm.at("linearVelocity"), obj.script.linearVelocity);
-                    if (jm.hasKey("angularVelocity"))
-                        obj.script.angularVelocity = jsonToFloat(jm.at("angularVelocity"));
-                    if (jm.hasKey("pulseSpeed"))
-                        obj.script.pulseSpeed = jsonToFloat(jm.at("pulseSpeed"));
-                    if (jm.hasKey("pulseAmplitude"))
-                        obj.script.pulseAmplitude = jsonToFloat(jm.at("pulseAmplitude"));
-                }
+                deserializeObjectFromJson(jo, obj);
 
                 // Ensure all enabled components have valid component IDs
                 if (obj.sprite.enabled && obj.sprite.componentId == 0) obj.sprite.componentId = w.allocateComponentId();
@@ -3079,49 +2652,49 @@ namespace RoninEditor
         w.nextObjectId = maxObjId + 1;
 
         int maxUIId = 0;
-        if (jw.hasKey("guiElements") && jw.at("guiElements").JSONType() == json::JSON::Class::Array)
+        if (jw.contains("guiElements") && jw.at("guiElements").is_array())
         {
-            for (const auto &ju : jw.at("guiElements").ArrayRange())
+            for (const auto &ju : jw.at("guiElements"))
             {
-                if (ju.JSONType() != json::JSON::Class::Object)
+                if (!ju.is_object())
                     continue;
                 EditorUIElement ui;
-                if (ju.hasKey("id"))
+                if (ju.contains("id"))
                     ui.id = jsonToInt(ju.at("id"), 1);
-                if (ju.hasKey("name"))
-                    ui.name = ju.at("name").ToString();
-                if (ju.hasKey("type"))
+                if (ju.contains("name") && ju.at("name").is_string())
+                    ui.name = ju.at("name").get<std::string>();
+                if (ju.contains("type"))
                     ui.type = jsonToInt(ju.at("type"), 0);
-                if (ju.hasKey("x"))
+                if (ju.contains("x"))
                     ui.rect.x = jsonToInt(ju.at("x"), 24);
-                if (ju.hasKey("y"))
+                if (ju.contains("y"))
                     ui.rect.y = jsonToInt(ju.at("y"), 24);
-                if (ju.hasKey("w"))
+                if (ju.contains("w"))
                     ui.rect.w = jsonToInt(ju.at("w"), 220);
-                if (ju.hasKey("h"))
+                if (ju.contains("h"))
                     ui.rect.h = jsonToInt(ju.at("h"), 32);
-                if (ju.hasKey("text"))
-                    ui.text = ju.at("text").ToString();
-                if (ju.hasKey("fontSize"))
+                if (ju.contains("text") && ju.at("text").is_string())
+                    ui.text = ju.at("text").get<std::string>();
+                if (ju.contains("fontSize"))
                     ui.fontSize = jsonToInt(ju.at("fontSize"), 13);
-                if (ju.hasKey("visible"))
+                if (ju.contains("visible"))
                     ui.visible = jsonToBool(ju.at("visible"), true);
-                if (ju.hasKey("interactable"))
+                if (ju.contains("interactable"))
                     ui.interactable = jsonToBool(ju.at("interactable"), true);
-                if (ju.hasKey("boolValue"))
+                if (ju.contains("boolValue"))
                     ui.boolValue = jsonToBool(ju.at("boolValue"), false);
-                if (ju.hasKey("floatValue"))
+                if (ju.contains("floatValue"))
                     ui.floatValue = jsonToFloat(ju.at("floatValue"), 0.75f);
-                if (ju.hasKey("minValue"))
+                if (ju.contains("minValue"))
                     ui.minValue = jsonToFloat(ju.at("minValue"), 0.0f);
-                if (ju.hasKey("maxValue"))
+                if (ju.contains("maxValue"))
                     ui.maxValue = jsonToFloat(ju.at("maxValue"), 1.0f);
-                if (ju.hasKey("selectedIndex"))
+                if (ju.contains("selectedIndex"))
                     ui.selectedIndex = jsonToInt(ju.at("selectedIndex"), 0);
-                if (ju.hasKey("itemsCsv"))
-                    ui.itemsCsv = ju.at("itemsCsv").ToString();
-                if (ju.hasKey("targetWorldOnClick"))
-                    ui.targetWorldOnClick = ju.at("targetWorldOnClick").ToString();
+                if (ju.contains("itemsCsv") && ju.at("itemsCsv").is_string())
+                    ui.itemsCsv = ju.at("itemsCsv").get<std::string>();
+                if (ju.contains("targetWorldOnClick") && ju.at("targetWorldOnClick").is_string())
+                    ui.targetWorldOnClick = ju.at("targetWorldOnClick").get<std::string>();
 
                 maxUIId = std::max(maxUIId, ui.id);
                 w.guiElements.push_back(ui);
@@ -3142,7 +2715,7 @@ namespace RoninEditor
             return false;
         }
 
-        json::JSON root = json::JSON::Make(json::JSON::Class::Object);
+        json root = json::object();
         root["format"] = "RoninEngineProject";
         root["formatVersion"] = 2;
         root["editorVersion"] = getEditorVersion();
@@ -3162,14 +2735,14 @@ namespace RoninEditor
         root["startupWorldIndex"] = project.startupWorldIndex;
         root["activeWorldIndex"] = activeWorldIndex;
 
-        json::JSON jworlds = json::JSON::Make(json::JSON::Class::Array);
+        json jworlds = json::array();
         for (const auto &w : project.worlds)
         {
-            jworlds.append(serializeWorldToJson(w));
+            jworlds.push_back(serializeWorldToJson(w));
         }
         root["worlds"] = jworlds;
 
-        out << root.dump() << "\n";
+        out << root.dump(2) << "\n";
         project.projectFilePath = filePath;
         isDirty = false;
         logInfo("Saved Project '" + project.projectName + "' (" +
@@ -3189,8 +2762,8 @@ namespace RoninEditor
 
         std::stringstream buffer;
         buffer << in.rdbuf();
-        json::JSON root = json::JSON::Load(buffer.str());
-        if (root.JSONType() != json::JSON::Class::Object)
+        json root = json::parse(buffer.str(), nullptr, false);
+        if (root.is_discarded() || !root.is_object())
         {
             logError("Invalid JSON in project file: " + filePath);
             return false;
@@ -3198,42 +2771,42 @@ namespace RoninEditor
 
         EditorProject loadedProj;
         loadedProj.projectFilePath = filePath;
-        if (root.hasKey("projectName"))
-            loadedProj.projectName = root.at("projectName").ToString();
-        if (root.hasKey("author"))
-            loadedProj.author = root.at("author").ToString();
-        if (root.hasKey("resolutionWidth"))
+        if (root.contains("projectName") && root.at("projectName").is_string())
+            loadedProj.projectName = root.at("projectName").get<std::string>();
+        if (root.contains("author") && root.at("author").is_string())
+            loadedProj.author = root.at("author").get<std::string>();
+        if (root.contains("resolutionWidth"))
             loadedProj.resolutionWidth = jsonToInt(root.at("resolutionWidth"), 1280);
-        if (root.hasKey("resolutionHeight"))
+        if (root.contains("resolutionHeight"))
             loadedProj.resolutionHeight = jsonToInt(root.at("resolutionHeight"), 720);
-        if (root.hasKey("refreshRate"))
+        if (root.contains("refreshRate"))
             loadedProj.refreshRate = jsonToInt(root.at("refreshRate"), 60);
-        if (root.hasKey("fullscreen"))
+        if (root.contains("fullscreen"))
             loadedProj.fullscreen = jsonToBool(root.at("fullscreen"), false);
-        if (root.hasKey("verticalSync"))
+        if (root.contains("verticalSync"))
             loadedProj.verticalSync = jsonToBool(root.at("verticalSync"), true);
-        if (root.hasKey("renderBackend"))
+        if (root.contains("renderBackend"))
             loadedProj.renderBackend = jsonToInt(root.at("renderBackend"), 0);
-        if (root.hasKey("textureQuality"))
+        if (root.contains("textureQuality"))
             loadedProj.textureQuality = jsonToInt(root.at("textureQuality"), 0);
-        if (root.hasKey("brightness"))
+        if (root.contains("brightness"))
             loadedProj.brightness = jsonToFloat(root.at("brightness"), 1.0f);
-        if (root.hasKey("windowOpacity"))
+        if (root.contains("windowOpacity"))
             loadedProj.windowOpacity = jsonToFloat(root.at("windowOpacity"), 1.0f);
-        if (root.hasKey("debugMode"))
+        if (root.contains("debugMode"))
             loadedProj.debugMode = jsonToBool(root.at("debugMode"), false);
-        if (root.hasKey("startupWorldIndex"))
+        if (root.contains("startupWorldIndex"))
             loadedProj.startupWorldIndex = jsonToInt(root.at("startupWorldIndex"), 0);
 
-        int loadedActiveWorld = root.hasKey("activeWorldIndex")
+        int loadedActiveWorld = root.contains("activeWorldIndex")
                                     ? jsonToInt(root.at("activeWorldIndex"), 0)
                                     : 0;
 
-        if (root.hasKey("worlds") && root.at("worlds").JSONType() == json::JSON::Class::Array)
+        if (root.contains("worlds") && root.at("worlds").is_array())
         {
-            for (const auto &jw : root.at("worlds").ArrayRange())
+            for (const auto &jw : root.at("worlds"))
             {
-                if (jw.JSONType() == json::JSON::Class::Object)
+                if (jw.is_object())
                 {
                     loadedProj.worlds.push_back(deserializeWorldFromJson(jw));
                 }
@@ -3277,10 +2850,10 @@ namespace RoninEditor
             return false;
         }
 
-        json::JSON jw = serializeWorldToJson(project.worlds[idx]);
+        json jw = serializeWorldToJson(project.worlds[idx]);
         jw["format"] = "RoninEngineWorld";
         jw["editorVersion"] = getEditorVersion();
-        out << jw.dump() << "\n";
+        out << jw.dump(2) << "\n";
 
         logInfo("Saved World '" + project.worlds[idx].name + "' as JSON to " + filePath);
         return true;
@@ -3298,8 +2871,8 @@ namespace RoninEditor
 
         std::stringstream buffer;
         buffer << in.rdbuf();
-        json::JSON jw = json::JSON::Load(buffer.str());
-        if (jw.JSONType() != json::JSON::Class::Object)
+        json jw = json::parse(buffer.str(), nullptr, false);
+        if (jw.is_discarded() || !jw.is_object())
         {
             logError("Invalid JSON in World file: " + filePath);
             return false;
@@ -3336,14 +2909,14 @@ namespace RoninEditor
             return false;
         }
 
-        json::JSON jpref = json::JSON::Make(json::JSON::Class::Object);
+        json jpref = json::object();
         jpref["format"] = "RoninEnginePrefab";
         jpref["prefabVersion"] = 1;
         jpref["name"] = obj.name;
         jpref["rootObject"] = serializeObjectToJson(obj);
 
         // Find child hierarchy in active world
-        json::JSON jchildren = json::JSON::Make(json::JSON::Class::Array);
+        json jchildren = json::array();
         std::vector<int> parentIds = { obj.id };
         const auto &objs = activeWorld().objects;
         while (!parentIds.empty())
@@ -3355,14 +2928,14 @@ namespace RoninEditor
             {
                 if (cand.parentId == currentParent && cand.id != obj.id)
                 {
-                    jchildren.append(serializeObjectToJson(cand));
+                    jchildren.push_back(serializeObjectToJson(cand));
                     parentIds.push_back(cand.id);
                 }
             }
         }
         jpref["children"] = jchildren;
 
-        out << jpref.dump(1, "  ") << "\n";
+        out << jpref.dump(2) << "\n";
         out.close();
 
         // Ensure companion .meta file is generated
@@ -3386,17 +2959,17 @@ namespace RoninEditor
 
         std::stringstream buffer;
         buffer << in.rdbuf();
-        json::JSON jpref = json::JSON::Load(buffer.str());
-        if (jpref.JSONType() != json::JSON::Class::Object)
+        json jpref = json::parse(buffer.str(), nullptr, false);
+        if (jpref.is_discarded() || !jpref.is_object())
         {
             logError("Invalid JSON in Prefab file: " + filePath);
             return nullptr;
         }
 
-        json::JSON rootJson;
-        if (jpref.hasKey("rootObject") && jpref.at("rootObject").JSONType() == json::JSON::Class::Object)
+        json rootJson;
+        if (jpref.contains("rootObject") && jpref.at("rootObject").is_object())
             rootJson = jpref.at("rootObject");
-        else if (jpref.hasKey("object") && jpref.at("object").JSONType() == json::JSON::Class::Object)
+        else if (jpref.contains("object") && jpref.at("object").is_object())
             rootJson = jpref.at("object");
         else
             rootJson = jpref;
@@ -3431,15 +3004,15 @@ namespace RoninEditor
         w.objects.push_back(rootObj);
 
         // Deserializing children if present
-        if (jpref.hasKey("children") && jpref.at("children").JSONType() == json::JSON::Class::Array)
+        if (jpref.contains("children") && jpref.at("children").is_array())
         {
             std::unordered_map<int, int> idMap;
             idMap[oldRootId] = newRootId;
 
             std::vector<EditorObject> newChildren;
-            for (const auto &jc : jpref.at("children").ArrayRange())
+            for (const auto &jc : jpref.at("children"))
             {
-                if (jc.JSONType() != json::JSON::Class::Object)
+                if (!jc.is_object())
                     continue;
 
                 EditorObject childObj;
@@ -3503,12 +3076,12 @@ namespace RoninEditor
             return false;
         }
 
-        json::JSON jter = json::JSON::Make(json::JSON::Class::Object);
+        json jter = json::object();
         jter["format"] = "RoninEngineTerrain";
         jter["terrainVersion"] = 1;
         jter["terrain"] = serializeTerrainToJson(terrain);
 
-        out << jter.dump(1, "  ") << "\n";
+        out << jter.dump(2) << "\n";
         out.close();
 
         // Ensure companion .meta file is generated
@@ -3532,14 +3105,14 @@ namespace RoninEditor
 
         std::stringstream buffer;
         buffer << in.rdbuf();
-        json::JSON j = json::JSON::Load(buffer.str());
-        if (j.JSONType() != json::JSON::Class::Object)
+        json j = json::parse(buffer.str(), nullptr, false);
+        if (j.is_discarded() || !j.is_object())
         {
             logError("Invalid JSON in Terrain asset: " + filePath);
             return false;
         }
 
-        const json::JSON &node = j.hasKey("terrain") ? j.at("terrain") : j;
+        const json &node = j.contains("terrain") ? j.at("terrain") : j;
         deserializeTerrainFromJson(node, terrain);
         terrain.enabled = true;
         isDirty = true;

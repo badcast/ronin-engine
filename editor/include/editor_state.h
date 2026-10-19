@@ -512,7 +512,7 @@ namespace RoninEditor
 
         EditorState();
 
-        // Project & World JSON serialization (via SimpleJSON/json.hpp)
+        // Project & World JSON serialization (via nlohmann/json.hpp)
         void resetDefaultProject();
         bool saveProjectToFile(const std::string &filePath);
         bool loadProjectFromFile(const std::string &filePath);

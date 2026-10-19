@@ -1,7 +1,7 @@
 #include "scene_viewport.h"
 #include "project_manager.h"
 #include <SDL2/SDL_image.h>
-#include <SimpleJSON/json.hpp>
+#include <nlohmann/json.hpp>
 #include <imgui.h>
 #include <imgui_internal.h>
 #include <algorithm>
@@ -185,25 +185,33 @@ namespace RoninEditor
                 ss << ifs.rdbuf();
                 try
                 {
-                    auto js = json::JSON::Load(ss.str());
-                    if (js.hasKey("texturePath"))
+                    auto js = nlohmann::json::parse(ss.str(), nullptr, false);
+                    if (!js.is_discarded() && js.is_object() && js.contains("texturePath") && js["texturePath"].is_string())
                     {
-                        std::string texRel = js.at("texturePath").ToString();
+                        std::string texRel = js["texturePath"].get<std::string>();
                         std::filesystem::path texFull = texRel;
                         if (texFull.is_relative())
                             texFull = root / texFull;
                         if (std::filesystem::exists(texFull))
                         {
                             actualImgPath = texFull.string();
-                            if (js.hasKey("rect") && outSrcRect && hasSrcRect)
+                            if (js.contains("rect") && outSrcRect && hasSrcRect)
                             {
-                                auto r = js.at("rect");
-                                if (r.size() >= 4)
+                                auto &r = js["rect"];
+                                if (r.is_array() && r.size() >= 4)
                                 {
-                                    outSrcRect->x = r[0].ToInt();
-                                    outSrcRect->y = r[1].ToInt();
-                                    outSrcRect->w = r[2].ToInt();
-                                    outSrcRect->h = r[3].ToInt();
+                                    outSrcRect->x = r[0].get<int>();
+                                    outSrcRect->y = r[1].get<int>();
+                                    outSrcRect->w = r[2].get<int>();
+                                    outSrcRect->h = r[3].get<int>();
+                                    *hasSrcRect = true;
+                                }
+                                else if (r.is_object() && r.contains("w") && r.contains("h"))
+                                {
+                                    outSrcRect->x = r.value("x", 0);
+                                    outSrcRect->y = r.value("y", 0);
+                                    outSrcRect->w = r.value("w", 0);
+                                    outSrcRect->h = r.value("h", 0);
                                     *hasSrcRect = true;
                                 }
                             }

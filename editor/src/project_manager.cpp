@@ -6,11 +6,12 @@
 #include <iomanip>
 #include <random>
 #include <algorithm>
-#include <SimpleJSON/json.hpp>
+#include <nlohmann/json.hpp>
 #include <ronin/RoninSimulator.h>
 
 namespace RoninEditor
 {
+    using json = nlohmann::json;
     static std::string generateRandomGuid()
     {
         std::random_device rd;
@@ -215,8 +216,8 @@ namespace RoninEditor
             return false;
         }
 
-        json::JSON projJson = json::JSON::Load(rawJson);
-        if (projJson.IsNull())
+        json projJson = json::parse(rawJson, nullptr, false);
+        if (projJson.is_discarded() || !projJson.is_object())
         {
             outError = "Failed to parse project.ronin JSON: " + projectRoninPath.string();
             return false;
@@ -228,25 +229,25 @@ namespace RoninEditor
             cfg.rootPath = rootDir;
         cfg.updateDerivedPaths();
 
-        if (projJson.hasKey("projectName"))
-            cfg.projectName = projJson["projectName"].ToString();
+        if (projJson.contains("projectName") && projJson["projectName"].is_string())
+            cfg.projectName = projJson["projectName"].get<std::string>();
         else
             cfg.projectName = rootDir.filename().string();
 
-        if (projJson.hasKey("projectVersion"))
-            cfg.projectVersion = projJson["projectVersion"].ToString();
+        if (projJson.contains("projectVersion") && projJson["projectVersion"].is_string())
+            cfg.projectVersion = projJson["projectVersion"].get<std::string>();
 
-        if (projJson.hasKey("engineVersion"))
-            cfg.engineVersion = projJson["engineVersion"].ToString();
+        if (projJson.contains("engineVersion") && projJson["engineVersion"].is_string())
+            cfg.engineVersion = projJson["engineVersion"].get<std::string>();
 
-        if (projJson.hasKey("projectGuid"))
-            cfg.projectGuid = projJson["projectGuid"].ToString();
+        if (projJson.contains("projectGuid") && projJson["projectGuid"].is_string())
+            cfg.projectGuid = projJson["projectGuid"].get<std::string>();
 
-        if (projJson.hasKey("companyName"))
-            cfg.companyName = projJson["companyName"].ToString();
+        if (projJson.contains("companyName") && projJson["companyName"].is_string())
+            cfg.companyName = projJson["companyName"].get<std::string>();
 
-        if (projJson.hasKey("defaultScene"))
-            cfg.defaultSceneRelativePath = projJson["defaultScene"].ToString();
+        if (projJson.contains("defaultScene") && projJson["defaultScene"].is_string())
+            cfg.defaultSceneRelativePath = projJson["defaultScene"].get<std::string>();
 
         // Also check ProjectSettings/ProjectSettings.json if exists
         std::filesystem::path projSettingsPath = cfg.projectSettingsPath / "ProjectSettings.json";
@@ -255,13 +256,13 @@ namespace RoninEditor
             std::string sJson;
             if (readTextFile(projSettingsPath, sJson, outError))
             {
-                json::JSON sObj = json::JSON::Load(sJson);
-                if (!sObj.IsNull())
+                json sObj = json::parse(sJson, nullptr, false);
+                if (!sObj.is_discarded() && sObj.is_object())
                 {
-                    if (sObj.hasKey("defaultScene"))
-                        cfg.defaultSceneRelativePath = sObj["defaultScene"].ToString();
-                    if (sObj.hasKey("companyName"))
-                        cfg.companyName = sObj["companyName"].ToString();
+                    if (sObj.contains("defaultScene") && sObj["defaultScene"].is_string())
+                        cfg.defaultSceneRelativePath = sObj["defaultScene"].get<std::string>();
+                    if (sObj.contains("companyName") && sObj["companyName"].is_string())
+                        cfg.companyName = sObj["companyName"].get<std::string>();
                 }
             }
         }
@@ -354,7 +355,7 @@ namespace RoninEditor
 
     bool ProjectManager::GenerateProjectFile(const ProjectConfig &cfg, std::string &outError)
     {
-        json::JSON obj = json::Object();
+        json obj = json::object();
         obj["formatVersion"] = 1;
         obj["projectName"] = cfg.projectName;
         obj["projectVersion"] = cfg.projectVersion;
@@ -364,20 +365,20 @@ namespace RoninEditor
         obj["defaultScene"] = cfg.defaultSceneRelativePath;
         obj["lastModified"] = getCurrentIsoTime();
 
-        return writeTextFile(cfg.projectFilePath, obj.dump(1, "  "), outError);
+        return writeTextFile(cfg.projectFilePath, obj.dump(2), outError);
     }
 
     bool ProjectManager::GenerateProjectSettings(const std::filesystem::path &settingsDir,
                                                 const std::string &projectName, std::string &outError)
     {
-        json::JSON obj = json::Object();
+        json obj = json::object();
         obj["projectName"] = projectName;
         obj["companyName"] = "DefaultCompany";
         obj["productName"] = projectName;
         obj["version"] = "0.1.0";
         obj["defaultScene"] = "Assets/Worlds/SampleWorld.world";
 
-        json::JSON res = json::Object();
+        json res = json::object();
         res["defaultWidth"] = 1280;
         res["defaultHeight"] = 720;
         res["fullscreen"] = false;
@@ -385,24 +386,24 @@ namespace RoninEditor
         res["vsync"] = true;
         obj["resolution"] = res;
 
-        json::JSON render = json::Object();
+        json render = json::object();
         render["backend"] = "GPU";
         render["colorSpace"] = "Linear";
         render["pixelSnap"] = false;
         obj["rendering"] = render;
 
-        return writeTextFile(settingsDir / "ProjectSettings.json", obj.dump(1, "  "), outError);
+        return writeTextFile(settingsDir / "ProjectSettings.json", obj.dump(2), outError);
     }
 
     bool ProjectManager::GenerateInputSettings(const std::filesystem::path &settingsDir, std::string &outError)
     {
-        json::JSON obj = json::Object();
-        json::JSON axes = json::Array();
+        json obj = json::object();
+        json axes = json::array();
 
         auto addAxis = [&](const std::string &name, const std::string &pos, const std::string &neg,
                            const std::string &altPos = "", const std::string &altNeg = "",
                            float gravity = 3.0f, float dead = 0.001f, float sensitivity = 3.0f) {
-            json::JSON ax = json::Object();
+            json ax = json::object();
             ax["name"] = name;
             ax["positiveButton"] = pos;
             ax["negativeButton"] = neg;
@@ -411,7 +412,7 @@ namespace RoninEditor
             ax["gravity"] = gravity;
             ax["dead"] = dead;
             ax["sensitivity"] = sensitivity;
-            axes.append(ax);
+            axes.push_back(ax);
         };
 
         addAxis("Horizontal", "right", "left", "d", "a");
@@ -422,18 +423,18 @@ namespace RoninEditor
         addAxis("Cancel", "escape", "");
 
         obj["axes"] = axes;
-        return writeTextFile(settingsDir / "InputSettings.json", obj.dump(1, "  "), outError);
+        return writeTextFile(settingsDir / "InputSettings.json", obj.dump(2), outError);
     }
 
     bool ProjectManager::GenerateTimeSettings(const std::filesystem::path &settingsDir, std::string &outError)
     {
-        json::JSON obj = json::Object();
+        json obj = json::object();
         obj["fixedTimestep"] = 0.02;
         obj["maximumDeltaTime"] = 0.3333333;
         obj["timeScale"] = 1.0;
         obj["captureFramerate"] = 0;
 
-        return writeTextFile(settingsDir / "TimeSettings.json", obj.dump(1, "  "), outError);
+        return writeTextFile(settingsDir / "TimeSettings.json", obj.dump(2), outError);
     }
 
     bool ProjectManager::GenerateCMakeLists(const std::filesystem::path &scriptsDir,
@@ -502,16 +503,16 @@ namespace RoninEditor
 
     bool ProjectManager::GenerateDefaultScene(const std::filesystem::path &scenePath, ProjectTemplate tmpl, std::string &outError)
     {
-        json::JSON scene = json::Object();
+        json scene = json::object();
         std::string name = scenePath.stem().string();
         scene["worldName"] = name;
         scene["sceneName"] = name;
         scene["formatVersion"] = 1;
-        json::JSON objects = json::Array();
+        json objects = json::array();
 
         // 1. Main Camera
         {
-            json::JSON cam = json::Object();
+            json cam = json::object();
             cam["id"] = 1;
             cam["name"] = "Main Camera";
             cam["tag"] = "MainCamera";
@@ -519,29 +520,29 @@ namespace RoninEditor
             cam["zOrder"] = 0;
             cam["active"] = true;
 
-            json::JSON tr = json::Object();
-            json::JSON pos = json::Array();
-            pos.append(0.0);
-            pos.append(0.0);
+            json tr = json::object();
+            json pos = json::array();
+            pos.push_back(0.0);
+            pos.push_back(0.0);
             tr["position"] = pos;
             tr["angle"] = 0.0;
             tr["parentId"] = -1;
             cam["transform"] = tr;
 
-            json::JSON comps = json::Array();
-            json::JSON cCam = json::Object();
+            json comps = json::array();
+            json cCam = json::object();
             cCam["type"] = "Camera2D";
             cCam["zoom"] = 1.0;
             cCam["mainCamera"] = true;
-            comps.append(cCam);
+            comps.push_back(cCam);
             cam["components"] = comps;
 
-            objects.append(cam);
+            objects.push_back(cam);
         }
 
         // 2. Directional / Ambient Light
         {
-            json::JSON light = json::Object();
+            json light = json::object();
             light["id"] = 2;
             light["name"] = "World Light";
             light["tag"] = "Untagged";
@@ -549,35 +550,35 @@ namespace RoninEditor
             light["zOrder"] = 10;
             light["active"] = true;
 
-            json::JSON tr = json::Object();
-            json::JSON pos = json::Array();
-            pos.append(0.0);
-            pos.append(2.0);
+            json tr = json::object();
+            json pos = json::array();
+            pos.push_back(0.0);
+            pos.push_back(2.0);
             tr["position"] = pos;
             tr["angle"] = 0.0;
             tr["parentId"] = -1;
             light["transform"] = tr;
 
-            json::JSON comps = json::Array();
-            json::JSON cLight = json::Object();
+            json comps = json::array();
+            json cLight = json::object();
             cLight["type"] = "Light";
             cLight["range"] = 8.0;
-            json::JSON color = json::Array();
-            color.append(255);
-            color.append(255);
-            color.append(255);
-            color.append(255);
+            json color = json::array();
+            color.push_back(255);
+            color.push_back(255);
+            color.push_back(255);
+            color.push_back(255);
             cLight["color"] = color;
-            comps.append(cLight);
+            comps.push_back(cLight);
             light["components"] = comps;
 
-            objects.append(light);
+            objects.push_back(light);
         }
 
         if (tmpl == ProjectTemplate::Action2D)
         {
             // 3. Player GameObject with SpriteRenderer & Script
-            json::JSON player = json::Object();
+            json player = json::object();
             player["id"] = 3;
             player["name"] = "Player Samurai";
             player["tag"] = "Player";
@@ -585,41 +586,41 @@ namespace RoninEditor
             player["zOrder"] = 10;
             player["active"] = true;
 
-            json::JSON tr = json::Object();
-            json::JSON pos = json::Array();
-            pos.append(0.0);
-            pos.append(-0.5);
+            json tr = json::object();
+            json pos = json::array();
+            pos.push_back(0.0);
+            pos.push_back(-0.5);
             tr["position"] = pos;
             tr["angle"] = 0.0;
             tr["parentId"] = -1;
             player["transform"] = tr;
 
-            json::JSON comps = json::Array();
-            json::JSON cSprite = json::Object();
+            json comps = json::array();
+            json cSprite = json::object();
             cSprite["type"] = "SpriteRenderer";
             cSprite["primitiveShape"] = "Rectangle";
-            json::JSON sSize = json::Array();
-            sSize.append(1.0);
-            sSize.append(1.5);
+            json sSize = json::array();
+            sSize.push_back(1.0);
+            sSize.push_back(1.5);
             cSprite["size"] = sSize;
-            json::JSON sColor = json::Array();
-            sColor.append(60);
-            sColor.append(140);
-            sColor.append(240);
-            sColor.append(255);
+            json sColor = json::array();
+            sColor.push_back(60);
+            sColor.push_back(140);
+            sColor.push_back(240);
+            sColor.push_back(255);
             cSprite["color"] = sColor;
-            comps.append(cSprite);
+            comps.push_back(cSprite);
 
-            json::JSON cCtrl = json::Object();
+            json cCtrl = json::object();
             cCtrl["type"] = "SamplePlayerController";
             cCtrl["moveSpeed"] = 5.0;
-            comps.append(cCtrl);
+            comps.push_back(cCtrl);
 
             player["components"] = comps;
-            objects.append(player);
+            objects.push_back(player);
 
             // 4. Ground Terrain Surface
-            json::JSON ground = json::Object();
+            json ground = json::object();
             ground["id"] = 4;
             ground["name"] = "Ground Surface";
             ground["tag"] = "Environment";
@@ -627,29 +628,29 @@ namespace RoninEditor
             ground["zOrder"] = -20;
             ground["active"] = true;
 
-            json::JSON gTr = json::Object();
-            json::JSON gPos = json::Array();
-            gPos.append(0.0);
-            gPos.append(-3.0);
+            json gTr = json::object();
+            json gPos = json::array();
+            gPos.push_back(0.0);
+            gPos.push_back(-3.0);
             gTr["position"] = gPos;
             gTr["angle"] = 0.0;
             gTr["parentId"] = -1;
             ground["transform"] = gTr;
 
-            json::JSON gComps = json::Array();
-            json::JSON cTer = json::Object();
+            json gComps = json::array();
+            json cTer = json::object();
             cTer["type"] = "Terrain2D";
             cTer["width"] = 16;
             cTer["length"] = 4;
             cTer["cellScale"] = 1.0;
-            gComps.append(cTer);
+            gComps.push_back(cTer);
             ground["components"] = gComps;
 
-            objects.append(ground);
+            objects.push_back(ground);
         }
 
         scene["objects"] = objects;
-        return writeTextFile(scenePath, scene.dump(1, "  "), outError);
+        return writeTextFile(scenePath, scene.dump(2), outError);
     }
 
     bool ProjectManager::GenerateDefaultWorld(const std::filesystem::path &worldPath, ProjectTemplate tmpl, std::string &outError)
@@ -693,21 +694,22 @@ namespace RoninEditor
         if (!readTextFile(recentFile, rawJson, err))
             return;
 
-        json::JSON root = json::JSON::Load(rawJson);
-        if (root.IsNull() || !root.hasKey("recentProjects"))
+        json root = json::parse(rawJson, nullptr, false);
+        if (root.is_discarded() || !root.is_object() || !root.contains("recentProjects") || !root["recentProjects"].is_array())
             return;
 
-        json::JSON arr = root["recentProjects"];
-        for (int i = 0; i < arr.size(); ++i)
+        const auto &arr = root["recentProjects"];
+        for (const auto &item : arr)
         {
-            json::JSON item = arr[i];
+            if (!item.is_object())
+                continue;
             RecentProject rp;
-            if (item.hasKey("name"))
-                rp.name = item["name"].ToString();
-            if (item.hasKey("path"))
-                rp.path = item["path"].ToString();
-            if (item.hasKey("lastOpened"))
-                rp.lastOpened = item["lastOpened"].ToString();
+            if (item.contains("name") && item["name"].is_string())
+                rp.name = item["name"].get<std::string>();
+            if (item.contains("path") && item["path"].is_string())
+                rp.path = item["path"].get<std::string>();
+            if (item.contains("lastOpened") && item["lastOpened"].is_string())
+                rp.lastOpened = item["lastOpened"].get<std::string>();
 
             rp.exists = std::filesystem::exists(rp.path, ec);
             m_recentProjects.push_back(rp);
@@ -717,21 +719,21 @@ namespace RoninEditor
     void ProjectManager::saveRecentProjects()
     {
         std::filesystem::path recentFile = getRecentProjectsFilePath();
-        json::JSON root = json::Object();
-        json::JSON arr = json::Array();
+        json root = json::object();
+        json arr = json::array();
 
         for (const auto &item : m_recentProjects)
         {
-            json::JSON jItem = json::Object();
+            json jItem = json::object();
             jItem["name"] = item.name;
             jItem["path"] = item.path;
             jItem["lastOpened"] = item.lastOpened;
-            arr.append(jItem);
+            arr.push_back(jItem);
         }
 
         root["recentProjects"] = arr;
         std::string err;
-        writeTextFile(recentFile, root.dump(1, "  "), err);
+        writeTextFile(recentFile, root.dump(2), err);
     }
 
     const std::vector<RecentProject> &ProjectManager::GetRecentProjects()

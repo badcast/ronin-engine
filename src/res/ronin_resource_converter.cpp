@@ -3,7 +3,7 @@
 #include "ronin.h"
 #include "ronin_debug.h"
 
-#include "../3rdparty/SimpleJSON/json.hpp"
+#include <nlohmann/json.hpp>
 
 using namespace RoninEngine::Runtime;
 
@@ -43,12 +43,12 @@ Cursor *AssetManager::ConvertImageToCursor(Image *imageSrc, Vec2Int cursorHotspo
 
 AssetRef AssetManager::LoadAsset(const std::string &filename)
 {
-    using namespace json;
+    using json = nlohmann::json;
 
     ResId rsid;
     int num1, num2, num3, num4;
     std::string str1;
-    JSON json, param1, param2, param3, map;
+    json jRoot, param1, param2, param3, map;
     std::vector<std::pair<std::size_t, std::vector<std::string>>> __files;
     std::filesystem::path dir_of_asset;
     Asset* asset;
@@ -56,15 +56,15 @@ AssetRef AssetManager::LoadAsset(const std::string &filename)
     str1.assign(std::istreambuf_iterator<char>(input), std::istreambuf_iterator<char>());
     input.close();
 
-    json = JSON::Load(str1);
-    if(json.IsNull())
+    jRoot = json::parse(str1, nullptr, false);
+    if(jRoot.is_discarded() || jRoot.is_null() || !jRoot.contains("class") || !jRoot["class"].is_string())
     {
         ronin_err("Can not load asset file");
         return nullptr;
     }
 
     num2 = sizeof(resClass) / sizeof(resClass[0]);
-    str1 = json["class"].ToString();
+    str1 = jRoot["class"].get<std::string>();
     for(num1 = 0; num1 < num2;)
     {
         if(str1 == resClass[num1])
@@ -84,44 +84,48 @@ AssetRef AssetManager::LoadAsset(const std::string &filename)
         case 1:
         case 2:
         {
-            JSON sources = json["source"];
-            if(sources.JSONType() != JSON::Class::Array)
+            if(!jRoot.contains("source") || !jRoot["source"].is_array())
             {
                 ronin_err("Can not load asset file");
                 return nullptr;
             }
-            for(auto &source0 : sources.ArrayRange())
+            json &sources = jRoot["source"];
+            for(auto &source0 : sources)
             {
                 // #1. Check Resources
+                if(!source0.is_object() || !source0.contains("name") || !source0.contains("ref"))
+                    continue;
                 param1 = source0["name"];
                 param2 = source0["ref"];
                 num2 = 0;
-                if(param1.JSONType() != JSON::Class::String ||
-                   (param2.JSONType() == JSON::Class::Array && (++num2) && std::any_of(param2.ArrayRange().begin(), param2.ArrayRange().end(), [](const auto &test) -> bool const { return test.JSONType() != JSON::Class::String; }) || !num2 && param2.JSONType() != JSON::Class::String))
+                if(!param1.is_string() ||
+                   (param2.is_array() && (++num2) && std::any_of(param2.begin(), param2.end(), [](const auto &test) -> bool const { return !test.is_string(); }) || !num2 && !param2.is_string()))
                 {
-                    ronin_err(("Invalid resource \"" + param1.ToString() + "\" in Asset file " + filename).c_str());
+                    ronin_err(("Invalid resource \"" + (param1.is_string() ? param1.get<std::string>() : std::string()) + "\" in Asset file " + filename).c_str());
                     continue;
                 }
 
                 // #2. Check conflicts.
-                size_t hash_it = stringHasher(param1.ToString());
+                std::string param1Str = param1.get<std::string>();
+                size_t hash_it = stringHasher(param1Str);
                 if(std::end(__files) != std::find_if(std::begin(__files), std::end(__files), [&hash_it](auto &ref) { return hash_it == ref.first; }))
                 {
-                    ronin_err(("Conflict resource name \"" + param1.ToString() + "\"").c_str());
+                    ronin_err(("Conflict resource name \"" + param1Str + "\"").c_str());
                     continue;
                 }
 
                 std::vector<std::string> _strings;
-                if(param2.JSONType() == JSON::Class::Array)
+                if(param2.is_array())
                 {
-                    for(JSON &arv : param2.ArrayRange())
+                    for(const auto &arv : param2)
                     {
-                        _strings.emplace_back((dir_of_asset / arv.ToString()).string());
+                        if(arv.is_string())
+                            _strings.emplace_back((dir_of_asset / arv.get<std::string>()).string());
                     }
                 }
-                else
+                else if(param2.is_string())
                 {
-                    _strings.emplace_back((dir_of_asset / param2.ToString()).string());
+                    _strings.emplace_back((dir_of_asset / param2.get<std::string>()).string());
                 }
 
                 __files.emplace_back(std::make_pair(hash_it, _strings));
@@ -200,17 +204,17 @@ AssetRef AssetManager::LoadAsset(const std::string &filename)
             SpriteRef spr;
             Rect rect;
 
-            param1 = json["mode"];
-            if(!param1.IsNull())
+            if(jRoot.contains("mode") && !jRoot["mode"].is_null())
             {
-                if(param1.JSONType() != JSON::Class::String)
+                param1 = jRoot["mode"];
+                if(!param1.is_string())
                 {
                     ronin_err("mode param is invalid and not contains atlas mode");
                     return nullptr;
                 }
 
                 // Identify
-                str1 = param1.ToString();
+                str1 = param1.get<std::string>();
                 for(num3 = 0, num2 = sizeof(modeAtlas) / sizeof(modeAtlas[0]); num3 < num2;)
                 {
                     if(modeAtlas[num3] == str1)
@@ -230,33 +234,37 @@ AssetRef AssetManager::LoadAsset(const std::string &filename)
             }
 
             // Load Atlas Map
-
-            map = json["map"];
+            if(!jRoot.contains("map"))
+            {
+                ronin_err("Can not load asset file. Missing map key");
+                return nullptr;
+            }
+            map = jRoot["map"];
             switch(num3)
             {
                 case 0: // RECT
-                    if(map.JSONType() != JSON::Class::Array)
+                    if(!map.is_array())
                     {
                         ronin_err("Can not load asset file. Map key is not contains Array maps");
                         return nullptr;
                     }
-                    num2 = map.size();
+                    num2 = static_cast<int>(map.size());
                     break;
                 case 1: // TILED
-                    if(map.JSONType() != JSON::Class::String)
+                    if(!map.is_string())
                     {
                         ronin_err("Can not assign mode is Tiled. Map key is not contains Rect value");
                         return nullptr;
                     }
 
                     rect = {0, 0, -1, -1}; // set flush
-                    std::sscanf(map.ToString().c_str(), "%d %d", &rect.w, &rect.h);
+                    std::sscanf(map.get<std::string>().c_str(), "%d %d", &rect.w, &rect.h);
 
                     num4 = 0; // Set default direction (Right)
-                    param1 = json["direction"];
-                    if(param1.JSONType() == JSON::Class::String)
+                    if(jRoot.contains("direction") && jRoot["direction"].is_string())
                     {
-                        str1 = param1.ToString();
+                        param1 = jRoot["direction"];
+                        str1 = param1.get<std::string>();
                         num2 = sizeof(atlasDirections) / sizeof(atlasDirections[0]);
                         for(num1 = 0; num1 < num2;)
                         {
@@ -283,21 +291,21 @@ AssetRef AssetManager::LoadAsset(const std::string &filename)
                     break;
             }
 
-            param1 = json["source"];
-            if(param1.JSONType() != JSON::Class::String)
+            if(!jRoot.contains("source") || !jRoot["source"].is_string())
             {
                 ronin_err(("Invalid atlas key \"source\" is not valid from " + filename).c_str());
                 return nullptr;
             }
+            param1 = jRoot["source"];
 
             _src = dir_of_asset.generic_string();
             _src += Paths::GetPathSeperatorOS();
-            _src += param1.ToString();
+            _src += param1.get<std::string>();
 
             rsid = Resources::LoadImage(_src, false);
             if(rsid == RES_INVALID)
             {
-                ronin_err(("Atlas image is invalid " + param1.ToString()).c_str());
+                ronin_err(("Atlas image is invalid " + param1.get<std::string>()).c_str());
                 return nullptr;
             }
 
@@ -332,28 +340,28 @@ AssetRef AssetManager::LoadAsset(const std::string &filename)
                 if(num3 == 0)
                 {
                     param3 = map[num1];
-                    param1 = param3["value"];
-                    if(param1.JSONType() != JSON::Class::String)
+                    if(!param3.contains("value") || !param3["value"].is_string())
                     {
                         ronin_err("Is not valid key entry value is Rect");
                         continue;
                     }
+                    param1 = param3["value"];
                     rect = {}; // set flush
-                    std::sscanf(param1.ToString().c_str(), "%d %d %d %d", &rect.x, &rect.y, &rect.w, &rect.h);
+                    std::sscanf(param1.get<std::string>().c_str(), "%d %d %d %d", &rect.x, &rect.y, &rect.w, &rect.h);
 
                     spr = Primitive::CreateEmptySprite();
 
                     // TODO: make sprite name spr->name = param1.empty()
-                    param1 = param3["sprite"];
-                    if(!param1.IsNull())
+                    if(param3.contains("sprite") && !param3["sprite"].is_null())
                     {
-                        if(param1.JSONType() != JSON::Class::String)
+                        param1 = param3["sprite"];
+                        if(!param1.is_string())
                         {
                             ronin_warn("Is not valid key entry \"sprite\"");
                         }
                         else
                         {
-                            spr->name = param1.ToString();
+                            spr->name = param1.get<std::string>();
                         }
                     }
                     if(spr->name.empty())

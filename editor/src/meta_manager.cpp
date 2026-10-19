@@ -123,22 +123,22 @@ namespace RoninEditor
 
     bool MetaManager::SaveMetaFile(const std::filesystem::path &metaPath, const MetaFile &meta)
     {
-        json::JSON j = json::Object();
+        nlohmann::json j = nlohmann::json::object();
         j["fileFormatVersion"] = meta.formatVersion;
         j["guid"] = meta.guid;
         j["assetId"] = static_cast<long long>(meta.assetId);
         j["assetType"] = AssetTypeToString(meta.type);
 
-        json::JSON imp = json::Object();
+        nlohmann::json imp = nlohmann::json::object();
         imp["version"] = 1;
         imp["sourceFile"] = meta.sourceFilename;
-        if (meta.importerSettings.JSONType() == json::JSON::Class::Object)
+        if (meta.importerSettings.is_object())
         {
             imp["settings"] = meta.importerSettings;
         }
         else
         {
-            imp["settings"] = json::Object();
+            imp["settings"] = nlohmann::json::object();
         }
         j["importer"] = imp;
 
@@ -146,7 +146,7 @@ namespace RoninEditor
         if (!ofs.is_open())
             return false;
 
-        ofs << j.dump(1, "  ") << "\n";
+        ofs << j.dump(2) << "\n";
         return ofs.good();
     }
 
@@ -156,38 +156,43 @@ namespace RoninEditor
         if (!ifs.is_open())
             return false;
 
-        std::stringstream ss;
-        ss << ifs.rdbuf();
-        json::JSON j = json::JSON::Load(ss.str());
-        if (j.IsNull() || j.JSONType() != json::JSON::Class::Object)
+        nlohmann::json j = nlohmann::json::parse(ifs, nullptr, false);
+        if (j.is_discarded() || !j.is_object())
             return false;
 
-        if (j.hasKey("fileFormatVersion"))
-            outMeta.formatVersion = j["fileFormatVersion"].ToInt();
+        if (j.contains("fileFormatVersion") && j["fileFormatVersion"].is_number())
+            outMeta.formatVersion = j["fileFormatVersion"].get<int>();
         else
             outMeta.formatVersion = 1;
 
-        if (j.hasKey("guid"))
-            outMeta.guid = j["guid"].ToString();
+        if (j.contains("guid") && j["guid"].is_string())
+            outMeta.guid = j["guid"].get<std::string>();
         else
             outMeta.guid = GenerateGuid();
 
-        if (j.hasKey("assetId"))
-            outMeta.assetId = static_cast<uint32_t>(j["assetId"].ToInt());
+        if (j.contains("assetId") && j["assetId"].is_number())
+            outMeta.assetId = static_cast<uint32_t>(j["assetId"].get<uint64_t>());
         else
             outMeta.assetId = CalculateAssetId(outMeta.guid);
 
-        if (j.hasKey("assetType"))
-            outMeta.type = StringToAssetType(j["assetType"].ToString());
+        if (j.contains("assetType") && j["assetType"].is_string())
+            outMeta.type = StringToAssetType(j["assetType"].get<std::string>());
         else
             outMeta.type = AssetType::Unknown;
 
-        if (j.hasKey("importer") && j["importer"].JSONType() == json::JSON::Class::Object)
+        if (j.contains("importer") && j["importer"].is_object())
         {
-            if (j["importer"].hasKey("sourceFile"))
-                outMeta.sourceFilename = j["importer"]["sourceFile"].ToString();
-            if (j["importer"].hasKey("settings"))
-                outMeta.importerSettings = j["importer"]["settings"];
+            const auto &imp = j["importer"];
+            if (imp.contains("sourceFile") && imp["sourceFile"].is_string())
+                outMeta.sourceFilename = imp["sourceFile"].get<std::string>();
+            if (imp.contains("settings") && imp["settings"].is_object())
+                outMeta.importerSettings = imp["settings"];
+            else
+                outMeta.importerSettings = nlohmann::json::object();
+        }
+        else
+        {
+            outMeta.importerSettings = nlohmann::json::object();
         }
 
         return true;
@@ -215,7 +220,7 @@ namespace RoninEditor
         outMeta.assetId = CalculateAssetId(outMeta.guid);
         outMeta.sourceFilename = assetPath.filename().string();
 
-        json::JSON settings = json::Object();
+        nlohmann::json settings = nlohmann::json::object();
         switch (outMeta.type)
         {
         case AssetType::Texture:

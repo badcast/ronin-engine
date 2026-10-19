@@ -8,6 +8,7 @@
 #include <fstream>
 #include <iostream>
 #include <cstdlib>
+#include <nlohmann/json.hpp>
 
 namespace RoninEditor
 {
@@ -864,21 +865,21 @@ namespace RoninEditor
                     spritePath = targetItem->fullPath.parent_path() / (targetItem->fullPath.stem().string() + "_" + std::to_string(count++) + ".sprite");
                 }
                 std::string texGuid = AssetDatabase::GetInstance().GetGuidByPath(targetItem->fullPath);
-                json::JSON j = json::JSON::Make(json::JSON::Class::Object);
+                nlohmann::json j = nlohmann::json::object();
                 j["formatVersion"] = 1;
                 j["name"] = spritePath.stem().string();
                 std::error_code ec;
                 j["texturePath"] = std::filesystem::relative(targetItem->fullPath, m_assetsRoot, ec).string();
                 if (!texGuid.empty()) j["textureGuid"] = texGuid;
-                json::JSON jr = json::JSON::Make(json::JSON::Class::Object);
+                nlohmann::json jr = nlohmann::json::object();
                 jr["x"] = 0; jr["y"] = 0; jr["w"] = 64; jr["h"] = 64;
                 j["rect"] = jr;
-                json::JSON jp = json::JSON::Make(json::JSON::Class::Object);
+                nlohmann::json jp = nlohmann::json::object();
                 jp["x"] = 0.5; jp["y"] = 0.5;
                 j["pivot"] = jp;
                 j["pixelsPerUnit"] = 100.0;
                 std::ofstream ofs(spritePath);
-                ofs << j.dump(1, "  ") << "\n";
+                ofs << j.dump(2) << "\n";
                 ofs.close();
 
                 MetaFile mf;

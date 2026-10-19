@@ -3,7 +3,7 @@
 #include <string>
 #include <filesystem>
 #include <cstdint>
-#include <SimpleJSON/json.hpp>
+#include <nlohmann/json.hpp>
 
 namespace RoninEditor
 {
@@ -31,7 +31,7 @@ namespace RoninEditor
         uint32_t assetId = 0;
         AssetType type = AssetType::Unknown;
         std::string sourceFilename;
-        json::JSON importerSettings;
+        nlohmann::json importerSettings;
     };
 
     class MetaManager

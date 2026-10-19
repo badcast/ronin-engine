@@ -3,7 +3,7 @@
 #include <filesystem>
 #include <fstream>
 #include <sstream>
-#include <SimpleJSON/json.hpp>
+#include <nlohmann/json.hpp>
 #include "project_manager.h"
 #include "editor_state.h"
 #include "meta_manager.h"
@@ -13,6 +13,7 @@
 #include <ronin/TextStream.h>
 
 using namespace RoninEditor;
+using json = nlohmann::json;
 
 int main()
 {
@@ -59,12 +60,12 @@ int main()
         assert(ifs.is_open());
         std::stringstream ss;
         ss << ifs.rdbuf();
-        json::JSON pJson = json::JSON::Load(ss.str());
-        assert(!pJson.IsNull());
-        assert(pJson["projectName"].ToString() == testProjectName);
-        assert(pJson.hasKey("projectGuid"));
-        assert(!pJson["projectGuid"].ToString().empty());
-        assert(pJson["formatVersion"].ToInt() == 1);
+        json pJson = json::parse(ss.str(), nullptr, false);
+        assert(!pJson.is_discarded());
+        assert(pJson["projectName"].get<std::string>() == testProjectName);
+        assert(pJson.contains("projectGuid"));
+        assert(!pJson["projectGuid"].get<std::string>().empty());
+        assert(pJson["formatVersion"].get<int>() == 1);
     }
     std::cout << "  [PASS] project.ronin validated" << std::endl;
 
@@ -74,12 +75,12 @@ int main()
         assert(ifs.is_open());
         std::stringstream ss;
         ss << ifs.rdbuf();
-        json::JSON sJson = json::JSON::Load(ss.str());
-        assert(!sJson.IsNull());
-        assert(sJson["projectName"].ToString() == testProjectName);
-        assert(sJson["resolution"]["defaultWidth"].ToInt() == 1280);
-        assert(sJson["resolution"]["defaultHeight"].ToInt() == 720);
-        assert(sJson["rendering"]["backend"].ToString() == "GPU");
+        json sJson = json::parse(ss.str(), nullptr, false);
+        assert(!sJson.is_discarded());
+        assert(sJson["projectName"].get<std::string>() == testProjectName);
+        assert(sJson["resolution"]["defaultWidth"].get<int>() == 1280);
+        assert(sJson["resolution"]["defaultHeight"].get<int>() == 720);
+        assert(sJson["rendering"]["backend"].get<std::string>() == "GPU");
     }
     std::cout << "  [PASS] ProjectSettings.json validated" << std::endl;
 
@@ -89,9 +90,9 @@ int main()
         assert(ifs.is_open());
         std::stringstream ss;
         ss << ifs.rdbuf();
-        json::JSON iJson = json::JSON::Load(ss.str());
-        assert(!iJson.IsNull());
-        assert(iJson.hasKey("axes"));
+        json iJson = json::parse(ss.str(), nullptr, false);
+        assert(!iJson.is_discarded());
+        assert(iJson.contains("axes"));
         assert(iJson["axes"].size() >= 4);
     }
     std::cout << "  [PASS] InputSettings.json validated" << std::endl;
@@ -102,9 +103,9 @@ int main()
         assert(ifs.is_open());
         std::stringstream ss;
         ss << ifs.rdbuf();
-        json::JSON tJson = json::JSON::Load(ss.str());
-        assert(!tJson.IsNull());
-        assert(tJson.hasKey("fixedTimestep"));
+        json tJson = json::parse(ss.str(), nullptr, false);
+        assert(!tJson.is_discarded());
+        assert(tJson.contains("fixedTimestep"));
     }
     std::cout << "  [PASS] TimeSettings.json validated" << std::endl;
 
@@ -122,9 +123,9 @@ int main()
         assert(ifs.is_open());
         std::stringstream ss;
         ss << ifs.rdbuf();
-        json::JSON scJson = json::JSON::Load(ss.str());
-        assert(!scJson.IsNull());
-        assert(scJson["worldName"].ToString() == "SampleWorld" || scJson["sceneName"].ToString() == "SampleWorld");
+        json scJson = json::parse(ss.str(), nullptr, false);
+        assert(!scJson.is_discarded());
+        assert(scJson["worldName"].get<std::string>() == "SampleWorld" || scJson["sceneName"].get<std::string>() == "SampleWorld");
         assert(scJson["objects"].size() >= 2);
     }
     std::cout << "  [PASS] SampleWorld.world validated" << std::endl;

@@ -318,7 +318,7 @@ namespace RoninEditor
         ImGui::BulletText("Core Engine: C++17, RoninEngine::Runtime (GameObjects, Components, Transforms)");
         ImGui::BulletText("Backend: SDL2 (Windowing, Audio, Rendering, Input)");
         ImGui::BulletText("Editor GUI: Dear ImGui (Docking Branch, Multi-Viewport)");
-        ImGui::BulletText("Serialization: SimpleJSON (.roninproject, .world, ProjectSettings)");
+        ImGui::BulletText("Serialization: nlohmann json (.roninproject, .world, ProjectSettings)");
         ImGui::BulletText("Linked Subsystems: %s", RoninEngine::RoninSimulator::GetLinkedTargets());
 
         ImGui::Spacing();

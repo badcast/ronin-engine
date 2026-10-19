@@ -2488,22 +2488,25 @@ namespace RoninEditor
                     std::stringstream ss;
                     ss << ifs.rdbuf();
                     try {
-                        auto js = json::JSON::Load(ss.str());
-                        if (js.hasKey("name")) ImGui::Text("Sprite Name: %s", js.at("name").ToString().c_str());
-                        if (js.hasKey("texturePath")) ImGui::Text("Source Texture: %s", js.at("texturePath").ToString().c_str());
-                        if (js.hasKey("textureGuid")) ImGui::Text("Texture GUID: %s", js.at("textureGuid").ToString().c_str());
-                        if (js.hasKey("rect")) {
-                            auto r = js.at("rect");
-                            if (r.hasKey("w") && r.hasKey("h"))
-                                ImGui::Text("Rect: (%d, %d, %d, %d)", r["x"].ToInt(), r["y"].ToInt(), r["w"].ToInt(), r["h"].ToInt());
+                        auto js = nlohmann::json::parse(ss.str(), nullptr, false);
+                        if (!js.is_discarded() && js.is_object())
+                        {
+                            if (js.contains("name") && js["name"].is_string()) ImGui::Text("Sprite Name: %s", js["name"].get<std::string>().c_str());
+                            if (js.contains("texturePath") && js["texturePath"].is_string()) ImGui::Text("Source Texture: %s", js["texturePath"].get<std::string>().c_str());
+                            if (js.contains("textureGuid") && js["textureGuid"].is_string()) ImGui::Text("Texture GUID: %s", js["textureGuid"].get<std::string>().c_str());
+                            if (js.contains("rect") && js["rect"].is_object()) {
+                                auto &r = js["rect"];
+                                if (r.contains("w") && r.contains("h"))
+                                    ImGui::Text("Rect: (%d, %d, %d, %d)", r.value("x", 0), r.value("y", 0), r.value("w", 0), r.value("h", 0));
+                            }
+                            if (js.contains("pivot") && js["pivot"].is_object()) {
+                                auto &pv = js["pivot"];
+                                if (pv.contains("x") && pv.contains("y"))
+                                    ImGui::Text("Pivot: (%.2f, %.2f)", pv.value("x", 0.5f), pv.value("y", 0.5f));
+                            }
+                            if (js.contains("pixelsPerUnit") && js["pixelsPerUnit"].is_number())
+                                ImGui::Text("Pixels Per Unit: %.1f", js["pixelsPerUnit"].get<float>());
                         }
-                        if (js.hasKey("pivot")) {
-                            auto pv = js.at("pivot");
-                            if (pv.hasKey("x") && pv.hasKey("y"))
-                                ImGui::Text("Pivot: (%.2f, %.2f)", pv["x"].ToFloat(), pv["y"].ToFloat());
-                        }
-                        if (js.hasKey("pixelsPerUnit"))
-                            ImGui::Text("Pixels Per Unit: %.1f", js.at("pixelsPerUnit").ToFloat());
                     } catch (...) {}
                 }
             }
@@ -2518,22 +2521,22 @@ namespace RoninEditor
                         spritePath = p.parent_path() / (stem + "_" + std::to_string(count++) + ".sprite");
                     }
                     std::string texGuid = AssetDatabase::GetInstance().GetGuidByPath(p);
-                    json::JSON j = json::JSON::Make(json::JSON::Class::Object);
+                    nlohmann::json j = nlohmann::json::object();
                     j["formatVersion"] = 1;
                     j["name"] = spritePath.stem().string();
                     std::error_code ec;
                     auto root = ProjectManager::GetInstance().GetRootPath();
                     j["texturePath"] = std::filesystem::relative(p, root / "Assets", ec).string();
                     if (!texGuid.empty()) j["textureGuid"] = texGuid;
-                    json::JSON jr = json::JSON::Make(json::JSON::Class::Object);
+                    nlohmann::json jr = nlohmann::json::object();
                     jr["x"] = 0; jr["y"] = 0; jr["w"] = 64; jr["h"] = 64;
                     j["rect"] = jr;
-                    json::JSON jp = json::JSON::Make(json::JSON::Class::Object);
+                    nlohmann::json jp = nlohmann::json::object();
                     jp["x"] = 0.5; jp["y"] = 0.5;
                     j["pivot"] = jp;
                     j["pixelsPerUnit"] = 100.0;
                     std::ofstream ofs(spritePath);
-                    ofs << j.dump(1, "  ") << "\n";
+                    ofs << j.dump(2) << "\n";
                     ofs.close();
 
                     MetaFile mf;
@@ -2656,39 +2659,42 @@ namespace RoninEditor
                 std::stringstream ss;
                 ss << ifs.rdbuf();
                 try {
-                    auto jpref = json::JSON::Load(ss.str());
-                    json::JSON rootJson;
-                    if (jpref.hasKey("rootObject")) rootJson = jpref["rootObject"];
-                    else if (jpref.hasKey("object")) rootJson = jpref["object"];
-                    else rootJson = jpref;
-
-                    if (rootJson.hasKey("name"))
-                        ImGui::Text("Root GameObject: %s", rootJson["name"].ToString().c_str());
-                    if (rootJson.hasKey("tag"))
-                        ImGui::Text("Tag: %s", rootJson["tag"].ToString().c_str());
-                    if (rootJson.hasKey("layer"))
-                        ImGui::Text("Layer: %d", rootJson["layer"].ToInt());
-
-                    if (rootJson.hasKey("components") && rootJson["components"].JSONType() == json::JSON::Class::Array)
+                    auto jpref = nlohmann::json::parse(ss.str(), nullptr, false);
+                    if (!jpref.is_discarded() && jpref.is_object())
                     {
-                        ImGui::Spacing();
-                        ImGui::TextDisabled("Root Components:");
-                        for (const auto &c : rootJson["components"].ArrayRange())
+                        nlohmann::json rootJson;
+                        if (jpref.contains("rootObject")) rootJson = jpref["rootObject"];
+                        else if (jpref.contains("object")) rootJson = jpref["object"];
+                        else rootJson = jpref;
+
+                        if (rootJson.contains("name") && rootJson["name"].is_string())
+                            ImGui::Text("Root GameObject: %s", rootJson["name"].get<std::string>().c_str());
+                        if (rootJson.contains("tag") && rootJson["tag"].is_string())
+                            ImGui::Text("Tag: %s", rootJson["tag"].get<std::string>().c_str());
+                        if (rootJson.contains("layer") && rootJson["layer"].is_number())
+                            ImGui::Text("Layer: %d", rootJson["layer"].get<int>());
+
+                        if (rootJson.contains("components") && rootJson["components"].is_array())
                         {
-                            if (c.hasKey("type"))
-                                ImGui::BulletText("%s", c.at("type").ToString().c_str());
+                            ImGui::Spacing();
+                            ImGui::TextDisabled("Root Components:");
+                            for (const auto &c : rootJson["components"])
+                            {
+                                if (c.is_object() && c.contains("type") && c["type"].is_string())
+                                    ImGui::BulletText("%s", c["type"].get<std::string>().c_str());
+                            }
                         }
-                    }
 
-                    if (jpref.hasKey("children") && jpref["children"].JSONType() == json::JSON::Class::Array)
-                    {
-                        size_t childCount = jpref["children"].size();
-                        ImGui::Spacing();
-                        ImGui::Text("Children Hierarchy (%zu objects):", childCount);
-                        for (const auto &c : jpref["children"].ArrayRange())
+                        if (jpref.contains("children") && jpref["children"].is_array())
                         {
-                            if (c.hasKey("name"))
-                                ImGui::BulletText("%s", c.at("name").ToString().c_str());
+                            size_t childCount = jpref["children"].size();
+                            ImGui::Spacing();
+                            ImGui::Text("Children Hierarchy (%zu objects):", childCount);
+                            for (const auto &c : jpref["children"])
+                            {
+                                if (c.is_object() && c.contains("name") && c["name"].is_string())
+                                    ImGui::BulletText("%s", c["name"].get<std::string>().c_str());
+                            }
                         }
                     }
                 } catch (...) {}
