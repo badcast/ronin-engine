@@ -58,6 +58,8 @@ add_library(RoninEngine ${ronin_targets} ${RONIN_ENGINE_HEADERS})
 
 target_include_directories(
   RoninEngine PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+                     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/3rdparty/imgui>
+                     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/3rdparty/imgui/backends>
                      $<INSTALL_INTERFACE:include>)
 
 set_target_properties(RoninEngine PROPERTIES OUTPUT_NAME ${RUNTIME_OUTPUT_NAME})

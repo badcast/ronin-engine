@@ -4,6 +4,9 @@
 #include <imgui.h>
 #include <filesystem>
 #include <cstring>
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_image.h>
+#include "core/splash/ronin_logo.hpp"
 #include <ronin/RoninSimulator.h>
 
 namespace RoninEditor
@@ -22,6 +25,39 @@ namespace RoninEditor
             std::filesystem::path defaultDir = std::filesystem::current_path() / "Projects";
             std::strncpy(m_newProjectLocation, defaultDir.string().c_str(), sizeof(m_newProjectLocation) - 1);
         }
+    }
+
+    ProjectHub::~ProjectHub()
+    {
+        if (m_logoTexture)
+        {
+            SDL_DestroyTexture(m_logoTexture);
+            m_logoTexture = nullptr;
+        }
+    }
+
+    void ProjectHub::OpenAboutDialog()
+    {
+        m_showAboutDialog = true;
+    }
+
+    void ProjectHub::ensureLogoLoaded()
+    {
+        if (m_logoTexture != nullptr || !m_app || !m_app->GetRenderer())
+            return;
+
+        SDL_RWops *rw = SDL_RWFromConstMem(RoninEngine_logo_png, RoninEngine_logo_png_len);
+        if (!rw)
+            return;
+
+        SDL_Surface *surface = IMG_Load_RW(rw, 1);
+        if (!surface)
+            return;
+
+        m_logoWidth = surface->w;
+        m_logoHeight = surface->h;
+        m_logoTexture = SDL_CreateTextureFromSurface(m_app->GetRenderer(), surface);
+        SDL_FreeSurface(surface);
     }
 
     void ProjectHub::Render()
@@ -92,8 +128,14 @@ namespace RoninEditor
                             RoninEngine::RoninSimulator::GetVersionString(),
                             RONIN_EDITOR_VERSION_STRING);
 
-        ImGui::SameLine(ImGui::GetWindowWidth() - 150.0f);
-        if (ImGui::Button("Quit Hub", ImVec2(130.0f, 26.0f)))
+        float rightButtonsWidth = 220.0f;
+        ImGui::SameLine(ImGui::GetWindowWidth() - rightButtonsWidth - 16.0f);
+        if (ImGui::Button("About ()", ImVec2(95.0f, 26.0f)))
+        {
+            OpenAboutDialog();
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("Quit Hub", ImVec2(110.0f, 26.0f)))
         {
             if (m_app)
                 m_app->RequestQuit();
@@ -304,22 +346,47 @@ namespace RoninEditor
     {
         ImGui::Spacing();
         ImGui::TextColored(ImVec4(0.35f, 0.65f, 1.0f, 1.0f), "RoninEngine & Ronin Editor");
+        ImGui::SameLine();
+        if (ImGui::Button("Open About Window ()", ImVec2(170.0f, 24.0f)))
+        {
+            OpenAboutDialog();
+        }
         ImGui::Spacing();
 
         ImGui::BeginChild("AboutBox", ImVec2(0, 0), true);
+
+        ensureLogoLoaded();
+        if (m_logoTexture)
+        {
+            float dispW = 320.0f;
+            float dispH = 160.0f;
+            if (m_logoWidth > 0 && m_logoHeight > 0)
+                dispH = dispW * (static_cast<float>(m_logoHeight) / static_cast<float>(m_logoWidth));
+            ImGui::Image(reinterpret_cast<ImTextureID>(m_logoTexture), ImVec2(dispW, dispH));
+            ImGui::Spacing();
+        }
+
         ImGui::Text("Official Visual Game Development Editor for RoninEngine.");
-        ImGui::TextDisabled("Repository: https://github.com/badcast/ronin-engine");
+        ImGui::TextColored(ImVec4(0.4f, 0.8f, 1.0f, 1.0f), "https://github.com/badcast/ronin-engine");
+        ImGui::SameLine();
+        if (ImGui::SmallButton("Copy URL##Tab"))
+        {
+            ImGui::SetClipboardText("https://github.com/badcast/ronin-engine");
+        }
         ImGui::TextDisabled("License: MIT License");
         ImGui::Spacing();
         ImGui::Separator();
         ImGui::Spacing();
 
-        ImGui::Text("Technical Stack & Architecture:");
+        ImGui::TextColored(ImVec4(0.9f, 0.7f, 0.2f, 1.0f), "Linked Subsystems (@RoninSimulator):");
+        ImGui::BulletText("Raw Targets: %s", RoninEngine::RoninSimulator::GetLinkedTargets());
         ImGui::BulletText("Core Engine: C++17, RoninEngine::Runtime (GameObjects, Components, Transforms)");
-        ImGui::BulletText("Backend: SDL2 (Windowing, Audio, Rendering, Input)");
-        ImGui::BulletText("Editor GUI: Dear ImGui (Docking Branch, Multi-Viewport)");
-        ImGui::BulletText("Serialization: nlohmann json (.roninproject, .world, ProjectSettings)");
-        ImGui::BulletText("Linked Subsystems: %s", RoninEngine::RoninSimulator::GetLinkedTargets());
+        ImGui::BulletText("Simulations: 2D Physics, RigidBody2D, Terrain2D, MultiCollider2D, NavMeshAgent");
+        ImGui::BulletText("Graphics: Hardware-accelerated SDL2/GPU 2D rendering, Sprites, Lights, Cameras");
+        ImGui::BulletText("Audio Backend: miniaudio (32-channel mixer, DSP, FFT spectrum analysis)");
+        ImGui::BulletText("User Interface: Dear ImGui native backend (RoninEngine::UI::GUI)");
+        ImGui::BulletText("Artificial Intelligence: 2D NavMesh navigation and pathfinding");
+        ImGui::BulletText("Serialization: nlohmann::json (.roninproject, .world, ProjectSettings)");
 
         ImGui::Spacing();
         ImGui::Separator();
@@ -337,8 +404,138 @@ namespace RoninEditor
         ImGui::EndChild();
     }
 
+    void ProjectHub::renderAboutDialog()
+    {
+        if (m_showAboutDialog)
+        {
+            ImGui::OpenPopup("About RoninEngine");
+            m_showAboutDialog = false;
+        }
+
+        ImGui::SetNextWindowSize(ImVec2(640.0f, 650.0f), ImGuiCond_Appearing);
+        if (ImGui::BeginPopupModal("About RoninEngine", nullptr, ImGuiWindowFlags_NoResize))
+        {
+            ensureLogoLoaded();
+
+            // 1. Center the Logo
+            if (m_logoTexture)
+            {
+                float dispW = 340.0f;
+                float dispH = 170.0f;
+                if (m_logoWidth > 0 && m_logoHeight > 0)
+                {
+                    dispH = dispW * (static_cast<float>(m_logoHeight) / static_cast<float>(m_logoWidth));
+                }
+                float xOffset = (ImGui::GetWindowWidth() - dispW) * 0.5f;
+                if (xOffset > 0.0f)
+                    ImGui::SetCursorPosX(xOffset);
+                ImGui::Image(reinterpret_cast<ImTextureID>(m_logoTexture), ImVec2(dispW, dispH));
+            }
+
+            ImGui::Spacing();
+            ImGui::Separator();
+            ImGui::Spacing();
+
+            // 2. Title & Version
+            ImGui::TextColored(ImVec4(0.35f, 0.65f, 1.0f, 1.0f), "RoninEngine");
+            ImGui::SameLine();
+            ImGui::Text("v%s  (Editor v%s)", RoninEngine::RoninSimulator::GetVersionString(), RONIN_EDITOR_VERSION_STRING);
+            ImGui::TextDisabled("Lightweight 2D Game Development Engine & Modern Visual Studio");
+
+            ImGui::Spacing();
+
+            // 3. GitHub repository link
+            ImGui::Text("Source Code:");
+            ImGui::SameLine();
+            ImGui::TextColored(ImVec4(0.4f, 0.8f, 1.0f, 1.0f), "https://github.com/badcast/ronin-engine");
+            ImGui::SameLine();
+            if (ImGui::SmallButton("Copy URL##Dialog"))
+            {
+                ImGui::SetClipboardText("https://github.com/badcast/ronin-engine");
+            }
+
+            ImGui::Spacing();
+            ImGui::Separator();
+            ImGui::Spacing();
+
+            // 4. Linked Modules from @RoninSimulator
+            ImGui::TextColored(ImVec4(0.9f, 0.7f, 0.2f, 1.0f), "Linked Modules (@RoninSimulator):");
+            const char *rawTargets = RoninEngine::RoninSimulator::GetLinkedTargets();
+            ImGui::TextDisabled("Targets: %s", rawTargets ? rawTargets : "All");
+
+            if (ImGui::BeginChild("ModulesBox", ImVec2(0.0f, 150.0f), true))
+            {
+                struct ModuleDesc { const char *name; const char *desc; };
+                const ModuleDesc modules[] = {
+                    {"RoninCore", "Simulation loop, memory allocator, high-precision timing, engine settings"},
+                    {"RoninSimulations", "GameObjects, Components, Transforms, RigidBody2D, Terrain2D, MultiCollider2D, NavMeshAgent"},
+                    {"RoninGraphics", "Hardware-accelerated 2D renderer, Sprite & Camera pipelines, 2D Lights"},
+                    {"RoninAudio", "miniaudio backend, 32-channel mixer, DSP & FFT spectrum analysis"},
+                    {"RoninResources", "Asset management, metadata pipeline, texture caching"},
+                    {"RoninInputOutputs", "Input system (keyboard, mouse, gamepad), file streaming"},
+                    {"RoninUserInterface", "Dear ImGui native backend (RoninEngine::UI::GUI)"},
+                    {"RoninArtInteleg", "2D NavMesh navigation, pathfinding algorithms"},
+                    {"Ronin3rdParty", "Dear ImGui (docking), nlohmann::json, miniaudio"}
+                };
+
+                for (const auto &mod : modules)
+                {
+                    ImGui::BulletText("%s: ", mod.name);
+                    ImGui::SameLine();
+                    ImGui::TextDisabled("%s", mod.desc);
+                }
+                ImGui::EndChild();
+            }
+
+            ImGui::Spacing();
+            ImGui::Separator();
+            ImGui::Spacing();
+
+            // 5. MIT License
+            ImGui::TextColored(ImVec4(0.5f, 0.9f, 0.5f, 1.0f), "License: MIT License");
+            if (ImGui::BeginChild("LicenseBox", ImVec2(0.0f, 90.0f), true))
+            {
+                ImGui::TextWrapped(
+                    "MIT License\n\n"
+                    "Copyright (c) 2024-2026 badcast / RoninEngine Contributors\n\n"
+                    "Permission is hereby granted, free of charge, to any person obtaining a copy "
+                    "of this software and associated documentation files (the \"Software\"), to deal "
+                    "in the Software without restriction, including without limitation the rights "
+                    "to use, copy, modify, merge, publish, distribute, sublicense, and/or sell "
+                    "copies of the Software, and to permit persons to whom the Software is "
+                    "furnished to do so, subject to the following conditions:\n\n"
+                    "The above copyright notice and this permission notice shall be included in all "
+                    "copies or substantial portions of the Software.\n\n"
+                    "THE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR "
+                    "IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, "
+                    "FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE "
+                    "AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER "
+                    "LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, "
+                    "OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE "
+                    "SOFTWARE."
+                );
+                ImGui::EndChild();
+            }
+
+            ImGui::Spacing();
+            ImGui::Separator();
+            ImGui::Spacing();
+
+            float btnWidth = 120.0f;
+            ImGui::SetCursorPosX((ImGui::GetWindowWidth() - btnWidth) * 0.5f);
+            if (ImGui::Button("Close", ImVec2(btnWidth, 26.0f)))
+            {
+                ImGui::CloseCurrentPopup();
+            }
+
+            ImGui::EndPopup();
+        }
+    }
+
     void ProjectHub::renderModals()
     {
+        renderAboutDialog();
+
         if (m_showErrorModal)
         {
             ImGui::OpenPopup("Project Error");

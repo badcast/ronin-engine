@@ -3,6 +3,8 @@
 #include <string>
 #include <vector>
 
+struct SDL_Texture;
+
 namespace RoninEditor
 {
     class EditorApp;
@@ -11,9 +13,10 @@ namespace RoninEditor
     {
     public:
         explicit ProjectHub(EditorApp *app);
-        ~ProjectHub() = default;
+        ~ProjectHub();
 
         void Render();
+        void OpenAboutDialog();
 
     private:
         void renderHeader();
@@ -21,6 +24,8 @@ namespace RoninEditor
         void renderNewProjectTab();
         void renderAboutTab();
         void renderModals();
+        void renderAboutDialog();
+        void ensureLogoLoaded();
 
         EditorApp *m_app = nullptr;
 
@@ -39,5 +44,11 @@ namespace RoninEditor
         // Error modal
         bool m_showErrorModal = false;
         std::string m_errorMessage;
+
+        // About modal & embedded logo
+        bool m_showAboutDialog = false;
+        ::SDL_Texture *m_logoTexture = nullptr;
+        int m_logoWidth = 0;
+        int m_logoHeight = 0;
     };
 } // namespace RoninEditor

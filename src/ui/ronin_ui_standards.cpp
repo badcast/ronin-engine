@@ -1,504 +1,360 @@
 #include "ronin.h"
 #include "ronin_ui_resources.h"
 #include "ronin_render_cache.h"
-
-// TODO: Make UI Cache
+#include <imgui.h>
+#include <backends/imgui_impl_sdl2.h>
+#include <backends/imgui_impl_sdlrenderer2.h>
+#include <algorithm>
+#include <string>
+#include <vector>
 
 namespace RoninEngine::Runtime
 {
     extern TTF_Font *pDefaultTTFFont;
     extern font2d_t *f2d_default;
-
-    extern void text_get(std::string &text);
-
-    static void utf8_pop_back(std::string &s)
-    {
-        if(s.empty()) return;
-        while(!s.empty() && ((static_cast<unsigned char>(s.back()) & 0xC0) == 0x80))
-        {
-            s.pop_back();
-        }
-        if(!s.empty())
-            s.pop_back();
-    }
-} // namespace RoninEngine::Runtime
+}
 
 namespace RoninEngine::UI
 {
     using namespace RoninEngine::Runtime;
 
+    void apply_standard_ui_style()
+    {
+        ImGuiStyle &style = ImGui::GetStyle();
+        ImVec4 *colors = style.Colors;
+
+        // Modern slate & obsidian palette
+        colors[ImGuiCol_Text] = ImVec4(0.95f, 0.96f, 0.98f, 1.00f);
+        colors[ImGuiCol_TextDisabled] = ImVec4(0.50f, 0.54f, 0.60f, 1.00f);
+        colors[ImGuiCol_WindowBg] = ImVec4(0.12f, 0.14f, 0.18f, 0.96f);
+        colors[ImGuiCol_ChildBg] = ImVec4(0.10f, 0.11f, 0.15f, 1.00f);
+        colors[ImGuiCol_PopupBg] = ImVec4(0.13f, 0.15f, 0.20f, 0.98f);
+        colors[ImGuiCol_Border] = ImVec4(0.24f, 0.28f, 0.36f, 0.60f);
+        colors[ImGuiCol_BorderShadow] = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
+        colors[ImGuiCol_FrameBg] = ImVec4(0.18f, 0.21f, 0.27f, 1.00f);
+        colors[ImGuiCol_FrameBgHovered] = ImVec4(0.24f, 0.29f, 0.38f, 1.00f);
+        colors[ImGuiCol_FrameBgActive] = ImVec4(0.28f, 0.34f, 0.44f, 1.00f);
+        colors[ImGuiCol_TitleBg] = ImVec4(0.11f, 0.13f, 0.16f, 1.00f);
+        colors[ImGuiCol_TitleBgActive] = ImVec4(0.15f, 0.18f, 0.24f, 1.00f);
+        colors[ImGuiCol_TitleBgCollapsed] = ImVec4(0.10f, 0.11f, 0.14f, 0.75f);
+        colors[ImGuiCol_MenuBarBg] = ImVec4(0.14f, 0.16f, 0.20f, 1.00f);
+        colors[ImGuiCol_ScrollbarBg] = ImVec4(0.10f, 0.11f, 0.14f, 0.60f);
+        colors[ImGuiCol_ScrollbarGrab] = ImVec4(0.24f, 0.28f, 0.36f, 1.00f);
+        colors[ImGuiCol_ScrollbarGrabHovered] = ImVec4(0.32f, 0.38f, 0.48f, 1.00f);
+        colors[ImGuiCol_ScrollbarGrabActive] = ImVec4(0.40f, 0.48f, 0.60f, 1.00f);
+        colors[ImGuiCol_CheckMark] = ImVec4(0.35f, 0.65f, 1.00f, 1.00f);
+        colors[ImGuiCol_SliderGrab] = ImVec4(0.35f, 0.65f, 1.00f, 1.00f);
+        colors[ImGuiCol_SliderGrabActive] = ImVec4(0.45f, 0.75f, 1.00f, 1.00f);
+        colors[ImGuiCol_Button] = ImVec4(0.20f, 0.24f, 0.32f, 1.00f);
+        colors[ImGuiCol_ButtonHovered] = ImVec4(0.28f, 0.36f, 0.50f, 1.00f);
+        colors[ImGuiCol_ButtonActive] = ImVec4(0.35f, 0.50f, 0.72f, 1.00f);
+        colors[ImGuiCol_Header] = ImVec4(0.20f, 0.25f, 0.34f, 1.00f);
+        colors[ImGuiCol_HeaderHovered] = ImVec4(0.28f, 0.36f, 0.48f, 1.00f);
+        colors[ImGuiCol_HeaderActive] = ImVec4(0.35f, 0.46f, 0.62f, 1.00f);
+        colors[ImGuiCol_Separator] = ImVec4(0.22f, 0.26f, 0.33f, 0.70f);
+        colors[ImGuiCol_SeparatorHovered] = ImVec4(0.35f, 0.60f, 0.90f, 1.00f);
+        colors[ImGuiCol_SeparatorActive] = ImVec4(0.45f, 0.70f, 1.00f, 1.00f);
+        colors[ImGuiCol_ResizeGrip] = ImVec4(0.26f, 0.30f, 0.38f, 0.60f);
+        colors[ImGuiCol_ResizeGripHovered] = ImVec4(0.35f, 0.60f, 0.90f, 0.80f);
+        colors[ImGuiCol_ResizeGripActive] = ImVec4(0.45f, 0.70f, 1.00f, 1.00f);
+        colors[ImGuiCol_Tab] = ImVec4(0.16f, 0.18f, 0.23f, 1.00f);
+        colors[ImGuiCol_TabHovered] = ImVec4(0.28f, 0.36f, 0.48f, 1.00f);
+        colors[ImGuiCol_TabSelected] = ImVec4(0.22f, 0.28f, 0.38f, 1.00f);
+
+        // Geometrical adjustments: sleek, rounded, stylish
+        style.WindowRounding = 6.0f;
+        style.ChildRounding = 4.0f;
+        style.FrameRounding = 5.0f;
+        style.PopupRounding = 6.0f;
+        style.ScrollbarRounding = 4.0f;
+        style.GrabRounding = 4.0f;
+        style.TabRounding = 5.0f;
+
+        style.WindowBorderSize = 1.0f;
+        style.ChildBorderSize = 1.0f;
+        style.PopupBorderSize = 1.0f;
+        style.FrameBorderSize = 1.0f;
+        style.TabBorderSize = 0.0f;
+
+        style.WindowPadding = ImVec2(10.0f, 10.0f);
+        style.FramePadding = ImVec2(8.0f, 5.0f);
+        style.ItemSpacing = ImVec2(8.0f, 6.0f);
+        style.ItemInnerSpacing = ImVec2(6.0f, 4.0f);
+    }
+
+    bool init_ui_backend()
+    {
+        if(ImGui::GetCurrentContext() != nullptr)
+            return true;
+
+        if(gscope.renderer == nullptr || gscope.activeWindow == nullptr)
+            return false;
+
+        IMGUI_CHECKVERSION();
+        ImGui::CreateContext();
+        ImGuiIO &io = ImGui::GetIO();
+        io.IniFilename = nullptr;
+        apply_standard_ui_style();
+        ImGui_ImplSDL2_InitForSDLRenderer(gscope.activeWindow, gscope.renderer);
+        ImGui_ImplSDLRenderer2_Init(gscope.renderer);
+        return true;
+    }
+
+    void shutdown_ui_backend()
+    {
+        if(ImGui::GetCurrentContext() != nullptr)
+        {
+            ImGui_ImplSDLRenderer2_Shutdown();
+            ImGui_ImplSDL2_Shutdown();
+            ImGui::DestroyContext();
+        }
+    }
+
     bool general_ui_render(UIElement &element, const UIState &uiState, bool &ui_focus)
     {
         bool result = false;
         bool isEnabled = (element.options & ElementEnableMask) && uiState.gui->handle->interactable;
-        SDL_Texture *texture;
-        SDL_Surface *surface;
-        Rect rect;
 
         switch(element.prototype)
         {
             case RGUI_TEXT:
             {
-                RenderUtility::SetColor(isEnabled ? Color::white : colorSpace.defaultInteraction.disabledState);
-                int fSize = element.fontWidth > 0 ? element.fontWidth : 15;
-                Render_String_ttf(element.text.data(), fSize, element.rect.getXY(), false);
-                if(isEnabled && uiState.ms_click)
+                ImGui::SetCursorScreenPos(ImVec2(static_cast<float>(element.rect.x), static_cast<float>(element.rect.y)));
+                if(!isEnabled)
+                    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.50f, 0.54f, 0.60f, 1.00f));
+                else
+                    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.95f, 0.96f, 0.98f, 1.00f));
+
+                ImGui::TextUnformatted(element.text.c_str());
+                ImGui::PopStyleColor();
+
+                if(isEnabled && ImGui::IsItemClicked())
+                {
                     result = true;
+                }
                 break;
             }
 
             case RGUI_BUTTON:
             {
-                static uint8_t pSize = 2; // pen size
-                static Rect inside = Rect(pSize, pSize, -pSize * 2, -pSize * 2);
-                bool show_down_side = isEnabled && (Input::GetMouseDown(MouseButton::MouseLeft) == false || !uiState.ms_hover);
-
-                // fill
-                Color col;
+                ImGui::SetCursorScreenPos(ImVec2(static_cast<float>(element.rect.x), static_cast<float>(element.rect.y)));
                 if(!isEnabled)
-                    col = colorSpace.defaultInteraction.disabledState;
-                else if(uiState.ms_hover && Input::GetMouseDown(MouseButton::MouseLeft))
-                    col = colorSpace.defaultInteraction.pressState;
-                else if(uiState.ms_hover)
-                    col = colorSpace.defaultInteraction.hoverState;
-                else
-                    col = colorSpace.defaultInteraction.normalState;
+                    ImGui::BeginDisabled();
 
-                rect = element.rect;
-                rect += inside / 2;
-                RenderUtility::SetColor(col);
-
-                if(show_down_side)
+                std::string btnLabel = element.text + "##btn_" + std::to_string(element.id);
+                ImVec2 btnSize(static_cast<float>(element.rect.w), static_cast<float>(element.rect.h));
+                if(ImGui::Button(btnLabel.c_str(), btnSize))
                 {
-                    RenderUtility::SetColor(colorSpace.buttonDownSide);
-                    SDL_RenderFillRect(gscope.renderer, reinterpret_cast<SDL_Rect *>(&rect));
+                    result = true;
+                    uiState.gui->handle->button_clicked.insert(element.id);
                 }
 
-                RenderUtility::SetColor(col);
-                Rect region {rect};
-                region.h -= (show_down_side ? 4 : 0);
-                SDL_RenderFillRect(gscope.renderer, reinterpret_cast<SDL_Rect *>(&region));
-
-                RenderUtility::SetColor(isEnabled ? colorSpace.buttonText : Color::gray);
-                Render_String_ttf(element.text.data(), 12, rect.getXY() + (rect.getWH() - (show_down_side ? (Vec2Int::up * 4) : Vec2Int::zero)) / 2, true);
-                if(isEnabled && (result = uiState.ms_click))
-                    uiState.gui->handle->button_clicked.insert(element.id);
+                if(!isEnabled)
+                    ImGui::EndDisabled();
                 break;
             }
 
             case RGUI_TEXT_EDIT:
             {
-                static const int thickness = 2;
-                static const Rect thick = {thickness, thickness, -thickness, -thickness};
-                static const Rect thickPer {1, 1, -1, -1};
-                rect = element.rect + thick;
+                ImGui::SetCursorScreenPos(ImVec2(static_cast<float>(element.rect.x), static_cast<float>(element.rect.y)));
+                ImGui::SetNextItemWidth(static_cast<float>(element.rect.w));
 
-                RenderUtility::SetColor(isEnabled ? ((uiState.ms_hover || ui_focus) ? colorSpace.defaultInteraction.hoverState : colorSpace.defaultInteraction.normalState) : colorSpace.defaultInteraction.disabledState);
-                SDL_RenderFillRect(gscope.renderer, (SDL_Rect *) &rect);
-                RenderUtility::SetColor(Color::gray);
-                for(int x = 0; x < thickness; ++x)
+                if(!isEnabled)
+                    ImGui::BeginDisabled();
+
+                char buf[512];
+                std::strncpy(buf, element.text.c_str(), sizeof(buf) - 1);
+                buf[sizeof(buf) - 1] = '\0';
+                std::string editId = "##edit_" + std::to_string(element.id);
+
+                if(ImGui::InputText(editId.c_str(), buf, sizeof(buf)))
                 {
-                    rect -= thickPer;
-                    SDL_RenderDrawRect(gscope.renderer, (SDL_Rect *) &rect);
+                    element.text = buf;
+                    result = true;
                 }
 
-                if(isEnabled)
-                {
-                    if(!ui_focus && uiState.ms_click)
-                    {
-                        ui_focus = true;
-                        std::string flushInput;
-                        RoninEngine::Runtime::text_get(flushInput); // flush old keypresses
-                    }
-                    else if(ui_focus)
-                    {
-                        if(Input::GetKeyDown(KB_BACKSPACE))
-                        {
-                            utf8_pop_back(element.text);
-                            result = true;
-                        }
-                        if(Input::GetKeyDown(KB_RETURN) || Input::GetKeyDown(KB_KP_ENTER) || Input::GetKeyDown(KB_ESCAPE))
-                        {
-                            ui_focus = false;
-                        }
-
-                        std::string linput;
-                        RoninEngine::Runtime::text_get(linput);
-                        if(!linput.empty())
-                        {
-                            element.text += linput;
-                            result = true;
-                        }
-                    }
-                }
-                else
-                {
-                    ui_focus = false;
-                }
-
-                // draw main text
-                int editFontSize = element.fontWidth > 0 ? element.fontWidth : 13;
-                TTF_SetFontSize(pDefaultTTFFont, editFontSize);
-                std::string displayText = element.text;
-                if(ui_focus && static_cast<int>(Time::time() * 2.0f) % 2 == 0)
-                    displayText += "|";
-
-                if(!displayText.empty())
-                {
-                    surface = TTF_RenderUTF8_Solid(pDefaultTTFFont, displayText.c_str(), *reinterpret_cast<SDL_Color *>(&colorSpace.editText));
-                    if(surface)
-                    {
-                        texture = SDL_CreateTextureFromSurface(gscope.renderer, surface);
-                        if(texture)
-                        {
-                            SDL_Rect srcR = {0, 0, surface->w, surface->h};
-                            rect = element.rect;
-                            rect.x += 5;
-                            rect.y += (element.rect.h - surface->h) / 2;
-                            rect.w = std::min(surface->w, std::max(1, element.rect.w - 10));
-                            rect.h = surface->h;
-                            srcR.w = rect.w;
-
-                            SDL_RenderCopy(gscope.renderer, texture, &srcR, (SDL_Rect *) &rect);
-                            SDL_DestroyTexture(texture);
-                        }
-                        SDL_FreeSurface(surface);
-                    }
-                }
+                if(!isEnabled)
+                    ImGui::EndDisabled();
                 break;
             }
 
             case RGUI_HSLIDER:
             {
-                SliderResource *slider = &element.resource.slider;
-                float prevVal = slider->value;
-                rect = *reinterpret_cast<SDL_Rect *>(&element.rect);
+                ImGui::SetCursorScreenPos(ImVec2(static_cast<float>(element.rect.x), static_cast<float>(element.rect.y)));
+                ImGui::SetNextItemWidth(static_cast<float>(element.rect.w));
 
-                if(isEnabled)
+                if(!isEnabled)
+                    ImGui::BeginDisabled();
+
+                std::string sldId = "##slider_" + std::to_string(element.id);
+                float val = element.resource.slider.value;
+                if(ImGui::SliderFloat(sldId.c_str(), &val, element.resource.slider.min, element.resource.slider.max, "%.2f"))
                 {
-                    if(uiState.ms_hover && Input::GetMouseWheel() != 0)
-                    {
-                        float delta = (slider->max - slider->min) * slider->stepPercentage * Input::GetMouseWheel();
-                        slider->value = Math::Clamp(slider->value + delta, slider->min, slider->max);
-                        result = (slider->value != prevVal);
-                    }
-                    else if(uiState.ms_hover && Input::GetMouseDown(MouseButton::MouseLeft))
-                    {
-                        ui_focus = true;
-                        int msX = Math::Clamp(uiState.ms.x, element.rect.x, element.rect.x + element.rect.w);
-                        float ratio = (element.rect.w > 0) ? (static_cast<float>(msX - element.rect.x) / element.rect.w) : 0.0f;
-                        slider->value = Math::Clamp(Math::Lerp(slider->min, slider->max, ratio), slider->min, slider->max);
-                        result = (slider->value != prevVal);
-                    }
+                    element.resource.slider.value = val;
+                    result = true;
                 }
 
-                float ratio = (slider->max > slider->min) ? ((slider->value - slider->min) / (slider->max - slider->min)) : 0.0f;
-                ratio = Math::Clamp01(ratio);
-
-                rect.h = 4;
-                rect.y += (element.rect.h - rect.h) / 2;
-
-                RenderUtility::SetColor(isEnabled ? (uiState.ms_hover ? Color::lightgray : Color::gray) : colorSpace.defaultInteraction.disabledState);
-                Color color = RenderUtility::GetColor();
-                boxRGBA(gscope.renderer, rect.x, rect.y, rect.x + rect.w, rect.y + rect.h, Color::slategray.r, Color::slategray.g, Color::slategray.b, Color::slategray.a);
-                rectangleRGBA(gscope.renderer, rect.x, rect.y, rect.x + rect.w, rect.y + rect.h, color.r, color.g, color.b, color.a);
-
-                // Cursor
-                rect.w = 20;
-                rect.h = 11;
-                rect.x = element.rect.x + static_cast<int>(element.rect.w * ratio) - rect.w / 2;
-                rect.y = element.rect.y + (element.rect.h - rect.h) / 2;
-
-                color = isEnabled ? Color::darkgray : Color::lightgray;
-                boxRGBA(gscope.renderer, rect.x, rect.y, rect.x + rect.w, rect.y + rect.h, color.r, color.g, color.b, color.a);
-                color = isEnabled ? (uiState.ms_hover ? Color::lightgray : Color::gray) : Color::darkgray;
-                rectangleRGBA(gscope.renderer, rect.x, rect.y, rect.x + rect.w + 1, rect.y + rect.h + 1, color.r, color.g, color.b, color.a);
-
-                RenderUtility::SetColor(Color::black);
-                char buffer[32];
-                snprintf(buffer, sizeof(buffer), "%.1f", slider->value);
-                rect.x += rect.w / 2;
-                rect.y += rect.h / 2;
-                Render_String_ttf(buffer, 9, rect.getXY(), true);
+                if(!isEnabled)
+                    ImGui::EndDisabled();
                 break;
             }
 
             case RGUI_VSLIDER:
             {
-                SliderResource *slider = &element.resource.slider;
-                float prevVal = slider->value;
-                rect = *reinterpret_cast<SDL_Rect *>(&element.rect);
+                ImGui::SetCursorScreenPos(ImVec2(static_cast<float>(element.rect.x), static_cast<float>(element.rect.y)));
 
-                if(isEnabled)
+                if(!isEnabled)
+                    ImGui::BeginDisabled();
+
+                std::string sldId = "##vslider_" + std::to_string(element.id);
+                float val = element.resource.slider.value;
+                ImVec2 sldSize(static_cast<float>(element.rect.w), static_cast<float>(element.rect.h));
+                if(ImGui::VSliderFloat(sldId.c_str(), sldSize, &val, element.resource.slider.min, element.resource.slider.max, "%.2f"))
                 {
-                    if(uiState.ms_hover && Input::GetMouseWheel() != 0)
-                    {
-                        float delta = (slider->max - slider->min) * slider->stepPercentage * Input::GetMouseWheel();
-                        slider->value = Math::Clamp(slider->value + delta, slider->min, slider->max);
-                        result = (slider->value != prevVal);
-                    }
-                    else if(uiState.ms_hover && Input::GetMouseDown(MouseButton::MouseLeft))
-                    {
-                        ui_focus = true;
-                        int msY = Math::Clamp(uiState.ms.y, element.rect.y, element.rect.y + element.rect.h);
-                        // Bottom to top
-                        float ratio = (element.rect.h > 0) ? (static_cast<float>((element.rect.y + element.rect.h) - msY) / element.rect.h) : 0.0f;
-                        slider->value = Math::Clamp(Math::Lerp(slider->min, slider->max, ratio), slider->min, slider->max);
-                        result = (slider->value != prevVal);
-                    }
-                }
-
-                float ratio = (slider->max > slider->min) ? ((slider->value - slider->min) / (slider->max - slider->min)) : 0.0f;
-                ratio = Math::Clamp01(ratio);
-
-                rect.w = 4;
-                rect.x += (element.rect.w - rect.w) / 2;
-
-                RenderUtility::SetColor(isEnabled ? (uiState.ms_hover ? Color::lightgray : Color::gray) : colorSpace.defaultInteraction.disabledState);
-                Color color = RenderUtility::GetColor();
-                boxRGBA(gscope.renderer, rect.x, rect.y, rect.x + rect.w, rect.y + rect.h, Color::slategray.r, Color::slategray.g, Color::slategray.b, Color::slategray.a);
-                rectangleRGBA(gscope.renderer, rect.x, rect.y, rect.x + rect.w, rect.y + rect.h, color.r, color.g, color.b, color.a);
-
-                // Cursor
-                rect.w = 11;
-                rect.h = 20;
-                rect.x = element.rect.x + (element.rect.w - rect.w) / 2;
-                rect.y = element.rect.y + static_cast<int>(element.rect.h * (1.0f - ratio)) - rect.h / 2;
-
-                color = isEnabled ? Color::darkgray : Color::lightgray;
-                boxRGBA(gscope.renderer, rect.x, rect.y, rect.x + rect.w, rect.y + rect.h, color.r, color.g, color.b, color.a);
-                color = isEnabled ? (uiState.ms_hover ? Color::lightgray : Color::gray) : Color::darkgray;
-                rectangleRGBA(gscope.renderer, rect.x, rect.y, rect.x + rect.w + 1, rect.y + rect.h + 1, color.r, color.g, color.b, color.a);
-
-                RenderUtility::SetColor(Color::black);
-                char buffer[32];
-                snprintf(buffer, sizeof(buffer), "%.1f", slider->value);
-                rect.x += rect.w / 2;
-                rect.y += rect.h / 2;
-                Render_String_ttf(buffer, 9, rect.getXY(), true);
-                break;
-            }
-
-            case RGUI_PICTURE_BOX:
-            {
-                SDL_Rect sdlr;
-                Sprite *sprite = element.resource.picturebox;
-                if(sprite && sprite->surface)
-                {
-                    sdlr.x = element.rect.x;
-                    sdlr.y = element.rect.y;
-                    sdlr.w = element.rect.w == 0 ? sprite->width() : element.rect.w;
-                    sdlr.h = element.rect.h == 0 ? sprite->height() : element.rect.h;
-                    SDL_Texture *tex = render_cache_texture(sprite);
-                    if(tex)
-                    {
-                        SDL_Rect srcR = *reinterpret_cast<SDL_Rect *>(&sprite->m_rect);
-                        SDL_RenderCopy(gscope.renderer, tex, &srcR, &sdlr);
-                        render_cache_unref(tex);
-                    }
-                }
-                if(isEnabled && uiState.ms_click)
+                    element.resource.slider.value = val;
                     result = true;
-                break;
-            }
-
-            case RGUI_DROPDOWN:
-            {
-                static const int thickness = 2;
-                static const Rect thick = {thickness, thickness, -thickness, -thickness};
-                Rect r = element.rect + thick;
-
-                RenderUtility::SetColor(isEnabled ? ((uiState.ms_hover || ui_focus) ? colorSpace.defaultInteraction.hoverState : colorSpace.defaultInteraction.normalState) : colorSpace.defaultInteraction.disabledState);
-                SDL_RenderFillRect(gscope.renderer, (SDL_Rect *) &r);
-                RenderUtility::SetColor(Color::gray);
-                for(int x = 0; x < thickness; ++x)
-                {
-                    r -= Rect(1, 1, -1, -1);
-                    SDL_RenderDrawRect(gscope.renderer, (SDL_Rect *) &r);
                 }
 
-                // draw header text
-                TTF_SetFontSize(pDefaultTTFFont, 13);
-                SDL_Surface *surf = TTF_RenderUTF8_Blended(pDefaultTTFFont, element.text.c_str(), *reinterpret_cast<SDL_Color *>(&colorSpace.dropdownText));
-                if(surf)
-                {
-                    texture = SDL_CreateTextureFromSurface(gscope.renderer, surf);
-                    if(texture)
-                    {
-                        r = element.rect;
-                        r.x += 5;
-                        SDL_QueryTexture(texture, nullptr, nullptr, &r.w, &r.h);
-                        r.y += (element.rect.h - r.h) / 2;
-                        SDL_RenderCopy(gscope.renderer, texture, nullptr, (SDL_Rect *) &r);
-                        SDL_DestroyTexture(texture);
-                    }
-                    SDL_FreeSurface(surf);
-                }
-
-                DropDownResource *link = element.resource.dropdown;
-                if(!link)
-                    break;
-
-                if(isEnabled && uiState.ms_click && Vec2Int::HasIntersection(uiState.ms, element.rect))
-                {
-                    ui_focus = !ui_focus;
-                }
-
-                static const int sz = 24;
-                float targetH = (ui_focus && isEnabled) ? static_cast<float>(link->second.size() * sz) : 0.0f;
-                link->animHeight = Math::MoveTowards(link->animHeight, targetH, std::max(1.0f, Time::deltaTime() * 800.0f));
-
-                if(link->animHeight > 1.0f)
-                {
-                    element.contextRect = Rect(element.rect.x, element.rect.y + element.rect.h, element.rect.w, static_cast<int>(link->animHeight));
-
-                    r = element.contextRect;
-                    RenderUtility::SetColor(colorSpace.defaultInteraction.normalState);
-                    SDL_RenderFillRect(gscope.renderer, (SDL_Rect *) &r);
-                    RenderUtility::SetColor(Color::darkgray);
-                    SDL_RenderDrawRect(gscope.renderer, (SDL_Rect *) &r);
-
-                    Rect elrect = {element.rect.x, element.rect.y + element.rect.h, element.rect.w, sz};
-                    int index = 0;
-                    for(auto iter = link->second.begin(); iter != link->second.end(); ++iter, ++index)
-                    {
-                        if(elrect.y + elrect.h > element.contextRect.y + element.contextRect.h + 2)
-                            break;
-
-                        bool itemHover = Vec2Int::HasIntersection(uiState.ms, elrect);
-                        if(itemHover)
-                        {
-                            RenderUtility::SetColor(colorSpace.defaultInteraction.hoverState);
-                            SDL_RenderFillRect(gscope.renderer, (SDL_Rect *) &elrect);
-                            if(isEnabled && Input::GetMouseUp(MouseButton::MouseLeft))
-                            {
-                                link->first = index;
-                                element.text = *iter;
-                                result = true;
-                                ui_focus = false;
-                                link->animHeight = 0.0f;
-                                element.contextRect = Rect::zero;
-                                break;
-                            }
-                        }
-
-                        surf = TTF_RenderUTF8_Blended(pDefaultTTFFont, iter->c_str(), *reinterpret_cast<SDL_Color *>(&(link->first == index ? colorSpace.dropdownSelectedText : colorSpace.dropdownText)));
-                        if(surf)
-                        {
-                            texture = SDL_CreateTextureFromSurface(gscope.renderer, surf);
-                            if(texture)
-                            {
-                                SDL_Rect textR = {elrect.x + 5, elrect.y + (elrect.h - surf->h) / 2, surf->w, surf->h};
-                                SDL_RenderCopy(gscope.renderer, texture, nullptr, &textR);
-                                SDL_DestroyTexture(texture);
-                            }
-                            SDL_FreeSurface(surf);
-                        }
-
-                        elrect.y += sz;
-                    }
-                }
-                else
-                {
-                    element.contextRect = Rect::zero;
-                }
+                if(!isEnabled)
+                    ImGui::EndDisabled();
                 break;
             }
 
             case RGUI_CHECKBOX:
             {
-                Rect startRect = element.rect;
-                if(isEnabled && uiState.ms_hover && Input::GetMouseDown(MouseButton::MouseLeft))
-                    startRect.y++;
+                ImGui::SetCursorScreenPos(ImVec2(static_cast<float>(element.rect.x), static_cast<float>(element.rect.y)));
 
-                rect = startRect;
+                if(!isEnabled)
+                    ImGui::BeginDisabled();
 
-                RenderUtility::SetColor(isEnabled ? (uiState.ms_hover ? Color::white : Color::gray) : colorSpace.defaultInteraction.disabledState);
-                Render_String_ttf(element.text.c_str(), 14, rect.getXY() + Vec2Int {17, 0}, false);
-
-                rect.w = 14;
-                rect.h = 14;
-                SDL_RenderFillRect(gscope.renderer, reinterpret_cast<SDL_Rect *>(&rect));
-
-                if(isEnabled && (result = uiState.ms_click))
+                std::string chkId = element.text + "##chk_" + std::to_string(element.id);
+                bool val = element.resource.checkbox;
+                if(ImGui::Checkbox(chkId.c_str(), &val))
                 {
-                    element.resource.checkbox = !element.resource.checkbox;
+                    element.resource.checkbox = val;
+                    result = true;
                 }
 
-                if(element.resource.checkbox)
+                if(!isEnabled)
+                    ImGui::EndDisabled();
+                break;
+            }
+
+            case RGUI_DROPDOWN:
+            {
+                ImGui::SetCursorScreenPos(ImVec2(static_cast<float>(element.rect.x), static_cast<float>(element.rect.y)));
+                ImGui::SetNextItemWidth(static_cast<float>(element.rect.w));
+
+                if(!isEnabled)
+                    ImGui::BeginDisabled();
+
+                std::string comboId = "##combo_" + std::to_string(element.id);
+                if(element.resource.dropdown != nullptr)
                 {
-                    RenderUtility::SetColor(0xFF3a3a3a);
+                    auto &items = element.resource.dropdown->second;
+                    int currentIdx = element.resource.dropdown->first;
+                    std::string preview = "";
+                    if(currentIdx >= 0 && currentIdx < static_cast<int>(items.size()))
+                    {
+                        auto it = items.begin();
+                        std::advance(it, currentIdx);
+                        preview = *it;
+                    }
 
-                    rect.w = 4;
-                    rect.h = 12;
-                    rect.x += 7 - 2;
-                    rect.y++;
-                    SDL_RenderFillRect(gscope.renderer, reinterpret_cast<SDL_Rect *>(&rect));
+                    if(ImGui::BeginCombo(comboId.c_str(), preview.c_str()))
+                    {
+                        int idx = 0;
+                        for(const auto &item : items)
+                        {
+                            bool isSelected = (idx == currentIdx);
+                            if(ImGui::Selectable(item.c_str(), isSelected))
+                            {
+                                element.resource.dropdown->first = idx;
+                                result = true;
+                            }
+                            if(isSelected)
+                                ImGui::SetItemDefaultFocus();
+                            idx++;
+                        }
+                        ImGui::EndCombo();
+                    }
+                }
 
-                    rect.h = 4;
-                    rect.w = 12;
-                    rect.y = startRect.y + 7 - 2;
-                    rect.x = startRect.x + 1;
-                    SDL_RenderFillRect(gscope.renderer, reinterpret_cast<SDL_Rect *>(&rect));
+                if(!isEnabled)
+                    ImGui::EndDisabled();
+                break;
+            }
+
+            case RGUI_PICTURE_BOX:
+            {
+                Sprite *sprite = element.resource.picturebox;
+                if(sprite != nullptr && sprite->getImage() != nullptr)
+                {
+                    SDL_Texture *tex = render_cache_texture(sprite);
+                    if(tex != nullptr)
+                    {
+                        ImGui::SetCursorScreenPos(ImVec2(static_cast<float>(element.rect.x), static_cast<float>(element.rect.y)));
+                        float w = element.rect.w == 0 ? static_cast<float>(sprite->width()) : static_cast<float>(element.rect.w);
+                        float h = element.rect.h == 0 ? static_cast<float>(sprite->height()) : static_cast<float>(element.rect.h);
+                        ImGui::Image(reinterpret_cast<ImTextureID>(tex), ImVec2(w, h));
+                        render_cache_unref(tex);
+                    }
                 }
                 break;
             }
 
             case RGUI_SPRITE_BUTTON:
             {
-                Sprite *sprite = nullptr;
-                if(!isEnabled && element.resource.spriteButton.disable)
-                    sprite = element.resource.spriteButton.disable;
-                else if(uiState.ms_hover && element.resource.spriteButton.hover)
-                    sprite = element.resource.spriteButton.hover;
-                else
-                    sprite = element.resource.spriteButton.normal;
+                Sprite *spr = isEnabled ? (uiState.ms_hover ? element.resource.spriteButton.hover : element.resource.spriteButton.normal) : element.resource.spriteButton.disable;
+                if(!spr)
+                    spr = element.resource.spriteButton.normal;
 
-                Vec2Int baseSize = element.rect.getWH();
-                if(sprite && sprite->surface)
+                if(spr != nullptr && spr->getImage() != nullptr)
                 {
-                    SDL_Texture *texture = render_cache_texture(sprite);
-                    if(texture)
+                    SDL_Texture *tex = render_cache_texture(spr);
+                    if(tex != nullptr)
                     {
-                        render_texture_extension(texture, &baseSize, reinterpret_cast<SDL_Rect *>(&sprite->m_rect), reinterpret_cast<SDL_Rect *>(&element.rect), 0.0F);
-                        render_cache_unref(texture);
-                    }
-                }
+                        ImGui::SetCursorScreenPos(ImVec2(static_cast<float>(element.rect.x), static_cast<float>(element.rect.y)));
+                        if(!isEnabled)
+                            ImGui::BeginDisabled();
 
-                Sprite *icon = element.resource.spriteButton.icon;
-                if(icon && icon->surface)
-                {
-                    SDL_Texture *texture = render_cache_texture(icon);
-                    if(texture)
-                    {
-                        render_texture_extension(texture, &baseSize, reinterpret_cast<SDL_Rect *>(&icon->m_rect), reinterpret_cast<SDL_Rect *>(&element.rect), 0.0F);
-                        render_cache_unref(texture);
-                    }
-                }
+                        std::string btnId = "##sprbtn_" + std::to_string(element.id);
+                        float w = element.rect.w == 0 ? static_cast<float>(spr->width()) : static_cast<float>(element.rect.w);
+                        float h = element.rect.h == 0 ? static_cast<float>(spr->height()) : static_cast<float>(element.rect.h);
+                        if(ImGui::ImageButton(btnId.c_str(), reinterpret_cast<ImTextureID>(tex), ImVec2(w, h)))
+                        {
+                            result = true;
+                            uiState.gui->handle->button_clicked.insert(element.id);
+                        }
 
-                if(isEnabled && (result = uiState.ms_click))
-                {
-                    uiState.gui->handle->button_clicked.insert(element.id);
+                        if(!isEnabled)
+                            ImGui::EndDisabled();
+
+                        render_cache_unref(tex);
+                    }
                 }
                 break;
             }
+
             case RGUI_CUSTOM_OVERLAY:
-                UIData data {};
-                data.id = element.id;
-                data.rect = element.rect;
-                data.isMouseDown = isEnabled && uiState.ms_click;
-                if((data.isMouseHover = uiState.ms_hover))
-                    data.mousePoint = uiState.ms;
-                if(!element.resource.overlay.isInit && element.resource.overlay.inspector)
+            {
+                if(element.resource.overlay.inspector != nullptr)
                 {
-                    element.resource.overlay.isInit = true;
-                    element.resource.overlay.inspector->OnInit();
+                    if(!element.resource.overlay.isInit)
+                    {
+                        element.resource.overlay.inspector->OnInit();
+                        element.resource.overlay.isInit = true;
+                    }
+                    UIData udata {};
+                    udata.id = element.id;
+                    udata.rect = element.rect;
+                    udata.mousePoint = uiState.ms;
+                    udata.isMouseDown = Input::GetMouseDown(MouseButton::MouseLeft);
+                    udata.isMouseHover = uiState.ms_hover;
+                    element.resource.overlay.inspector->OnDraw(&udata);
                 }
-                if(element.resource.overlay.inspector)
-                    element.resource.overlay.inspector->OnDraw(&data);
-                if(isEnabled && uiState.ms_click)
-                    result = true;
                 break;
+            }
         }
 
         return result;
@@ -519,8 +375,8 @@ namespace RoninEngine::UI
                 (reinterpret_cast<UIEventVoid>(element->event))(element->id);
                 break;
             case RGUI_DROPDOWN:
-                if(element->resource.dropdown)
-                    (reinterpret_cast<UIEventInteger>(element->event))(element->id, (element->resource.dropdown->first));
+                if(element->resource.dropdown != nullptr)
+                    (reinterpret_cast<UIEventInteger>(element->event))(element->id, element->resource.dropdown->first);
                 break;
             case RGUI_HSLIDER:
             case RGUI_VSLIDER:

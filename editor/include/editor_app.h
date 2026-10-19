@@ -63,6 +63,7 @@ namespace RoninEditor
         EditorAppState m_state = EditorAppState::ProjectHub;
         bool m_running = false;
         bool m_resetLayoutRequested = false;
+        std::string m_projectLayoutIniPath;
 
         std::unique_ptr<ProjectHub> m_hub;
         EditorState m_editorState;

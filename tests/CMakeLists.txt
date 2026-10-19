@@ -26,6 +26,7 @@ if(RONIN_EDITOR_BUILD)
     target_link_libraries(test_editor PRIVATE RoninEngine ${SDL2_LIBRARIES})
     target_include_directories(test_editor PRIVATE
         ${CMAKE_SOURCE_DIR}/include
+        ${CMAKE_SOURCE_DIR}/src
         ${CMAKE_SOURCE_DIR}/editor/include
         ${CMAKE_SOURCE_DIR}/src/3rdparty
         ${SDL2_INCLUDE_DIRS}

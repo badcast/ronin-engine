@@ -6,6 +6,8 @@
 #include "ronin_debug.h"
 #include "ronin_splash_world.h"
 #include "ronin_render_cache.h"
+#include <imgui.h>
+#include <backends/imgui_impl_sdl2.h>
 
 #ifdef __linux__
 // For malloc_trim
@@ -33,6 +35,7 @@ namespace RoninEngine
     namespace UI
     {
         extern void native_draw_render(GUI *);
+        extern void shutdown_ui_backend();
     } // namespace UI
 
     namespace Runtime
@@ -352,6 +355,7 @@ namespace RoninEngine
 
         internal_input_release();
 
+        UI::shutdown_ui_backend();
         RoninAudio::Finalize();
         IMG_Quit();
         TTF_Quit();
@@ -426,6 +430,10 @@ namespace RoninEngine
 
             while(SDL_PollEvent(&event))
             {
+                if(ImGui::GetCurrentContext() != nullptr)
+                {
+                    ImGui_ImplSDL2_ProcessEvent(&event);
+                }
                 internal_input_update(event);
                 switch(event.type)
                 {

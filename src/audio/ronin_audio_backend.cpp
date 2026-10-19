@@ -17,6 +17,8 @@ namespace RoninEngine::Runtime
         bool initialized = false;
         AudioClip *currentClip = nullptr;
         float volume = 1.0f;
+        float pitch = 1.0f;
+        float pan = 0.0f;
     };
 
     static ma_engine g_engine;
@@ -254,6 +256,8 @@ namespace RoninEngine::Runtime
             slot.initialized = true;
             slot.currentClip = clip;
             ma_sound_set_volume(&slot.sound, slot.volume);
+            ma_sound_set_pitch(&slot.sound, slot.pitch);
+            ma_sound_set_pan(&slot.sound, slot.pan);
             ma_sound_set_looping(&slot.sound, loop ? MA_TRUE : MA_FALSE);
             ma_sound_start(&slot.sound);
             return true;
@@ -303,6 +307,94 @@ namespace RoninEngine::Runtime
             return -1.0f;
 
         return g_channels[channel].volume;
+    }
+
+    void RoninAudio::setChannelPitch(int channel, float value)
+    {
+        std::lock_guard<std::mutex> lock(g_audioMutex);
+        if (channel < 0 || channel >= static_cast<int>(g_channels.size()))
+            return;
+
+        auto &slot = g_channels[channel];
+        slot.pitch = std::clamp(value, 0.1f, 8.0f);
+        if (slot.initialized)
+        {
+            ma_sound_set_pitch(&slot.sound, slot.pitch);
+        }
+    }
+
+    float RoninAudio::getChannelPitch(int channel)
+    {
+        std::lock_guard<std::mutex> lock(g_audioMutex);
+        if (channel < 0 || channel >= static_cast<int>(g_channels.size()))
+            return -1.0f;
+
+        return g_channels[channel].pitch;
+    }
+
+    void RoninAudio::setChannelPan(int channel, float value)
+    {
+        std::lock_guard<std::mutex> lock(g_audioMutex);
+        if (channel < 0 || channel >= static_cast<int>(g_channels.size()))
+            return;
+
+        auto &slot = g_channels[channel];
+        slot.pan = std::clamp(value, -1.0f, 1.0f);
+        if (slot.initialized)
+        {
+            ma_sound_set_pan(&slot.sound, slot.pan);
+        }
+    }
+
+    float RoninAudio::getChannelPan(int channel)
+    {
+        std::lock_guard<std::mutex> lock(g_audioMutex);
+        if (channel < 0 || channel >= static_cast<int>(g_channels.size()))
+            return 0.0f;
+
+        return g_channels[channel].pan;
+    }
+
+    bool RoninAudio::setChannelLooping(int channel, bool loop)
+    {
+        std::lock_guard<std::mutex> lock(g_audioMutex);
+        if (channel < 0 || channel >= static_cast<int>(g_channels.size()) || !g_channels[channel].initialized)
+            return false;
+
+        ma_sound_set_looping(&g_channels[channel].sound, loop ? MA_TRUE : MA_FALSE);
+        return true;
+    }
+
+    bool RoninAudio::isChannelLooping(int channel)
+    {
+        std::lock_guard<std::mutex> lock(g_audioMutex);
+        if (channel < 0 || channel >= static_cast<int>(g_channels.size()) || !g_channels[channel].initialized)
+            return false;
+
+        return ma_sound_is_looping(&g_channels[channel].sound) == MA_TRUE;
+    }
+
+    bool RoninAudio::getChannelCursor(int channel, uint64_t *frame)
+    {
+        std::lock_guard<std::mutex> lock(g_audioMutex);
+        if (!frame || channel < 0 || channel >= static_cast<int>(g_channels.size()) || !g_channels[channel].initialized)
+            return false;
+
+        ma_uint64 cursor = 0;
+        if (ma_sound_get_cursor_in_pcm_frames(&g_channels[channel].sound, &cursor) != MA_SUCCESS)
+            return false;
+
+        *frame = cursor;
+        return true;
+    }
+
+    bool RoninAudio::setChannelCursor(int channel, uint64_t frame)
+    {
+        std::lock_guard<std::mutex> lock(g_audioMutex);
+        if (channel < 0 || channel >= static_cast<int>(g_channels.size()) || !g_channels[channel].initialized)
+            return false;
+
+        return ma_sound_seek_to_pcm_frame(&g_channels[channel].sound, frame) == MA_SUCCESS;
     }
 
     double RoninAudio::getAudioClipDuration(AudioClip *clip)

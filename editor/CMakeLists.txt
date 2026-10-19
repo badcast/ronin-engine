@@ -59,6 +59,7 @@ add_executable(RoninEditor ${RONIN_EDITOR_SOURCES})
 target_include_directories(RoninEditor PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/include
     ${CMAKE_SOURCE_DIR}/include
+    ${CMAKE_SOURCE_DIR}/src
     ${CMAKE_SOURCE_DIR}/src/3rdparty
     ${IMGUI_DIR}
     ${IMGUI_DIR}/backends

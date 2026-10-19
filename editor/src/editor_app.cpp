@@ -234,11 +234,26 @@ namespace RoninEditor
 
         if (m_state == EditorAppState::MainEditor)
         {
+            const auto &cfg = ProjectManager::GetInstance().GetCurrentProject();
+            std::filesystem::path projSettingsDir = cfg.rootPath / "ProjectSettings";
+            std::error_code ec;
+            std::filesystem::create_directories(projSettingsDir, ec);
+            m_projectLayoutIniPath = (projSettingsDir / "ImGUILayouts.ini").string();
+            io.IniFilename = m_projectLayoutIniPath.c_str();
+            if (std::filesystem::exists(m_projectLayoutIniPath))
+            {
+                ImGui::LoadIniSettingsFromDisk(io.IniFilename);
+            }
+
             std::filesystem::path scenePath = ProjectManager::GetInstance().GetDefaultScenePath();
             if (std::filesystem::exists(scenePath))
             {
                 m_editorState.loadWorldFromFile(scenePath.string());
             }
+        }
+        else
+        {
+            io.IniFilename = nullptr;
         }
 
         m_hub = std::make_unique<ProjectHub>(this);
@@ -646,9 +661,11 @@ namespace RoninEditor
 
             if (ImGui::BeginMenu("Help"))
             {
-                if (ImGui::MenuItem("About RoninEditor"))
+                if (ImGui::MenuItem("About RoninEngine", "F1"))
                 {
                     SwitchToProjectHub();
+                    if (m_hub)
+                        m_hub->OpenAboutDialog();
                 }
                 ImGui::EndMenu();
             }
@@ -767,6 +784,14 @@ namespace RoninEditor
 
     void EditorApp::SwitchToProjectHub()
     {
+        ImGuiIO &io = ImGui::GetIO();
+        if (io.IniFilename != nullptr)
+        {
+            ImGui::SaveIniSettingsToDisk(io.IniFilename);
+            io.IniFilename = nullptr;
+        }
+        m_projectLayoutIniPath.clear();
+
         ProjectManager::GetInstance().CloseProject();
         m_state = EditorAppState::ProjectHub;
 
@@ -786,6 +811,18 @@ namespace RoninEditor
         SDL_SetWindowSize(m_window, 1600, 900);
         SDL_SetWindowPosition(m_window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
 
+        std::filesystem::path projSettingsDir = cfg.rootPath / "ProjectSettings";
+        std::error_code ec;
+        std::filesystem::create_directories(projSettingsDir, ec);
+        m_projectLayoutIniPath = (projSettingsDir / "ImGUILayouts.ini").string();
+
+        ImGuiIO &io = ImGui::GetIO();
+        io.IniFilename = m_projectLayoutIniPath.c_str();
+        if (std::filesystem::exists(m_projectLayoutIniPath))
+        {
+            ImGui::LoadIniSettingsFromDisk(io.IniFilename);
+        }
+
         m_sceneViewport.Init(m_renderer);
         std::filesystem::path scenePath = cfg.rootPath / cfg.defaultSceneRelativePath;
         if (std::filesystem::exists(scenePath))
@@ -802,6 +839,12 @@ namespace RoninEditor
     void EditorApp::Shutdown()
     {
         m_spriteEditor.Shutdown();
+
+        ImGuiIO &io = ImGui::GetIO();
+        if (io.IniFilename != nullptr)
+        {
+            ImGui::SaveIniSettingsToDisk(io.IniFilename);
+        }
 
         if (m_renderer)
         {

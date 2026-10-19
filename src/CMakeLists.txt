@@ -3,83 +3,61 @@ set(RGE_LIBS "")
 set(RGE_LINKED_NAMES "")
 set(sources "")
 
-function (custom_findpkg PKGNAME)
+# Find packages up front so that all object libraries have access to include paths
+set(LIST_INCLUDE_PKGS "")
+set(LIST_LIBS_PKGS "")
 
+macro(custom_findpkg PKGNAME)
     if(NOT MSVC AND PkgConfig_FOUND)
-
         set(OPT_BASE_PKGNAME ${ARGV1})
-
         if(NOT DEFINED OPT_BASE_PKGNAME)
             set(OPT_BASE_PKGNAME ${PKGNAME})
         endif()
-
         pkg_check_modules(${PKGNAME} REQUIRED ${OPT_BASE_PKGNAME})
-
     elseif(MSVC)
-
-        message(STATUS "Using Windows deps for MSVC compiller")
-
+        message(STATUS "Using Windows deps for MSVC compiler")
         set(CMAKE_PREFIX_PATH "${PROJECT_SOURCE_DIR}/src/windows/deps")
         set(SDL2_DIR ${CMAKE_PREFIX_PATH}/SDL2-2.30.1)
-
         find_package(${PKGNAME} REQUIRED NO_DEFAULT_PATH)
-
     else()
-
         find_package(${PKGNAME} REQUIRED)
-
     endif()
-
     list(APPEND LIST_INCLUDE_PKGS "${${PKGNAME}_INCLUDE_DIRS}")
     list(APPEND LIST_LIBS_PKGS "${${PKGNAME}_LIBRARIES}")
+endmacro(custom_findpkg)
 
-    # Set to parent SCOPE
-    set(LIST_INCLUDE_PKGS ${LIST_INCLUDE_PKGS} PARENT_SCOPE)
-    set(LIST_LIBS_PKGS ${LIST_LIBS_PKGS} PARENT_SCOPE)
-endfunction(custom_findpkg)
+if(NOT MSVC)
+    find_package(PkgConfig QUIET)
+endif()
 
-function(custom_find_deps MainTarget)
+custom_findpkg(SDL2 sdl2)
 
-  # LIST_INCLUDE_PKGS - There is All libs <*> from packages.
-  set(LIST_INCLUDE_PKGS)
-  # LIST_LIBS_PKGS - There is All include list <include> from packages.
-  set(LIST_LIBS_PKGS)
+if(RGAUDIO)
+    if(NOT MSVC)
+        list(APPEND LIST_LIBS_PKGS pthread m ${CMAKE_DL_LIBS})
+    endif()
+endif()
 
+if(RGGRAPHICS)
+    custom_findpkg(SDL2_image)
+    custom_findpkg(SDL2_ttf)
+endif()
+
+set(LIST_INCLUDE_PKGS ${LIST_INCLUDE_PKGS} PARENT_SCOPE)
+set(LIST_LIBS_PKGS ${LIST_LIBS_PKGS} SDL2_image SDL2_ttf PARENT_SCOPE)
+
+macro(custom_find_deps MainTarget)
   if(NOT TARGET ${MainTarget})
       Message(FATAL_ERROR "Require existence target argument")
   endif()
 
-
-  # Fist PkgConfig for finder
-  if(NOT MSVC)
-    find_package(PkgConfig)
-  else()
-
-  endif()
-
-  # find_package(OpenMP)
-
-  custom_findpkg(SDL2 sdl2)
-
-  if(RGAUDIO)
-    if(NOT MSVC)
-      list(APPEND LIST_LIBS_PKGS pthread m ${CMAKE_DL_LIBS})
-    endif()
-  endif()
-
-  if(RGGRAPHICS)
-    custom_findpkg(SDL2_image)
-    custom_findpkg(SDL2_ttf)
-  endif()
-
   target_compile_definitions(${MainTarget} PRIVATE RONIN_COMPILLING=1)
   target_include_directories(${MainTarget} PRIVATE ${LIST_INCLUDE_PKGS})
-  target_link_libraries(${MainTarget} PUBLIC ${LIST_LIBS_PKGS})
+  target_link_libraries(${MainTarget} PUBLIC ${LIST_LIBS_PKGS} SDL2 SDL2_image SDL2_ttf)
   if(NOT MSVC AND (CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64|AMD64|i686|i386"))
     target_compile_options(${MainTarget} PRIVATE -mrdrnd)
   endif()
-
-endfunction(custom_find_deps)
+endmacro(custom_find_deps)
 
 # region: excluding and ordering (internal,external) headers
 file(GLOB_RECURSE RONIN_ENGINE_HEADERS "${PROJECT_SOURCE_DIR}/include/*")
@@ -102,7 +80,10 @@ function(custom_load_sources libname localPath)
   target_include_directories(
     ${libname} PRIVATE $<BUILD_INTERFACE:${RONIN_INCLUDE_DIRS}/ronin>
                        ${CMAKE_CURRENT_SOURCE_DIR}/include
-                       ${CMAKE_CURRENT_SOURCE_DIR}/3rdparty)
+                       ${CMAKE_CURRENT_SOURCE_DIR}/3rdparty
+                       ${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/imgui
+                       ${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/imgui/backends
+                       ${LIST_INCLUDE_PKGS})
 
   target_compile_features(${libname} PUBLIC cxx_std_17)
 

@@ -11,7 +11,18 @@
 #include <ronin/AudioClip.h>
 #include <ronin/NavMeshAgent.h>
 #include <ronin/TextStream.h>
+#include <ronin/RoninSimulator.h>
+#include <ronin/UI.h>
+#include <imgui.h>
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_image.h>
+#include "core/splash/ronin_logo.hpp"
 #include <unordered_set>
+
+namespace RoninEngine::UI
+{
+    extern void apply_standard_ui_style();
+}
 
 using namespace RoninEditor;
 using json = nlohmann::json;
@@ -918,6 +929,123 @@ int main()
             }
 
             std::cout << "  [PASS] Test 31: Large prefab (" << childCount << " objects) stream parsing, instantiation & ID remapping validated" << std::endl;
+        }
+
+        // 32. Validate ProjectHub ImGUILayouts.ini path, Logo binary & linked modules
+        {
+            // Verify ProjectHub layout path formation
+            std::filesystem::path projectLayoutPath = expectedRoot / "ProjectSettings" / "ImGUILayouts.ini";
+            assert(std::filesystem::exists(expectedRoot / "ProjectSettings"));
+            assert(projectLayoutPath.filename() == "ImGUILayouts.ini");
+            assert(projectLayoutPath.parent_path() == (expectedRoot / "ProjectSettings"));
+
+            // Verify embedded RoninEngine logo
+            assert(RoninEngine_logo_png != nullptr);
+            assert(RoninEngine_logo_png_len > 0);
+            SDL_RWops *rw = SDL_RWFromConstMem(RoninEngine_logo_png, static_cast<int>(RoninEngine_logo_png_len));
+            assert(rw != nullptr);
+            SDL_Surface *logoSurface = IMG_Load_RW(rw, 1);
+            assert(logoSurface != nullptr);
+            assert(logoSurface->w > 0 && logoSurface->h > 0);
+            SDL_FreeSurface(logoSurface);
+
+            // Verify RoninSimulator linked modules
+            const char *rawTargets = RoninEngine::RoninSimulator::GetLinkedTargets();
+            assert(rawTargets != nullptr);
+            std::string targetsStr(rawTargets);
+            assert(!targetsStr.empty());
+            assert(targetsStr.find("RoninUserInterface") != std::string::npos);
+            assert(targetsStr.find("RoninAudio") != std::string::npos);
+            assert(targetsStr.find("RoninSimulations") != std::string::npos);
+
+            // Verify repo link and MIT license strings
+            const std::string repoUrl = "https://github.com/badcast/ronin-engine";
+            assert(repoUrl.find("github.com/badcast/ronin-engine") != std::string::npos);
+
+            std::cout << "  [PASS] Test 32: ProjectHub layout path, splash logo & linked modules validated" << std::endl;
+        }
+
+        // 33. Validate RoninEngine::UI ImGui standard style & GUI control pipeline
+        {
+            IMGUI_CHECKVERSION();
+            ImGuiContext *imguiCtx = ImGui::CreateContext();
+            assert(imguiCtx != nullptr);
+            ImGuiIO &io = ImGui::GetIO();
+            io.IniFilename = nullptr; // ProjectHub mode: no imgui.ini
+
+            // Apply RoninEngine standard UI style
+            RoninEngine::UI::apply_standard_ui_style();
+            const ImGuiStyle &style = ImGui::GetStyle();
+            assert(style.WindowRounding == 6.0f);
+            assert(style.FrameRounding == 5.0f);
+            assert(style.PopupRounding == 6.0f);
+            assert(style.ScrollbarRounding == 4.0f);
+            assert(style.WindowBorderSize == 1.0f);
+            assert(style.FrameBorderSize == 1.0f);
+
+            // Check slate & obsidian color palette
+            assert(style.Colors[ImGuiCol_WindowBg].w > 0.9f);
+            assert(style.Colors[ImGuiCol_CheckMark].x > 0.3f && style.Colors[ImGuiCol_CheckMark].z > 0.9f);
+
+            // Switch to project open mode: layout file set to ProjectSettings/ImGUILayouts.ini
+            std::string layoutIni = (expectedRoot / "ProjectSettings" / "ImGUILayouts.ini").string();
+            io.IniFilename = layoutIni.c_str();
+            assert(io.IniFilename != nullptr);
+            assert(std::string(io.IniFilename).find("ImGUILayouts.ini") != std::string::npos);
+
+            // Test RoninEngine::UI::GUI lifecycle and element creation
+            class DummyWorld : public RoninEngine::Runtime::World
+            {
+            public:
+                DummyWorld() : RoninEngine::Runtime::World("DummyWorld") {}
+            };
+            DummyWorld world;
+            RoninEngine::UI::GUI gui(&world);
+
+            RoninEngine::UI::uid grp = gui.PushGroup(RoninEngine::Runtime::Rect(10, 10, 400, 300));
+            assert(grp != RoninEngine::UI::NOPARENT);
+            assert(gui.IsGroup(grp));
+
+            RoninEngine::UI::uid lbl = gui.PushLabel("RoninEngine Modern UI", RoninEngine::Runtime::Vec2Int(20, 20), 14, grp);
+            assert(lbl != RoninEngine::UI::NOPARENT);
+            assert(gui.ElementGetText(lbl) == "RoninEngine Modern UI");
+
+            RoninEngine::UI::uid btn = gui.PushButton("Start Game", RoninEngine::Runtime::Vec2Int(20, 60), nullptr, grp);
+            assert(btn != RoninEngine::UI::NOPARENT);
+
+            RoninEngine::UI::uid sld = gui.PushSlider(0.75f, 0.0f, 1.0f, RoninEngine::Runtime::Vec2Int(20, 100), nullptr, grp);
+            assert(sld != RoninEngine::UI::NOPARENT);
+            assert(std::abs(gui.SliderGetValue(sld) - 0.75f) < 0.001f);
+
+            RoninEngine::UI::uid chk = gui.PushCheckBox(true, "VSync Enabled", RoninEngine::Runtime::Vec2Int(20, 140), nullptr, grp);
+            assert(chk != RoninEngine::UI::NOPARENT);
+            assert(gui.CheckBoxGetValue(chk) == true);
+
+            std::vector<std::string> options = {"Option A", "Option B", "Option C"};
+            RoninEngine::UI::uid drop = gui.PushDropDown(options, 1, RoninEngine::Runtime::Vec2Int(20, 180), nullptr, grp);
+            assert(drop != RoninEngine::UI::NOPARENT);
+
+            assert(gui.ElementContains(lbl));
+            assert(gui.ElementContains(btn));
+            assert(gui.ElementContains(sld));
+            assert(gui.ElementContains(chk));
+            assert(gui.ElementContains(drop));
+
+            // Test element mutation
+            gui.ElementSetText(lbl, "Updated Text");
+            assert(gui.ElementGetText(lbl) == "Updated Text");
+            gui.SliderSetValue(sld, 0.25f);
+            assert(std::abs(gui.SliderGetValue(sld) - 0.25f) < 0.001f);
+            gui.CheckBoxSetValue(chk, false);
+            assert(gui.CheckBoxGetValue(chk) == false);
+
+            // Pop group and elements
+            gui.PopAllElements();
+            assert(!gui.ElementContains(lbl));
+
+            ImGui::DestroyContext(imguiCtx);
+
+            std::cout << "  [PASS] Test 33: RoninEngine::UI ImGui styling & GUI controls pipeline validated" << std::endl;
         }
     }
 

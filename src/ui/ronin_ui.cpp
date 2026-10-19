@@ -1,12 +1,18 @@
 #include "ronin.h"
 #include "ronin_ui_resources.h"
 #include "ronin_debug.h"
+#include <imgui.h>
+#include <backends/imgui_impl_sdl2.h>
+#include <backends/imgui_impl_sdlrenderer2.h>
 
 namespace RoninEngine::UI
 {
     using namespace RoninEngine::Runtime;
     using namespace RoninEngine::Exception;
 
+    extern bool init_ui_backend();
+    extern void shutdown_ui_backend();
+    extern void apply_standard_ui_style();
     extern bool general_ui_render(UIElement &element, const UIState &uiState, bool &ui_focus);
     extern void general_ui_event_action(UIElement *element);
 
@@ -568,6 +574,11 @@ namespace RoninEngine::UI
 
     bool GUI::IsMouseOver()
     {
+        if(ImGui::GetCurrentContext() != nullptr)
+        {
+            ImGuiIO &io = ImGui::GetIO();
+            return io.WantCaptureMouse || handle->any_mouse_hover;
+        }
         return handle->any_mouse_hover;
     }
 
@@ -658,6 +669,11 @@ namespace RoninEngine::UI
 
     bool GUI::FocusedGUI()
     {
+        if(ImGui::GetCurrentContext() != nullptr)
+        {
+            ImGuiIO &io = ImGui::GetIO();
+            return io.WantCaptureKeyboard || io.WantCaptureMouse || handle->_focusedUI;
+        }
         return handle->_focusedUI;
     }
 
@@ -724,143 +740,150 @@ namespace RoninEngine::UI
         if(handle->visible == false || handle->owner == nullptr || handle->owner->irs == nullptr)
             return;
 
-        uid id;
-        std::deque<uid> ui_drains;
+        if(gscope.renderer == nullptr)
+            return;
 
-        UIElement *uiElement;
-        UIState uiState {};
+        if(!init_ui_backend())
+            return;
 
-        Vec2Int ms = Input::GetMousePoint();
+        ImGui_ImplSDLRenderer2_NewFrame();
+        ImGui_ImplSDL2_NewFrame();
+        ImGui::NewFrame();
 
-        uiState.gui = gui;
-        uiState.ms = ms;
+        ImGuiViewport *viewport = ImGui::GetMainViewport();
+        ImGui::SetNextWindowPos(viewport->Pos);
+        ImGui::SetNextWindowSize(viewport->Size);
+        ImGuiWindowFlags windowFlags = ImGuiWindowFlags_NoDecoration |
+                                       ImGuiWindowFlags_NoBackground |
+                                       ImGuiWindowFlags_NoMove |
+                                       ImGuiWindowFlags_NoResize |
+                                       ImGuiWindowFlags_NoSavedSettings |
+                                       ImGuiWindowFlags_NoBringToFrontOnFocus |
+                                       ImGuiWindowFlags_NoNavFocus;
 
-        handle->_focusedUI = false;
-        bool ui_msclick = Input::GetMouseUp(MouseButton::MouseLeft);
-        bool any_clicked_this_frame = Input::GetMouseDown(MouseButton::MouseLeft) || ui_msclick;
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
 
-        for(auto iter = begin(handle->layers); iter != end(handle->layers); ++iter)
+        if(ImGui::Begin("##RoninUIRootOverlay", nullptr, windowFlags))
         {
-            if(gui->ElementGetVisible(*iter))
-                ui_drains.emplace_back(*iter);
-        }
+            uid id;
+            std::deque<uid> ui_drains;
 
-        gui->handle->any_mouse_hover = false;
-        gui->handle->button_clicked.clear();
+            UIElement *uiElement;
+            UIState uiState {};
 
-        uid focusedIdToDrawLast = 0;
+            Vec2Int ms = Input::GetMousePoint();
 
-        while(!ui_drains.empty() && !handle->owner->irs->requestUnloading)
-        {
-            id = ui_drains.front();
-            ui_drains.pop_front();
+            uiState.gui = gui;
+            uiState.ms = ms;
 
-            if(!gui->ElementContains(id))
-                continue;
+            handle->_focusedUI = false;
+            gui->handle->any_mouse_hover = false;
+            gui->handle->button_clicked.clear();
 
-            uiElement = &call_get_element(gui->handle, id);
-            if(uiElement->removed)
-                continue;
-
-            bool isVisible = (uiElement->options & ElementVisibleMask) != 0;
-            if(!isVisible)
-                continue;
-
-            for(auto iter = begin(uiElement->childs); iter != end(uiElement->childs); ++iter)
-                ui_drains.push_back(*iter);
-
-            if(id == handle->focusedID && uiElement->prototype == RGUI_DROPDOWN)
+            for(auto iter = begin(handle->layers); iter != end(handle->layers); ++iter)
             {
-                focusedIdToDrawLast = id;
-                continue;
+                if(gui->ElementGetVisible(*iter))
+                    ui_drains.emplace_back(*iter);
             }
 
-            uiState.ms_hover = Vec2Int::HasIntersection(ms, uiElement->rect);
-            bool ui_contex = !uiElement->contextRect.empty() && Vec2Int::HasIntersection(ms, uiElement->contextRect);
+            uid focusedIdToDrawLast = 0;
 
-            if(uiState.ms_hover || ui_contex)
+            while(!ui_drains.empty() && !handle->owner->irs->requestUnloading)
             {
-                if(!(uiElement->options & ElementGroupMask))
-                    gui->handle->any_mouse_hover = true;
-            }
+                id = ui_drains.front();
+                ui_drains.pop_front();
 
-            if(!(uiElement->options & ElementGroupMask))
-            {
-                bool ui_focus = (id == handle->focusedID);
+                if(!gui->ElementContains(id))
+                    continue;
 
-                if(ui_focus && !uiState.ms_hover && !ui_contex && any_clicked_this_frame)
+                uiElement = &call_get_element(gui->handle, id);
+                if(uiElement->removed)
+                    continue;
+
+                bool isVisible = (uiElement->options & ElementVisibleMask) != 0;
+                if(!isVisible)
+                    continue;
+
+                for(auto iter = begin(uiElement->childs); iter != end(uiElement->childs); ++iter)
+                    ui_drains.push_back(*iter);
+
+                if(id == handle->focusedID && uiElement->prototype == RGUI_DROPDOWN)
                 {
-                    ui_focus = false;
-                    handle->focusedID = 0;
+                    focusedIdToDrawLast = id;
+                    continue;
                 }
 
-                uiState.ms_click = ui_msclick && (uiState.ms_hover || ui_contex);
+                uiState.ms_hover = Vec2Int::HasIntersection(ms, uiElement->rect);
+
+                if(!(uiElement->options & ElementGroupMask))
+                {
+                    bool ui_focus = (id == handle->focusedID);
+
+                    if(general_ui_render(*uiElement, uiState, ui_focus) && handle->interactable)
+                    {
+                        handle->_focusedUI = true;
+                        if(ui_focus)
+                        {
+                            handle->focusedID = id;
+                        }
+
+                        if(uiElement->options & ElementEnableMask)
+                        {
+                            if(handle->callback)
+                            {
+                                handle->callback(id, handle->callbackData);
+                            }
+                            general_ui_event_action(uiElement);
+                        }
+                    }
+                    else
+                    {
+                        if(id == handle->focusedID && !ui_focus)
+                            handle->focusedID = 0;
+                    }
+                    if(!handle->_focusedUI)
+                        handle->_focusedUI = ui_focus;
+                }
+            }
+
+            if(focusedIdToDrawLast != 0 && gui->ElementContains(focusedIdToDrawLast))
+            {
+                uiElement = &call_get_element(gui->handle, focusedIdToDrawLast);
+                uiState.ms_hover = Vec2Int::HasIntersection(ms, uiElement->rect);
+                bool ui_focus = true;
 
                 if(general_ui_render(*uiElement, uiState, ui_focus) && handle->interactable)
                 {
                     handle->_focusedUI = true;
-
                     if(ui_focus)
-                    {
-                        handle->focusedID = id;
-                    }
-
+                        handle->focusedID = focusedIdToDrawLast;
                     if(uiElement->options & ElementEnableMask)
                     {
                         if(handle->callback)
-                        {
-                            handle->callback(id, handle->callbackData);
-                        }
+                            handle->callback(focusedIdToDrawLast, handle->callbackData);
                         general_ui_event_action(uiElement);
                     }
                 }
                 else
                 {
-                    if(id == handle->focusedID && !ui_focus)
+                    if(!ui_focus)
                         handle->focusedID = 0;
                 }
                 if(!handle->_focusedUI)
                     handle->_focusedUI = ui_focus;
             }
-        }
 
-        if(focusedIdToDrawLast != 0 && gui->ElementContains(focusedIdToDrawLast))
-        {
-            uiElement = &call_get_element(gui->handle, focusedIdToDrawLast);
-            uiState.ms_hover = Vec2Int::HasIntersection(ms, uiElement->rect);
-            bool ui_contex = !uiElement->contextRect.empty() && Vec2Int::HasIntersection(ms, uiElement->contextRect);
-            if(uiState.ms_hover || ui_contex)
+            if(ImGui::IsWindowHovered(ImGuiHoveredFlags_AnyWindow) || ImGui::IsAnyItemHovered())
+            {
                 gui->handle->any_mouse_hover = true;
-
-            bool ui_focus = true;
-            if(!uiState.ms_hover && !ui_contex && any_clicked_this_frame)
-            {
-                ui_focus = false;
-                handle->focusedID = 0;
             }
-
-            uiState.ms_click = ui_msclick && (uiState.ms_hover || ui_contex);
-
-            if(general_ui_render(*uiElement, uiState, ui_focus) && handle->interactable)
-            {
-                handle->_focusedUI = true;
-                if(ui_focus)
-                    handle->focusedID = focusedIdToDrawLast;
-                if(uiElement->options & ElementEnableMask)
-                {
-                    if(handle->callback)
-                        handle->callback(focusedIdToDrawLast, handle->callbackData);
-                    general_ui_event_action(uiElement);
-                }
-            }
-            else
-            {
-                if(!ui_focus)
-                    handle->focusedID = 0;
-            }
-            if(!handle->_focusedUI)
-                handle->_focusedUI = ui_focus;
         }
+        ImGui::End();
+        ImGui::PopStyleVar(2);
+
+        ImGui::Render();
+        ImGui_ImplSDLRenderer2_RenderDrawData(ImGui::GetDrawData(), gscope.renderer);
     }
 
 } // namespace RoninEngine::UI

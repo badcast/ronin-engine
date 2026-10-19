@@ -18,6 +18,12 @@ namespace RoninEngine::Runtime
      */
     ma_result ronin_decode_memory(const void *data, size_t size, ma_decoder_config *config, ma_uint64 *frameCount, void **frames);
 
+    /**
+     * Windowed magnitude spectrum. pcm holds fftSize (power of two) samples; writes fftSize / 2 bins
+     * (0 Hz .. Nyquist), normalized so a sine of amplitude A gives about A.
+     */
+    bool ronin_compute_spectrum(const float *pcm, int fftSize, FFTWindow window, float *magnitudes);
+
     struct AudioClipData
     {
         std::vector<uint8_t> pcmData;
@@ -43,6 +49,14 @@ namespace RoninEngine::Runtime
         static bool setChannelState(int channel, AudioClip *clip, AudioState state, bool loop);
         static float getChannelVolume(int channel);
         static void setChannelVolume(int channel, float value);
+        static float getChannelPitch(int channel);
+        static void setChannelPitch(int channel, float value);
+        static float getChannelPan(int channel);
+        static void setChannelPan(int channel, float value);
+        static bool isChannelLooping(int channel);
+        static bool setChannelLooping(int channel, bool loop);
+        static bool getChannelCursor(int channel, uint64_t *frame);
+        static bool setChannelCursor(int channel, uint64_t frame);
         static double getAudioClipDuration(AudioClip *clip);
 
         static AudioState getMusicState();
