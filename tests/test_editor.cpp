@@ -435,6 +435,45 @@ int main()
             assert(editorState.activeWorld().objects.size() == countBefore);
             std::cout << "  [PASS] Undo / Redo system validated" << std::endl;
         }
+
+        // 20. Test Component Asset Assignment & Custom Image Shape
+        {
+            int testObjId = editorState.createObject("AssetAssignTest").id;
+            EditorObject *testObj = editorState.findObject(testObjId);
+            assert(testObj != nullptr);
+
+            std::string spriteRel = "Assets/Textures/NewSprite.sprite";
+            uint32_t spriteId = 0x50524954;
+            testObj->sprite.enabled = true;
+            testObj->sprite.spritePath = spriteRel;
+            testObj->sprite.assetId = spriteId;
+            testObj->sprite.primitiveShape = 3; // Custom Image
+
+            std::string audioRel = "Assets/Audio/Project_2.ogg";
+            uint32_t audioId = 0x41554449;
+            testObj->audio.enabled = true;
+            testObj->audio.clipPath = audioRel;
+            testObj->audio.clipAssetId = audioId;
+
+            assert(testObj->sprite.spritePath == spriteRel);
+            assert(testObj->sprite.primitiveShape == 3);
+            assert(testObj->audio.clipPath == audioRel);
+
+            std::filesystem::path assetWorldPath = expectedRoot / "Assets" / "Worlds" / "AssetAssignWorld.world";
+            assert(editorState.saveWorldToFile(assetWorldPath.string()));
+
+            EditorState reloadState;
+            assert(reloadState.loadWorldFromFile(assetWorldPath.string()));
+            EditorObject *reloaded = reloadState.findObject(testObjId);
+            assert(reloaded != nullptr);
+            assert(reloaded->sprite.enabled);
+            assert(reloaded->sprite.spritePath == spriteRel);
+            assert(reloaded->sprite.assetId == spriteId);
+            assert(reloaded->audio.enabled);
+            assert(reloaded->audio.clipPath == audioRel);
+            assert(reloaded->audio.clipAssetId == audioId);
+            std::cout << "  [PASS] Component Asset Assignment validated" << std::endl;
+        }
     }
 
     // Cleanup
