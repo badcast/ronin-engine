@@ -1,4 +1,5 @@
 #include "project_manager.h"
+#include "asset_database.h"
 #include <fstream>
 #include <sstream>
 #include <iostream>
@@ -172,6 +173,7 @@ namespace RoninEditor
 
         m_currentConfig = cfg;
         m_hasOpenProject = true;
+        AssetDatabase::GetInstance().Initialize(cfg.rootPath);
         AddRecentProject(cfg.projectName, cfg.rootPath.string());
         return true;
     }
@@ -270,6 +272,7 @@ namespace RoninEditor
 
         m_currentConfig = cfg;
         m_hasOpenProject = true;
+        AssetDatabase::GetInstance().Initialize(cfg.rootPath);
         AddRecentProject(cfg.projectName, cfg.rootPath.string());
         return true;
     }

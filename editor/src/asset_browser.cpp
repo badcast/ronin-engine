@@ -1,5 +1,6 @@
 #include "asset_browser.h"
 #include "project_manager.h"
+#include "asset_database.h"
 #include "editor_icons.h"
 #include <imgui.h>
 #include <imgui_internal.h>
@@ -117,18 +118,25 @@ namespace RoninEditor
 
     void AssetBrowser::PingAsset(const std::filesystem::path &path)
     {
-        if (std::filesystem::exists(path))
+        std::filesystem::path fullPath = path;
+        if (!std::filesystem::exists(fullPath))
         {
-            if (std::filesystem::is_directory(path))
+            auto root = ProjectManager::GetInstance().GetRootPath();
+            fullPath = root / path;
+        }
+
+        if (std::filesystem::exists(fullPath))
+        {
+            if (std::filesystem::is_directory(fullPath))
             {
-                SetCurrentDirectory(path);
+                SetCurrentDirectory(fullPath);
             }
             else
             {
-                SetCurrentDirectory(path.parent_path());
+                SetCurrentDirectory(fullPath.parent_path());
                 m_selectedPaths.clear();
-                m_selectedPaths.push_back(path);
-                m_lastSelectedPath = path;
+                m_selectedPaths.push_back(fullPath);
+                m_lastSelectedPath = fullPath;
             }
         }
     }
@@ -232,16 +240,21 @@ namespace RoninEditor
             std::error_code relEc;
             entry.relativePath = std::filesystem::relative(it.path(), m_assetsRoot, relEc);
             if (relEc || entry.relativePath.empty()) entry.relativePath = it.path().filename();
-            entry.assetId = CalculateAssetId(entry.relativePath.string());
+            // Hide hidden files starting with . or .meta files
+            if (!entry.filename.empty() && entry.filename[0] == '.')
+                continue;
+            if (it.path().extension() == ".meta")
+                continue;
 
             if (!entry.isDirectory)
             {
                 entry.fileSize = it.file_size(ec);
+                MetaFile mf;
+                if (MetaManager::EnsureMetaFile(it.path(), mf))
+                {
+                    entry.assetId = mf.assetId;
+                }
             }
-
-            // Hide hidden files starting with .
-            if (!entry.filename.empty() && entry.filename[0] == '.')
-                continue;
 
             m_entries.push_back(entry);
         }
@@ -487,6 +500,10 @@ namespace RoninEditor
                     else
                     {
                         selectPath(entry.fullPath, ctrl);
+                        if (!entry.isDirectory)
+                        {
+                            state.selectAsset(entry.fullPath);
+                        }
                     }
                 }
 
@@ -718,8 +735,7 @@ namespace RoninEditor
 
             if (ImGui::MenuItem("Delete", "Del"))
             {
-                std::error_code ec;
-                std::filesystem::remove_all(targetItem->fullPath, ec);
+                AssetDatabase::GetInstance().DeleteAsset(targetItem->fullPath);
                 refreshCurrentDirectory();
                 return;
             }

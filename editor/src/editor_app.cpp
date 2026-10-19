@@ -225,6 +225,10 @@ namespace RoninEditor
         {
             m_spriteEditor.OpenAsset(p);
         };
+        m_inspectorPanel.onPingAsset = [this](const std::filesystem::path &p)
+        {
+            m_assetBrowser.PingAsset(p);
+        };
 
         if (m_state == EditorAppState::MainEditor)
         {

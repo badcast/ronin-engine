@@ -2,6 +2,7 @@
 
 #include <string>
 #include <vector>
+#include <filesystem>
 #include <ronin/framework.h>
 
 #ifndef RONIN_EDITOR_VERSION_STRING
@@ -373,6 +374,25 @@ namespace RoninEditor
         void deselectObject(int id);
         void clearSelection();
         void deleteSelectedObjects();
+
+        // Selected Asset inspection in Inspector panel
+        std::filesystem::path selectedAssetPath;
+        std::string selectedAssetGuid;
+        bool inspectAssetMode = false;
+
+        void selectAsset(const std::filesystem::path &path, const std::string &guid = "")
+        {
+            selectedAssetPath = path;
+            selectedAssetGuid = guid;
+            inspectAssetMode = true;
+        }
+
+        void clearAssetSelection()
+        {
+            selectedAssetPath.clear();
+            selectedAssetGuid.clear();
+            inspectAssetMode = false;
+        }
 
         EditorPlayState playState = EditorPlayState::Stopped;
         GizmoToolMode gizmoTool = GizmoToolMode::SelectMove;

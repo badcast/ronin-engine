@@ -22,7 +22,7 @@ foreach(test_name ${TEST_TARGETS})
 endforeach()
 
 if(RONIN_EDITOR_BUILD)
-    add_executable(test_editor test_editor.cpp ${CMAKE_SOURCE_DIR}/editor/src/project_manager.cpp ${CMAKE_SOURCE_DIR}/editor/src/editor_state.cpp)
+    add_executable(test_editor test_editor.cpp ${CMAKE_SOURCE_DIR}/editor/src/project_manager.cpp ${CMAKE_SOURCE_DIR}/editor/src/editor_state.cpp ${CMAKE_SOURCE_DIR}/editor/src/meta_manager.cpp ${CMAKE_SOURCE_DIR}/editor/src/asset_database.cpp)
     target_link_libraries(test_editor PRIVATE RoninEngine ${SDL2_LIBRARIES})
     target_include_directories(test_editor PRIVATE
         ${CMAKE_SOURCE_DIR}/include

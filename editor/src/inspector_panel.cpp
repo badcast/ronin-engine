@@ -1,7 +1,10 @@
 #include "inspector_panel.h"
 #include "project_manager.h"
 #include "asset_browser.h"
+#include "meta_manager.h"
+#include "asset_database.h"
 #include "editor_icons.h"
+#include <ronin/TextStream.h>
 #include <imgui.h>
 #include <imgui_internal.h>
 #include <cstring>
@@ -386,19 +389,29 @@ namespace RoninEditor
             // Sprite Asset Slot with Asset ID
             ImGui::Text("Sprite Asset:");
             std::string dispSprite;
+            std::string spriteTooltip;
             if (obj.sprite.spritePath.empty())
             {
                 dispSprite = "(None / Click to Select or Drop Asset)";
+                spriteTooltip = "Click to open Asset Picker popup or drag & drop a Sprite/Texture";
             }
             else
             {
+                dispSprite = std::filesystem::path(obj.sprite.spritePath).stem().string();
                 char idBuf[32];
                 std::snprintf(idBuf, sizeof(idBuf), "0x%08X", obj.sprite.assetId);
-                dispSprite = obj.sprite.spritePath + " [ID: " + idBuf + "]";
+                std::string guid = AssetDatabase::GetInstance().GetGuidByPath(obj.sprite.spritePath);
+                spriteTooltip = "Name: " + std::filesystem::path(obj.sprite.spritePath).filename().string() +
+                                "\nPath: " + obj.sprite.spritePath +
+                                "\nAsset ID: " + idBuf +
+                                (guid.empty() ? "" : ("\nGUID: " + guid));
             }
 
+            float rightButtonsWidth = obj.sprite.spritePath.empty() ? 105.0f : 132.0f;
+            float mainBtnWidth = std::max(80.0f, ImGui::GetContentRegionAvail().x - rightButtonsWidth);
+
             ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.18f, 0.22f, 0.28f, 1.0f));
-            if (ImGui::Button(dispSprite.c_str(), ImVec2(ImGui::GetContentRegionAvail().x - 75.0f, 0.0f)))
+            if (ImGui::Button(dispSprite.c_str(), ImVec2(mainBtnWidth, 0.0f)))
             {
                 m_showSpritePicker = true;
                 m_openSpritePickerTrigger = true;
@@ -408,7 +421,7 @@ namespace RoninEditor
             }
             ImGui::PopStyleColor();
             if (ImGui::IsItemHovered())
-                ImGui::SetTooltip("Click to open Asset Picker popup or drag & drop a Sprite/Texture");
+                ImGui::SetTooltip("%s", spriteTooltip.c_str());
 
             if (ImGui::BeginDragDropTarget())
             {
@@ -437,6 +450,21 @@ namespace RoninEditor
             }
 
             ImGui::SameLine();
+            if (ImGui::Button("->##PingSprite", ImVec2(26.0f, 0.0f)))
+            {
+                if (!obj.sprite.spritePath.empty())
+                {
+                    std::filesystem::path full = obj.sprite.spritePath;
+                    if (!std::filesystem::exists(full))
+                        full = ProjectManager::GetInstance().GetRootPath() / obj.sprite.spritePath;
+                    if (onPingAsset) onPingAsset(full);
+                    state.selectAsset(full);
+                }
+            }
+            if (ImGui::IsItemHovered())
+                ImGui::SetTooltip("Ping and inspect sprite asset in Asset Browser");
+
+            ImGui::SameLine();
             if (ImGui::Button("Select...##PickSprite"))
             {
                 m_showSpritePicker = true;
@@ -448,19 +476,21 @@ namespace RoninEditor
 
             if (!obj.sprite.spritePath.empty())
             {
+                ImGui::SameLine();
+                if (ImGui::Button("X##ClearSprite", ImVec2(22.0f, 0.0f)))
+                {
+                    obj.sprite.spritePath.clear();
+                    obj.sprite.assetId = 0;
+                    state.isDirty = true;
+                }
+                if (ImGui::IsItemHovered()) ImGui::SetTooltip("Clear sprite asset");
+
                 if (ImGui::Button("Edit in Sprite Editor"))
                 {
                     if (onOpenSpriteEditor)
                     {
                         onOpenSpriteEditor(obj.sprite.spritePath);
                     }
-                }
-                ImGui::SameLine();
-                if (ImGui::SmallButton("Clear##Sprite"))
-                {
-                    obj.sprite.spritePath.clear();
-                    obj.sprite.assetId = 0;
-                    state.isDirty = true;
                 }
             }
 
@@ -1105,22 +1135,31 @@ namespace RoninEditor
 
         if (hr.isOpen)
         {
-            // Audio Clip Slot with Asset ID
             ImGui::Text("Audio Clip:");
             std::string dispAudio;
+            std::string audioTooltip;
             if (obj.audio.clipPath.empty())
             {
                 dispAudio = "(None / Click to Select or Drop Audio)";
+                audioTooltip = "Click to open Audio Asset Picker popup or drag & drop an audio file";
             }
             else
             {
+                dispAudio = std::filesystem::path(obj.audio.clipPath).stem().string();
                 char idBuf[32];
                 std::snprintf(idBuf, sizeof(idBuf), "0x%08X", obj.audio.clipAssetId);
-                dispAudio = obj.audio.clipPath + " [ID: " + idBuf + "]";
+                std::string guid = AssetDatabase::GetInstance().GetGuidByPath(obj.audio.clipPath);
+                audioTooltip = "Name: " + std::filesystem::path(obj.audio.clipPath).filename().string() +
+                               "\nPath: " + obj.audio.clipPath +
+                               "\nAsset ID: " + idBuf +
+                               (guid.empty() ? "" : ("\nGUID: " + guid));
             }
 
+            float rightButtonsWidth = obj.audio.clipPath.empty() ? 105.0f : 132.0f;
+            float mainBtnWidth = std::max(80.0f, ImGui::GetContentRegionAvail().x - rightButtonsWidth);
+
             ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.24f, 0.20f, 0.16f, 1.0f));
-            if (ImGui::Button(dispAudio.c_str(), ImVec2(ImGui::GetContentRegionAvail().x - 75.0f, 0.0f)))
+            if (ImGui::Button(dispAudio.c_str(), ImVec2(mainBtnWidth, 0.0f)))
             {
                 m_showAudioPicker = true;
                 m_openAudioPickerTrigger = true;
@@ -1130,7 +1169,7 @@ namespace RoninEditor
             }
             ImGui::PopStyleColor();
             if (ImGui::IsItemHovered())
-                ImGui::SetTooltip("Click to open Audio Asset Picker popup or drag & drop an audio file");
+                ImGui::SetTooltip("%s", audioTooltip.c_str());
 
             if (ImGui::BeginDragDropTarget())
             {
@@ -1150,6 +1189,21 @@ namespace RoninEditor
             }
 
             ImGui::SameLine();
+            if (ImGui::Button("->##PingAudio", ImVec2(26.0f, 0.0f)))
+            {
+                if (!obj.audio.clipPath.empty())
+                {
+                    std::filesystem::path full = obj.audio.clipPath;
+                    if (!std::filesystem::exists(full))
+                        full = ProjectManager::GetInstance().GetRootPath() / obj.audio.clipPath;
+                    if (onPingAsset) onPingAsset(full);
+                    state.selectAsset(full);
+                }
+            }
+            if (ImGui::IsItemHovered())
+                ImGui::SetTooltip("Ping and inspect audio asset in Asset Browser");
+
+            ImGui::SameLine();
             if (ImGui::Button("Select...##PickAudio"))
             {
                 m_showAudioPicker = true;
@@ -1161,6 +1215,16 @@ namespace RoninEditor
 
             if (!obj.audio.clipPath.empty())
             {
+                ImGui::SameLine();
+                if (ImGui::Button("X##ClearAudio", ImVec2(22.0f, 0.0f)))
+                {
+                    stopAudioPreview();
+                    obj.audio.clipPath.clear();
+                    obj.audio.clipAssetId = 0;
+                    state.isDirty = true;
+                }
+                if (ImGui::IsItemHovered()) ImGui::SetTooltip("Clear audio clip");
+
                 if (ImGui::SmallButton("Play Preview"))
                 {
                     playAudioPreview(obj.audio.clipPath);
@@ -1171,14 +1235,6 @@ namespace RoninEditor
                 {
                     stopAudioPreview();
                     state.logInfo("Stopped audio preview");
-                }
-                ImGui::SameLine();
-                if (ImGui::SmallButton("Clear##Audio"))
-                {
-                    obj.audio.clipPath.clear();
-                    obj.audio.clipAssetId = 0;
-                    stopAudioPreview();
-                    state.isDirty = true;
                 }
             }
 
@@ -1712,16 +1768,270 @@ namespace RoninEditor
         }
     }
 
+    void InspectorPanel::renderAssetInspector(EditorState &state)
+    {
+        std::filesystem::path p = state.selectedAssetPath;
+        if (p.empty() || !std::filesystem::exists(p))
+        {
+            ImGui::TextDisabled("Selected asset does not exist.");
+            if (ImGui::Button("Close Asset View"))
+            {
+                state.clearAssetSelection();
+            }
+            return;
+        }
+
+        // 1. Navigation / Back button if a GameObject is selected
+        if (state.selectedObjectId != -1)
+        {
+            EditorObject *selectedObj = state.findObject(state.selectedObjectId);
+            std::string backLabel = "<- Back to Object: " + (selectedObj ? selectedObj->name : "Selected");
+            if (ImGui::Button(backLabel.c_str()))
+            {
+                state.inspectAssetMode = false;
+            }
+            ImGui::SameLine();
+        }
+        if (ImGui::SmallButton("Deselect Asset"))
+        {
+            state.clearAssetSelection();
+            return;
+        }
+        ImGui::Separator();
+
+        // 2. Fetch metadata from AssetDatabase or MetaManager
+        const AssetMetadata *md = AssetDatabase::GetInstance().GetMetadataByPath(p);
+        MetaFile meta;
+        if (!md)
+        {
+            MetaManager::EnsureMetaFile(p, meta);
+        }
+
+        std::string guid = md ? md->guid : meta.guid;
+        uint32_t assetId = md ? md->assetId : meta.assetId;
+        AssetType assetType = md ? md->type : meta.type;
+        std::string filename = p.filename().string();
+        std::string stem = p.stem().string();
+        std::error_code ec;
+        std::uintmax_t fileSize = std::filesystem::file_size(p, ec);
+
+        auto root = ProjectManager::GetInstance().GetRootPath();
+        std::filesystem::path rel = std::filesystem::relative(p, root, ec);
+        std::string relPathStr = (ec || rel.empty()) ? p.string() : rel.string();
+
+        // Header: Badge + Filename
+        const char *badge = MetaManager::GetAssetTypeBadge(assetType);
+        ImGui::TextColored(ImVec4(0.4f, 0.8f, 1.0f, 1.0f), "%s", badge);
+        ImGui::SameLine();
+        ImGui::TextUnformatted(filename.c_str());
+        ImGui::Separator();
+
+        // Details Table / Group
+        if (ImGui::CollapsingHeader("Asset Metadata", ImGuiTreeNodeFlags_DefaultOpen))
+        {
+            ImGui::Columns(2, "AssetMetaCols", false);
+            ImGui::SetColumnWidth(0, 90.0f);
+
+            ImGui::Text("Asset ID");
+            ImGui::NextColumn();
+            char idBuf[64];
+            std::snprintf(idBuf, sizeof(idBuf), "0x%08X (%u)", assetId, assetId);
+            ImGui::TextUnformatted(idBuf);
+            ImGui::NextColumn();
+
+            ImGui::Text("GUID");
+            ImGui::NextColumn();
+            ImGui::TextUnformatted(guid.c_str());
+            ImGui::SameLine();
+            if (ImGui::SmallButton("Copy##GUID"))
+            {
+                ImGui::SetClipboardText(guid.c_str());
+                state.logInfo("Copied GUID to clipboard: " + guid);
+            }
+            ImGui::NextColumn();
+
+            ImGui::Text("File Size");
+            ImGui::NextColumn();
+            if (fileSize < 1024)
+                ImGui::Text("%llu bytes", static_cast<unsigned long long>(fileSize));
+            else if (fileSize < 1024 * 1024)
+                ImGui::Text("%.2f KB", static_cast<float>(fileSize) / 1024.0f);
+            else
+                ImGui::Text("%.2f MB", static_cast<float>(fileSize) / (1024.0f * 1024.0f));
+            ImGui::NextColumn();
+
+            ImGui::Text("Relative Path");
+            ImGui::NextColumn();
+            ImGui::TextWrapped("%s", relPathStr.c_str());
+            ImGui::NextColumn();
+
+            ImGui::Columns(1);
+        }
+
+        ImGui::Spacing();
+        ImGui::Separator();
+
+        // 3. Asset-Specific Inspector Sections
+        if (assetType == AssetType::Audio)
+        {
+            ImGui::TextColored(ImVec4(1.0f, 0.75f, 0.2f, 1.0f), "Audio Clip Inspector");
+            ImGui::Spacing();
+
+            // Preview controls
+            bool isThisPlaying = (m_previewChunk != nullptr && m_previewPlayingPath == p.string());
+            if (!isThisPlaying)
+            {
+                if (ImGui::Button("Play Preview", ImVec2(120.0f, 30.0f)))
+                {
+                    playAudioPreview(p.string());
+                }
+            }
+            else
+            {
+                ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.7f, 0.2f, 0.2f, 1.0f));
+                if (ImGui::Button("Stop Preview", ImVec2(120.0f, 30.0f)))
+                {
+                    stopAudioPreview();
+                }
+                ImGui::PopStyleColor();
+                ImGui::SameLine();
+                ImGui::TextColored(ImVec4(0.4f, 1.0f, 0.4f, 1.0f), "Playing...");
+            }
+
+            ImGui::Spacing();
+            if (state.selectedObjectId != -1)
+            {
+                EditorObject *curObj = state.findObject(state.selectedObjectId);
+                if (curObj && ImGui::Button("Assign to Selected Object's AudioSource"))
+                {
+                    curObj->audio.clipPath = relPathStr;
+                    curObj->audio.clipAssetId = assetId;
+                    curObj->audio.enabled = true;
+                    state.isDirty = true;
+                    state.logInfo("Assigned audio clip to " + curObj->name);
+                }
+            }
+        }
+        else if (assetType == AssetType::Sprite || assetType == AssetType::Texture)
+        {
+            ImGui::TextColored(ImVec4(0.3f, 1.0f, 0.5f, 1.0f), "%s Inspector", (assetType == AssetType::Sprite ? "Sprite" : "Texture2D"));
+            ImGui::Spacing();
+
+            if (ImGui::Button("Open in Sprite Editor", ImVec2(180.0f, 30.0f)))
+            {
+                if (onOpenSpriteEditor)
+                {
+                    onOpenSpriteEditor(p);
+                }
+            }
+
+            if (state.selectedObjectId != -1)
+            {
+                EditorObject *curObj = state.findObject(state.selectedObjectId);
+                if (curObj && ImGui::Button("Assign to Selected Object's SpriteRenderer"))
+                {
+                    curObj->sprite.spritePath = relPathStr;
+                    curObj->sprite.assetId = assetId;
+                    curObj->sprite.primitiveShape = 3;
+                    curObj->sprite.enabled = true;
+                    state.isDirty = true;
+                    state.logInfo("Assigned sprite to " + curObj->name);
+                }
+            }
+        }
+        else if (assetType == AssetType::World)
+        {
+            ImGui::TextColored(ImVec4(0.8f, 0.6f, 1.0f, 1.0f), "World Scene Inspector");
+            ImGui::Spacing();
+            if (ImGui::Button("Load World in Editor", ImVec2(160.0f, 30.0f)))
+            {
+                state.loadWorldFromFile(p.string());
+                state.logInfo("Loaded world from asset: " + filename);
+            }
+        }
+        else if (assetType == AssetType::Script)
+        {
+            ImGui::TextColored(ImVec4(0.6f, 0.8f, 1.0f, 1.0f), "Text / Script Inspector");
+            ImGui::Spacing();
+
+            std::vector<std::string> lines = RoninEngine::Runtime::TextStream::ReadLines(p.string());
+            ImGui::Text("Total lines: %zu", lines.size());
+            ImGui::Spacing();
+
+            if (ImGui::CollapsingHeader("Preview Content", ImGuiTreeNodeFlags_DefaultOpen))
+            {
+                ImGui::BeginChild("ScriptPreview", ImVec2(0, 180), true);
+                size_t previewCount = std::min<size_t>(lines.size(), 30);
+                for (size_t i = 0; i < previewCount; ++i)
+                {
+                    ImGui::TextDisabled("%3zu: ", i + 1);
+                    ImGui::SameLine();
+                    ImGui::TextUnformatted(lines[i].c_str());
+                }
+                if (lines.size() > 30)
+                {
+                    ImGui::TextDisabled("... (%zu more lines)", lines.size() - 30);
+                }
+                ImGui::EndChild();
+            }
+
+#if defined(__linux__)
+            if (ImGui::Button("Open in System Editor"))
+            {
+                std::string cmd = "xdg-open \"" + p.string() + "\" &";
+                std::system(cmd.c_str());
+            }
+#endif
+        }
+        else if (assetType == AssetType::Prefab)
+        {
+            ImGui::TextColored(ImVec4(1.0f, 0.5f, 0.8f, 1.0f), "Prefab Inspector");
+            ImGui::Spacing();
+            ImGui::TextWrapped("Prefab template: %s", stem.c_str());
+            if (ImGui::Button("Instantiate Prefab in Scene", ImVec2(180.0f, 30.0f)))
+            {
+                EditorObject newObj;
+                newObj.id = state.activeWorld().allocateObjectId();
+                newObj.name = stem;
+                newObj.position = {0.0f, 0.0f};
+                state.activeWorld().objects.push_back(newObj);
+                state.selectObject(newObj.id);
+                state.isDirty = true;
+                state.logInfo("Instantiated prefab: " + stem);
+            }
+        }
+        else if (assetType == AssetType::Terrain)
+        {
+            ImGui::TextColored(ImVec4(0.7f, 0.9f, 0.4f, 1.0f), "Terrain Asset Inspector");
+            ImGui::Spacing();
+            ImGui::TextWrapped("Reusable terrain data: %s", stem.c_str());
+        }
+    }
+
     void InspectorPanel::Render(EditorState &state)
     {
         if (ImGui::Begin("Inspector"))
         {
+            if (state.inspectAssetMode && !state.selectedAssetPath.empty())
+            {
+                renderAssetInspector(state);
+                ImGui::End();
+                return;
+            }
+
             EditorObject *obj = state.findObject(state.selectedObjectId);
             if (!obj)
             {
-                ImGui::TextDisabled("No GameObject selected.");
-                ImGui::Separator();
-                ImGui::TextWrapped("Select a GameObject in the Hierarchy panel or click on an object in the World Viewport to edit its properties and components.");
+                if (!state.selectedAssetPath.empty())
+                {
+                    renderAssetInspector(state);
+                }
+                else
+                {
+                    ImGui::TextDisabled("No GameObject selected.");
+                    ImGui::Separator();
+                    ImGui::TextWrapped("Select a GameObject in the Hierarchy panel or an asset in the Project panel to inspect its properties.");
+                }
                 ImGui::End();
                 return;
             }

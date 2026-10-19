@@ -49,6 +49,8 @@ set(RONIN_EDITOR_SOURCES
     src/console_panel.cpp
     src/terrain_editor.cpp
     src/sprite_editor.cpp
+    src/meta_manager.cpp
+    src/asset_database.cpp
     src/editor_icons.cpp
     ${IMGUI_SOURCES}
 )

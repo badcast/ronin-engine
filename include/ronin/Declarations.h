@@ -53,7 +53,9 @@ namespace RoninEngine
 
         struct Rendering;
 
-        struct AudioClip;
+        class AudioClip;
+
+        class TextStream;
 
         struct MusicClip;
 
@@ -128,6 +130,7 @@ namespace RoninEngine
         using CircleCollider2DRef = Ref<CircleCollider2D>;
         using GameObjectRef = Ref<GameObject>;
         using SpriteRef = Ref<Sprite>;
+        using AudioClipRef = Ref<AudioClip>;
         using AtlasRef = Ref<Atlas>;
         using AssetRef = Ref<Asset>;
     } // namespace Runtime

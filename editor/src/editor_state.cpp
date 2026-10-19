@@ -812,6 +812,7 @@ namespace RoninEditor
 
     void EditorState::selectObject(int id, bool addToSelection)
     {
+        inspectAssetMode = false;
         if (!addToSelection)
         {
             selectedObjectIds.clear();

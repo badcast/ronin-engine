@@ -5,22 +5,10 @@
 #include <vector>
 #include <functional>
 #include "editor_state.h"
+#include "meta_manager.h"
 
 namespace RoninEditor
 {
-    enum class AssetType
-    {
-        Unknown,
-        Folder,
-        World,
-        Texture,
-        Sprite,
-        Audio,
-        Script,
-        Prefab,
-        Font,
-        Config
-    };
 
     struct AssetEntry
     {

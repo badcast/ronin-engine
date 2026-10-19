@@ -64,8 +64,10 @@ namespace RoninEditor
         void Render(EditorState &state);
 
         std::function<void(const std::filesystem::path &)> onOpenSpriteEditor;
+        std::function<void(const std::filesystem::path &)> onPingAsset;
 
     private:
+        void renderAssetInspector(EditorState &state);
         ComponentHeaderResult renderComponentHeader(
             const char *title,
             int componentId,

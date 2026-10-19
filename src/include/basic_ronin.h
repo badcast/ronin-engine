@@ -154,22 +154,6 @@ namespace RoninEngine
             std::set<Renderer *> prevs;
         };
 
-        struct AudioClip
-        {
-            Mix_Chunk *mix_chunk;
-#ifndef NDEBUG
-            int used;
-#endif
-            AudioClip(Mix_Chunk *chunk)
-                : mix_chunk(chunk)
-#ifndef NDEBUG
-                  ,
-                  used(0)
-#endif
-            {
-            }
-        };
-
         struct MusicClip
         {
             Mix_Music *mix_music;

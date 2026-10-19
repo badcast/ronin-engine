@@ -1,6 +1,7 @@
 #pragma once
 
 #include "begin.h"
+#include "AudioClip.h"
 
 namespace RoninEngine::Runtime
 {

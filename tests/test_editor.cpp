@@ -6,6 +6,10 @@
 #include <SimpleJSON/json.hpp>
 #include "project_manager.h"
 #include "editor_state.h"
+#include "meta_manager.h"
+#include "asset_database.h"
+#include <ronin/AudioClip.h>
+#include <ronin/TextStream.h>
 
 using namespace RoninEditor;
 
@@ -473,6 +477,133 @@ int main()
             assert(reloaded->audio.clipPath == audioRel);
             assert(reloaded->audio.clipAssetId == audioId);
             std::cout << "  [PASS] Component Asset Assignment validated" << std::endl;
+        }
+
+        // 21. Validate AudioClip engine class
+        {
+            RoninEngine::Runtime::AudioClip clip;
+            assert(!clip.valid());
+            assert(clip.getMixChunk() == nullptr);
+            assert(clip.getDuration() == -1.0);
+            assert(clip.getLengthInBytes() == 0);
+            clip.name = "TestClip";
+            clip.guid = "1234567890abcdef1234567890abcdef";
+            clip.assetId = 0x12345678;
+            assert(clip.name == "TestClip");
+            assert(clip.guid == "1234567890abcdef1234567890abcdef");
+            assert(clip.assetId == 0x12345678);
+            std::cout << "  [PASS] Test 21: AudioClip engine type validated" << std::endl;
+        }
+
+        // 22. Validate TextStream engine class
+        {
+            std::filesystem::path txtFile = expectedRoot / "Assets" / "Scripts" / "test_stream.txt";
+            std::string sampleContent = "First Line\nSecond Line\nThird Line";
+            assert(RoninEngine::Runtime::TextStream::WriteAllText(txtFile.string(), sampleContent));
+            assert(std::filesystem::exists(txtFile));
+
+            std::string readBack = RoninEngine::Runtime::TextStream::ReadAllText(txtFile.string());
+            assert(readBack == sampleContent);
+
+            std::vector<std::string> lines = RoninEngine::Runtime::TextStream::ReadLines(txtFile.string());
+            assert(lines.size() == 3);
+            assert(lines[0] == "First Line");
+            assert(lines[1] == "Second Line");
+            assert(lines[2] == "Third Line");
+
+            RoninEngine::Runtime::TextStream stream;
+            assert(stream.Open(txtFile.string(), std::ios::in));
+            assert(stream.IsOpen());
+            assert(!stream.IsEOF());
+            assert(stream.ReadLine() == "First Line");
+            assert(stream.ReadLine() == "Second Line");
+            assert(stream.ReadLine() == "Third Line");
+            stream.Close();
+            assert(!stream.IsOpen());
+            std::cout << "  [PASS] Test 22: TextStream engine type validated" << std::endl;
+        }
+
+        // 23. Validate MetaManager Unity-style GUID & metadata
+        {
+            std::string guid1 = MetaManager::GenerateGuid();
+            std::string guid2 = MetaManager::GenerateGuid();
+            assert(guid1.length() == 32);
+            assert(guid2.length() == 32);
+            assert(guid1 != guid2);
+            for (char c : guid1)
+            {
+                assert((c >= '0' && c <= '9') || (c >= 'a' && c <= 'f'));
+            }
+
+            uint32_t id1 = MetaManager::CalculateAssetId("Assets/Audio/Project_2.ogg");
+            uint32_t id2 = MetaManager::CalculateAssetId("assets/audio/project_2.ogg");
+            assert(id1 == id2);
+            assert(id1 != 0);
+
+            assert(MetaManager::DetermineAssetType("hero.sprite") == AssetType::Sprite);
+            assert(MetaManager::DetermineAssetType("hero.png") == AssetType::Texture);
+            assert(MetaManager::DetermineAssetType("sound.wav") == AssetType::Audio);
+            assert(MetaManager::DetermineAssetType("level.world") == AssetType::World);
+            assert(MetaManager::DetermineAssetType("player.prefab") == AssetType::Prefab);
+            assert(MetaManager::DetermineAssetType("ground.terrain") == AssetType::Terrain);
+            assert(MetaManager::DetermineAssetType("cutscene.mp4") == AssetType::Video);
+            assert(MetaManager::DetermineAssetType("script.cpp") == AssetType::Script);
+
+            std::filesystem::path dummyAsset = expectedRoot / "Assets" / "Textures" / "Hero.png";
+            std::filesystem::create_directories(dummyAsset.parent_path(), ec);
+            std::ofstream(dummyAsset) << "fake_png_data";
+
+            MetaFile metaOut;
+            assert(MetaManager::EnsureMetaFile(dummyAsset, metaOut));
+            assert(metaOut.type == AssetType::Texture);
+            assert(metaOut.guid.length() == 32);
+            assert(std::filesystem::exists(dummyAsset.string() + ".meta"));
+
+            // Reload and verify persistence
+            MetaFile reloadedMeta;
+            assert(MetaManager::EnsureMetaFile(dummyAsset, reloadedMeta));
+            assert(reloadedMeta.guid == metaOut.guid);
+            assert(reloadedMeta.assetId == metaOut.assetId);
+            std::cout << "  [PASS] Test 23: MetaManager Unity-style GUID and metadata validated" << std::endl;
+        }
+
+        // 24. Validate AssetDatabase pipeline & stem resolution
+        {
+            std::filesystem::path audioAsset = expectedRoot / "Assets" / "Audio" / "Project_2.ogg";
+            std::filesystem::create_directories(audioAsset.parent_path(), ec);
+            std::ofstream(audioAsset) << "fake_ogg_data";
+
+            std::filesystem::path spriteAsset = expectedRoot / "Assets" / "Textures" / "Warrior.sprite";
+            std::ofstream(spriteAsset) << "{\"name\":\"Warrior\"}";
+
+            AssetDatabase &adb = AssetDatabase::GetInstance();
+            adb.Initialize(expectedRoot);
+
+            // Verify .meta companion creation
+            assert(std::filesystem::exists(audioAsset.string() + ".meta"));
+            assert(std::filesystem::exists(spriteAsset.string() + ".meta"));
+
+            // Verify stem resolution (without extensions)
+            assert(adb.GetStemByPath(audioAsset) == "Project_2");
+            assert(adb.GetStemByPath(spriteAsset) == "Warrior");
+
+            // Verify lookups by path and by guid
+            std::string audioGuid = adb.GetGuidByPath(audioAsset);
+            assert(!audioGuid.empty());
+            assert(adb.HasAssetByGuid(audioGuid));
+            assert(adb.GetStemByGuid(audioGuid) == "Project_2");
+            assert(adb.GetPathByGuid(audioGuid) == audioAsset);
+
+            const AssetMetadata *audioMd = adb.GetMetadataByGuid(audioGuid);
+            assert(audioMd != nullptr);
+            assert(audioMd->type == AssetType::Audio);
+            assert(audioMd->filename == "Project_2.ogg");
+
+            // Verify deletion removes both file and .meta
+            assert(adb.DeleteAsset(spriteAsset));
+            assert(!std::filesystem::exists(spriteAsset));
+            assert(!std::filesystem::exists(spriteAsset.string() + ".meta"));
+            std::cout << "  [PASS] Test 24: AssetDatabase pipeline and stem resolution validated" << std::endl;
         }
     }
 
