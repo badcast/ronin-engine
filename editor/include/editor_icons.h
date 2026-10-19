@@ -20,11 +20,16 @@ namespace RoninEditor
         constexpr ImU32 TextNormal    = IM_COL32(210, 215, 225, 255);
         constexpr ImU32 TextWhite     = IM_COL32(255, 255, 255, 255);
 
-        constexpr ImU32 IconFolder    = IM_COL32(225, 185, 75, 255);  // Amber folder
+        constexpr ImU32 IconFolder    = IM_COL32(235, 185, 75, 255);  // Amber folder
         constexpr ImU32 IconWorld     = IM_COL32(65, 175, 240, 255);  // Cyan world
         constexpr ImU32 IconSprite    = IM_COL32(165, 115, 235, 255); // Purple sprite
-        constexpr ImU32 IconAudio     = IM_COL32(240, 105, 140, 255); // Rose audio
+        constexpr ImU32 IconTexture   = IM_COL32(80, 210, 150, 255);  // Mint texture
+        constexpr ImU32 IconAudio     = IM_COL32(245, 140, 60, 255);  // Orange audio
         constexpr ImU32 IconScript    = IM_COL32(80, 205, 140, 255);  // Emerald code
+        constexpr ImU32 IconPrefab    = IM_COL32(75, 160, 255, 255);  // Blue prefab
+        constexpr ImU32 IconTerrain   = IM_COL32(120, 210, 85, 255);  // Green terrain
+        constexpr ImU32 IconFont      = IM_COL32(255, 170, 180, 255); // Rose font
+        constexpr ImU32 IconVideo     = IM_COL32(255, 95, 120, 255);  // Coral video
         constexpr ImU32 IconCamera    = IM_COL32(75, 185, 235, 255);  // Sky camera
         constexpr ImU32 IconLight     = IM_COL32(255, 220, 90, 255);  // Warm sun light
     }
@@ -44,12 +49,23 @@ namespace RoninEditor
         File,
         World,
         Sprite,
+        Texture,
         Audio,
         Camera,
         Light,
         Search,
         Delete,
-        Plus
+        Plus,
+        Prefab,
+        Code,
+        TextStream,
+        Font,
+        Video,
+        Config,
+        UpDir,
+        Refresh,
+        ViewGrid,
+        ViewList
     };
 
     class EditorIcons

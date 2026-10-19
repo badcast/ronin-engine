@@ -105,19 +105,19 @@ namespace RoninEditor
     {
         switch (type)
         {
-        case AssetType::World:      return "[World]";
-        case AssetType::Texture:    return "[Texture2D]";
-        case AssetType::Sprite:     return "[Sprite]";
-        case AssetType::Audio:      return "[AudioClip]";
-        case AssetType::Code:       return "[Code]";
-        case AssetType::TextStream: return "[TextStream]";
-        case AssetType::Prefab:     return "[Prefab]";
-        case AssetType::Terrain:    return "[Terrain]";
-        case AssetType::Video:      return "[VideoClip]";
-        case AssetType::Font:       return "[Font]";
-        case AssetType::Config:     return "[Config]";
-        case AssetType::Folder:     return "[Folder]";
-        default:                    return "[Asset]";
+        case AssetType::World:      return "World";
+        case AssetType::Texture:    return "Texture2D";
+        case AssetType::Sprite:     return "Sprite";
+        case AssetType::Audio:      return "AudioClip";
+        case AssetType::Code:       return "Code";
+        case AssetType::TextStream: return "TextStream";
+        case AssetType::Prefab:     return "Prefab";
+        case AssetType::Terrain:    return "Terrain";
+        case AssetType::Video:      return "VideoClip";
+        case AssetType::Font:       return "Font";
+        case AssetType::Config:     return "Config";
+        case AssetType::Folder:     return "Folder";
+        default:                    return "Asset";
         }
     }
 

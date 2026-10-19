@@ -1854,7 +1854,22 @@ namespace RoninEditor
 
         // Header: Badge + Filename
         const char *badge = MetaManager::GetAssetTypeBadge(assetType);
-        ImGui::TextColored(ImVec4(0.4f, 0.8f, 1.0f, 1.0f), "%s", badge);
+        IconType iconType = IconType::File;
+        ImU32 iconCol = EditorPalette::TextMuted;
+        if (assetType == AssetType::Folder) { iconType = IconType::Folder; iconCol = EditorPalette::IconFolder; }
+        else if (assetType == AssetType::World) { iconType = IconType::World; iconCol = EditorPalette::IconWorld; }
+        else if (assetType == AssetType::Sprite) { iconType = IconType::Sprite; iconCol = EditorPalette::IconSprite; }
+        else if (assetType == AssetType::Texture) { iconType = IconType::Texture; iconCol = EditorPalette::IconTexture; }
+        else if (assetType == AssetType::Audio) { iconType = IconType::Audio; iconCol = EditorPalette::IconAudio; }
+        else if (assetType == AssetType::Prefab) { iconType = IconType::Prefab; iconCol = EditorPalette::IconPrefab; }
+        else if (assetType == AssetType::Code) { iconType = IconType::Code; iconCol = EditorPalette::IconScript; }
+        else if (assetType == AssetType::TextStream) { iconType = IconType::TextStream; iconCol = EditorPalette::TextNormal; }
+        else if (assetType == AssetType::Terrain) { iconType = IconType::Terrain; iconCol = EditorPalette::IconTerrain; }
+        else if (assetType == AssetType::Video) { iconType = IconType::Video; iconCol = EditorPalette::IconVideo; }
+        else if (assetType == AssetType::Font) { iconType = IconType::Font; iconCol = EditorPalette::IconFont; }
+        else if (assetType == AssetType::Config) { iconType = IconType::Config; iconCol = EditorPalette::Warning; }
+
+        EditorIcons::IconLabel(iconType, badge, iconCol, 15.0f);
         ImGui::SameLine();
         ImGui::TextUnformatted(filename.c_str());
         ImGui::Separator();
@@ -1975,7 +1990,7 @@ namespace RoninEditor
         }
         else if (assetType == AssetType::Sprite || assetType == AssetType::Texture)
         {
-            ImGui::TextColored(ImVec4(0.3f, 1.0f, 0.5f, 1.0f), "%s Inspector", (assetType == AssetType::Sprite ? "Sprite Asset [Sprite]" : "Texture2D Asset [Texture2D]"));
+            ImGui::TextColored(ImVec4(0.3f, 1.0f, 0.5f, 1.0f), "%s Inspector", (assetType == AssetType::Sprite ? "Sprite Asset" : "Texture2D Asset"));
             ImGui::Spacing();
 
             if (assetType == AssetType::Sprite)
@@ -2066,7 +2081,7 @@ namespace RoninEditor
         }
         else if (assetType == AssetType::World)
         {
-            ImGui::TextColored(ImVec4(0.8f, 0.6f, 1.0f, 1.0f), "World Scene Inspector [World]");
+            ImGui::TextColored(ImVec4(0.8f, 0.6f, 1.0f, 1.0f), "World Scene Inspector");
             ImGui::Spacing();
             if (ImGui::Button("Load World in Editor", ImVec2(160.0f, 30.0f)))
             {
@@ -2076,7 +2091,7 @@ namespace RoninEditor
         }
         else if (assetType == AssetType::Code)
         {
-            ImGui::TextColored(ImVec4(0.3f, 0.85f, 1.0f, 1.0f), "System Source Code Inspector [Code]");
+            ImGui::TextColored(ImVec4(0.3f, 0.85f, 1.0f, 1.0f), "System Source Code Inspector");
             ImGui::Spacing();
 
             std::vector<std::string> lines = RoninEngine::Runtime::TextStream::ReadLines(p.string());
@@ -2264,7 +2279,7 @@ namespace RoninEditor
         }
         else if (assetType == AssetType::Font)
         {
-            ImGui::TextColored(ImVec4(0.95f, 0.85f, 0.4f, 1.0f), "Font Asset Inspector [Font]");
+            ImGui::TextColored(ImVec4(0.95f, 0.85f, 0.4f, 1.0f), "Font Asset Inspector");
             ImGui::Spacing();
             ImGui::Text("Font File: %s", filename.c_str());
             ImGui::Text("Format: TrueType / OpenType (%s)", p.extension().string().c_str());

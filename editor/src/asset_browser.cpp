@@ -47,24 +47,69 @@ namespace RoninEditor
         }
     }
 
-    const char *AssetBrowser::getAssetTypeIcon(AssetType type) const
+    const char *AssetBrowser::getAssetTypeName(AssetType type) const
     {
         switch (type)
         {
-            case AssetType::Folder: return "[D]";
-            case AssetType::World: return "[World]";
-            case AssetType::Sprite: return "[Sprite]";
-            case AssetType::Texture: return "[Tex]";
-            case AssetType::Audio: return "[Aud]";
-            case AssetType::Code: return "[Code]";
-            case AssetType::TextStream: return "[Text]";
-            case AssetType::Prefab: return "[Pref]";
-            case AssetType::Terrain: return "[Terr]";
-            case AssetType::Video: return "[Video]";
-            case AssetType::Font: return "[Font]";
-            case AssetType::Config: return "[Cfg]";
-            default: return "[File]";
+            case AssetType::Folder: return "Folder";
+            case AssetType::World: return "World";
+            case AssetType::Sprite: return "Sprite";
+            case AssetType::Texture: return "Texture";
+            case AssetType::Audio: return "Audio";
+            case AssetType::Code: return "Code";
+            case AssetType::TextStream: return "Text";
+            case AssetType::Prefab: return "Prefab";
+            case AssetType::Terrain: return "Terrain";
+            case AssetType::Video: return "Video";
+            case AssetType::Font: return "Font";
+            case AssetType::Config: return "Config";
+            default: return "File";
         }
+    }
+
+    IconType AssetBrowser::getAssetIconType(AssetType type, bool isDirectory) const
+    {
+        if (isDirectory || type == AssetType::Folder) return IconType::Folder;
+        switch (type)
+        {
+            case AssetType::World: return IconType::World;
+            case AssetType::Sprite: return IconType::Sprite;
+            case AssetType::Texture: return IconType::Texture;
+            case AssetType::Audio: return IconType::Audio;
+            case AssetType::Code: return IconType::Code;
+            case AssetType::TextStream: return IconType::TextStream;
+            case AssetType::Prefab: return IconType::Prefab;
+            case AssetType::Terrain: return IconType::Terrain;
+            case AssetType::Video: return IconType::Video;
+            case AssetType::Font: return IconType::Font;
+            case AssetType::Config: return IconType::Config;
+            default: return IconType::File;
+        }
+    }
+
+    ImU32 AssetBrowser::getAssetIconColor(AssetType type, bool isDirectory) const
+    {
+        if (isDirectory || type == AssetType::Folder) return EditorPalette::IconFolder;
+        switch (type)
+        {
+            case AssetType::World: return EditorPalette::IconWorld;
+            case AssetType::Sprite: return EditorPalette::IconSprite;
+            case AssetType::Texture: return EditorPalette::IconTexture;
+            case AssetType::Audio: return EditorPalette::IconAudio;
+            case AssetType::Code: return EditorPalette::IconScript;
+            case AssetType::TextStream: return EditorPalette::TextNormal;
+            case AssetType::Prefab: return EditorPalette::IconPrefab;
+            case AssetType::Terrain: return EditorPalette::IconTerrain;
+            case AssetType::Video: return EditorPalette::IconVideo;
+            case AssetType::Font: return EditorPalette::IconFont;
+            case AssetType::Config: return EditorPalette::Warning;
+            default: return EditorPalette::TextMuted;
+        }
+    }
+
+    const char *AssetBrowser::getAssetTypeIcon(AssetType type) const
+    {
+        return getAssetTypeName(type);
     }
 
     bool AssetBrowser::isPathSelected(const std::filesystem::path &p) const
@@ -311,7 +356,17 @@ namespace RoninEditor
             flags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
         }
 
-        bool open = ImGui::TreeNodeEx(dir.string().c_str(), flags, "[D] %s", dirName.c_str());
+        std::string label = "    " + dirName;
+        bool open = ImGui::TreeNodeEx(dir.string().c_str(), flags, "%s", label.c_str());
+
+        ImVec2 itemMin = ImGui::GetItemRectMin();
+        ImVec2 itemMax = ImGui::GetItemRectMax();
+        float iconSize = 13.0f;
+        float iconX = itemMin.x + (subDirCount > 0 ? 20.0f : 8.0f);
+        float iconY = itemMin.y + (itemMax.y - itemMin.y - iconSize) * 0.5f;
+
+        EditorIcons::DrawIcon(ImGui::GetWindowDrawList(), ImVec2(iconX, iconY), ImVec2(iconX + iconSize, iconY + iconSize), IconType::Folder, EditorPalette::IconFolder);
+
         if (ImGui::IsItemClicked(0))
         {
             SetCurrentDirectory(dir);
@@ -343,7 +398,7 @@ namespace RoninEditor
         // Up button
         if (m_currentDir != m_assetsRoot && m_currentDir.has_parent_path())
         {
-            if (ImGui::Button("^##UpDir", ImVec2(24.0f, 0.0f)))
+            if (EditorIcons::IconButton("##UpDir", IconType::UpDir, ImVec2(24.0f, 22.0f), false, EditorPalette::TextNormal))
             {
                 SetCurrentDirectory(m_currentDir.parent_path());
             }
@@ -352,7 +407,7 @@ namespace RoninEditor
         }
 
         // Refresh button
-        if (ImGui::Button("R##RefreshAssets", ImVec2(24.0f, 0.0f)))
+        if (EditorIcons::IconButton("##RefreshAssets", IconType::Refresh, ImVec2(24.0f, 22.0f), false, EditorPalette::TextNormal))
         {
             refreshCurrentDirectory();
         }
@@ -413,7 +468,7 @@ namespace RoninEditor
         }
 
         // Right side: Search, View Mode, Thumbnail Zoom
-        float rightControlsWidth = 340.0f;
+        float rightControlsWidth = 330.0f;
         float rightOffset = ImGui::GetWindowWidth() - rightControlsWidth - 10.0f;
         if (rightOffset > ImGui::GetCursorPosX())
         {
@@ -424,15 +479,26 @@ namespace RoninEditor
         ImGui::InputTextWithHint("##SearchAssets", "Search...", m_searchFilter, sizeof(m_searchFilter));
         ImGui::SameLine();
 
-        if (ImGui::Button(m_isGridView ? "List" : "Grid", ImVec2(48.0f, 0.0f)))
+        if (EditorIcons::IconButton("##ViewGrid", IconType::ViewGrid, ImVec2(24.0f, 22.0f), m_isGridView, m_isGridView ? EditorPalette::PrimaryHover : EditorPalette::TextMuted))
         {
-            m_isGridView = !m_isGridView;
+            m_isGridView = true;
         }
+        if (ImGui::IsItemHovered()) ImGui::SetTooltip("Grid View");
         ImGui::SameLine();
 
-        ImGui::SetNextItemWidth(80.0f);
-        ImGui::SliderFloat("##ThumbSize", &m_thumbnailSize, 56.0f, 120.0f, "%.0f px");
-        if (ImGui::IsItemHovered()) ImGui::SetTooltip("Thumbnail Zoom");
+        if (EditorIcons::IconButton("##ViewList", IconType::ViewList, ImVec2(24.0f, 22.0f), !m_isGridView, !m_isGridView ? EditorPalette::PrimaryHover : EditorPalette::TextMuted))
+        {
+            m_isGridView = false;
+        }
+        if (ImGui::IsItemHovered()) ImGui::SetTooltip("List View");
+        ImGui::SameLine();
+
+        if (m_isGridView)
+        {
+            ImGui::SetNextItemWidth(80.0f);
+            ImGui::SliderFloat("##ThumbSize", &m_thumbnailSize, 56.0f, 120.0f, "%.0f px");
+            if (ImGui::IsItemHovered()) ImGui::SetTooltip("Thumbnail Zoom");
+        }
     }
 
     void AssetBrowser::renderFileGrid(EditorState &state)
@@ -461,17 +527,23 @@ namespace RoninEditor
                 ImGui::PushID(static_cast<int>(i));
 
                 bool isSelected = isPathSelected(entry.fullPath);
-                ImVec4 iconColor = ImVec4(0.85f, 0.85f, 0.85f, 1.0f);
+                IconType iconKind = getAssetIconType(entry.type, entry.isDirectory);
+                ImU32 iconCol = getAssetIconColor(entry.type, entry.isDirectory);
                 ImVec4 cardBg = isSelected ? ImVec4(0.24f, 0.42f, 0.72f, 0.95f) : ImVec4(0.18f, 0.20f, 0.24f, 0.65f);
 
-                if (entry.type == AssetType::Folder) { iconColor = ImVec4(0.40f, 0.70f, 1.00f, 1.0f); if (!isSelected) cardBg = ImVec4(0.15f, 0.22f, 0.30f, 0.7f); }
-                else if (entry.type == AssetType::World) { iconColor = ImVec4(0.95f, 0.45f, 0.95f, 1.0f); if (!isSelected) cardBg = ImVec4(0.28f, 0.16f, 0.28f, 0.7f); }
-                else if (entry.type == AssetType::Sprite) { iconColor = ImVec4(0.20f, 0.90f, 0.85f, 1.0f); if (!isSelected) cardBg = ImVec4(0.14f, 0.26f, 0.26f, 0.7f); }
-                else if (entry.type == AssetType::Texture) { iconColor = ImVec4(0.35f, 0.88f, 0.50f, 1.0f); if (!isSelected) cardBg = ImVec4(0.16f, 0.26f, 0.18f, 0.7f); }
-                else if (entry.type == AssetType::Audio) { iconColor = ImVec4(1.00f, 0.68f, 0.25f, 1.0f); if (!isSelected) cardBg = ImVec4(0.30f, 0.22f, 0.14f, 0.7f); }
-                else if (entry.type == AssetType::Code) { iconColor = ImVec4(0.35f, 0.75f, 1.00f, 1.0f); }
-                else if (entry.type == AssetType::TextStream) { iconColor = ImVec4(0.80f, 0.85f, 0.90f, 1.0f); }
-                else if (entry.type == AssetType::Prefab) { iconColor = ImVec4(0.95f, 0.85f, 0.30f, 1.0f); }
+                if (!isSelected)
+                {
+                    if (entry.isDirectory || entry.type == AssetType::Folder) cardBg = ImVec4(0.25f, 0.20f, 0.12f, 0.65f);
+                    else if (entry.type == AssetType::World) cardBg = ImVec4(0.12f, 0.22f, 0.28f, 0.65f);
+                    else if (entry.type == AssetType::Sprite) cardBg = ImVec4(0.22f, 0.15f, 0.28f, 0.65f);
+                    else if (entry.type == AssetType::Texture) cardBg = ImVec4(0.12f, 0.25f, 0.18f, 0.65f);
+                    else if (entry.type == AssetType::Audio) cardBg = ImVec4(0.28f, 0.18f, 0.12f, 0.65f);
+                    else if (entry.type == AssetType::Prefab) cardBg = ImVec4(0.14f, 0.22f, 0.32f, 0.65f);
+                    else if (entry.type == AssetType::Code) cardBg = ImVec4(0.12f, 0.24f, 0.18f, 0.65f);
+                    else if (entry.type == AssetType::Terrain) cardBg = ImVec4(0.16f, 0.25f, 0.14f, 0.65f);
+                    else if (entry.type == AssetType::Font) cardBg = ImVec4(0.26f, 0.16f, 0.20f, 0.65f);
+                    else if (entry.type == AssetType::Video) cardBg = ImVec4(0.28f, 0.14f, 0.16f, 0.65f);
+                }
 
                 // Group representing card
                 ImGui::BeginGroup();
@@ -576,13 +648,7 @@ namespace RoninEditor
                 float icx = bMin.x + (cardWidth - iconDim) * 0.5f;
                 float icy = bMin.y + (cardWidth - iconDim) * 0.5f;
 
-                IconType iconKind = IconType::File;
-                if (entry.isDirectory || entry.type == AssetType::Folder) iconKind = IconType::Folder;
-                else if (entry.type == AssetType::World) iconKind = IconType::World;
-                else if (entry.type == AssetType::Sprite || entry.type == AssetType::Texture) iconKind = IconType::Sprite;
-                else if (entry.type == AssetType::Audio) iconKind = IconType::Audio;
-
-                EditorIcons::DrawIcon(ImGui::GetWindowDrawList(), ImVec2(icx, icy), ImVec2(icx + iconDim, icy + iconDim), iconKind, ImGui::ColorConvertFloat4ToU32(iconColor));
+                EditorIcons::DrawIcon(ImGui::GetWindowDrawList(), ImVec2(icx, icy), ImVec2(icx + iconDim, icy + iconDim), iconKind, iconCol);
 
                 ImGui::PopStyleColor(3);
 
@@ -604,7 +670,7 @@ namespace RoninEditor
                 {
                     ImGui::SetTooltip("%s\nType: %s\nSize: %zu bytes",
                                       entry.filename.c_str(),
-                                      getAssetTypeIcon(entry.type),
+                                      getAssetTypeName(entry.type),
                                       entry.fileSize);
                 }
 
@@ -667,13 +733,21 @@ namespace RoninEditor
                     ImGui::TableNextRow();
 
                     ImGui::TableSetColumnIndex(0);
-                    ImVec4 iconColor = (entry.type == AssetType::Folder) ? ImVec4(0.4f, 0.7f, 1.0f, 1.0f) : ImVec4(0.9f, 0.9f, 0.9f, 1.0f);
-                    ImGui::TextColored(iconColor, "%s", getAssetTypeIcon(entry.type));
-                    ImGui::SameLine();
+                    IconType iconKind = getAssetIconType(entry.type, entry.isDirectory);
+                    ImU32 iconCol = getAssetIconColor(entry.type, entry.isDirectory);
 
-                    bool selected = false;
-                    if (ImGui::Selectable(entry.filename.c_str(), &selected, ImGuiSelectableFlags_SpanAllColumns | ImGuiSelectableFlags_AllowDoubleClick))
+                    bool isSelected = isPathSelected(entry.fullPath);
+                    std::string label = "    " + entry.filename;
+                    if (ImGui::Selectable(label.c_str(), isSelected, ImGuiSelectableFlags_SpanAllColumns | ImGuiSelectableFlags_AllowDoubleClick))
                     {
+                        ImGuiIO &io = ImGui::GetIO();
+                        bool ctrl = io.KeyCtrl;
+                        selectPath(entry.fullPath, ctrl);
+                        if (!entry.isDirectory)
+                        {
+                            state.selectAsset(entry.fullPath);
+                        }
+
                         if (ImGui::IsMouseDoubleClicked(0))
                         {
                             if (entry.isDirectory)
@@ -690,6 +764,13 @@ namespace RoninEditor
                             }
                         }
                     }
+
+                    ImVec2 itemMin = ImGui::GetItemRectMin();
+                    ImVec2 itemMax = ImGui::GetItemRectMax();
+                    float iconSize = 14.0f;
+                    float iconX = itemMin.x + 4.0f;
+                    float iconY = itemMin.y + (itemMax.y - itemMin.y - iconSize) * 0.5f;
+                    EditorIcons::DrawIcon(ImGui::GetWindowDrawList(), ImVec2(iconX, iconY), ImVec2(iconX + iconSize, iconY + iconSize), iconKind, iconCol);
 
                     // Drag & Drop Target for Folders
                     if (entry.isDirectory || entry.type == AssetType::Folder)
@@ -735,15 +816,7 @@ namespace RoninEditor
                     }
 
                     ImGui::TableSetColumnIndex(1);
-                    IconType iconKind = IconType::File;
-                    ImU32 iconCol = EditorPalette::TextMuted;
-                    if (entry.isDirectory || entry.type == AssetType::Folder) { iconKind = IconType::Folder; iconCol = EditorPalette::IconFolder; }
-                    else if (entry.type == AssetType::World) { iconKind = IconType::World; iconCol = EditorPalette::IconWorld; }
-                    else if (entry.type == AssetType::Sprite || entry.type == AssetType::Texture) { iconKind = IconType::Sprite; iconCol = EditorPalette::IconSprite; }
-                    else if (entry.type == AssetType::Audio) { iconKind = IconType::Audio; iconCol = EditorPalette::IconAudio; }
-                    else if (entry.type == AssetType::Code) { iconCol = EditorPalette::IconScript; }
-                    else if (entry.type == AssetType::TextStream) { iconCol = EditorPalette::TextMuted; }
-                    EditorIcons::IconLabel(iconKind, getAssetTypeIcon(entry.type), iconCol, 13.0f);
+                    EditorIcons::IconLabel(iconKind, getAssetTypeName(entry.type), iconCol, 13.0f);
 
                     ImGui::TableSetColumnIndex(2);
                     if (entry.isDirectory)

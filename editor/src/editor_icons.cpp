@@ -235,6 +235,166 @@ namespace RoninEditor
                 drawList->AddLine(ImVec2(cx, y0 + 2.0f), ImVec2(cx, y1 - 2.0f), color, th);
                 break;
             }
+            case IconType::Texture:
+            {
+                // Framed bitmap texture with 2x2 checkerboard pattern
+                drawList->AddRect(ImVec2(x0, y0), ImVec2(x1, y1), color, 2.0f, 0, 1.5f);
+                float mx = (x0 + x1) * 0.5f;
+                float my = (y0 + y1) * 0.5f;
+                drawList->AddRectFilled(ImVec2(x0 + 2.0f, y0 + 2.0f), ImVec2(mx, my), color);
+                drawList->AddRectFilled(ImVec2(mx, my), ImVec2(x1 - 2.0f, y1 - 2.0f), color);
+                break;
+            }
+            case IconType::Prefab:
+            {
+                // Isometric 3D cube (Unity-style prefab block)
+                float topY = y0 + rh * 0.35f;
+                ImVec2 topPts[4] = {
+                    ImVec2(cx, y0),
+                    ImVec2(x1, y0 + rh * 0.25f),
+                    ImVec2(cx, topY),
+                    ImVec2(x0, y0 + rh * 0.25f)
+                };
+                drawList->AddConvexPolyFilled(topPts, 4, color);
+
+                ImVec2 leftPts[4] = {
+                    ImVec2(x0, y0 + rh * 0.25f),
+                    ImVec2(cx, topY),
+                    ImVec2(cx, y1),
+                    ImVec2(x0, y1 - rh * 0.25f)
+                };
+                ImU32 leftCol = (color & 0x00FFFFFF) | (static_cast<ImU32>(static_cast<float>((color >> 24) & 0xFF) * 0.75f) << 24);
+                drawList->AddConvexPolyFilled(leftPts, 4, leftCol);
+
+                ImVec2 rightPts[4] = {
+                    ImVec2(cx, topY),
+                    ImVec2(x1, y0 + rh * 0.25f),
+                    ImVec2(x1, y1 - rh * 0.25f),
+                    ImVec2(cx, y1)
+                };
+                ImU32 rightCol = (color & 0x00FFFFFF) | (static_cast<ImU32>(static_cast<float>((color >> 24) & 0xFF) * 0.55f) << 24);
+                drawList->AddConvexPolyFilled(rightPts, 4, rightCol);
+                drawList->AddPolyline(topPts, 4, IM_COL32(255, 255, 255, 180), true, 1.0f);
+                break;
+            }
+            case IconType::Code:
+            {
+                // Source code brackets: < / >
+                float th = 1.6f;
+                // Left angle bracket <
+                drawList->AddLine(ImVec2(cx - rw * 0.22f, y0 + rh * 0.20f), ImVec2(x0 + 1.0f, cy), color, th);
+                drawList->AddLine(ImVec2(x0 + 1.0f, cy), ImVec2(cx - rw * 0.22f, y1 - rh * 0.20f), color, th);
+                // Slash /
+                drawList->AddLine(ImVec2(cx + rw * 0.08f, y0 + rh * 0.15f), ImVec2(cx - rw * 0.08f, y1 - rh * 0.15f), color, th);
+                // Right angle bracket >
+                drawList->AddLine(ImVec2(cx + rw * 0.22f, y0 + rh * 0.20f), ImVec2(x1 - 1.0f, cy), color, th);
+                drawList->AddLine(ImVec2(x1 - 1.0f, cy), ImVec2(cx + rw * 0.22f, y1 - rh * 0.20f), color, th);
+                break;
+            }
+            case IconType::TextStream:
+            {
+                // Document with horizontal text lines
+                float fold = rw * 0.30f;
+                ImVec2 pts[5] = {
+                    ImVec2(x0, y0),
+                    ImVec2(x1 - fold, y0),
+                    ImVec2(x1, y0 + fold),
+                    ImVec2(x1, y1),
+                    ImVec2(x0, y1)
+                };
+                drawList->AddConvexPolyFilled(pts, 5, color);
+                // Text lines
+                ImU32 lineCol = IM_COL32(20, 24, 32, 220);
+                drawList->AddLine(ImVec2(x0 + rw * 0.20f, y0 + rh * 0.45f), ImVec2(x1 - rw * 0.20f, y0 + rh * 0.45f), lineCol, 1.4f);
+                drawList->AddLine(ImVec2(x0 + rw * 0.20f, y0 + rh * 0.65f), ImVec2(x1 - rw * 0.20f, y0 + rh * 0.65f), lineCol, 1.4f);
+                drawList->AddLine(ImVec2(x0 + rw * 0.20f, y0 + rh * 0.82f), ImVec2(x0 + rw * 0.60f, y0 + rh * 0.82f), lineCol, 1.4f);
+                break;
+            }
+            case IconType::Font:
+            {
+                // Stylized letter "A"
+                float th = 2.0f;
+                drawList->AddLine(ImVec2(cx, y0 + 1.0f), ImVec2(x0 + 1.5f, y1 - 1.0f), color, th);
+                drawList->AddLine(ImVec2(cx, y0 + 1.0f), ImVec2(x1 - 1.5f, y1 - 1.0f), color, th);
+                drawList->AddLine(ImVec2(x0 + rw * 0.24f, y0 + rh * 0.65f), ImVec2(x1 - rw * 0.24f, y0 + rh * 0.65f), color, th);
+                break;
+            }
+            case IconType::Video:
+            {
+                // Film frame rectangle with play triangle
+                drawList->AddRect(ImVec2(x0, y0), ImVec2(x1, y1), color, 2.0f, 0, 1.5f);
+                // Sprocket notches
+                float notchH = rh * 0.18f;
+                drawList->AddRectFilled(ImVec2(x0, y0 + rh * 0.15f), ImVec2(x0 + 2.5f, y0 + rh * 0.15f + notchH), color);
+                drawList->AddRectFilled(ImVec2(x0, y1 - rh * 0.15f - notchH), ImVec2(x0 + 2.5f, y1 - rh * 0.15f), color);
+                drawList->AddRectFilled(ImVec2(x1 - 2.5f, y0 + rh * 0.15f), ImVec2(x1, y0 + rh * 0.15f + notchH), color);
+                drawList->AddRectFilled(ImVec2(x1 - 2.5f, y1 - rh * 0.15f - notchH), ImVec2(x1, y1 - rh * 0.15f), color);
+                // Play triangle
+                drawList->AddTriangleFilled(
+                    ImVec2(cx - rw * 0.15f, cy - rh * 0.22f),
+                    ImVec2(cx + rw * 0.22f, cy),
+                    ImVec2(cx - rw * 0.15f, cy + rh * 0.22f),
+                    color);
+                break;
+            }
+            case IconType::Config:
+            {
+                // Settings slider tracks and knobs
+                float th = 1.6f;
+                float r1 = rh * 0.32f;
+                float r2 = rh * 0.68f;
+                drawList->AddLine(ImVec2(x0, y0 + r1), ImVec2(x1, y0 + r1), color, th);
+                drawList->AddLine(ImVec2(x0, y0 + r2), ImVec2(x1, y0 + r2), color, th);
+                drawList->AddCircleFilled(ImVec2(x0 + rw * 0.35f, y0 + r1), 2.8f, color);
+                drawList->AddCircleFilled(ImVec2(x0 + rw * 0.68f, y0 + r2), 2.8f, color);
+                break;
+            }
+            case IconType::UpDir:
+            {
+                // Arrow pointing upward
+                float th = 2.0f;
+                drawList->AddLine(ImVec2(cx, y1 - 2.0f), ImVec2(cx, y0 + 2.0f), color, th);
+                drawList->AddTriangleFilled(
+                    ImVec2(cx, y0),
+                    ImVec2(cx - rw * 0.35f, y0 + rh * 0.45f),
+                    ImVec2(cx + rw * 0.35f, y0 + rh * 0.45f),
+                    color);
+                break;
+            }
+            case IconType::Refresh:
+            {
+                // Circular reload arrow
+                float r = std::min(rw, rh) * 0.42f;
+                drawList->PathArcTo(ImVec2(cx, cy), r, 0.6f, 5.2f, 16);
+                drawList->PathStroke(color, false, 1.8f);
+                float ax = cx + r * std::cos(0.6f);
+                float ay = cy + r * std::sin(0.6f);
+                drawList->AddTriangleFilled(ImVec2(ax, ay), ImVec2(ax + 3.5f, ay + 3.0f), ImVec2(ax + 4.0f, ay - 2.0f), color);
+                break;
+            }
+            case IconType::ViewGrid:
+            {
+                // 2x2 grid squares
+                float gw = (rw - 2.0f) * 0.5f;
+                float gh = (rh - 2.0f) * 0.5f;
+                drawList->AddRectFilled(ImVec2(x0, y0), ImVec2(x0 + gw, y0 + gh), color, 1.0f);
+                drawList->AddRectFilled(ImVec2(x1 - gw, y0), ImVec2(x1, y0 + gh), color, 1.0f);
+                drawList->AddRectFilled(ImVec2(x0, y1 - gh), ImVec2(x0 + gw, y1), color, 1.0f);
+                drawList->AddRectFilled(ImVec2(x1 - gw, y1 - gh), ImVec2(x1, y1), color, 1.0f);
+                break;
+            }
+            case IconType::ViewList:
+            {
+                // 3 horizontal bars with bullet points
+                float rowH = rh * 0.333f;
+                for (int i = 0; i < 3; ++i)
+                {
+                    float ry = y0 + i * rowH + rowH * 0.5f;
+                    drawList->AddCircleFilled(ImVec2(x0 + 1.5f, ry), 1.5f, color);
+                    drawList->AddLine(ImVec2(x0 + rw * 0.30f, ry), ImVec2(x1, ry), color, 1.6f);
+                }
+                break;
+            }
         }
     }
 

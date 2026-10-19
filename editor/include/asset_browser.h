@@ -6,6 +6,7 @@
 #include <functional>
 #include "editor_state.h"
 #include "meta_manager.h"
+#include "editor_icons.h"
 
 namespace RoninEditor
 {
@@ -49,6 +50,9 @@ namespace RoninEditor
 
         AssetType determineAssetType(const std::filesystem::path &path) const;
         const char *getAssetTypeIcon(AssetType type) const;
+        const char *getAssetTypeName(AssetType type) const;
+        IconType getAssetIconType(AssetType type, bool isDirectory) const;
+        ImU32 getAssetIconColor(AssetType type, bool isDirectory) const;
         void createPrefabFromObject(EditorState &state, const EditorObject &obj, const std::filesystem::path &targetDir);
 
         std::filesystem::path m_assetsRoot;

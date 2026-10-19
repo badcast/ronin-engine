@@ -746,6 +746,20 @@ int main()
 
             std::cout << "  [PASS] Test 26: Terrain asset serialization (.terrain + .terrain.meta) validated" << std::endl;
         }
+
+        // 27. Test MetaManager::GetAssetTypeBadge format (clean typography without brackets)
+        {
+            assert(std::string(MetaManager::GetAssetTypeBadge(AssetType::World)) == "World");
+            assert(std::string(MetaManager::GetAssetTypeBadge(AssetType::Sprite)) == "Sprite");
+            assert(std::string(MetaManager::GetAssetTypeBadge(AssetType::Texture)) == "Texture2D");
+            assert(std::string(MetaManager::GetAssetTypeBadge(AssetType::Audio)) == "AudioClip");
+            assert(std::string(MetaManager::GetAssetTypeBadge(AssetType::Code)) == "Code");
+            assert(std::string(MetaManager::GetAssetTypeBadge(AssetType::Prefab)) == "Prefab");
+            assert(std::string(MetaManager::GetAssetTypeBadge(AssetType::Terrain)) == "Terrain");
+            assert(std::string(MetaManager::GetAssetTypeBadge(AssetType::Font)) == "Font");
+            assert(std::string(MetaManager::GetAssetTypeBadge(AssetType::Folder)) == "Folder");
+            std::cout << "  [PASS] Test 27: Asset badge names validated (no raw bracket indicators)" << std::endl;
+        }
     }
 
     // Cleanup
