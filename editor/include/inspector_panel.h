@@ -4,6 +4,8 @@
 #include <functional>
 #include <filesystem>
 #include "miniaudio/miniaudio.h"
+struct SDL_Renderer;
+struct SDL_Texture;
 
 namespace RoninEditor
 {
@@ -59,12 +61,25 @@ namespace RoninEditor
         bool duplicate = false;
     };
 
+    struct WaveformData
+    {
+        std::filesystem::path path;
+        std::filesystem::file_time_type lastWriteTime{};
+        std::vector<float> peaks; // 128 normalized amplitude bars
+        double duration = 0.0;
+        uint32_t sampleRate = 0;
+        uint32_t channels = 0;
+        uint64_t totalFrames = 0;
+        bool valid = false;
+    };
+
     class InspectorPanel
     {
     public:
         InspectorPanel();
         ~InspectorPanel();
 
+        void Init(::SDL_Renderer *renderer);
         void Render(EditorState &state);
 
         std::function<void(const std::filesystem::path &)> onOpenSpriteEditor;
@@ -99,8 +114,13 @@ namespace RoninEditor
         void renderSpritePickerModal(EditorObject &obj, EditorState &state);
         void renderAudioPickerModal(EditorObject &obj, EditorState &state);
 
+        ma_engine *getAudioEngine();
         void playAudioPreview(const std::string &clipPath);
+        void pauseAudioPreview();
         void stopAudioPreview();
+        void seekAudioPreview(double timeSeconds);
+        void ensureWaveformCached(const std::filesystem::path &p);
+        void ensureTextureLoaded(const std::filesystem::path &p);
 
         // Clipboard
         ComponentClipboard m_clipboard;
@@ -116,12 +136,23 @@ namespace RoninEditor
         uint32_t m_pendingAudioAssetId = 0;
         char m_pickerFilter[128] = "";
 
-        // Audio preview playback via miniaudio
+        // Renderer & Texture preview
+        ::SDL_Renderer *m_renderer = nullptr;
+        ::SDL_Texture *m_previewTexture = nullptr;
+        std::filesystem::path m_previewTexturePath;
+        int m_previewTexWidth = 0;
+        int m_previewTexHeight = 0;
+
+        // Audio preview playback via miniaudio & waveform player
         ma_engine m_editorAudioEngine;
         bool m_audioEngineInitialized = false;
         ma_sound m_previewSound;
         bool m_previewSoundActive = false;
+        bool m_previewPaused = false;
+        bool m_previewLooping = false;
         std::string m_previewPlayingPath;
         float m_previewVolume = 0.8f;
+
+        WaveformData m_cachedWaveform;
     };
 } // namespace RoninEditor

@@ -910,9 +910,7 @@ namespace RoninEditor
 
             if (ImGui::MenuItem("Delete", "Del"))
             {
-                AssetDatabase::GetInstance().DeleteAsset(targetItem->fullPath);
-                refreshCurrentDirectory();
-                return;
+                m_pendingDeletions.push_back(targetItem->fullPath);
             }
         }
         else
@@ -1265,6 +1263,31 @@ namespace RoninEditor
             }
 
             ImGui::EndChild();
+
+            // Keyboard shortcut: Delete selected assets
+            if (ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows) && ImGui::IsKeyPressed(ImGuiKey_Delete))
+            {
+                for (const auto &p : m_selectedPaths)
+                {
+                    m_pendingDeletions.push_back(p);
+                }
+            }
+
+            // Safely execute all pending asset deletions outside of rendering iteration
+            if (!m_pendingDeletions.empty())
+            {
+                for (const auto &delPath : m_pendingDeletions)
+                {
+                    AssetDatabase::GetInstance().DeleteAsset(delPath);
+                    if (state.selectedAssetPath == delPath)
+                    {
+                        state.clearAssetSelection();
+                    }
+                }
+                m_pendingDeletions.clear();
+                clearSelection();
+                refreshCurrentDirectory();
+            }
 
             renderImportModal(state);
         }

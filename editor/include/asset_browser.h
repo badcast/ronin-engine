@@ -79,5 +79,7 @@ namespace RoninEditor
         bool isPathSelected(const std::filesystem::path &p) const;
         void selectPath(const std::filesystem::path &p, bool addToSelection = false);
         void clearSelection();
+
+        std::vector<std::filesystem::path> m_pendingDeletions;
     };
 } // namespace RoninEditor

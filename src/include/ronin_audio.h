@@ -41,6 +41,7 @@ namespace RoninEngine::Runtime
         static int Init();
         static void Finalize();
         static bool HasInit();
+        static ma_engine *GetEngine();
 
         static AudioState getChannelState(int channel);
         static int openChannel();

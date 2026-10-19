@@ -6,9 +6,20 @@
 #include "editor_icons.h"
 #include <ronin/TextStream.h>
 #include <ronin/AudioClip.h>
+namespace RoninEngine::Runtime
+{
+    class RoninAudio
+    {
+    public:
+        static ma_engine *GetEngine();
+    };
+}
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_image.h>
 #include <imgui.h>
 #include <imgui_internal.h>
 #include <cstring>
+#include <cmath>
 #include <algorithm>
 #include <filesystem>
 #include <iostream>
@@ -17,11 +28,6 @@ namespace RoninEditor
 {
     InspectorPanel::InspectorPanel()
     {
-        ma_engine_config config = ma_engine_config_init();
-        if (ma_engine_init(&config, &m_editorAudioEngine) == MA_SUCCESS)
-        {
-            m_audioEngineInitialized = true;
-        }
     }
 
     InspectorPanel::~InspectorPanel()
@@ -32,12 +38,37 @@ namespace RoninEditor
             ma_engine_uninit(&m_editorAudioEngine);
             m_audioEngineInitialized = false;
         }
+        if (m_previewTexture)
+        {
+            SDL_DestroyTexture(m_previewTexture);
+            m_previewTexture = nullptr;
+        }
+    }
+
+    void InspectorPanel::Init(::SDL_Renderer *renderer)
+    {
+        m_renderer = renderer;
+    }
+
+    ma_engine *InspectorPanel::getAudioEngine()
+    {
+        ma_engine *engine = RoninEngine::Runtime::RoninAudio::GetEngine();
+        if (engine)
+            return engine;
+        if (!m_audioEngineInitialized)
+        {
+            ma_engine_config config = ma_engine_config_init();
+            if (ma_engine_init(&config, &m_editorAudioEngine) == MA_SUCCESS)
+            {
+                m_audioEngineInitialized = true;
+            }
+        }
+        return m_audioEngineInitialized ? &m_editorAudioEngine : nullptr;
     }
 
     void InspectorPanel::playAudioPreview(const std::string &clipPath)
     {
-        stopAudioPreview();
-        if (clipPath.empty() || !m_audioEngineInitialized) return;
+        if (clipPath.empty()) return;
 
         std::filesystem::path fullPath = clipPath;
         if (!std::filesystem::exists(fullPath))
@@ -46,16 +77,38 @@ namespace RoninEditor
             fullPath = root / clipPath;
         }
 
-        if (std::filesystem::exists(fullPath))
+        if (!std::filesystem::exists(fullPath)) return;
+
+        // If already active on this path and paused, resume playback
+        if (m_previewSoundActive && m_previewPlayingPath == fullPath.string())
         {
-            ma_result res = ma_sound_init_from_file(&m_editorAudioEngine, fullPath.string().c_str(), 0, NULL, NULL, &m_previewSound);
-            if (res == MA_SUCCESS)
-            {
-                m_previewSoundActive = true;
-                m_previewPlayingPath = clipPath;
-                ma_sound_set_volume(&m_previewSound, std::clamp(m_previewVolume, 0.0f, 1.0f));
-                ma_sound_start(&m_previewSound);
-            }
+            ma_sound_start(&m_previewSound);
+            m_previewPaused = false;
+            return;
+        }
+
+        stopAudioPreview();
+        ma_engine *engine = getAudioEngine();
+        if (!engine) return;
+
+        ma_result res = ma_sound_init_from_file(engine, fullPath.string().c_str(), 0, NULL, NULL, &m_previewSound);
+        if (res == MA_SUCCESS)
+        {
+            m_previewSoundActive = true;
+            m_previewPaused = false;
+            m_previewPlayingPath = fullPath.string();
+            ma_sound_set_volume(&m_previewSound, std::clamp(m_previewVolume, 0.0f, 1.0f));
+            ma_sound_set_looping(&m_previewSound, m_previewLooping ? MA_TRUE : MA_FALSE);
+            ma_sound_start(&m_previewSound);
+        }
+    }
+
+    void InspectorPanel::pauseAudioPreview()
+    {
+        if (m_previewSoundActive && !m_previewPaused)
+        {
+            ma_sound_stop(&m_previewSound);
+            m_previewPaused = true;
         }
     }
 
@@ -66,7 +119,153 @@ namespace RoninEditor
             ma_sound_stop(&m_previewSound);
             ma_sound_uninit(&m_previewSound);
             m_previewSoundActive = false;
+            m_previewPaused = false;
             m_previewPlayingPath.clear();
+        }
+    }
+
+    void InspectorPanel::seekAudioPreview(double timeSeconds)
+    {
+        if (m_previewSoundActive && m_cachedWaveform.sampleRate > 0)
+        {
+            uint64_t targetFrame = static_cast<uint64_t>(std::max(0.0, timeSeconds) * m_cachedWaveform.sampleRate);
+            if (m_cachedWaveform.totalFrames > 0 && targetFrame > m_cachedWaveform.totalFrames)
+                targetFrame = m_cachedWaveform.totalFrames;
+            ma_sound_seek_to_pcm_frame(&m_previewSound, targetFrame);
+        }
+    }
+
+    void InspectorPanel::ensureWaveformCached(const std::filesystem::path &p)
+    {
+        std::error_code ec;
+        auto curTime = std::filesystem::last_write_time(p, ec);
+        if (m_cachedWaveform.valid && m_cachedWaveform.path == p && !ec && m_cachedWaveform.lastWriteTime == curTime)
+            return;
+
+        m_cachedWaveform = WaveformData{};
+        m_cachedWaveform.path = p;
+        m_cachedWaveform.lastWriteTime = curTime;
+
+        ma_decoder decoder;
+        ma_decoder_config config = ma_decoder_config_init(ma_format_f32, 0, 0);
+        if (ma_decoder_init_file(p.string().c_str(), &config, &decoder) != MA_SUCCESS)
+        {
+            return;
+        }
+
+        ma_uint64 totalFrames = 0;
+        ma_decoder_get_length_in_pcm_frames(&decoder, &totalFrames);
+        m_cachedWaveform.sampleRate = decoder.outputSampleRate;
+        m_cachedWaveform.channels = decoder.outputChannels;
+        m_cachedWaveform.totalFrames = totalFrames;
+        m_cachedWaveform.duration = (decoder.outputSampleRate > 0) ? (static_cast<double>(totalFrames) / decoder.outputSampleRate) : 0.0;
+
+        constexpr int NUM_BARS = 128;
+        m_cachedWaveform.peaks.assign(NUM_BARS, 0.0f);
+
+        if (totalFrames > 0 && decoder.outputChannels > 0)
+        {
+            constexpr size_t BUFFER_FRAMES = 2048;
+            std::vector<float> buffer(BUFFER_FRAMES * decoder.outputChannels);
+            ma_uint64 framesReadTotal = 0;
+            double framesPerBar = static_cast<double>(totalFrames) / NUM_BARS;
+
+            while (framesReadTotal < totalFrames)
+            {
+                ma_uint64 toRead = std::min<ma_uint64>(BUFFER_FRAMES, totalFrames - framesReadTotal);
+                ma_uint64 framesRead = 0;
+                ma_result res = ma_decoder_read_pcm_frames(&decoder, buffer.data(), toRead, &framesRead);
+                if (res != MA_SUCCESS || framesRead == 0)
+                    break;
+
+                for (ma_uint64 f = 0; f < framesRead; ++f)
+                {
+                    ma_uint64 frameIdx = framesReadTotal + f;
+                    int bar = std::clamp(static_cast<int>(frameIdx / framesPerBar), 0, NUM_BARS - 1);
+                    float maxAmp = 0.0f;
+                    for (uint32_t c = 0; c < decoder.outputChannels; ++c)
+                    {
+                        float s = std::abs(buffer[f * decoder.outputChannels + c]);
+                        if (s > maxAmp) maxAmp = s;
+                    }
+                    if (maxAmp > m_cachedWaveform.peaks[bar])
+                        m_cachedWaveform.peaks[bar] = maxAmp;
+                }
+                framesReadTotal += framesRead;
+            }
+
+            float maxVal = 0.0f;
+            for (float v : m_cachedWaveform.peaks) if (v > maxVal) maxVal = v;
+            if (maxVal > 0.001f)
+            {
+                for (float &v : m_cachedWaveform.peaks)
+                    v = std::clamp(v / maxVal, 0.05f, 1.0f);
+            }
+            else
+            {
+                for (float &v : m_cachedWaveform.peaks)
+                    v = 0.1f;
+            }
+        }
+
+        ma_decoder_uninit(&decoder);
+        m_cachedWaveform.valid = true;
+    }
+
+    void InspectorPanel::ensureTextureLoaded(const std::filesystem::path &p)
+    {
+        if (!m_renderer) return;
+
+        std::filesystem::path actualImgPath = p;
+        if (p.extension() == ".sprite")
+        {
+            std::ifstream ifs(p);
+            if (ifs.is_open())
+            {
+                try
+                {
+                    auto j = nlohmann::json::parse(ifs, nullptr, false);
+                    if (!j.is_discarded() && j.contains("texturePath") && j["texturePath"].is_string())
+                    {
+                        std::string rel = j["texturePath"].get<std::string>();
+                        auto root = ProjectManager::GetInstance().GetRootPath();
+                        std::filesystem::path candidate = root / "Assets" / rel;
+                        if (std::filesystem::exists(candidate))
+                            actualImgPath = candidate;
+                        else
+                        {
+                            candidate = root / rel;
+                            if (std::filesystem::exists(candidate))
+                                actualImgPath = candidate;
+                        }
+                    }
+                }
+                catch (...) {}
+            }
+        }
+
+        if (m_previewTexture && m_previewTexturePath == actualImgPath)
+            return;
+
+        if (m_previewTexture)
+        {
+            SDL_DestroyTexture(m_previewTexture);
+            m_previewTexture = nullptr;
+            m_previewTexWidth = 0;
+            m_previewTexHeight = 0;
+        }
+
+        m_previewTexturePath = actualImgPath;
+        if (std::filesystem::exists(actualImgPath))
+        {
+            SDL_Surface *surf = IMG_Load(actualImgPath.string().c_str());
+            if (surf)
+            {
+                m_previewTexWidth = surf->w;
+                m_previewTexHeight = surf->h;
+                m_previewTexture = SDL_CreateTextureFromSurface(m_renderer, surf);
+                SDL_FreeSurface(surf);
+            }
         }
     }
 
@@ -2272,13 +2471,24 @@ namespace RoninEditor
     void InspectorPanel::renderAssetInspector(EditorState &state)
     {
         std::filesystem::path p = state.selectedAssetPath;
-        if (p.empty() || !std::filesystem::exists(p))
+        std::error_code ec;
+        if (p.empty() || !std::filesystem::exists(p, ec))
         {
-            ImGui::TextDisabled("Selected asset does not exist.");
-            if (ImGui::Button("Close Asset View"))
+            if (m_previewSoundActive && (m_previewPlayingPath == p.string() || !std::filesystem::exists(m_previewPlayingPath, ec)))
             {
-                state.clearAssetSelection();
+                stopAudioPreview();
             }
+            if (!m_previewTexturePath.empty() && !std::filesystem::exists(m_previewTexturePath, ec))
+            {
+                if (m_previewTexture)
+                {
+                    SDL_DestroyTexture(m_previewTexture);
+                    m_previewTexture = nullptr;
+                }
+                m_previewTexturePath.clear();
+            }
+            state.clearAssetSelection();
+            ImGui::TextDisabled("Selected asset does not exist.");
             return;
         }
 
@@ -2313,7 +2523,7 @@ namespace RoninEditor
         AssetType assetType = md ? md->type : meta.type;
         std::string filename = p.filename().string();
         std::string stem = p.stem().string();
-        std::error_code ec;
+        ec.clear();
         std::uintmax_t fileSize = std::filesystem::file_size(p, ec);
 
         auto root = ProjectManager::GetInstance().GetRootPath();
@@ -2390,24 +2600,21 @@ namespace RoninEditor
         // 3. Asset-Specific Inspector Sections
         if (assetType == AssetType::Audio)
         {
+            ensureWaveformCached(p);
+
             ImGui::TextColored(ImVec4(1.0f, 0.75f, 0.2f, 1.0f), "Audio Clip Inspector [AudioClip]");
             ImGui::Spacing();
 
-            ma_decoder decoder;
-            if (ma_decoder_init_file(p.string().c_str(), NULL, &decoder) == MA_SUCCESS)
+            if (m_cachedWaveform.valid)
             {
-                ma_uint64 frameCount = 0;
-                ma_decoder_get_length_in_pcm_frames(&decoder, &frameCount);
-                double dur = (decoder.outputSampleRate > 0) ? (static_cast<double>(frameCount) / decoder.outputSampleRate) : 0.0;
-                int mins = static_cast<int>(dur) / 60;
-                double secs = dur - mins * 60;
-                ImGui::Text("Duration: %02d:%05.2f (%.2f s)", mins, secs, dur);
-                ImGui::Text("Sample Rate: %d Hz", decoder.outputSampleRate);
-                int ch = decoder.outputChannels;
-                ImGui::Text("Channels: %s (%d)", (ch == 2 ? "Stereo" : (ch == 1 ? "Mono" : "Multi")), ch);
-                uint64_t bpf = ma_get_bytes_per_frame(decoder.outputFormat, decoder.outputChannels);
-                ImGui::Text("Buffer Size: %llu bytes", static_cast<unsigned long long>(frameCount * bpf));
-                ma_decoder_uninit(&decoder);
+                int totalMins = static_cast<int>(m_cachedWaveform.duration) / 60;
+                double totalSecs = m_cachedWaveform.duration - totalMins * 60;
+                ImGui::Text("Duration: %02d:%05.2f (%.2f s)", totalMins, totalSecs, m_cachedWaveform.duration);
+                ImGui::Text("Sample Rate: %u Hz", m_cachedWaveform.sampleRate);
+                uint32_t ch = m_cachedWaveform.channels;
+                ImGui::Text("Channels: %s (%u)", (ch == 2 ? "Stereo" : (ch == 1 ? "Mono" : "Multi")), ch);
+                uint64_t bpf = ch * sizeof(float);
+                ImGui::Text("PCM Buffer: %llu frames (%llu bytes)", static_cast<unsigned long long>(m_cachedWaveform.totalFrames), static_cast<unsigned long long>(m_cachedWaveform.totalFrames * bpf));
             }
             else
             {
@@ -2430,29 +2637,164 @@ namespace RoninEditor
             }
             ImGui::Spacing();
 
-            // Preview controls & Volume
-            bool isThisPlaying = (m_previewSoundActive && m_previewPlayingPath == p.string() && ma_sound_is_playing(const_cast<ma_sound*>(&m_previewSound)));
-            if (!isThisPlaying)
+            // Track playback position & end-of-stream
+            double curTime = 0.0;
+            bool isPlaying = false;
+            if (m_previewSoundActive && m_previewPlayingPath == p.string())
             {
-                if (ImGui::Button("Play Preview", ImVec2(120.0f, 30.0f)))
+                ma_uint64 cursorFrames = 0;
+                ma_sound_get_cursor_in_pcm_frames(&m_previewSound, &cursorFrames);
+                if (m_cachedWaveform.sampleRate > 0)
+                {
+                    curTime = static_cast<double>(cursorFrames) / m_cachedWaveform.sampleRate;
+                }
+                if (ma_sound_at_end(&m_previewSound) && !m_previewLooping)
+                {
+                    m_previewPaused = true;
+                }
+                isPlaying = ma_sound_is_playing(const_cast<ma_sound*>(&m_previewSound)) && !m_previewPaused;
+            }
+
+            // Interactive Waveform with Playhead Dot & Timestamp
+            if (m_cachedWaveform.valid && !m_cachedWaveform.peaks.empty())
+            {
+                float availW = ImGui::GetContentRegionAvail().x;
+                ImVec2 canvasSize(availW, 80.0f);
+                ImVec2 canvasPos = ImGui::GetCursorScreenPos();
+                ImDrawList *drawList = ImGui::GetWindowDrawList();
+
+                // Background
+                ImU32 bgCol = ImColor(18, 22, 28, 255);
+                ImU32 borderCol = ImColor(45, 55, 72, 255);
+                drawList->AddRectFilled(canvasPos, ImVec2(canvasPos.x + canvasSize.x, canvasPos.y + canvasSize.y), bgCol, 4.0f);
+                drawList->AddRect(canvasPos, ImVec2(canvasPos.x + canvasSize.x, canvasPos.y + canvasSize.y), borderCol, 4.0f);
+
+                // Center line
+                float centerY = canvasPos.y + canvasSize.y * 0.5f;
+                drawList->AddLine(ImVec2(canvasPos.x + 2.0f, centerY), ImVec2(canvasPos.x + canvasSize.x - 2.0f, centerY), ImColor(50, 62, 80, 160), 1.0f);
+
+                // Waveform bars
+                int numBars = static_cast<int>(m_cachedWaveform.peaks.size());
+                float barStep = (canvasSize.x - 8.0f) / static_cast<float>(numBars);
+                float barWidth = std::max(1.0f, barStep * 0.75f);
+                float startX = canvasPos.x + 4.0f;
+
+                float progress = (m_cachedWaveform.duration > 0.0) ? static_cast<float>(curTime / m_cachedWaveform.duration) : 0.0f;
+                progress = std::clamp(progress, 0.0f, 1.0f);
+
+                for (int i = 0; i < numBars; ++i)
+                {
+                    float x = startX + i * barStep + barWidth * 0.5f;
+                    float peak = m_cachedWaveform.peaks[i];
+                    float halfH = (canvasSize.y * 0.42f) * peak;
+                    halfH = std::max(1.5f, halfH);
+
+                    float barProgress = static_cast<float>(i) / static_cast<float>(numBars);
+                    ImU32 barCol = (barProgress <= progress) ? ImColor(40, 205, 245, 240) : ImColor(72, 92, 118, 160);
+
+                    drawList->AddLine(ImVec2(x, centerY - halfH), ImVec2(x, centerY + halfH), barCol, barWidth);
+                }
+
+                // Played region soft tint
+                float playheadX = canvasPos.x + 4.0f + progress * (canvasSize.x - 8.0f);
+                drawList->AddRectFilled(canvasPos, ImVec2(playheadX, canvasPos.y + canvasSize.y), ImColor(40, 205, 245, 25), 4.0f);
+
+                // Vertical Playhead line
+                drawList->AddLine(ImVec2(playheadX, canvasPos.y + 2.0f), ImVec2(playheadX, canvasPos.y + canvasSize.y - 2.0f), ImColor(255, 255, 255, 240), 2.0f);
+
+                // Scrubber Dot ("точка")
+                drawList->AddCircleFilled(ImVec2(playheadX, centerY), 7.0f, ImColor(40, 205, 245, 90));
+                drawList->AddCircleFilled(ImVec2(playheadX, centerY), 4.5f, ImColor(255, 255, 255, 255));
+                drawList->AddCircle(ImVec2(playheadX, centerY), 4.5f, ImColor(30, 165, 230, 255), 0, 1.5f);
+
+                // Invisible button for scrub interaction
+                ImGui::InvisibleButton("##WaveformScrub", canvasSize);
+                bool isScrubbing = ImGui::IsItemActive();
+                bool isHovered = ImGui::IsItemHovered();
+
+                if (isScrubbing || (isHovered && ImGui::IsMouseClicked(0)))
+                {
+                    float relX = std::clamp((ImGui::GetIO().MousePos.x - (canvasPos.x + 4.0f)) / (canvasSize.x - 8.0f), 0.0f, 1.0f);
+                    double targetSec = relX * m_cachedWaveform.duration;
+                    if (!m_previewSoundActive || m_previewPlayingPath != p.string())
+                    {
+                        playAudioPreview(p.string());
+                    }
+                    seekAudioPreview(targetSec);
+                }
+
+                if (isHovered && !isScrubbing)
+                {
+                    float hoverRelX = std::clamp((ImGui::GetIO().MousePos.x - (canvasPos.x + 4.0f)) / (canvasSize.x - 8.0f), 0.0f, 1.0f);
+                    float hoverX = canvasPos.x + 4.0f + hoverRelX * (canvasSize.x - 8.0f);
+                    drawList->AddLine(ImVec2(hoverX, canvasPos.y + 2.0f), ImVec2(hoverX, canvasPos.y + canvasSize.y - 2.0f), ImColor(200, 230, 255, 120), 1.0f);
+
+                    double hoverTime = hoverRelX * m_cachedWaveform.duration;
+                    int hMins = static_cast<int>(hoverTime) / 60;
+                    double hSecs = hoverTime - hMins * 60;
+                    char tipBuf[32];
+                    std::snprintf(tipBuf, sizeof(tipBuf), "Seek: %02d:%04.1f", hMins, hSecs);
+                    ImGui::SetTooltip("%s", tipBuf);
+                }
+
+                // Timestamp display ("метка времени")
+                int curMins = static_cast<int>(curTime) / 60;
+                double curSecs = curTime - curMins * 60;
+                int durMins = static_cast<int>(m_cachedWaveform.duration) / 60;
+                double durSecs = m_cachedWaveform.duration - durMins * 60;
+                double remTime = std::max(0.0, m_cachedWaveform.duration - curTime);
+                int remMins = static_cast<int>(remTime) / 60;
+                double remSecs = remTime - remMins * 60;
+
+                char timeLabel[96];
+                std::snprintf(timeLabel, sizeof(timeLabel), "%02d:%04.1f / %02d:%04.1f  (-%02d:%04.1f)", curMins, curSecs, durMins, durSecs, remMins, remSecs);
+                ImGui::TextColored(ImVec4(0.35f, 0.85f, 1.0f, 1.0f), "%s", timeLabel);
+                ImGui::Spacing();
+            }
+
+            // Transport Controls: Play/Pause, Stop, Loop, Volume
+            if (!isPlaying)
+            {
+                ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.20f, 0.55f, 0.35f, 1.0f));
+                ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.25f, 0.65f, 0.42f, 1.0f));
+                const char *playLabel = (m_previewSoundActive && m_previewPlayingPath == p.string() && m_previewPaused) ? "Resume" : "Play";
+                if (ImGui::Button(playLabel, ImVec2(70.0f, 26.0f)))
                 {
                     playAudioPreview(p.string());
                 }
+                ImGui::PopStyleColor(2);
             }
             else
             {
-                ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.7f, 0.2f, 0.2f, 1.0f));
-                if (ImGui::Button("Stop Preview", ImVec2(120.0f, 30.0f)))
+                ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.75f, 0.48f, 0.15f, 1.0f));
+                ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.85f, 0.55f, 0.20f, 1.0f));
+                if (ImGui::Button("Pause", ImVec2(70.0f, 26.0f)))
                 {
-                    stopAudioPreview();
+                    pauseAudioPreview();
                 }
-                ImGui::PopStyleColor();
-                ImGui::SameLine();
-                ImGui::TextColored(ImVec4(0.4f, 1.0f, 0.4f, 1.0f), "Playing...");
+                ImGui::PopStyleColor(2);
             }
 
             ImGui::SameLine();
-            ImGui::SetNextItemWidth(140.0f);
+            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.65f, 0.22f, 0.22f, 1.0f));
+            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.75f, 0.28f, 0.28f, 1.0f));
+            if (ImGui::Button("Stop", ImVec2(60.0f, 26.0f)))
+            {
+                stopAudioPreview();
+            }
+            ImGui::PopStyleColor(2);
+
+            ImGui::SameLine();
+            if (ImGui::Checkbox("Loop", &m_previewLooping))
+            {
+                if (m_previewSoundActive)
+                {
+                    ma_sound_set_looping(&m_previewSound, m_previewLooping ? MA_TRUE : MA_FALSE);
+                }
+            }
+
+            ImGui::SameLine();
+            ImGui::SetNextItemWidth(120.0f);
             if (ImGui::SliderFloat("Volume", &m_previewVolume, 0.0f, 1.0f, "%.2f"))
             {
                 if (m_previewSoundActive)
@@ -2477,8 +2819,50 @@ namespace RoninEditor
         }
         else if (assetType == AssetType::Sprite || assetType == AssetType::Texture)
         {
+            ensureTextureLoaded(p);
+
             ImGui::TextColored(ImVec4(0.3f, 1.0f, 0.5f, 1.0f), "%s Inspector", (assetType == AssetType::Sprite ? "Sprite Asset" : "Texture2D Asset"));
             ImGui::Spacing();
+
+            // Visual Preview with Checkerboard
+            if (m_previewTexture && m_previewTexWidth > 0 && m_previewTexHeight > 0)
+            {
+                float availW = ImGui::GetContentRegionAvail().x;
+                float maxH = 220.0f;
+                float aspect = static_cast<float>(m_previewTexWidth) / static_cast<float>(std::max(1, m_previewTexHeight));
+                float drawW = std::min(availW, static_cast<float>(m_previewTexWidth));
+                float drawH = drawW / aspect;
+                if (drawH > maxH)
+                {
+                    drawH = maxH;
+                    drawW = drawH * aspect;
+                }
+
+                // Draw preview box with dark border & checkerboard background
+                ImVec2 p0 = ImGui::GetCursorScreenPos();
+                ImVec2 p1(p0.x + drawW, p0.y + drawH);
+                ImDrawList *drawList = ImGui::GetWindowDrawList();
+
+                // Checkerboard
+                float tileSize = 12.0f;
+                for (float cy = p0.y; cy < p1.y; cy += tileSize)
+                {
+                    for (float cx = p0.x; cx < p1.x; cx += tileSize)
+                    {
+                        int ix = static_cast<int>((cx - p0.x) / tileSize);
+                        int iy = static_cast<int>((cy - p0.y) / tileSize);
+                        ImU32 col = ((ix + iy) % 2 == 0) ? ImColor(32, 35, 42, 255) : ImColor(46, 50, 60, 255);
+                        ImVec2 bMax(std::min(cx + tileSize, p1.x), std::min(cy + tileSize, p1.y));
+                        drawList->AddRectFilled(ImVec2(cx, cy), bMax, col);
+                    }
+                }
+                drawList->AddRect(p0, p1, ImColor(60, 70, 85, 255), 2.0f);
+
+                ImGui::Image(reinterpret_cast<ImTextureID>(m_previewTexture), ImVec2(drawW, drawH));
+
+                ImGui::TextDisabled("Dimensions: %d x %d px  (Aspect: %.2f:1)", m_previewTexWidth, m_previewTexHeight, aspect);
+                ImGui::Spacing();
+            }
 
             if (assetType == AssetType::Sprite)
             {
@@ -2529,7 +2913,7 @@ namespace RoninEditor
                     j["texturePath"] = std::filesystem::relative(p, root / "Assets", ec).string();
                     if (!texGuid.empty()) j["textureGuid"] = texGuid;
                     nlohmann::json jr = nlohmann::json::object();
-                    jr["x"] = 0; jr["y"] = 0; jr["w"] = 64; jr["h"] = 64;
+                    jr["x"] = 0; jr["y"] = 0; jr["w"] = (m_previewTexWidth > 0 ? m_previewTexWidth : 64); jr["h"] = (m_previewTexHeight > 0 ? m_previewTexHeight : 64);
                     j["rect"] = jr;
                     nlohmann::json jp = nlohmann::json::object();
                     jp["x"] = 0.5; jp["y"] = 0.5;

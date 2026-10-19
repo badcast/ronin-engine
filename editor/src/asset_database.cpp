@@ -168,7 +168,10 @@ namespace RoninEditor
         std::error_code ec;
         if (std::filesystem::exists(path, ec))
         {
-            std::filesystem::remove(path, ec);
+            if (std::filesystem::is_directory(path, ec))
+                std::filesystem::remove_all(path, ec);
+            else
+                std::filesystem::remove(path, ec);
         }
 
         std::filesystem::path metaPath = path.string() + ".meta";

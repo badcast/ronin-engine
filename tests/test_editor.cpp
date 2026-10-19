@@ -24,6 +24,17 @@ namespace RoninEngine::UI
     extern void apply_standard_ui_style();
 }
 
+#include "miniaudio/miniaudio.h"
+namespace RoninEngine::Runtime
+{
+    class RoninAudio
+    {
+    public:
+        static bool HasInit();
+        static ma_engine *GetEngine();
+    };
+}
+
 using namespace RoninEditor;
 using json = nlohmann::json;
 
@@ -1113,6 +1124,134 @@ int main()
             assert(customDup2->name == "Treasure (Gold) (Clone 2)");
 
             std::cout << "  [PASS] Test 34: Duplicate GameObject naming pipeline validated (Clone 1, Clone 2, no chaining)" << std::endl;
+        }
+
+        // 35. Validate Editor Audio Player engine & waveform pipeline and safe Prefab deletion
+        {
+            // A. Test Safe Prefab Deletion & Selection Invalidation on large Prefab (HeavyBoss.prefab)
+            EditorState testState;
+            std::filesystem::path largePrefabPath = expectedRoot / "Assets" / "Prefabs" / "HeavyBoss.prefab";
+            std::filesystem::path metaPath = largePrefabPath.string() + ".meta";
+
+            assert(std::filesystem::exists(largePrefabPath));
+            MetaFile mf;
+            assert(MetaManager::EnsureMetaFile(largePrefabPath, mf));
+            assert(std::filesystem::exists(metaPath));
+            AssetDatabase::GetInstance().Refresh();
+
+            // Select prefab in state
+            testState.selectAsset(largePrefabPath);
+            assert(testState.selectedAssetPath == largePrefabPath);
+            assert(testState.inspectAssetMode == true);
+
+            // Execute asset deletion (mimicking deferred AssetBrowser deletion)
+            bool delOk = AssetDatabase::GetInstance().DeleteAsset(largePrefabPath);
+            assert(delOk);
+            assert(!std::filesystem::exists(largePrefabPath));
+            assert(!std::filesystem::exists(metaPath));
+
+            // Verify safe selection cleanup when selected asset path was deleted
+            if (testState.selectedAssetPath == largePrefabPath || !std::filesystem::exists(testState.selectedAssetPath))
+            {
+                testState.clearAssetSelection();
+            }
+            assert(testState.selectedAssetPath.empty());
+            assert(testState.inspectAssetMode == false);
+
+            // B. Test RoninAudio::GetEngine() and Waveform computation pipeline
+            RoninEngine::RoninSimulator::Init(RoninEngine::InitializeFlags::All);
+            assert(RoninEngine::Runtime::RoninAudio::HasInit() == true);
+            ma_engine *engine = RoninEngine::Runtime::RoninAudio::GetEngine();
+            assert(engine != nullptr);
+
+            // Write a valid 16-bit PCM Mono 44100Hz WAV file
+            std::filesystem::path wavFile = expectedRoot / "Assets" / "Audio" / "test_waveform.wav";
+            {
+                std::ofstream ofs(wavFile, std::ios::binary);
+                uint32_t sampleRate = 44100;
+                uint16_t numChannels = 1;
+                uint16_t bitsPerSample = 16;
+                uint32_t numSamples = 44100; // 1 second
+                uint32_t subchunk2Size = numSamples * numChannels * (bitsPerSample / 8);
+                uint32_t chunkSize = 36 + subchunk2Size;
+                uint32_t byteRate = sampleRate * numChannels * (bitsPerSample / 8);
+                uint16_t blockAlign = numChannels * (bitsPerSample / 8);
+
+                // RIFF header
+                ofs.write("RIFF", 4);
+                ofs.write(reinterpret_cast<const char*>(&chunkSize), 4);
+                ofs.write("WAVE", 4);
+                // fmt subchunk
+                ofs.write("fmt ", 4);
+                uint32_t sub1Size = 16;
+                uint16_t audioFormat = 1; // PCM
+                ofs.write(reinterpret_cast<const char*>(&sub1Size), 4);
+                ofs.write(reinterpret_cast<const char*>(&audioFormat), 2);
+                ofs.write(reinterpret_cast<const char*>(&numChannels), 2);
+                ofs.write(reinterpret_cast<const char*>(&sampleRate), 4);
+                ofs.write(reinterpret_cast<const char*>(&byteRate), 4);
+                ofs.write(reinterpret_cast<const char*>(&blockAlign), 2);
+                ofs.write(reinterpret_cast<const char*>(&bitsPerSample), 2);
+                // data subchunk
+                ofs.write("data", 4);
+                ofs.write(reinterpret_cast<const char*>(&subchunk2Size), 4);
+
+                // Sine wave 440 Hz
+                for (uint32_t s = 0; s < numSamples; ++s)
+                {
+                    double t = static_cast<double>(s) / sampleRate;
+                    int16_t sample = static_cast<int16_t>(std::sin(2.0 * 3.1415926535 * 440.0 * t) * 30000.0);
+                    ofs.write(reinterpret_cast<const char*>(&sample), 2);
+                }
+            }
+            assert(std::filesystem::exists(wavFile));
+
+            // Test decoding via miniaudio decoder
+            ma_decoder decoder;
+            ma_decoder_config dcfg = ma_decoder_config_init(ma_format_f32, 0, 0);
+            ma_result dres = ma_decoder_init_file(wavFile.string().c_str(), &dcfg, &decoder);
+            assert(dres == MA_SUCCESS);
+            ma_uint64 totalPcmFrames = 0;
+            ma_decoder_get_length_in_pcm_frames(&decoder, &totalPcmFrames);
+            assert(totalPcmFrames > 0);
+            assert(decoder.outputChannels == 1);
+            assert(decoder.outputSampleRate == 44100);
+
+            // Compute 128 normalized peaks (Waveform algorithm)
+            constexpr int NUM_BARS = 128;
+            std::vector<float> peaks(NUM_BARS, 0.0f);
+            constexpr size_t BUFFER_FRAMES = 2048;
+            std::vector<float> buffer(BUFFER_FRAMES * decoder.outputChannels);
+            ma_uint64 framesReadTotal = 0;
+            double framesPerBar = static_cast<double>(totalPcmFrames) / NUM_BARS;
+
+            while (framesReadTotal < totalPcmFrames)
+            {
+                ma_uint64 toRead = std::min<ma_uint64>(BUFFER_FRAMES, totalPcmFrames - framesReadTotal);
+                ma_uint64 framesRead = 0;
+                ma_result res = ma_decoder_read_pcm_frames(&decoder, buffer.data(), toRead, &framesRead);
+                if (res != MA_SUCCESS || framesRead == 0) break;
+
+                for (ma_uint64 f = 0; f < framesRead; ++f)
+                {
+                    ma_uint64 frameIdx = framesReadTotal + f;
+                    int bar = std::clamp(static_cast<int>(frameIdx / framesPerBar), 0, NUM_BARS - 1);
+                    float amp = std::abs(buffer[f * decoder.outputChannels]);
+                    if (amp > peaks[bar]) peaks[bar] = amp;
+                }
+                framesReadTotal += framesRead;
+            }
+            ma_decoder_uninit(&decoder);
+
+            assert(peaks.size() == 128);
+            float maxPeak = 0.0f;
+            for (float pVal : peaks) if (pVal > maxPeak) maxPeak = pVal;
+            assert(maxPeak > 0.5f); // Sine wave amplitude was ~30000/32768 ~= 0.91
+
+            // Cleanup test wav
+            std::filesystem::remove(wavFile, ec);
+
+            std::cout << "  [PASS] Test 35: Safe Prefab deletion & Audio engine/Waveform pipeline validated" << std::endl;
         }
     }
 

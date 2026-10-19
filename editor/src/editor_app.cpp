@@ -218,6 +218,7 @@ namespace RoninEditor
 
         m_sceneViewport.Init(m_renderer);
         m_spriteEditor.Init(m_renderer);
+        m_inspectorPanel.Init(m_renderer);
 
         m_assetBrowser.onOpenSpriteEditor = [this](const std::filesystem::path &p)
         {
@@ -824,6 +825,7 @@ namespace RoninEditor
         }
 
         m_sceneViewport.Init(m_renderer);
+        m_inspectorPanel.Init(m_renderer);
         std::filesystem::path scenePath = cfg.rootPath / cfg.defaultSceneRelativePath;
         if (std::filesystem::exists(scenePath))
         {

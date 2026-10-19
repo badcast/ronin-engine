@@ -89,6 +89,11 @@ namespace RoninEngine::Runtime
         return g_engineInitialized;
     }
 
+    ma_engine *RoninAudio::GetEngine()
+    {
+        return g_engineInitialized ? &g_engine : nullptr;
+    }
+
     AudioState RoninAudio::getChannelState(int channel)
     {
         std::lock_guard<std::mutex> lock(g_audioMutex);

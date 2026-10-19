@@ -296,7 +296,16 @@ namespace RoninEngine::UI
                         ImGui::SetCursorScreenPos(ImVec2(static_cast<float>(element.rect.x), static_cast<float>(element.rect.y)));
                         float w = element.rect.w == 0 ? static_cast<float>(sprite->width()) : static_cast<float>(element.rect.w);
                         float h = element.rect.h == 0 ? static_cast<float>(sprite->height()) : static_cast<float>(element.rect.h);
-                        ImGui::Image(reinterpret_cast<ImTextureID>(tex), ImVec2(w, h));
+                        int imgW = sprite->getImage()->w;
+                        int imgH = sprite->getImage()->h;
+                        Rect r = sprite->rect();
+                        ImVec2 uv0 = (imgW > 0 && imgH > 0 && r.w > 0 && r.h > 0)
+                            ? ImVec2(static_cast<float>(r.x) / imgW, static_cast<float>(r.y) / imgH)
+                            : ImVec2(0, 0);
+                        ImVec2 uv1 = (imgW > 0 && imgH > 0 && r.w > 0 && r.h > 0)
+                            ? ImVec2(static_cast<float>(r.x + r.w) / imgW, static_cast<float>(r.y + r.h) / imgH)
+                            : ImVec2(1, 1);
+                        ImGui::Image(reinterpret_cast<ImTextureID>(tex), ImVec2(w, h), uv0, uv1);
                         render_cache_unref(tex);
                     }
                 }
@@ -321,10 +330,53 @@ namespace RoninEngine::UI
                         std::string btnId = "##sprbtn_" + std::to_string(element.id);
                         float w = element.rect.w == 0 ? static_cast<float>(spr->width()) : static_cast<float>(element.rect.w);
                         float h = element.rect.h == 0 ? static_cast<float>(spr->height()) : static_cast<float>(element.rect.h);
-                        if(ImGui::ImageButton(btnId.c_str(), reinterpret_cast<ImTextureID>(tex), ImVec2(w, h)))
+
+                        int imgW = spr->getImage()->w;
+                        int imgH = spr->getImage()->h;
+                        Rect sr = spr->rect();
+                        ImVec2 uv0 = (imgW > 0 && imgH > 0 && sr.w > 0 && sr.h > 0)
+                            ? ImVec2(static_cast<float>(sr.x) / imgW, static_cast<float>(sr.y) / imgH)
+                            : ImVec2(0, 0);
+                        ImVec2 uv1 = (imgW > 0 && imgH > 0 && sr.w > 0 && sr.h > 0)
+                            ? ImVec2(static_cast<float>(sr.x + sr.w) / imgW, static_cast<float>(sr.y + sr.h) / imgH)
+                            : ImVec2(1, 1);
+
+                        ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0, 0));
+                        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
+                        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0, 0, 0, 0));
+                        ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0, 0, 0, 0));
+
+                        if(ImGui::ImageButton(btnId.c_str(), reinterpret_cast<ImTextureID>(tex), ImVec2(w, h), uv0, uv1))
                         {
                             result = true;
                             uiState.gui->handle->button_clicked.insert(element.id);
+                        }
+
+                        ImGui::PopStyleColor(3);
+                        ImGui::PopStyleVar();
+
+                        // Render icon overlay if specified
+                        Sprite *icon = element.resource.spriteButton.icon;
+                        if(icon != nullptr && icon->getImage() != nullptr)
+                        {
+                            SDL_Texture *iconTex = render_cache_texture(icon);
+                            if(iconTex != nullptr)
+                            {
+                                int iconW = icon->getImage()->w;
+                                int iconH = icon->getImage()->h;
+                                Rect ir = icon->rect();
+                                ImVec2 iuv0 = (iconW > 0 && iconH > 0 && ir.w > 0 && ir.h > 0)
+                                    ? ImVec2(static_cast<float>(ir.x) / iconW, static_cast<float>(ir.y) / iconH)
+                                    : ImVec2(0, 0);
+                                ImVec2 iuv1 = (iconW > 0 && iconH > 0 && ir.w > 0 && ir.h > 0)
+                                    ? ImVec2(static_cast<float>(ir.x + ir.w) / iconW, static_cast<float>(ir.y + ir.h) / iconH)
+                                    : ImVec2(1, 1);
+
+                                ImVec2 bMin = ImGui::GetItemRectMin();
+                                ImVec2 bMax = ImGui::GetItemRectMax();
+                                ImGui::GetWindowDrawList()->AddImage(reinterpret_cast<ImTextureID>(iconTex), bMin, bMax, iuv0, iuv1);
+                                render_cache_unref(iconTex);
+                            }
                         }
 
                         if(!isEnabled)
