@@ -782,6 +782,49 @@ namespace RoninEditor
                     onOpenSpriteEditor(targetItem->fullPath);
                 }
             }
+            if (targetItem->type == AssetType::Texture && ImGui::MenuItem("Create Sprite (.sprite) from Texture"))
+            {
+                std::filesystem::path spritePath = targetItem->fullPath.parent_path() / (targetItem->fullPath.stem().string() + ".sprite");
+                int count = 1;
+                while (std::filesystem::exists(spritePath))
+                {
+                    spritePath = targetItem->fullPath.parent_path() / (targetItem->fullPath.stem().string() + "_" + std::to_string(count++) + ".sprite");
+                }
+                std::string texGuid = AssetDatabase::GetInstance().GetGuidByPath(targetItem->fullPath);
+                json::JSON j = json::JSON::Make(json::JSON::Class::Object);
+                j["formatVersion"] = 1;
+                j["name"] = spritePath.stem().string();
+                std::error_code ec;
+                j["texturePath"] = std::filesystem::relative(targetItem->fullPath, m_assetsRoot, ec).string();
+                if (!texGuid.empty()) j["textureGuid"] = texGuid;
+                json::JSON jr = json::JSON::Make(json::JSON::Class::Object);
+                jr["x"] = 0; jr["y"] = 0; jr["w"] = 64; jr["h"] = 64;
+                j["rect"] = jr;
+                json::JSON jp = json::JSON::Make(json::JSON::Class::Object);
+                jp["x"] = 0.5; jp["y"] = 0.5;
+                j["pivot"] = jp;
+                j["pixelsPerUnit"] = 100.0;
+                std::ofstream ofs(spritePath);
+                ofs << j.dump(1, "  ") << "\n";
+                ofs.close();
+
+                MetaFile mf;
+                MetaManager::EnsureMetaFile(spritePath, mf);
+                AssetDatabase::GetInstance().Refresh();
+                refreshCurrentDirectory();
+                if (onOpenSpriteEditor) onOpenSpriteEditor(spritePath);
+            }
+            if (targetItem->type == AssetType::Prefab && ImGui::MenuItem("Instantiate in World"))
+            {
+                state.instantiatePrefab(targetItem->fullPath.string(), {0.0f, 0.0f});
+            }
+            if (targetItem->type == AssetType::Terrain && ImGui::MenuItem("Create Terrain Object in World"))
+            {
+                auto &newObj = state.createObject(targetItem->fullPath.stem().string());
+                state.loadTerrainAsset(newObj.terrain, targetItem->fullPath.string());
+                newObj.terrain.enabled = true;
+                state.selectObject(newObj.id);
+            }
 
             if (ImGui::MenuItem("Show in System File Manager##Item"))
             {
@@ -831,6 +874,10 @@ namespace RoninEditor
                     std::ofstream ofs(newWorld);
                     ofs << "{\n  \"formatVersion\": 1,\n  \"worldName\": \"NewWorld\",\n  \"objects\": []\n}\n";
                     ofs.close();
+
+                    MetaFile mf;
+                    MetaManager::EnsureMetaFile(newWorld, mf);
+                    AssetDatabase::GetInstance().Refresh();
                     refreshCurrentDirectory();
                 }
 
@@ -845,6 +892,10 @@ namespace RoninEditor
                     std::ofstream ofs(newSprite);
                     ofs << "{\n  \"formatVersion\": 1,\n  \"name\": \"NewSprite\",\n  \"texturePath\": \"\",\n  \"rect\": {\"x\": 0, \"y\": 0, \"w\": 64, \"h\": 64},\n  \"pivot\": {\"x\": 0.5, \"y\": 0.5},\n  \"pixelsPerUnit\": 100.0\n}\n";
                     ofs.close();
+
+                    MetaFile mf;
+                    MetaManager::EnsureMetaFile(newSprite, mf);
+                    AssetDatabase::GetInstance().Refresh();
                     refreshCurrentDirectory();
 
                     if (onOpenSpriteEditor)
@@ -856,9 +907,72 @@ namespace RoninEditor
                 if (ImGui::MenuItem("Prefab"))
                 {
                     std::filesystem::path newPrefab = m_currentDir / "NewPrefab.prefab";
+                    int count = 1;
+                    while (std::filesystem::exists(newPrefab))
+                    {
+                        newPrefab = m_currentDir / ("NewPrefab" + std::to_string(count++) + ".prefab");
+                    }
                     std::ofstream ofs(newPrefab);
-                    ofs << "{\n  \"prefabName\": \"NewPrefab\",\n  \"components\": []\n}\n";
+                    ofs << "{\n  \"format\": \"RoninEnginePrefab\",\n  \"prefabVersion\": 1,\n  \"name\": \"NewPrefab\",\n  \"rootObject\": {\n    \"name\": \"NewPrefab\",\n    \"tag\": \"Untagged\",\n    \"layer\": 0,\n    \"active\": true,\n    \"components\": []\n  },\n  \"children\": []\n}\n";
                     ofs.close();
+
+                    MetaFile mf;
+                    MetaManager::EnsureMetaFile(newPrefab, mf);
+                    AssetDatabase::GetInstance().Refresh();
+                    refreshCurrentDirectory();
+                }
+
+                if (ImGui::MenuItem("Terrain"))
+                {
+                    std::filesystem::path newTerrain = m_currentDir / "NewTerrain.terrain";
+                    int count = 1;
+                    while (std::filesystem::exists(newTerrain))
+                    {
+                        newTerrain = m_currentDir / ("NewTerrain" + std::to_string(count++) + ".terrain");
+                    }
+                    Terrain2DData defaultTer;
+                    defaultTer.enabled = true;
+                    defaultTer.width = 16;
+                    defaultTer.length = 8;
+                    defaultTer.cellScale = 1.0f;
+                    defaultTer.ensureGridInitialized(0);
+                    state.saveTerrainAsset(defaultTer, newTerrain.string());
+                    refreshCurrentDirectory();
+                }
+
+                if (ImGui::MenuItem("Text Document (.txt)"))
+                {
+                    std::filesystem::path newTxt = m_currentDir / "NewText.txt";
+                    int count = 1;
+                    while (std::filesystem::exists(newTxt))
+                    {
+                        newTxt = m_currentDir / ("NewText" + std::to_string(count++) + ".txt");
+                    }
+                    std::ofstream ofs(newTxt);
+                    ofs << "Text data stream\n";
+                    ofs.close();
+
+                    MetaFile mf;
+                    MetaManager::EnsureMetaFile(newTxt, mf);
+                    AssetDatabase::GetInstance().Refresh();
+                    refreshCurrentDirectory();
+                }
+
+                if (ImGui::MenuItem("JSON Data (.json)"))
+                {
+                    std::filesystem::path newJson = m_currentDir / "NewData.json";
+                    int count = 1;
+                    while (std::filesystem::exists(newJson))
+                    {
+                        newJson = m_currentDir / ("NewData" + std::to_string(count++) + ".json");
+                    }
+                    std::ofstream ofs(newJson);
+                    ofs << "{\n  \"version\": 1\n}\n";
+                    ofs.close();
+
+                    MetaFile mf;
+                    MetaManager::EnsureMetaFile(newJson, mf);
+                    AssetDatabase::GetInstance().Refresh();
                     refreshCurrentDirectory();
                 }
 
@@ -872,6 +986,11 @@ namespace RoninEditor
                     std::ofstream ofsCpp(newCpp);
                     ofsCpp << "#include \"CustomComponent.h\"\n";
                     ofsCpp.close();
+
+                    MetaFile mfH, mfCpp;
+                    MetaManager::EnsureMetaFile(newH, mfH);
+                    MetaManager::EnsureMetaFile(newCpp, mfCpp);
+                    AssetDatabase::GetInstance().Refresh();
                     refreshCurrentDirectory();
                 }
 

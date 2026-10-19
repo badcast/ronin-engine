@@ -5,6 +5,7 @@
 #include "asset_database.h"
 #include "editor_icons.h"
 #include <ronin/TextStream.h>
+#include <ronin/AudioClip.h>
 #include <imgui.h>
 #include <imgui_internal.h>
 #include <cstring>
@@ -39,6 +40,7 @@ namespace RoninEditor
             if (m_previewChunk)
             {
                 m_previewPlayingPath = clipPath;
+                Mix_VolumeChunk(m_previewChunk, static_cast<int>(std::clamp(m_previewVolume, 0.0f, 1.0f) * MIX_MAX_VOLUME));
                 Mix_PlayChannel(-1, m_previewChunk, 0);
             }
         }
@@ -762,6 +764,37 @@ namespace RoninEditor
             if (ImGui::Button("Open Dedicated Terrain Editor", ImVec2(ImGui::GetContentRegionAvail().x, 26.0f)))
             {
                 state.isTerrainEditorOpen = true;
+            }
+
+            ImGui::Spacing();
+            if (ImGui::Button("Export to .terrain Asset", ImVec2(ImGui::GetContentRegionAvail().x, 24.0f)))
+            {
+                auto root = ProjectManager::GetInstance().GetRootPath();
+                std::filesystem::path terrainDir = root / "Assets";
+                std::filesystem::path outPath = terrainDir / (obj.name + ".terrain");
+                int count = 1;
+                while (std::filesystem::exists(outPath))
+                {
+                    outPath = terrainDir / (obj.name + "_" + std::to_string(count++) + ".terrain");
+                }
+                state.saveTerrainAsset(obj.terrain, outPath.string());
+            }
+            if (ImGui::IsItemHovered())
+                ImGui::SetTooltip("Export this terrain configuration as a reusable .terrain asset");
+
+            if (ImGui::BeginDragDropTarget())
+            {
+                if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("RONIN_ASSET_PATH"))
+                {
+                    std::filesystem::path p = static_cast<const char *>(payload->Data);
+                    if (p.extension() == ".terrain")
+                    {
+                        auto root = ProjectManager::GetInstance().GetRootPath();
+                        std::filesystem::path full = p.is_relative() ? (root / p) : p;
+                        state.loadTerrainAsset(obj.terrain, full.string());
+                    }
+                }
+                ImGui::EndDragDropTarget();
             }
         }
     }
@@ -1874,10 +1907,28 @@ namespace RoninEditor
         // 3. Asset-Specific Inspector Sections
         if (assetType == AssetType::Audio)
         {
-            ImGui::TextColored(ImVec4(1.0f, 0.75f, 0.2f, 1.0f), "Audio Clip Inspector");
+            ImGui::TextColored(ImVec4(1.0f, 0.75f, 0.2f, 1.0f), "Audio Clip Inspector [AudioClip]");
             ImGui::Spacing();
 
-            // Preview controls
+            auto clip = RoninEngine::Runtime::AudioClip::CreateFromFile(p.string());
+            if (clip && clip->valid())
+            {
+                double dur = clip->getDuration();
+                if (dur >= 0.0)
+                {
+                    int mins = static_cast<int>(dur) / 60;
+                    double secs = dur - mins * 60;
+                    ImGui::Text("Duration: %02d:%05.2f (%.2f s)", mins, secs, dur);
+                }
+                int freq = clip->getFrequency();
+                if (freq > 0) ImGui::Text("Sample Rate: %d Hz", freq);
+                int ch = clip->getChannels();
+                if (ch > 0) ImGui::Text("Channels: %s (%d)", (ch == 2 ? "Stereo" : (ch == 1 ? "Mono" : "Multi")), ch);
+                ImGui::Text("Buffer Size: %u bytes", clip->getLengthInBytes());
+            }
+            ImGui::Spacing();
+
+            // Preview controls & Volume
             bool isThisPlaying = (m_previewChunk != nullptr && m_previewPlayingPath == p.string());
             if (!isThisPlaying)
             {
@@ -1898,6 +1949,16 @@ namespace RoninEditor
                 ImGui::TextColored(ImVec4(0.4f, 1.0f, 0.4f, 1.0f), "Playing...");
             }
 
+            ImGui::SameLine();
+            ImGui::SetNextItemWidth(140.0f);
+            if (ImGui::SliderFloat("Volume", &m_previewVolume, 0.0f, 1.0f, "%.2f"))
+            {
+                if (m_previewChunk)
+                {
+                    Mix_VolumeChunk(m_previewChunk, static_cast<int>(std::clamp(m_previewVolume, 0.0f, 1.0f) * MIX_MAX_VOLUME));
+                }
+            }
+
             ImGui::Spacing();
             if (state.selectedObjectId != -1)
             {
@@ -1914,9 +1975,73 @@ namespace RoninEditor
         }
         else if (assetType == AssetType::Sprite || assetType == AssetType::Texture)
         {
-            ImGui::TextColored(ImVec4(0.3f, 1.0f, 0.5f, 1.0f), "%s Inspector", (assetType == AssetType::Sprite ? "Sprite" : "Texture2D"));
+            ImGui::TextColored(ImVec4(0.3f, 1.0f, 0.5f, 1.0f), "%s Inspector", (assetType == AssetType::Sprite ? "Sprite Asset [Sprite]" : "Texture2D Asset [Texture2D]"));
             ImGui::Spacing();
 
+            if (assetType == AssetType::Sprite)
+            {
+                std::ifstream ifs(p);
+                if (ifs.is_open())
+                {
+                    std::stringstream ss;
+                    ss << ifs.rdbuf();
+                    try {
+                        auto js = json::JSON::Load(ss.str());
+                        if (js.hasKey("name")) ImGui::Text("Sprite Name: %s", js.at("name").ToString().c_str());
+                        if (js.hasKey("texturePath")) ImGui::Text("Source Texture: %s", js.at("texturePath").ToString().c_str());
+                        if (js.hasKey("textureGuid")) ImGui::Text("Texture GUID: %s", js.at("textureGuid").ToString().c_str());
+                        if (js.hasKey("rect")) {
+                            auto r = js.at("rect");
+                            if (r.hasKey("w") && r.hasKey("h"))
+                                ImGui::Text("Rect: (%d, %d, %d, %d)", r["x"].ToInt(), r["y"].ToInt(), r["w"].ToInt(), r["h"].ToInt());
+                        }
+                        if (js.hasKey("pivot")) {
+                            auto pv = js.at("pivot");
+                            if (pv.hasKey("x") && pv.hasKey("y"))
+                                ImGui::Text("Pivot: (%.2f, %.2f)", pv["x"].ToFloat(), pv["y"].ToFloat());
+                        }
+                        if (js.hasKey("pixelsPerUnit"))
+                            ImGui::Text("Pixels Per Unit: %.1f", js.at("pixelsPerUnit").ToFloat());
+                    } catch (...) {}
+                }
+            }
+            else // Texture
+            {
+                if (ImGui::Button("Create Sprite (.sprite) from Texture", ImVec2(240.0f, 28.0f)))
+                {
+                    std::filesystem::path spritePath = p.parent_path() / (stem + ".sprite");
+                    int count = 1;
+                    while (std::filesystem::exists(spritePath))
+                    {
+                        spritePath = p.parent_path() / (stem + "_" + std::to_string(count++) + ".sprite");
+                    }
+                    std::string texGuid = AssetDatabase::GetInstance().GetGuidByPath(p);
+                    json::JSON j = json::JSON::Make(json::JSON::Class::Object);
+                    j["formatVersion"] = 1;
+                    j["name"] = spritePath.stem().string();
+                    std::error_code ec;
+                    auto root = ProjectManager::GetInstance().GetRootPath();
+                    j["texturePath"] = std::filesystem::relative(p, root / "Assets", ec).string();
+                    if (!texGuid.empty()) j["textureGuid"] = texGuid;
+                    json::JSON jr = json::JSON::Make(json::JSON::Class::Object);
+                    jr["x"] = 0; jr["y"] = 0; jr["w"] = 64; jr["h"] = 64;
+                    j["rect"] = jr;
+                    json::JSON jp = json::JSON::Make(json::JSON::Class::Object);
+                    jp["x"] = 0.5; jp["y"] = 0.5;
+                    j["pivot"] = jp;
+                    j["pixelsPerUnit"] = 100.0;
+                    std::ofstream ofs(spritePath);
+                    ofs << j.dump(1, "  ") << "\n";
+                    ofs.close();
+
+                    MetaFile mf;
+                    MetaManager::EnsureMetaFile(spritePath, mf);
+                    AssetDatabase::GetInstance().Refresh();
+                    if (onOpenSpriteEditor) onOpenSpriteEditor(spritePath);
+                }
+            }
+
+            ImGui::Spacing();
             if (ImGui::Button("Open in Sprite Editor", ImVec2(180.0f, 30.0f)))
             {
                 if (onOpenSpriteEditor)
@@ -1941,7 +2066,7 @@ namespace RoninEditor
         }
         else if (assetType == AssetType::World)
         {
-            ImGui::TextColored(ImVec4(0.8f, 0.6f, 1.0f, 1.0f), "World Scene Inspector");
+            ImGui::TextColored(ImVec4(0.8f, 0.6f, 1.0f, 1.0f), "World Scene Inspector [World]");
             ImGui::Spacing();
             if (ImGui::Button("Load World in Editor", ImVec2(160.0f, 30.0f)))
             {
@@ -1986,7 +2111,7 @@ namespace RoninEditor
         }
         else if (assetType == AssetType::TextStream)
         {
-            ImGui::TextColored(ImVec4(0.6f, 0.8f, 1.0f, 1.0f), "TextStream / Data Stream Inspector");
+            ImGui::TextColored(ImVec4(0.6f, 0.8f, 1.0f, 1.0f), "TextStream / Data Stream Inspector [TextStream]");
             ImGui::Spacing();
 
             std::vector<std::string> lines = RoninEngine::Runtime::TextStream::ReadLines(p.string());
@@ -2020,19 +2145,146 @@ namespace RoninEditor
         }
         else if (assetType == AssetType::Prefab)
         {
-            ImGui::TextColored(ImVec4(1.0f, 0.5f, 0.8f, 1.0f), "Prefab Inspector");
+            ImGui::TextColored(ImVec4(1.0f, 0.5f, 0.8f, 1.0f), "Prefab Inspector [Prefab]");
             ImGui::Spacing();
-            ImGui::TextWrapped("Prefab template: %s", stem.c_str());
-            if (ImGui::Button("Instantiate Prefab in World", ImVec2(180.0f, 30.0f)))
+
+            std::ifstream ifs(p);
+            if (ifs.is_open())
+            {
+                std::stringstream ss;
+                ss << ifs.rdbuf();
+                try {
+                    auto jpref = json::JSON::Load(ss.str());
+                    json::JSON rootJson;
+                    if (jpref.hasKey("rootObject")) rootJson = jpref["rootObject"];
+                    else if (jpref.hasKey("object")) rootJson = jpref["object"];
+                    else rootJson = jpref;
+
+                    if (rootJson.hasKey("name"))
+                        ImGui::Text("Root GameObject: %s", rootJson["name"].ToString().c_str());
+                    if (rootJson.hasKey("tag"))
+                        ImGui::Text("Tag: %s", rootJson["tag"].ToString().c_str());
+                    if (rootJson.hasKey("layer"))
+                        ImGui::Text("Layer: %d", rootJson["layer"].ToInt());
+
+                    if (rootJson.hasKey("components") && rootJson["components"].JSONType() == json::JSON::Class::Array)
+                    {
+                        ImGui::Spacing();
+                        ImGui::TextDisabled("Root Components:");
+                        for (const auto &c : rootJson["components"].ArrayRange())
+                        {
+                            if (c.hasKey("type"))
+                                ImGui::BulletText("%s", c.at("type").ToString().c_str());
+                        }
+                    }
+
+                    if (jpref.hasKey("children") && jpref["children"].JSONType() == json::JSON::Class::Array)
+                    {
+                        size_t childCount = jpref["children"].size();
+                        ImGui::Spacing();
+                        ImGui::Text("Children Hierarchy (%zu objects):", childCount);
+                        for (const auto &c : jpref["children"].ArrayRange())
+                        {
+                            if (c.hasKey("name"))
+                                ImGui::BulletText("%s", c.at("name").ToString().c_str());
+                        }
+                    }
+                } catch (...) {}
+            }
+
+            ImGui::Spacing();
+            if (ImGui::Button("Instantiate at Origin (0, 0)", ImVec2(200.0f, 30.0f)))
             {
                 state.instantiatePrefab(p.string(), {0.0f, 0.0f});
+            }
+            ImGui::SameLine();
+            if (ImGui::Button("Instantiate at Camera", ImVec2(180.0f, 30.0f)))
+            {
+                state.instantiatePrefab(p.string(), state.cameraPan);
             }
         }
         else if (assetType == AssetType::Terrain)
         {
-            ImGui::TextColored(ImVec4(0.7f, 0.9f, 0.4f, 1.0f), "Terrain Asset Inspector");
+            ImGui::TextColored(ImVec4(0.7f, 0.9f, 0.4f, 1.0f), "Terrain Asset Inspector [Terrain]");
             ImGui::Spacing();
-            ImGui::TextWrapped("Reusable terrain data: %s", stem.c_str());
+
+            Terrain2DData previewTer;
+            if (state.loadTerrainAsset(previewTer, p.string()))
+            {
+                ImGui::Text("Grid Size: %d x %d (%d tiles)", previewTer.width, previewTer.length, previewTer.width * previewTer.length);
+                ImGui::Text("Cell Scale: %.2f units", previewTer.cellScale);
+                ImGui::Text("Painted Strokes: %zu", previewTer.paintStrokes.size());
+                int collidersCount = 0;
+                for (bool c : previewTer.cellColliders) if (c) collidersCount++;
+                ImGui::Text("Active Colliders: %d", collidersCount);
+            }
+
+            ImGui::Spacing();
+            if (ImGui::Button("Create Terrain Object in World", ImVec2(220.0f, 30.0f)))
+            {
+                auto &newObj = state.createObject(stem + "_Terrain");
+                state.loadTerrainAsset(newObj.terrain, p.string());
+                newObj.terrain.enabled = true;
+                state.selectObject(newObj.id);
+            }
+
+            if (state.selectedObjectId != -1)
+            {
+                EditorObject *curObj = state.findObject(state.selectedObjectId);
+                if (curObj && ImGui::Button("Apply to Selected Object's Terrain", ImVec2(240.0f, 28.0f)))
+                {
+                    state.loadTerrainAsset(curObj->terrain, p.string());
+                    curObj->terrain.enabled = true;
+                    state.isDirty = true;
+                    state.logInfo("Applied terrain data to " + curObj->name);
+                }
+            }
+
+            if (ImGui::Button("Open in Terrain Editor", ImVec2(180.0f, 28.0f)))
+            {
+                state.isTerrainEditorOpen = true;
+            }
+        }
+        else if (assetType == AssetType::Video)
+        {
+            ImGui::TextColored(ImVec4(0.9f, 0.4f, 0.7f, 1.0f), "Video Clip Inspector [VideoClip]");
+            ImGui::Spacing();
+            ImGui::TextWrapped("Video Source File: %s", filename.c_str());
+            ImGui::Text("Format: %s", p.extension().string().c_str());
+            ImGui::Spacing();
+            ImGui::TextDisabled("Note: Video playback in RoninEngine is handled via VideoPlayer / pl_mpeg decoder.");
+            ImGui::Spacing();
+#if defined(__linux__)
+            if (ImGui::Button("Open in System Media Player", ImVec2(220.0f, 30.0f)))
+            {
+                std::string cmd = "xdg-open \"" + p.string() + "\" &";
+                std::system(cmd.c_str());
+            }
+#endif
+        }
+        else if (assetType == AssetType::Font)
+        {
+            ImGui::TextColored(ImVec4(0.95f, 0.85f, 0.4f, 1.0f), "Font Asset Inspector [Font]");
+            ImGui::Spacing();
+            ImGui::Text("Font File: %s", filename.c_str());
+            ImGui::Text("Format: TrueType / OpenType (%s)", p.extension().string().c_str());
+            ImGui::Spacing();
+            if (ImGui::CollapsingHeader("Sample Character Preview", ImGuiTreeNodeFlags_DefaultOpen))
+            {
+                ImGui::TextWrapped("ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+                ImGui::TextWrapped("abcdefghijklmnopqrstuvwxyz");
+                ImGui::TextWrapped("0123456789 !@#$%%^&*()_+-=[]{}|;':\",./<>?");
+                ImGui::Spacing();
+                ImGui::TextColored(ImVec4(0.8f, 0.8f, 0.8f, 1.0f), "The quick brown fox jumps over the lazy dog.");
+            }
+            ImGui::Spacing();
+#if defined(__linux__)
+            if (ImGui::Button("Open in Font Viewer", ImVec2(180.0f, 30.0f)))
+            {
+                std::string cmd = "xdg-open \"" + p.string() + "\" &";
+                std::system(cmd.c_str());
+            }
+#endif
         }
     }
 

@@ -1,5 +1,7 @@
 #include "sprite_editor.h"
 #include "project_manager.h"
+#include "meta_manager.h"
+#include "asset_database.h"
 #include <imgui.h>
 #include <SDL2/SDL_image.h>
 #include <SimpleJSON/json.hpp>
@@ -95,7 +97,18 @@ namespace RoninEditor
         if (j.hasKey("name")) m_meta.name = j["name"].ToString();
         else m_meta.name = jsonPath.stem().string();
 
-        if (j.hasKey("texturePath"))
+        bool loadedTex = false;
+        if (j.hasKey("textureGuid"))
+        {
+            std::filesystem::path resolved = AssetDatabase::GetInstance().GetPathByGuid(j["textureGuid"].ToString());
+            if (!resolved.empty() && std::filesystem::exists(resolved))
+            {
+                m_meta.texturePath = resolved.string();
+                loadTexture(m_meta.texturePath);
+                loadedTex = true;
+            }
+        }
+        if (!loadedTex && j.hasKey("texturePath"))
         {
             m_meta.texturePath = j["texturePath"].ToString();
             loadTexture(m_meta.texturePath);
@@ -141,6 +154,12 @@ namespace RoninEditor
         j["name"] = m_meta.name;
         j["texturePath"] = m_meta.texturePath;
 
+        std::string texGuid = AssetDatabase::GetInstance().GetGuidByPath(m_meta.texturePath);
+        if (!texGuid.empty())
+        {
+            j["textureGuid"] = texGuid;
+        }
+
         json::JSON jr = json::JSON::Make(json::JSON::Class::Object);
         jr["x"] = m_meta.rect.x;
         jr["y"] = m_meta.rect.y;
@@ -166,6 +185,11 @@ namespace RoninEditor
         if (!ofs.is_open()) return false;
         ofs << j.dump(1, "  ");
         ofs.close();
+
+        // Ensure companion .meta file is generated
+        MetaFile mf;
+        MetaManager::EnsureMetaFile(jsonPath, mf);
+        AssetDatabase::GetInstance().Refresh();
 
         m_currentFile = jsonPath;
         m_isDirty = false;
@@ -281,18 +305,25 @@ namespace RoninEditor
                 jp["y"] = static_cast<double>(sm.pivot.y);
                 j["pivot"] = jp;
 
-                j["pixelsPerUnit"] = static_cast<double>(sm.pixelsPerUnit);
+                std::string texGuid = AssetDatabase::GetInstance().GetGuidByPath(sm.texturePath);
+                if (!texGuid.empty())
+                {
+                    j["textureGuid"] = texGuid;
+                }
 
                 std::ofstream ofs(outFile);
                 if (ofs.is_open())
                 {
                     ofs << j.dump(1, "  ");
                     ofs.close();
+                    MetaFile mf;
+                    MetaManager::EnsureMetaFile(outFile, mf);
                     createdCount++;
                 }
             }
         }
 
+        AssetDatabase::GetInstance().Refresh();
         state.logInfo("Grid Sliced " + std::to_string(createdCount) + " sprite assets into " + outDir.string());
     }
 

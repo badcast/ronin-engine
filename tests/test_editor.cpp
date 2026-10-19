@@ -683,6 +683,63 @@ int main()
 
             std::cout << "  [PASS] Test 25: Prefab save & instantiation pipeline validated" << std::endl;
         }
+
+        // 26. Validate Terrain asset pipeline (.terrain + .terrain.meta)
+        {
+            EditorState editorState;
+            Terrain2DData srcTer;
+            srcTer.enabled = true;
+            srcTer.width = 24;
+            srcTer.length = 16;
+            srcTer.cellScale = 1.5f;
+            srcTer.ensureGridInitialized(1);
+            srcTer.cellMaterials[5] = 3;
+            srcTer.cellColliders[5] = true;
+
+            TerrainPaintStroke stroke;
+            stroke.uvPos = {0.25f, 0.5f};
+            stroke.radiusNormalized = 0.1f;
+            stroke.radiusCells = 2.0f;
+            stroke.hardness = 0.8f;
+            stroke.opacity = 0.9f;
+            stroke.materialId = 3;
+            stroke.color = RoninEngine::Runtime::Color(200, 100, 50, 255);
+            srcTer.paintStrokes.push_back(stroke);
+
+            std::filesystem::path terPath = expectedRoot / "Assets" / "DungeonGround.terrain";
+            assert(editorState.saveTerrainAsset(srcTer, terPath.string()));
+
+            // Verify .terrain and companion .terrain.meta exist
+            assert(std::filesystem::exists(terPath));
+            std::filesystem::path terMeta = terPath.string() + ".meta";
+            assert(std::filesystem::exists(terMeta));
+
+            MetaFile mf;
+            assert(MetaManager::LoadMetaFile(terMeta, mf));
+            assert(mf.type == AssetType::Terrain);
+            assert(!mf.guid.empty());
+
+            // Verify AssetDatabase resolution
+            AssetDatabase &adb = AssetDatabase::GetInstance();
+            adb.Refresh();
+            assert(adb.GetStemByPath(terPath) == "DungeonGround");
+            assert(adb.HasAssetByGuid(mf.guid));
+            assert(adb.GetMetadataByPath(terPath)->type == AssetType::Terrain);
+
+            // Load terrain back into new component
+            Terrain2DData loadedTer;
+            assert(editorState.loadTerrainAsset(loadedTer, terPath.string()));
+            assert(loadedTer.enabled);
+            assert(loadedTer.width == 24);
+            assert(loadedTer.length == 16);
+            assert(std::abs(loadedTer.cellScale - 1.5f) < 0.001f);
+            assert(loadedTer.cellMaterials[5] == 3);
+            assert(loadedTer.cellColliders[5] == true);
+            assert(loadedTer.paintStrokes.size() == 1);
+            assert(std::abs(loadedTer.paintStrokes[0].uvPos.x - 0.25f) < 0.001f);
+
+            std::cout << "  [PASS] Test 26: Terrain asset serialization (.terrain + .terrain.meta) validated" << std::endl;
+        }
     }
 
     // Cleanup

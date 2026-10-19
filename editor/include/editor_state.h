@@ -457,6 +457,10 @@ namespace RoninEditor
         bool savePrefab(const EditorObject &obj, const std::string &filePath);
         EditorObject *instantiatePrefab(const std::string &filePath, const RoninEngine::Runtime::Vec2 &spawnPos = {0.0f, 0.0f}, int parentId = -1);
 
+        // Terrain asset management
+        bool saveTerrainAsset(const Terrain2DData &terrain, const std::string &filePath);
+        bool loadTerrainAsset(Terrain2DData &terrain, const std::string &filePath);
+
         // World management
         EditorWorld &activeWorld();
         const EditorWorld &activeWorld() const;

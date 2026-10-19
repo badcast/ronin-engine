@@ -113,5 +113,6 @@ namespace RoninEditor
         // Audio preview playback
         Mix_Chunk *m_previewChunk = nullptr;
         std::string m_previewPlayingPath;
+        float m_previewVolume = 0.8f;
     };
 } // namespace RoninEditor

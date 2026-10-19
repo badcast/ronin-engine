@@ -1818,6 +1818,114 @@ namespace RoninEditor
         return Vec2(x, y);
     }
 
+    static json::JSON serializeTerrainToJson(const Terrain2DData &ter)
+    {
+        json::JSON jter = json::JSON::Make(json::JSON::Class::Object);
+        jter["componentId"] = ter.componentId;
+        jter["enabled"] = ter.enabled;
+        jter["width"] = ter.width;
+        jter["length"] = ter.length;
+        jter["cellScale"] = static_cast<double>(ter.cellScale);
+        jter["tileColor"] = colorToJson(ter.tileColor);
+        jter["generateBorderColliders"] = ter.generateBorderColliders;
+        jter["customTexturePath"] = ter.customTexturePath;
+
+        json::JSON jmats = json::JSON::Make(json::JSON::Class::Array);
+        for (int m : ter.cellMaterials)
+            jmats.append(m);
+        jter["cellMaterials"] = jmats;
+
+        json::JSON jcols = json::JSON::Make(json::JSON::Class::Array);
+        for (const auto &cc : ter.cellColors)
+            jcols.append(colorToJson(cc));
+        jter["cellColors"] = jcols;
+
+        json::JSON jcoll = json::JSON::Make(json::JSON::Class::Array);
+        for (bool b : ter.cellColliders)
+            jcoll.append(b ? 1 : 0);
+        jter["cellColliders"] = jcoll;
+
+        json::JSON jstrokes = json::JSON::Make(json::JSON::Class::Array);
+        for (const auto &st : ter.paintStrokes)
+        {
+            json::JSON js = json::JSON::Make(json::JSON::Class::Object);
+            js["uvPos"] = vec2ToJson(st.uvPos);
+            js["radiusNormalized"] = static_cast<double>(st.radiusNormalized);
+            js["radiusCells"] = static_cast<double>(st.radiusCells);
+            js["hardness"] = static_cast<double>(st.hardness);
+            js["opacity"] = static_cast<double>(st.opacity);
+            js["materialId"] = st.materialId;
+            js["color"] = colorToJson(st.color);
+            jstrokes.append(js);
+        }
+        jter["paintStrokes"] = jstrokes;
+        return jter;
+    }
+
+    static void deserializeTerrainFromJson(const json::JSON &jt, Terrain2DData &ter)
+    {
+        if (jt.hasKey("componentId"))
+            ter.componentId = jsonToInt(jt.at("componentId"), ter.componentId);
+        if (jt.hasKey("enabled"))
+            ter.enabled = jsonToBool(jt.at("enabled"), true);
+        if (jt.hasKey("width"))
+            ter.width = jsonToInt(jt.at("width"), ter.width);
+        if (jt.hasKey("length"))
+            ter.length = jsonToInt(jt.at("length"), ter.length);
+        if (jt.hasKey("cellScale"))
+            ter.cellScale = jsonToFloat(jt.at("cellScale"), ter.cellScale);
+        if (jt.hasKey("tileColor"))
+            ter.tileColor = jsonToColor(jt.at("tileColor"), ter.tileColor);
+        if (jt.hasKey("generateBorderColliders"))
+            ter.generateBorderColliders = jsonToBool(jt.at("generateBorderColliders"), true);
+        if (jt.hasKey("customTexturePath"))
+            ter.customTexturePath = jt.at("customTexturePath").ToString();
+
+        if (jt.hasKey("cellMaterials") && jt.at("cellMaterials").JSONType() == json::JSON::Class::Array)
+        {
+            ter.cellMaterials.clear();
+            for (const auto &jm : jt.at("cellMaterials").ArrayRange())
+                ter.cellMaterials.push_back(jsonToInt(jm, 0));
+        }
+        if (jt.hasKey("cellColors") && jt.at("cellColors").JSONType() == json::JSON::Class::Array)
+        {
+            ter.cellColors.clear();
+            for (const auto &jc : jt.at("cellColors").ArrayRange())
+                ter.cellColors.push_back(jsonToColor(jc, ter.tileColor));
+        }
+        if (jt.hasKey("cellColliders") && jt.at("cellColliders").JSONType() == json::JSON::Class::Array)
+        {
+            ter.cellColliders.clear();
+            for (const auto &jb : jt.at("cellColliders").ArrayRange())
+                ter.cellColliders.push_back(jsonToBool(jb, false));
+        }
+        if (jt.hasKey("paintStrokes") && jt.at("paintStrokes").JSONType() == json::JSON::Class::Array)
+        {
+            ter.paintStrokes.clear();
+            for (const auto &jst : jt.at("paintStrokes").ArrayRange())
+            {
+                if (jst.JSONType() != json::JSON::Class::Object)
+                    continue;
+                TerrainPaintStroke st;
+                if (jst.hasKey("uvPos"))
+                    st.uvPos = jsonToVec2(jst.at("uvPos"), st.uvPos);
+                if (jst.hasKey("radiusNormalized"))
+                    st.radiusNormalized = jsonToFloat(jst.at("radiusNormalized"), 0.08f);
+                if (jst.hasKey("radiusCells"))
+                    st.radiusCells = jsonToFloat(jst.at("radiusCells"), 1.0f);
+                if (jst.hasKey("hardness"))
+                    st.hardness = jsonToFloat(jst.at("hardness"), 0.65f);
+                if (jst.hasKey("opacity"))
+                    st.opacity = jsonToFloat(jst.at("opacity"), 1.0f);
+                if (jst.hasKey("materialId"))
+                    st.materialId = jsonToInt(jst.at("materialId"), 0);
+                if (jst.hasKey("color"))
+                    st.color = jsonToColor(jst.at("color"), st.color);
+                ter.paintStrokes.push_back(st);
+            }
+        }
+    }
+
     static json::JSON serializeObjectToJson(const EditorObject &obj)
     {
         json::JSON jo = json::JSON::Make(json::JSON::Class::Object);
@@ -1878,46 +1986,7 @@ namespace RoninEditor
         jo["light2D"] = jlgt;
 
         // Terrain2D
-        json::JSON jter = json::JSON::Make(json::JSON::Class::Object);
-        jter["componentId"] = obj.terrain.componentId;
-        jter["enabled"] = obj.terrain.enabled;
-        jter["width"] = obj.terrain.width;
-        jter["length"] = obj.terrain.length;
-        jter["cellScale"] = static_cast<double>(obj.terrain.cellScale);
-        jter["tileColor"] = colorToJson(obj.terrain.tileColor);
-        jter["generateBorderColliders"] = obj.terrain.generateBorderColliders;
-        jter["customTexturePath"] = obj.terrain.customTexturePath;
-
-        json::JSON jmats = json::JSON::Make(json::JSON::Class::Array);
-        for (int m : obj.terrain.cellMaterials)
-            jmats.append(m);
-        jter["cellMaterials"] = jmats;
-
-        json::JSON jcols = json::JSON::Make(json::JSON::Class::Array);
-        for (const auto &cc : obj.terrain.cellColors)
-            jcols.append(colorToJson(cc));
-        jter["cellColors"] = jcols;
-
-        json::JSON jcoll = json::JSON::Make(json::JSON::Class::Array);
-        for (bool b : obj.terrain.cellColliders)
-            jcoll.append(b ? 1 : 0);
-        jter["cellColliders"] = jcoll;
-
-        json::JSON jstrokes = json::JSON::Make(json::JSON::Class::Array);
-        for (const auto &st : obj.terrain.paintStrokes)
-        {
-            json::JSON js = json::JSON::Make(json::JSON::Class::Object);
-            js["uvPos"] = vec2ToJson(st.uvPos);
-            js["radiusNormalized"] = static_cast<double>(st.radiusNormalized);
-            js["radiusCells"] = static_cast<double>(st.radiusCells);
-            js["hardness"] = static_cast<double>(st.hardness);
-            js["opacity"] = static_cast<double>(st.opacity);
-            js["materialId"] = st.materialId;
-            js["color"] = colorToJson(st.color);
-            jstrokes.append(js);
-        }
-        jter["paintStrokes"] = jstrokes;
-        jo["terrain2D"] = jter;
+        jo["terrain2D"] = serializeTerrainToJson(obj.terrain);
 
         // ParticleSystem
         json::JSON jprt = json::JSON::Make(json::JSON::Class::Object);
@@ -2664,67 +2733,7 @@ namespace RoninEditor
 
                 if (jo.hasKey("terrain2D"))
                 {
-                    const json::JSON &jt = jo.at("terrain2D");
-                    if (jt.hasKey("componentId"))
-                        obj.terrain.componentId = jsonToInt(jt.at("componentId"));
-                    if (jt.hasKey("enabled"))
-                        obj.terrain.enabled = jsonToBool(jt.at("enabled"));
-                    if (jt.hasKey("width"))
-                        obj.terrain.width = jsonToInt(jt.at("width"), 12);
-                    if (jt.hasKey("length"))
-                        obj.terrain.length = jsonToInt(jt.at("length"), 8);
-                    if (jt.hasKey("cellScale"))
-                        obj.terrain.cellScale = jsonToFloat(jt.at("cellScale"), 1.0f);
-                    if (jt.hasKey("tileColor"))
-                        obj.terrain.tileColor = jsonToColor(jt.at("tileColor"), obj.terrain.tileColor);
-                    if (jt.hasKey("generateBorderColliders"))
-                        obj.terrain.generateBorderColliders = jsonToBool(jt.at("generateBorderColliders"), true);
-                    if (jt.hasKey("customTexturePath"))
-                        obj.terrain.customTexturePath = jt.at("customTexturePath").ToString();
-
-                    if (jt.hasKey("cellMaterials") && jt.at("cellMaterials").JSONType() == json::JSON::Class::Array)
-                    {
-                        obj.terrain.cellMaterials.clear();
-                        for (const auto &jm : jt.at("cellMaterials").ArrayRange())
-                            obj.terrain.cellMaterials.push_back(jsonToInt(jm, 0));
-                    }
-                    if (jt.hasKey("cellColors") && jt.at("cellColors").JSONType() == json::JSON::Class::Array)
-                    {
-                        obj.terrain.cellColors.clear();
-                        for (const auto &jc : jt.at("cellColors").ArrayRange())
-                            obj.terrain.cellColors.push_back(jsonToColor(jc, obj.terrain.tileColor));
-                    }
-                    if (jt.hasKey("cellColliders") && jt.at("cellColliders").JSONType() == json::JSON::Class::Array)
-                    {
-                        obj.terrain.cellColliders.clear();
-                        for (const auto &jb : jt.at("cellColliders").ArrayRange())
-                            obj.terrain.cellColliders.push_back(jsonToBool(jb, false));
-                    }
-                    if (jt.hasKey("paintStrokes") && jt.at("paintStrokes").JSONType() == json::JSON::Class::Array)
-                    {
-                        obj.terrain.paintStrokes.clear();
-                        for (const auto &jst : jt.at("paintStrokes").ArrayRange())
-                        {
-                            if (jst.JSONType() != json::JSON::Class::Object)
-                                continue;
-                            TerrainPaintStroke st;
-                            if (jst.hasKey("uvPos"))
-                                st.uvPos = jsonToVec2(jst.at("uvPos"), st.uvPos);
-                            if (jst.hasKey("radiusNormalized"))
-                                st.radiusNormalized = jsonToFloat(jst.at("radiusNormalized"), 0.08f);
-                            if (jst.hasKey("radiusCells"))
-                                st.radiusCells = jsonToFloat(jst.at("radiusCells"), 1.0f);
-                            if (jst.hasKey("hardness"))
-                                st.hardness = jsonToFloat(jst.at("hardness"), 0.65f);
-                            if (jst.hasKey("opacity"))
-                                st.opacity = jsonToFloat(jst.at("opacity"), 1.0f);
-                            if (jst.hasKey("materialId"))
-                                st.materialId = jsonToInt(jst.at("materialId"), 0);
-                            if (jst.hasKey("color"))
-                                st.color = jsonToColor(jst.at("color"), st.color);
-                            obj.terrain.paintStrokes.push_back(st);
-                        }
-                    }
+                    deserializeTerrainFromJson(jo.at("terrain2D"), obj.terrain);
                     if (obj.terrain.enabled)
                         obj.terrain.ensureGridInitialized(0);
                 }
@@ -3293,6 +3302,68 @@ namespace RoninEditor
         selectObject(newRootId);
         logInfo("Instantiated prefab '" + rootObj.name + "' from " + filePath);
         return findObject(newRootId);
+    }
+
+    bool EditorState::saveTerrainAsset(const Terrain2DData &terrain, const std::string &filePath)
+    {
+        std::setlocale(LC_NUMERIC, "C");
+        std::filesystem::path p(filePath);
+        std::error_code ec;
+        if (!std::filesystem::exists(p.parent_path(), ec))
+        {
+            std::filesystem::create_directories(p.parent_path(), ec);
+        }
+
+        std::ofstream out(filePath);
+        if (!out.is_open())
+        {
+            logError("Failed to open file for writing terrain asset: " + filePath);
+            return false;
+        }
+
+        json::JSON jter = json::JSON::Make(json::JSON::Class::Object);
+        jter["format"] = "RoninEngineTerrain";
+        jter["terrainVersion"] = 1;
+        jter["terrain"] = serializeTerrainToJson(terrain);
+
+        out << jter.dump(1, "  ") << "\n";
+        out.close();
+
+        // Ensure companion .meta file is generated
+        MetaFile mf;
+        MetaManager::EnsureMetaFile(filePath, mf);
+        AssetDatabase::GetInstance().Refresh();
+
+        logInfo("Saved Terrain asset to " + filePath);
+        return true;
+    }
+
+    bool EditorState::loadTerrainAsset(Terrain2DData &terrain, const std::string &filePath)
+    {
+        std::setlocale(LC_NUMERIC, "C");
+        std::ifstream in(filePath);
+        if (!in.is_open())
+        {
+            logError("Failed to open Terrain asset for loading: " + filePath);
+            return false;
+        }
+
+        std::stringstream buffer;
+        buffer << in.rdbuf();
+        json::JSON j = json::JSON::Load(buffer.str());
+        if (j.JSONType() != json::JSON::Class::Object)
+        {
+            logError("Invalid JSON in Terrain asset: " + filePath);
+            return false;
+        }
+
+        const json::JSON &node = j.hasKey("terrain") ? j.at("terrain") : j;
+        deserializeTerrainFromJson(node, terrain);
+        terrain.enabled = true;
+        isDirty = true;
+
+        logInfo("Loaded Terrain asset from " + filePath);
+        return true;
     }
 
     void EditorState::updateAtlasSlicer()
