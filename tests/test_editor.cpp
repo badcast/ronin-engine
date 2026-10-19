@@ -9,6 +9,7 @@
 #include "meta_manager.h"
 #include "asset_database.h"
 #include <ronin/AudioClip.h>
+#include <ronin/NavMeshAgent.h>
 #include <ronin/TextStream.h>
 
 using namespace RoninEditor;
@@ -759,6 +760,64 @@ int main()
             assert(std::string(MetaManager::GetAssetTypeBadge(AssetType::Font)) == "Font");
             assert(std::string(MetaManager::GetAssetTypeBadge(AssetType::Folder)) == "Folder");
             std::cout << "  [PASS] Test 27: Asset badge names validated (no raw bracket indicators)" << std::endl;
+        }
+
+        // 28. Test NavMeshAgent component in EditorState & World JSON serialization
+        {
+            auto &agentObj = editorState.createObject("AIAgent");
+            agentObj.navMeshAgent.enabled = true;
+            agentObj.navMeshAgent.componentId = editorState.activeWorld().allocateComponentId();
+            agentObj.navMeshAgent.speed = 4.8f;
+            agentObj.navMeshAgent.angularSpeed = 180.0f;
+            agentObj.navMeshAgent.acceleration = 12.0f;
+            agentObj.navMeshAgent.stoppingDistance = 0.5f;
+            agentObj.navMeshAgent.radius = 0.6f;
+            agentObj.navMeshAgent.destination = {5.0f, -2.5f};
+            agentObj.navMeshAgent.hasDestination = true;
+            agentObj.navMeshAgent.updateRotation = true;
+            agentObj.navMeshAgent.autoRepath = false;
+
+            std::filesystem::path agentWorldPath = expectedRoot / "Assets" / "Worlds" / "AgentTestWorld.world";
+            assert(editorState.saveWorldToFile(agentWorldPath.string()));
+
+            EditorState reloadState;
+            assert(reloadState.loadWorldFromFile(agentWorldPath.string()));
+            EditorObject *reloadedAgent = reloadState.findObject(agentObj.id);
+            assert(reloadedAgent != nullptr);
+            assert(reloadedAgent->navMeshAgent.enabled);
+            assert(reloadedAgent->navMeshAgent.componentId == agentObj.navMeshAgent.componentId);
+            assert(std::abs(reloadedAgent->navMeshAgent.speed - 4.8f) < 0.01f);
+            assert(std::abs(reloadedAgent->navMeshAgent.angularSpeed - 180.0f) < 0.01f);
+            assert(std::abs(reloadedAgent->navMeshAgent.acceleration - 12.0f) < 0.01f);
+            assert(std::abs(reloadedAgent->navMeshAgent.stoppingDistance - 0.5f) < 0.01f);
+            assert(std::abs(reloadedAgent->navMeshAgent.radius - 0.6f) < 0.01f);
+            assert(std::abs(reloadedAgent->navMeshAgent.destination.x - 5.0f) < 0.01f);
+            assert(std::abs(reloadedAgent->navMeshAgent.destination.y - -2.5f) < 0.01f);
+            assert(reloadedAgent->navMeshAgent.hasDestination == true);
+            assert(reloadedAgent->navMeshAgent.updateRotation == true);
+            assert(reloadedAgent->navMeshAgent.autoRepath == false);
+
+            std::cout << "  [PASS] Test 28: NavMeshAgent EditorState serialization & properties validated" << std::endl;
+        }
+
+        // 29. Test Miniaudio AudioClip PCM decoding & memory validation
+        {
+            RoninEngine::Runtime::AudioClip clip;
+            assert(!clip.valid());
+            // Synthesize PCM test frames (44.1kHz stereo, 0.5 sec)
+            uint32_t sampleRate = 44100;
+            uint32_t channels = 2;
+            uint64_t totalFrames = 22050; // 0.5s
+            std::vector<float> pcmBuffer(totalFrames * channels, 0.25f);
+            clip.initDecodedData(pcmBuffer.data(), totalFrames, channels, sampleRate, 5 /* ma_format_f32 */);
+            assert(clip.valid());
+            assert(clip.getChannels() == 2);
+            assert(clip.getFrequency() == 44100);
+            assert(std::abs(clip.getDuration() - 0.5) < 0.001);
+            assert(clip.getLengthInBytes() == totalFrames * channels * sizeof(float));
+            assert(clip.getTotalFrames() == totalFrames);
+
+            std::cout << "  [PASS] Test 29: Miniaudio AudioClip PCM buffer management validated" << std::endl;
         }
     }
 

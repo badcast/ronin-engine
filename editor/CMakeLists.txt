@@ -15,7 +15,6 @@ message(STATUS "Building Ronin Editor (Dear ImGui Docking) version: ${RONIN_EDIT
 find_package(PkgConfig QUIET)
 if(NOT MSVC AND PkgConfig_FOUND)
     pkg_check_modules(SDL2 REQUIRED sdl2)
-    pkg_check_modules(SDL2_MIXER QUIET SDL2_mixer)
     pkg_check_modules(SDL2_IMAGE QUIET SDL2_image)
 else()
     find_package(SDL2 REQUIRED)
@@ -64,7 +63,6 @@ target_include_directories(RoninEditor PRIVATE
     ${IMGUI_DIR}
     ${IMGUI_DIR}/backends
     ${SDL2_INCLUDE_DIRS}
-    ${SDL2_MIXER_INCLUDE_DIRS}
     ${SDL2_IMAGE_INCLUDE_DIRS}
 )
 
@@ -78,8 +76,9 @@ target_compile_definitions(RoninEditor PRIVATE
 target_link_libraries(RoninEditor PRIVATE
     RoninEngine
     ${SDL2_LIBRARIES}
-    ${SDL2_MIXER_LIBRARIES}
     ${SDL2_IMAGE_LIBRARIES}
-    SDL2_mixer
     SDL2_image
+    pthread
+    dl
+    m
 )

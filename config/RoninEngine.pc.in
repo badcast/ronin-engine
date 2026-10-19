@@ -9,5 +9,5 @@ includedir=${libdir}/RoninEngine
 Name: RoninEngine
 Version: @RONINENGINE_VERSION_STRING@
 Description: RoninEngine - The Ronin Engine Framework. For World simulation, UI intersection, Game Emulation, 2D game, etc.
-Libs: -L${libdir} -lSDL2 -lSDL2_mixer -lSDL2_image -lSDL2_ttf -l@RUNTIME_OUTPUT_NAME@
+Libs: -L${libdir} -lSDL2 -lSDL2_image -lSDL2_ttf -lpthread -ldl -lm -l@RUNTIME_OUTPUT_NAME@
 Cflags: -I${includedir}

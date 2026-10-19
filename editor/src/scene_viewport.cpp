@@ -852,6 +852,31 @@ namespace RoninEditor
                     drawRotatedWireQuad(m_renderer, screenCorners, {40, 240, 80, 220});
                 }
             }
+
+            // F. NavMeshAgent Gizmo
+            if (obj.navMeshAgent.enabled)
+            {
+                SDL_SetRenderDrawColor(m_renderer, 0, 210, 255, 220); // Cyan
+                float rPx = obj.navMeshAgent.radius * m_pixelsPerUnit * m_zoom;
+                drawWireCircle(m_renderer, static_cast<int>(screenCenter.x), static_cast<int>(screenCenter.y), static_cast<int>(rPx));
+
+                if (obj.navMeshAgent.hasDestination)
+                {
+                    auto destScreen = WorldToScreen(obj.navMeshAgent.destination, m_cameraPos, viewSize);
+                    // Draw path line to destination
+                    SDL_SetRenderDrawColor(m_renderer, 0, 240, 255, 200);
+                    SDL_RenderDrawLine(m_renderer, static_cast<int>(screenCenter.x), static_cast<int>(screenCenter.y),
+                                       static_cast<int>(destScreen.x), static_cast<int>(destScreen.y));
+
+                    // Draw destination target cross & circle
+                    SDL_SetRenderDrawColor(m_renderer, 255, 220, 40, 255);
+                    int dX = static_cast<int>(destScreen.x);
+                    int dY = static_cast<int>(destScreen.y);
+                    SDL_RenderDrawLine(m_renderer, dX - 6, dY, dX + 6, dY);
+                    SDL_RenderDrawLine(m_renderer, dX, dY - 6, dX, dY + 6);
+                    drawWireCircle(m_renderer, dX, dY, 4);
+                }
+            }
         }
 
         // 4. Draw Selected Object Highlight & Transform Gizmo

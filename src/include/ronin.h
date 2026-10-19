@@ -51,6 +51,7 @@
 #include "GameObject.h"
 
 #include "NavMesh.h"
+#include "NavMeshAgent.h"
 #include "RenderUtility.h"
 #include "Physics2D.h"
 

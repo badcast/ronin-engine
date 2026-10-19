@@ -2,16 +2,21 @@
 
 #include "begin.h"
 #include "SharedPointer.h"
-
-// Forward declaration of Mix_Chunk for SDL_mixer
-struct Mix_Chunk;
+#include <string>
+#include <vector>
+#include <cstdint>
+#include <iosfwd>
 
 namespace RoninEngine::Runtime
 {
+    struct AudioClipData;
+
     class RONIN_API AudioClip : public RoninPointer
     {
+    private:
+        AudioClipData *m_data;
+
     public:
-        Mix_Chunk *mix_chunk;
 #ifndef NDEBUG
         int used;
 #endif
@@ -21,22 +26,27 @@ namespace RoninEngine::Runtime
         uint32_t assetId = 0;
 
         AudioClip();
-        explicit AudioClip(Mix_Chunk *chunk);
-        AudioClip(const std::string &name, Mix_Chunk *chunk);
+        explicit AudioClip(const std::string &name);
         virtual ~AudioClip();
 
-        Mix_Chunk *getMixChunk() const;
-        void setMixChunk(Mix_Chunk *chunk);
+        AudioClipData *getData() const;
+        void initDecodedData(const void *pcmFrames, uint64_t frameCount, uint32_t channels, uint32_t sampleRate, int format);
+
+        // Backward compatibility stubs
+        void *getMixChunk() const { return nullptr; }
+        void setMixChunk(void *) {}
 
         double getDuration() const;
         int getChannels() const;
         int getFrequency() const;
         uint32_t getLengthInBytes() const;
+        uint64_t getTotalFrames() const;
         bool valid() const;
 
-        static AudioClipRef Create(Mix_Chunk *chunk);
+        static AudioClipRef Create(void *chunk = nullptr);
         static AudioClipRef CreateFromFile(const std::string &path);
         static AudioClipRef CreateFromStream(std::istream &stream);
+        static AudioClipRef CreateFromMemory(const void *data, size_t sizeInBytes);
     };
 
 } // namespace RoninEngine::Runtime

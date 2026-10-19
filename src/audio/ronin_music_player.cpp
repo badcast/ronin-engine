@@ -34,7 +34,7 @@ namespace RoninEngine::Runtime
 
     void MusicPlayer::Rewind()
     {
-        Mix_RewindMusic();
+        RoninAudio::setMusicPosition(0.0);
     }
 
     void MusicPlayer::Play(bool loop)

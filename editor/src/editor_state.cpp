@@ -689,6 +689,7 @@ namespace RoninEditor
         if (obj.physics.colliderEnabled && obj.physics.componentId == 0) obj.physics.componentId = w.allocateComponentId();
         if (obj.rigidbody2D.enabled && obj.rigidbody2D.componentId == 0) obj.rigidbody2D.componentId = w.allocateComponentId();
         if (obj.boxCollider2D.enabled && obj.boxCollider2D.componentId == 0) obj.boxCollider2D.componentId = w.allocateComponentId();
+        if (obj.navMeshAgent.enabled && obj.navMeshAgent.componentId == 0) obj.navMeshAgent.componentId = w.allocateComponentId();
         if (obj.audio.enabled && obj.audio.componentId == 0) obj.audio.componentId = w.allocateComponentId();
         if (obj.script.enabled && obj.script.componentId == 0) obj.script.componentId = w.allocateComponentId();
     }
@@ -2056,6 +2057,21 @@ namespace RoninEditor
         jbox["bounciness"] = static_cast<double>(obj.boxCollider2D.bounciness);
         jo["boxCollider2D"] = jbox;
 
+        // NavMeshAgent
+        json::JSON jagent = json::JSON::Make(json::JSON::Class::Object);
+        jagent["componentId"] = obj.navMeshAgent.componentId;
+        jagent["enabled"] = obj.navMeshAgent.enabled;
+        jagent["speed"] = static_cast<double>(obj.navMeshAgent.speed);
+        jagent["angularSpeed"] = static_cast<double>(obj.navMeshAgent.angularSpeed);
+        jagent["acceleration"] = static_cast<double>(obj.navMeshAgent.acceleration);
+        jagent["stoppingDistance"] = static_cast<double>(obj.navMeshAgent.stoppingDistance);
+        jagent["radius"] = static_cast<double>(obj.navMeshAgent.radius);
+        jagent["destination"] = vec2ToJson(obj.navMeshAgent.destination);
+        jagent["hasDestination"] = obj.navMeshAgent.hasDestination;
+        jagent["updateRotation"] = obj.navMeshAgent.updateRotation;
+        jagent["autoRepath"] = obj.navMeshAgent.autoRepath;
+        jo["navMeshAgent"] = jagent;
+
         // AudioSource
         json::JSON jaud = json::JSON::Make(json::JSON::Class::Object);
         jaud["componentId"] = obj.audio.componentId;
@@ -2485,6 +2501,33 @@ namespace RoninEditor
                 obj.boxCollider2D.bounciness = jsonToFloat(jbox.at("bounciness"), 0.0f);
         }
 
+        if (jo.hasKey("navMeshAgent"))
+        {
+            const json::JSON &jagent = jo.at("navMeshAgent");
+            if (jagent.hasKey("componentId"))
+                obj.navMeshAgent.componentId = jsonToInt(jagent.at("componentId"));
+            if (jagent.hasKey("enabled"))
+                obj.navMeshAgent.enabled = jsonToBool(jagent.at("enabled"));
+            if (jagent.hasKey("speed"))
+                obj.navMeshAgent.speed = jsonToFloat(jagent.at("speed"), 3.5f);
+            if (jagent.hasKey("angularSpeed"))
+                obj.navMeshAgent.angularSpeed = jsonToFloat(jagent.at("angularSpeed"), 120.0f);
+            if (jagent.hasKey("acceleration"))
+                obj.navMeshAgent.acceleration = jsonToFloat(jagent.at("acceleration"), 8.0f);
+            if (jagent.hasKey("stoppingDistance"))
+                obj.navMeshAgent.stoppingDistance = jsonToFloat(jagent.at("stoppingDistance"), 0.25f);
+            if (jagent.hasKey("radius"))
+                obj.navMeshAgent.radius = jsonToFloat(jagent.at("radius"), 0.4f);
+            if (jagent.hasKey("destination"))
+                obj.navMeshAgent.destination = jsonToVec2(jagent.at("destination"), obj.navMeshAgent.destination);
+            if (jagent.hasKey("hasDestination"))
+                obj.navMeshAgent.hasDestination = jsonToBool(jagent.at("hasDestination"), false);
+            if (jagent.hasKey("updateRotation"))
+                obj.navMeshAgent.updateRotation = jsonToBool(jagent.at("updateRotation"), false);
+            if (jagent.hasKey("autoRepath"))
+                obj.navMeshAgent.autoRepath = jsonToBool(jagent.at("autoRepath"), true);
+        }
+
         if (jo.hasKey("audioSource"))
         {
             const json::JSON &ja = jo.at("audioSource");
@@ -2854,6 +2897,33 @@ namespace RoninEditor
                         obj.boxCollider2D.bounciness = jsonToFloat(jbox.at("bounciness"), 0.0f);
                 }
 
+                if (jo.hasKey("navMeshAgent"))
+                {
+                    const json::JSON &jagent = jo.at("navMeshAgent");
+                    if (jagent.hasKey("componentId"))
+                        obj.navMeshAgent.componentId = jsonToInt(jagent.at("componentId"));
+                    if (jagent.hasKey("enabled"))
+                        obj.navMeshAgent.enabled = jsonToBool(jagent.at("enabled"));
+                    if (jagent.hasKey("speed"))
+                        obj.navMeshAgent.speed = jsonToFloat(jagent.at("speed"), 3.5f);
+                    if (jagent.hasKey("angularSpeed"))
+                        obj.navMeshAgent.angularSpeed = jsonToFloat(jagent.at("angularSpeed"), 120.0f);
+                    if (jagent.hasKey("acceleration"))
+                        obj.navMeshAgent.acceleration = jsonToFloat(jagent.at("acceleration"), 8.0f);
+                    if (jagent.hasKey("stoppingDistance"))
+                        obj.navMeshAgent.stoppingDistance = jsonToFloat(jagent.at("stoppingDistance"), 0.25f);
+                    if (jagent.hasKey("radius"))
+                        obj.navMeshAgent.radius = jsonToFloat(jagent.at("radius"), 0.4f);
+                    if (jagent.hasKey("destination"))
+                        obj.navMeshAgent.destination = jsonToVec2(jagent.at("destination"), obj.navMeshAgent.destination);
+                    if (jagent.hasKey("hasDestination"))
+                        obj.navMeshAgent.hasDestination = jsonToBool(jagent.at("hasDestination"), false);
+                    if (jagent.hasKey("updateRotation"))
+                        obj.navMeshAgent.updateRotation = jsonToBool(jagent.at("updateRotation"), false);
+                    if (jagent.hasKey("autoRepath"))
+                        obj.navMeshAgent.autoRepath = jsonToBool(jagent.at("autoRepath"), true);
+                }
+
                 if (jo.hasKey("audioSource"))
                 {
                     const json::JSON &ja = jo.at("audioSource");
@@ -2899,6 +2969,7 @@ namespace RoninEditor
                 if (obj.physics.colliderEnabled && obj.physics.componentId == 0) obj.physics.componentId = w.allocateComponentId();
                 if (obj.rigidbody2D.enabled && obj.rigidbody2D.componentId == 0) obj.rigidbody2D.componentId = w.allocateComponentId();
                 if (obj.boxCollider2D.enabled && obj.boxCollider2D.componentId == 0) obj.boxCollider2D.componentId = w.allocateComponentId();
+                if (obj.navMeshAgent.enabled && obj.navMeshAgent.componentId == 0) obj.navMeshAgent.componentId = w.allocateComponentId();
                 if (obj.audio.enabled && obj.audio.componentId == 0) obj.audio.componentId = w.allocateComponentId();
                 if (obj.script.enabled && obj.script.componentId == 0) obj.script.componentId = w.allocateComponentId();
 
@@ -3252,6 +3323,7 @@ namespace RoninEditor
         rootObj.physics.componentId = 0;
         rootObj.rigidbody2D.componentId = 0;
         rootObj.boxCollider2D.componentId = 0;
+        rootObj.navMeshAgent.componentId = 0;
         rootObj.audio.componentId = 0;
         rootObj.script.componentId = 0;
         ensureComponentIds(rootObj);
@@ -3288,6 +3360,7 @@ namespace RoninEditor
                 childObj.physics.componentId = 0;
                 childObj.rigidbody2D.componentId = 0;
                 childObj.boxCollider2D.componentId = 0;
+                childObj.navMeshAgent.componentId = 0;
                 childObj.audio.componentId = 0;
                 childObj.script.componentId = 0;
                 ensureComponentIds(childObj);

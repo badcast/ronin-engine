@@ -11,6 +11,17 @@
 
 namespace RoninEngine::Runtime
 {
+    struct AudioClipData
+    {
+        std::vector<uint8_t> pcmData;
+        uint32_t channels = 0;
+        uint32_t sampleRate = 0;
+        int format = 0;
+        uint64_t totalFrames = 0;
+        double duration = 0.0;
+        uint32_t lengthInBytes = 0;
+    };
+
     class RoninAudio
     {
     public:

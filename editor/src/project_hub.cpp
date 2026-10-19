@@ -332,7 +332,7 @@ namespace RoninEditor
         ImGui::BulletText("SDL2: %d.%d.%d", vi.SDL_Version.major, vi.SDL_Version.minor, vi.SDL_Version.patch);
         ImGui::BulletText("SDL_image: %d.%d.%d", vi.SDL_IMG_Version.major, vi.SDL_IMG_Version.minor, vi.SDL_IMG_Version.patch);
         ImGui::BulletText("SDL_ttf: %d.%d.%d", vi.SDL_TTF_Version.major, vi.SDL_TTF_Version.minor, vi.SDL_TTF_Version.patch);
-        ImGui::BulletText("SDL_mixer: %d.%d.%d", vi.SDL_Mix_Version.major, vi.SDL_Mix_Version.minor, vi.SDL_Mix_Version.patch);
+        ImGui::BulletText("miniaudio: %d.%d.%d", vi.SDL_Mix_Version.major, vi.SDL_Mix_Version.minor, vi.SDL_Mix_Version.patch);
 
         ImGui::EndChild();
     }

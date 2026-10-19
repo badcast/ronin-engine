@@ -15,17 +15,29 @@
 
 namespace RoninEditor
 {
-    InspectorPanel::InspectorPanel() = default;
+    InspectorPanel::InspectorPanel()
+    {
+        ma_engine_config config = ma_engine_config_init();
+        if (ma_engine_init(&config, &m_editorAudioEngine) == MA_SUCCESS)
+        {
+            m_audioEngineInitialized = true;
+        }
+    }
 
     InspectorPanel::~InspectorPanel()
     {
         stopAudioPreview();
+        if (m_audioEngineInitialized)
+        {
+            ma_engine_uninit(&m_editorAudioEngine);
+            m_audioEngineInitialized = false;
+        }
     }
 
     void InspectorPanel::playAudioPreview(const std::string &clipPath)
     {
         stopAudioPreview();
-        if (clipPath.empty()) return;
+        if (clipPath.empty() || !m_audioEngineInitialized) return;
 
         std::filesystem::path fullPath = clipPath;
         if (!std::filesystem::exists(fullPath))
@@ -36,23 +48,24 @@ namespace RoninEditor
 
         if (std::filesystem::exists(fullPath))
         {
-            m_previewChunk = Mix_LoadWAV(fullPath.string().c_str());
-            if (m_previewChunk)
+            ma_result res = ma_sound_init_from_file(&m_editorAudioEngine, fullPath.string().c_str(), 0, NULL, NULL, &m_previewSound);
+            if (res == MA_SUCCESS)
             {
+                m_previewSoundActive = true;
                 m_previewPlayingPath = clipPath;
-                Mix_VolumeChunk(m_previewChunk, static_cast<int>(std::clamp(m_previewVolume, 0.0f, 1.0f) * MIX_MAX_VOLUME));
-                Mix_PlayChannel(-1, m_previewChunk, 0);
+                ma_sound_set_volume(&m_previewSound, std::clamp(m_previewVolume, 0.0f, 1.0f));
+                ma_sound_start(&m_previewSound);
             }
         }
     }
 
     void InspectorPanel::stopAudioPreview()
     {
-        if (m_previewChunk)
+        if (m_previewSoundActive)
         {
-            Mix_HaltChannel(-1);
-            Mix_FreeChunk(m_previewChunk);
-            m_previewChunk = nullptr;
+            ma_sound_stop(&m_previewSound);
+            ma_sound_uninit(&m_previewSound);
+            m_previewSoundActive = false;
             m_previewPlayingPath.clear();
         }
     }
@@ -276,6 +289,10 @@ namespace RoninEditor
         case ComponentType::BoxCollider2D:
             clone.boxCollider2D = obj.boxCollider2D;
             clone.boxCollider2D.componentId = w.allocateComponentId();
+            break;
+        case ComponentType::NavMeshAgent:
+            clone.navMeshAgent = obj.navMeshAgent;
+            clone.navMeshAgent.componentId = w.allocateComponentId();
             break;
         case ComponentType::AudioSource:
             clone.audio = obj.audio;
@@ -1121,6 +1138,109 @@ namespace RoninEditor
         }
     }
 
+    void InspectorPanel::renderNavMeshAgentComponent(EditorState &state, EditorObject &obj)
+    {
+        if (!obj.navMeshAgent.enabled) return;
+        if (obj.navMeshAgent.componentId == 0) obj.navMeshAgent.componentId = state.activeWorld().allocateComponentId();
+
+        ComponentHeaderResult hr = renderComponentHeader("NavMesh Agent (AI Pathfinding)", obj.navMeshAgent.componentId, ComponentType::NavMeshAgent, true);
+        if (hr.reset)
+        {
+            int oldId = obj.navMeshAgent.componentId;
+            obj.navMeshAgent.reset();
+            obj.navMeshAgent.enabled = true;
+            obj.navMeshAgent.componentId = oldId;
+            state.isDirty = true;
+        }
+        if (hr.remove)
+        {
+            obj.navMeshAgent.enabled = false;
+            state.isDirty = true;
+            return;
+        }
+        if (hr.copy)
+        {
+            m_clipboard.hasData = true;
+            m_clipboard.type = ComponentType::NavMeshAgent;
+            m_clipboard.navMeshAgent = obj.navMeshAgent;
+            state.logInfo("Copied NavMesh Agent [ID: " + std::to_string(obj.navMeshAgent.componentId) + "]");
+        }
+        if (hr.paste && m_clipboard.hasData && m_clipboard.type == ComponentType::NavMeshAgent)
+        {
+            int oldId = obj.navMeshAgent.componentId;
+            obj.navMeshAgent = m_clipboard.navMeshAgent;
+            obj.navMeshAgent.componentId = oldId ? oldId : state.activeWorld().allocateComponentId();
+            obj.navMeshAgent.enabled = true;
+            state.isDirty = true;
+            state.logInfo("Pasted NavMesh Agent values");
+        }
+        if (hr.duplicate)
+        {
+            m_clipboard.hasData = true;
+            m_clipboard.type = ComponentType::NavMeshAgent;
+            m_clipboard.navMeshAgent = obj.navMeshAgent;
+            duplicateComponentToNewObject(state, obj, ComponentType::NavMeshAgent, "NavMesh Agent");
+            return;
+        }
+
+        if (hr.isOpen)
+        {
+            ImGui::TextColored(ImVec4(0.2f, 0.85f, 1.0f, 1.0f), "Steering & Movement");
+            if (ImGui::DragFloat("Speed", &obj.navMeshAgent.speed, 0.1f, 0.1f, 100.0f, "%.2f units/s"))
+            {
+                state.isDirty = true;
+            }
+            if (ImGui::DragFloat("Angular Speed", &obj.navMeshAgent.angularSpeed, 1.0f, 0.0f, 1080.0f, "%.1f deg/s"))
+            {
+                state.isDirty = true;
+            }
+            if (ImGui::DragFloat("Acceleration", &obj.navMeshAgent.acceleration, 0.1f, 0.1f, 200.0f, "%.2f units/s2"))
+            {
+                state.isDirty = true;
+            }
+            if (ImGui::DragFloat("Stopping Distance", &obj.navMeshAgent.stoppingDistance, 0.05f, 0.0f, 20.0f, "%.2f units"))
+            {
+                state.isDirty = true;
+            }
+            if (ImGui::DragFloat("Agent Radius", &obj.navMeshAgent.radius, 0.05f, 0.05f, 10.0f, "%.2f units"))
+            {
+                state.isDirty = true;
+            }
+
+            ImGui::Spacing();
+            ImGui::TextColored(ImVec4(0.2f, 0.85f, 1.0f, 1.0f), "Navigation Settings");
+            if (ImGui::Checkbox("Update Rotation Along Path", &obj.navMeshAgent.updateRotation))
+            {
+                state.isDirty = true;
+            }
+            if (ImGui::Checkbox("Auto Repath On Obstacle", &obj.navMeshAgent.autoRepath))
+            {
+                state.isDirty = true;
+            }
+
+            ImGui::Spacing();
+            ImGui::TextColored(ImVec4(0.2f, 0.85f, 1.0f, 1.0f), "Target Destination");
+            drawVec2Control("Destination", obj.navMeshAgent.destination, 0.0f);
+            if (ImGui::Checkbox("Has Active Destination", &obj.navMeshAgent.hasDestination))
+            {
+                state.isDirty = true;
+            }
+
+            if (ImGui::Button("Set to Object Position"))
+            {
+                obj.navMeshAgent.destination = obj.position;
+                obj.navMeshAgent.hasDestination = true;
+                state.isDirty = true;
+            }
+            ImGui::SameLine();
+            if (ImGui::Button("Clear Destination"))
+            {
+                obj.navMeshAgent.hasDestination = false;
+                state.isDirty = true;
+            }
+        }
+    }
+
     void InspectorPanel::renderAudioSourceComponent(EditorState &state, EditorObject &obj)
     {
         if (!obj.audio.enabled) return;
@@ -1402,6 +1522,13 @@ namespace RoninEditor
                 if (obj.boxCollider2D.componentId == 0) obj.boxCollider2D.componentId = w.allocateComponentId();
                 state.isDirty = true;
             }
+            if (!obj.navMeshAgent.enabled && ImGui::MenuItem("NavMesh Agent (AI Pathfinding)"))
+            {
+                obj.navMeshAgent.reset();
+                obj.navMeshAgent.enabled = true;
+                if (obj.navMeshAgent.componentId == 0) obj.navMeshAgent.componentId = w.allocateComponentId();
+                state.isDirty = true;
+            }
             if (!obj.physics.moveControllerEnabled && ImGui::MenuItem("MoveController2D (Input)"))
             {
                 obj.physics.moveControllerEnabled = true;
@@ -1467,6 +1594,11 @@ namespace RoninEditor
                         obj.boxCollider2D = m_clipboard.boxCollider2D;
                         obj.boxCollider2D.componentId = w.allocateComponentId();
                         obj.boxCollider2D.enabled = true;
+                        break;
+                    case ComponentType::NavMeshAgent:
+                        obj.navMeshAgent = m_clipboard.navMeshAgent;
+                        obj.navMeshAgent.componentId = w.allocateComponentId();
+                        obj.navMeshAgent.enabled = true;
                         break;
                     case ComponentType::AudioSource:
                         obj.audio = m_clipboard.audio;
@@ -1925,26 +2057,45 @@ namespace RoninEditor
             ImGui::TextColored(ImVec4(1.0f, 0.75f, 0.2f, 1.0f), "Audio Clip Inspector [AudioClip]");
             ImGui::Spacing();
 
-            auto clip = RoninEngine::Runtime::AudioClip::CreateFromFile(p.string());
-            if (clip && clip->valid())
+            ma_decoder decoder;
+            if (ma_decoder_init_file(p.string().c_str(), NULL, &decoder) == MA_SUCCESS)
             {
-                double dur = clip->getDuration();
-                if (dur >= 0.0)
+                ma_uint64 frameCount = 0;
+                ma_decoder_get_length_in_pcm_frames(&decoder, &frameCount);
+                double dur = (decoder.outputSampleRate > 0) ? (static_cast<double>(frameCount) / decoder.outputSampleRate) : 0.0;
+                int mins = static_cast<int>(dur) / 60;
+                double secs = dur - mins * 60;
+                ImGui::Text("Duration: %02d:%05.2f (%.2f s)", mins, secs, dur);
+                ImGui::Text("Sample Rate: %d Hz", decoder.outputSampleRate);
+                int ch = decoder.outputChannels;
+                ImGui::Text("Channels: %s (%d)", (ch == 2 ? "Stereo" : (ch == 1 ? "Mono" : "Multi")), ch);
+                uint64_t bpf = ma_get_bytes_per_frame(decoder.outputFormat, decoder.outputChannels);
+                ImGui::Text("Buffer Size: %llu bytes", static_cast<unsigned long long>(frameCount * bpf));
+                ma_decoder_uninit(&decoder);
+            }
+            else
+            {
+                auto clip = RoninEngine::Runtime::AudioClip::CreateFromFile(p.string());
+                if (clip && clip->valid())
                 {
-                    int mins = static_cast<int>(dur) / 60;
-                    double secs = dur - mins * 60;
-                    ImGui::Text("Duration: %02d:%05.2f (%.2f s)", mins, secs, dur);
+                    double dur = clip->getDuration();
+                    if (dur >= 0.0)
+                    {
+                        int mins = static_cast<int>(dur) / 60;
+                        double secs = dur - mins * 60;
+                        ImGui::Text("Duration: %02d:%05.2f (%.2f s)", mins, secs, dur);
+                    }
+                    int freq = clip->getFrequency();
+                    if (freq > 0) ImGui::Text("Sample Rate: %d Hz", freq);
+                    int ch = clip->getChannels();
+                    if (ch > 0) ImGui::Text("Channels: %s (%d)", (ch == 2 ? "Stereo" : (ch == 1 ? "Mono" : "Multi")), ch);
+                    ImGui::Text("Buffer Size: %u bytes", clip->getLengthInBytes());
                 }
-                int freq = clip->getFrequency();
-                if (freq > 0) ImGui::Text("Sample Rate: %d Hz", freq);
-                int ch = clip->getChannels();
-                if (ch > 0) ImGui::Text("Channels: %s (%d)", (ch == 2 ? "Stereo" : (ch == 1 ? "Mono" : "Multi")), ch);
-                ImGui::Text("Buffer Size: %u bytes", clip->getLengthInBytes());
             }
             ImGui::Spacing();
 
             // Preview controls & Volume
-            bool isThisPlaying = (m_previewChunk != nullptr && m_previewPlayingPath == p.string());
+            bool isThisPlaying = (m_previewSoundActive && m_previewPlayingPath == p.string() && ma_sound_is_playing(const_cast<ma_sound*>(&m_previewSound)));
             if (!isThisPlaying)
             {
                 if (ImGui::Button("Play Preview", ImVec2(120.0f, 30.0f)))
@@ -1968,9 +2119,9 @@ namespace RoninEditor
             ImGui::SetNextItemWidth(140.0f);
             if (ImGui::SliderFloat("Volume", &m_previewVolume, 0.0f, 1.0f, "%.2f"))
             {
-                if (m_previewChunk)
+                if (m_previewSoundActive)
                 {
-                    Mix_VolumeChunk(m_previewChunk, static_cast<int>(std::clamp(m_previewVolume, 0.0f, 1.0f) * MIX_MAX_VOLUME));
+                    ma_sound_set_volume(&m_previewSound, std::clamp(m_previewVolume, 0.0f, 1.0f));
                 }
             }
 
@@ -2414,6 +2565,8 @@ namespace RoninEditor
             renderRigidbody2DComponent(state, *getObj());
             if (!getObj()) { ImGui::End(); return; }
             renderBoxCollider2DComponent(state, *getObj());
+            if (!getObj()) { ImGui::End(); return; }
+            renderNavMeshAgentComponent(state, *getObj());
             if (!getObj()) { ImGui::End(); return; }
             renderAudioSourceComponent(state, *getObj());
             if (!getObj()) { ImGui::End(); return; }

@@ -220,6 +220,35 @@ namespace RoninEditor
         }
     };
 
+    struct NavMeshAgentData
+    {
+        int componentId = 0;
+        bool enabled = false;
+        float speed = 3.5f;
+        float angularSpeed = 120.0f;
+        float acceleration = 8.0f;
+        float stoppingDistance = 0.25f;
+        float radius = 0.4f;
+        RoninEngine::Runtime::Vec2 destination = {0.0f, 0.0f};
+        bool hasDestination = false;
+        bool updateRotation = false;
+        bool autoRepath = true;
+
+        void reset()
+        {
+            enabled = false;
+            speed = 3.5f;
+            angularSpeed = 120.0f;
+            acceleration = 8.0f;
+            stoppingDistance = 0.25f;
+            radius = 0.4f;
+            destination = {0.0f, 0.0f};
+            hasDestination = false;
+            updateRotation = false;
+            autoRepath = true;
+        }
+    };
+
     struct EditorObject
     {
         int id = 0;
@@ -242,6 +271,7 @@ namespace RoninEditor
         PhysicsControllerData physics;
         Rigidbody2DData rigidbody2D;
         BoxCollider2DData boxCollider2D;
+        NavMeshAgentData navMeshAgent;
         AudioSourceData audio;
         MotionScriptData script;
     };

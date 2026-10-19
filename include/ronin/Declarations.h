@@ -102,6 +102,7 @@ namespace RoninEngine
         class Rigidbody2D;
         class BoxCollider2D;
         class CircleCollider2D;
+        class NavMeshAgent;
 
         class RoninPointer;
 
@@ -128,6 +129,7 @@ namespace RoninEngine
         using Rigidbody2DRef = Ref<Rigidbody2D>;
         using BoxCollider2DRef = Ref<BoxCollider2D>;
         using CircleCollider2DRef = Ref<CircleCollider2D>;
+        using NavMeshAgentRef = Ref<NavMeshAgent>;
         using GameObjectRef = Ref<GameObject>;
         using SpriteRef = Ref<Sprite>;
         using AudioClipRef = Ref<AudioClip>;

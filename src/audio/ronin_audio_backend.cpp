@@ -1,127 +1,175 @@
 #include <stdlib.h>
+#include <vector>
+#include <mutex>
+#include <algorithm>
 
 #include "ronin.h"
 #include "ronin_std.h"
 #include "ronin_audio.h"
+#include "miniaudio/miniaudio.h"
 
 namespace RoninEngine::Runtime
 {
+    struct ChannelSlot
+    {
+        ma_sound sound;
+        ma_audio_buffer_ref bufferRef;
+        bool initialized = false;
+        AudioClip *currentClip = nullptr;
+        float volume = 1.0f;
+    };
 
-    static int lastInitResult = 0;
+    static ma_engine g_engine;
+    static bool g_engineInitialized = false;
+    static std::vector<ChannelSlot> g_channels;
+    static std::mutex g_audioMutex;
 
-    constexpr int CHUNK_SIZE = 2048;
+    // Music
+    static ma_sound g_musicSound;
+    static ma_audio_buffer_ref g_musicBufferRef;
+    static bool g_musicInitialized = false;
+    static MusicClip *g_currentMusicClip = nullptr;
+    static float g_musicVolume = 1.0f;
 
     int RoninAudio::Init()
     {
-        int currentInits = MIX_InitFlags::MIX_INIT_OGG;
-        if((lastInitResult = (Mix_Init(currentInits))) < 1)
-            return -1;
-        if(Mix_OpenAudioDevice(MIX_DEFAULT_FREQUENCY, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS, CHUNK_SIZE, NULL, SDL_AUDIO_ALLOW_FREQUENCY_CHANGE | SDL_AUDIO_ALLOW_CHANNELS_CHANGE) != 0)
+        std::lock_guard<std::mutex> lock(g_audioMutex);
+        if (g_engineInitialized)
+            return 0;
+
+        ma_engine_config config = ma_engine_config_init();
+        ma_result result = ma_engine_init(&config, &g_engine);
+        if (result != MA_SUCCESS)
         {
-            lastInitResult = 0;
-            Mix_Quit();
+            g_engineInitialized = false;
             return -1;
         }
-        lastInitResult = 1;
+
+        g_engineInitialized = true;
+        g_channels.resize(16);
         return 0;
     }
 
     void RoninAudio::Finalize()
     {
-        if(lastInitResult == 0)
+        std::lock_guard<std::mutex> lock(g_audioMutex);
+        if (!g_engineInitialized)
             return;
-        Mix_CloseAudio();
-        Mix_Quit();
+
+        if (g_musicInitialized)
+        {
+            ma_sound_stop(&g_musicSound);
+            ma_sound_uninit(&g_musicSound);
+            ma_audio_buffer_ref_uninit(&g_musicBufferRef);
+            g_musicInitialized = false;
+            g_currentMusicClip = nullptr;
+        }
+
+        for (auto &slot : g_channels)
+        {
+            if (slot.initialized)
+            {
+                ma_sound_stop(&slot.sound);
+                ma_sound_uninit(&slot.sound);
+                ma_audio_buffer_ref_uninit(&slot.bufferRef);
+                slot.initialized = false;
+                slot.currentClip = nullptr;
+            }
+        }
+        g_channels.clear();
+
+        ma_engine_uninit(&g_engine);
+        g_engineInitialized = false;
     }
 
     bool RoninAudio::HasInit()
     {
-        return lastInitResult > 0;
+        return g_engineInitialized;
     }
 
     AudioState RoninAudio::getChannelState(int channel)
     {
-        AudioState state;
-        if(HasInit())
-        {
-            if(Mix_Playing(channel) == 1)
-                state = AudioState::Play;
-            else if(Mix_Paused(channel) == 1)
-                state = AudioState::Pause;
-            else
-                state = AudioState::Stop;
-        }
-        else
-        {
-            state = AudioState::Undefined;
-        }
-        return state;
+        std::lock_guard<std::mutex> lock(g_audioMutex);
+        if (!g_engineInitialized || channel < 0 || channel >= static_cast<int>(g_channels.size()))
+            return AudioState::Undefined;
+
+        auto &slot = g_channels[channel];
+        if (!slot.initialized)
+            return AudioState::Stop;
+
+        if (ma_sound_is_playing(&slot.sound))
+            return AudioState::Play;
+        
+        if (ma_sound_at_end(&slot.sound))
+            return AudioState::Stop;
+
+        return AudioState::Pause;
     }
 
     int RoninAudio::openChannel()
     {
-        if(!HasInit())
-            return -1;
-
-        World *world = World::GetCurrentWorld();
-        if(!world || !world->irs)
-            return -1;
-
-        auto IRS = world->irs;
-
-        int channel = -1;
-        int lastChannel;
-
-        // TODO: Optimize here, use BIT Mask for audioChannels (Replace from Bool)
-
-        // if the first state
-        if(IRS->audioChannels.empty())
+        if (!HasInit())
         {
-            // Reserve with default channels length
-            lastChannel = Mix_AllocateChannels(SDL_QUERY);
-            if(lastChannel <= 0)
-            {
-                lastChannel = MIX_CHANNELS;
-                Mix_AllocateChannels(lastChannel);
-            }
-            IRS->audioChannels.resize(lastChannel, false);
+            if (Init() != 0)
+                return -1;
         }
 
-        // find is not allocated channel in reserve
-        for(lastChannel = 0; lastChannel < IRS->audioChannels.size(); ++lastChannel)
+        World *world = World::GetCurrentWorld();
+        if (!world || !world->irs)
+            return -1;
+
+        std::lock_guard<std::mutex> lock(g_audioMutex);
+        auto &channels = world->irs->audioChannels;
+        if (channels.empty())
         {
-            // is not played channel, then grub it
-            if(!IRS->audioChannels[lastChannel])
+            channels.resize(16, false);
+            if (g_channels.size() < 16)
+                g_channels.resize(16);
+        }
+
+        int channel = -1;
+        for (int i = 0; i < static_cast<int>(channels.size()); ++i)
+        {
+            if (!channels[i])
             {
-                // Allocated
-                channel = lastChannel;
+                channel = i;
                 break;
             }
         }
 
-        // if channel is not enough, request get new allocates
-        if(channel == -1)
+        if (channel == -1)
         {
-            int currentChannels = Mix_AllocateChannels(SDL_QUERY);
-            int newReserve = Mix_AllocateChannels(currentChannels * 2);
-            IRS->audioChannels.resize(newReserve, false);
-            channel = lastChannel; // it's n-1 ( size is ) +1
+            channel = static_cast<int>(channels.size());
+            channels.resize(channel * 2, false);
+            g_channels.resize(channels.size());
         }
-        IRS->audioChannels[channel] = true;
+
+        channels[channel] = true;
         return channel;
     }
 
     bool RoninAudio::closeChannel(int channel)
     {
         World *world = World::GetCurrentWorld();
-        if(!world || !world->irs)
+        if (!world || !world->irs)
             return false;
 
+        std::lock_guard<std::mutex> lock(g_audioMutex);
         auto &channels = world->irs->audioChannels;
-        if(HasInit() && channel < channels.size() && channel > -1)
+        if (channel >= 0 && channel < static_cast<int>(channels.size()))
         {
-            Mix_HaltChannel(channel);
-            // Request Close
+            if (channel < static_cast<int>(g_channels.size()))
+            {
+                auto &slot = g_channels[channel];
+                if (slot.initialized)
+                {
+                    ma_sound_stop(&slot.sound);
+                    ma_sound_uninit(&slot.sound);
+                    ma_audio_buffer_ref_uninit(&slot.bufferRef);
+                    slot.initialized = false;
+                    slot.currentClip = nullptr;
+                }
+            }
             channels[channel] = false;
             return true;
         }
@@ -130,163 +178,279 @@ namespace RoninEngine::Runtime
 
     bool RoninAudio::resumeChannel(int channel)
     {
-        bool result;
-        if(result = (channel > -1 && HasInit()))
+        std::lock_guard<std::mutex> lock(g_audioMutex);
+        if (!g_engineInitialized || channel < 0 || channel >= static_cast<int>(g_channels.size()))
+            return false;
+
+        auto &slot = g_channels[channel];
+        if (slot.initialized && !ma_sound_is_playing(&slot.sound))
         {
-            Mix_Resume(channel);
+            ma_sound_start(&slot.sound);
+            return true;
         }
-        return result;
+        return false;
     }
 
     bool RoninAudio::setChannelState(int channel, AudioClip *clip, AudioState state, bool loop)
     {
-        bool result;
-        if(result = HasInit())
-            switch(state)
+        std::lock_guard<std::mutex> lock(g_audioMutex);
+        if (!g_engineInitialized || channel < 0 || channel >= static_cast<int>(g_channels.size()))
+            return false;
+
+        auto &slot = g_channels[channel];
+
+        switch (state)
+        {
+        case AudioState::Play:
+        {
+            if (!clip || !clip->getData() || clip->getData()->pcmData.empty())
+                return false;
+
+            AudioClipData *data = clip->getData();
+
+            // If already initialized for this clip and was paused, resume
+            if (slot.initialized && slot.currentClip == clip)
             {
-                case AudioState::Play:
-                    if(clip != nullptr && clip->mix_chunk != nullptr)
-                    {
-                        if(Mix_Paused(channel))
-                            Mix_Resume(channel);
-                        else
-                            result = (Mix_PlayChannel(channel, clip->mix_chunk, loop ? -1 : 0) != -1);
-                    }
-                    break;
-                case AudioState::Pause:
-                    Mix_Pause(channel);
-                    break;
-                case AudioState::Stop:
-                    result = Mix_HaltChannel(channel) == 0;
-                    break;
-                default:
-                    result = false;
-                    break;
+                if (ma_sound_at_end(&slot.sound))
+                {
+                    ma_sound_seek_to_pcm_frame(&slot.sound, 0);
+                }
+                ma_sound_set_looping(&slot.sound, loop ? MA_TRUE : MA_FALSE);
+                ma_sound_start(&slot.sound);
+                return true;
             }
 
-        return result;
+            // Otherwise re-initialize sound from data source
+            if (slot.initialized)
+            {
+                ma_sound_stop(&slot.sound);
+                ma_sound_uninit(&slot.sound);
+                ma_audio_buffer_ref_uninit(&slot.bufferRef);
+                slot.initialized = false;
+                slot.currentClip = nullptr;
+            }
+
+            ma_result res = ma_audio_buffer_ref_init(
+                static_cast<ma_format>(data->format),
+                data->channels,
+                data->pcmData.data(),
+                data->totalFrames,
+                &slot.bufferRef);
+            if (res != MA_SUCCESS)
+                return false;
+
+            res = ma_sound_init_from_data_source(
+                &g_engine,
+                &slot.bufferRef,
+                0,
+                NULL,
+                &slot.sound);
+            if (res != MA_SUCCESS)
+            {
+                ma_audio_buffer_ref_uninit(&slot.bufferRef);
+                return false;
+            }
+
+            slot.initialized = true;
+            slot.currentClip = clip;
+            ma_sound_set_volume(&slot.sound, slot.volume);
+            ma_sound_set_looping(&slot.sound, loop ? MA_TRUE : MA_FALSE);
+            ma_sound_start(&slot.sound);
+            return true;
+        }
+        case AudioState::Pause:
+        {
+            if (slot.initialized)
+            {
+                ma_sound_stop(&slot.sound);
+                return true;
+            }
+            return false;
+        }
+        case AudioState::Stop:
+        {
+            if (slot.initialized)
+            {
+                ma_sound_stop(&slot.sound);
+                ma_sound_seek_to_pcm_frame(&slot.sound, 0);
+                return true;
+            }
+            return false;
+        }
+        default:
+            return false;
+        }
     }
 
     void RoninAudio::setChannelVolume(int channel, float value)
     {
-        // value = Math::clamp01(value); // Mix_Volume automatically clamp volume
-        (channel > -1) && HasInit() && Mix_Volume(channel, Math::Map<float, std::uint8_t>(value, 0.f, 1.f, 0, MIX_MAX_VOLUME));
-    }
+        std::lock_guard<std::mutex> lock(g_audioMutex);
+        if (channel < 0 || channel >= static_cast<int>(g_channels.size()))
+            return;
 
-    double RoninAudio::getAudioClipDuration(AudioClip *clip)
-    {
-        if(clip == nullptr || clip->mix_chunk == nullptr)
-            return -1;
-
-        int frequency, channels;
-        Uint16 format;
-        if (Mix_QuerySpec(&frequency, &format, &channels) != 0) {
-            int bytes_per_sample = (format & 0xFF) / 8;
-            double duration = static_cast<double>(clip->mix_chunk->alen) / (frequency * channels * bytes_per_sample);
-            return duration;
+        auto &slot = g_channels[channel];
+        slot.volume = std::clamp(value, 0.0f, 1.0f);
+        if (slot.initialized)
+        {
+            ma_sound_set_volume(&slot.sound, slot.volume);
         }
-
-        return -1;
     }
 
     float RoninAudio::getChannelVolume(int channel)
     {
-        float volume;
-        if(HasInit())
-            volume = Math::Map<std::uint8_t, float>(Mix_Volume(channel, SDL_QUERY), 0, MIX_MAX_VOLUME, 0.0, 1.f);
-        else
-            volume = -1;
-        return volume;
+        std::lock_guard<std::mutex> lock(g_audioMutex);
+        if (channel < 0 || channel >= static_cast<int>(g_channels.size()))
+            return -1.0f;
+
+        return g_channels[channel].volume;
+    }
+
+    double RoninAudio::getAudioClipDuration(AudioClip *clip)
+    {
+        if (!clip)
+            return -1.0;
+        return clip->getDuration();
     }
 
     AudioState RoninAudio::getMusicState()
     {
-        AudioState state;
-        if(HasInit())
-        {
-            if(Mix_PlayingMusic())
-                state = AudioState::Play;
-            else if(Mix_PausedMusic())
-                state = AudioState::Pause;
-            else
-                state = AudioState::Stop;
-        }
-        else
-        {
-            state = AudioState::Undefined;
-        }
-        return state;
+        std::lock_guard<std::mutex> lock(g_audioMutex);
+        if (!g_engineInitialized || !g_musicInitialized)
+            return AudioState::Stop;
+
+        if (ma_sound_is_playing(&g_musicSound))
+            return AudioState::Play;
+
+        if (ma_sound_at_end(&g_musicSound))
+            return AudioState::Stop;
+
+        return AudioState::Pause;
     }
 
     bool RoninAudio::setMusicState(MusicClip *clip, AudioState state, bool loop)
     {
-        bool result;
-        if((result = HasInit()))
+        std::lock_guard<std::mutex> lock(g_audioMutex);
+        if (!g_engineInitialized)
+            return false;
+
+        switch (state)
         {
-            gscope.musicData.loops = 0; // clear loop flag
-            switch(state)
+        case AudioState::Play:
+        {
+            if (!clip || clip->pcmData.empty())
+                return false;
+
+            if (g_musicInitialized && g_currentMusicClip == clip)
             {
-                case AudioState::Play:
-                    if(clip != nullptr && clip->mix_music != nullptr)
-                    {
-                        result = Mix_PlayMusic(clip->mix_music, loop == true ? -1 : 0) == 0;
-                    }
-                    break;
-                case AudioState::Pause:
-                    Mix_PauseMusic();
-                    break;
-                case AudioState::Stop:
-                    result = Mix_HaltMusic() == 0;
-                    break;
-                default:
-                    result = false;
-                    break;
+                if (ma_sound_at_end(&g_musicSound))
+                    ma_sound_seek_to_pcm_frame(&g_musicSound, 0);
+                ma_sound_set_looping(&g_musicSound, loop ? MA_TRUE : MA_FALSE);
+                ma_sound_start(&g_musicSound);
+                return true;
             }
-            if(result)
+
+            if (g_musicInitialized)
             {
-                gscope.musicData.loops = static_cast<int>(loop);
+                ma_sound_stop(&g_musicSound);
+                ma_sound_uninit(&g_musicSound);
+                ma_audio_buffer_ref_uninit(&g_musicBufferRef);
+                g_musicInitialized = false;
+                g_currentMusicClip = nullptr;
             }
+
+            ma_result res = ma_audio_buffer_ref_init(
+                static_cast<ma_format>(clip->format),
+                clip->channels,
+                clip->pcmData.data(),
+                clip->totalFrames,
+                &g_musicBufferRef);
+            if (res != MA_SUCCESS)
+                return false;
+
+            res = ma_sound_init_from_data_source(&g_engine, &g_musicBufferRef, 0, NULL, &g_musicSound);
+            if (res != MA_SUCCESS)
+            {
+                ma_audio_buffer_ref_uninit(&g_musicBufferRef);
+                return false;
+            }
+
+            g_musicInitialized = true;
+            g_currentMusicClip = clip;
+            ma_sound_set_volume(&g_musicSound, g_musicVolume);
+            ma_sound_set_looping(&g_musicSound, loop ? MA_TRUE : MA_FALSE);
+            ma_sound_start(&g_musicSound);
+            return true;
         }
-        return result;
+        case AudioState::Pause:
+        {
+            if (g_musicInitialized)
+            {
+                ma_sound_stop(&g_musicSound);
+                return true;
+            }
+            return false;
+        }
+        case AudioState::Stop:
+        {
+            if (g_musicInitialized)
+            {
+                ma_sound_stop(&g_musicSound);
+                ma_sound_seek_to_pcm_frame(&g_musicSound, 0);
+                return true;
+            }
+            return false;
+        }
+        default:
+            return false;
+        }
     }
 
     void RoninAudio::setMusicVolume(float value)
     {
-        // set volume (clamp)
-        HasInit() && Mix_VolumeMusic(Math::Map<float, int>(value, 0.f, 1.f, 0, MIX_MAX_VOLUME));
+        std::lock_guard<std::mutex> lock(g_audioMutex);
+        g_musicVolume = std::clamp(value, 0.0f, 1.0f);
+        if (g_musicInitialized)
+        {
+            ma_sound_set_volume(&g_musicSound, g_musicVolume);
+        }
     }
 
     float RoninAudio::getMusicVolume(MusicClip *clip)
     {
-        float volume;
-        if(HasInit() && clip && clip->mix_music)
-            volume = Math::Map<int, float>(Mix_VolumeMusic(SDL_QUERY), 0, MIX_MAX_VOLUME, 0.f, 1.f);
-        else
-            volume = -1;
-        return volume;
+        (void)clip;
+        std::lock_guard<std::mutex> lock(g_audioMutex);
+        return g_musicVolume;
     }
 
     double RoninAudio::getMusicDuration(MusicClip *clip)
     {
-        if(HasInit() && clip && clip->mix_music)
-        {
-            return Mix_MusicDuration(clip->mix_music);
-        }
+        if (clip)
+            return clip->duration;
         return -1.0;
     }
 
     double RoninAudio::getMusicPosition(MusicClip *clip)
     {
-        if(HasInit() && clip && clip->mix_music)
+        (void)clip;
+        std::lock_guard<std::mutex> lock(g_audioMutex);
+        if (g_musicInitialized)
         {
-            return Mix_GetMusicPosition(clip->mix_music);
+            float cursorSeconds = 0.0f;
+            if (ma_sound_get_cursor_in_seconds(&g_musicSound, &cursorSeconds) == MA_SUCCESS)
+                return static_cast<double>(cursorSeconds);
         }
         return -1.0;
     }
 
     bool RoninAudio::setMusicPosition(double position)
     {
-        return HasInit() && (Mix_SetMusicPosition(position) == 0);
+        std::lock_guard<std::mutex> lock(g_audioMutex);
+        if (g_musicInitialized && g_currentMusicClip && g_currentMusicClip->sampleRate > 0)
+        {
+            ma_uint64 frameIndex = static_cast<ma_uint64>(position * g_currentMusicClip->sampleRate);
+            return ma_sound_seek_to_pcm_frame(&g_musicSound, frameIndex) == MA_SUCCESS;
+        }
+        return false;
     }
 
 } // namespace RoninEngine::Runtime

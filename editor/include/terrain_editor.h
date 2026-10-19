@@ -33,7 +33,7 @@ namespace RoninEditor
 
         void renderTargetSelector(EditorState &state, EditorObject *&outObj);
         void renderHeaderInfo(EditorState &state, EditorObject &obj);
-        void renderToolbarAndTabs(EditorState &state, EditorObject &obj);
+        void renderComponentControls(EditorState &state, EditorObject &obj);
         void renderBrushPanel(EditorState &state, EditorObject &obj);
         void renderFillPanel(EditorState &state, EditorObject &obj);
         void renderCollidersPanel(EditorState &state, EditorObject &obj);

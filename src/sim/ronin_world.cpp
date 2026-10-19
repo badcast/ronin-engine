@@ -1,6 +1,7 @@
 #include "ronin.h"
 #include "ronin_matrix.h"
 #include "ronin_debug.h"
+#include "ronin_audio.h"
 
 using namespace RoninEngine;
 using namespace RoninEngine::Exception;
@@ -23,9 +24,6 @@ namespace RoninEngine
             }
             if(world->irs == nullptr)
             {
-                // reallocate channels
-                Mix_AllocateChannels(MIX_CHANNELS);
-
                 RoninMemory::alloc_self(world->irs);
                 world->irs->requestUnloading = false;
                 world->irs->objects = 0;
@@ -92,10 +90,13 @@ namespace RoninEngine
             /////////////////////
             gid_resources_free(&world->irs->externalLocalResources);
 
-            // Halt all channels
-            Mix_HaltChannel(-1);
-            // reallocate channels
-            Mix_AllocateChannels(MIX_CHANNELS);
+            // Halt and close all channels
+            for(int ch = 0; ch < static_cast<int>(world->irs->audioChannels.size()); ++ch)
+            {
+                if(world->irs->audioChannels[ch])
+                    RoninAudio::closeChannel(ch);
+            }
+            world->irs->audioChannels.clear();
             // free native resources
             for(SDL_Surface *surface : world->irs->preloadeSurfaces)
             {

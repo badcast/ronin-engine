@@ -1,5 +1,6 @@
 #include "ronin.h"
 #include "ronin_debug.h"
+#include "miniaudio/miniaudio.h"
 
 using namespace RoninEngine;
 using namespace RoninEngine::Exception;
@@ -17,19 +18,11 @@ namespace RoninEngine::Runtime
         }
         for(AudioClip *ac_res : gid->gid_audio_clips)
         {
-            // Handle free
-            Mix_FreeChunk(ac_res->mix_chunk);
-
-            // 2ndHandle free
             RoninMemory::free(ac_res);
         }
         gid->gid_audio_clips.clear();
         for(MusicClip *mus_res : gid->gid_music_clips)
         {
-            // Handle free
-            Mix_FreeMusic(mus_res->mix_music);
-
-            // 2ndHandle free
             RoninMemory::free(mus_res);
         }
         gid->gid_music_clips.clear();
@@ -224,13 +217,18 @@ namespace RoninEngine::Runtime
         GroupResources *gid;
 
         auto memory = stream_to_mem(stream);
+        if (memory.first == 0 || memory.second == nullptr)
+            return RES_INVALID;
 
-        Mix_Chunk *chunk = Mix_LoadWAV_RW(SDL_RWFromMem(memory.second, memory.first), SDL_TRUE);
+        ma_decoder_config config = ma_decoder_config_init(ma_format_f32, 0, 0);
+        ma_uint64 frameCount = 0;
+        void *pFrames = nullptr;
+        ma_result res = ma_decode_memory(memory.second, memory.first, &config, &frameCount, &pFrames);
 
         // free loaded stream buffer
         RoninMemory::mem_free(memory.second);
 
-        if(chunk == nullptr)
+        if (res != MA_SUCCESS || pFrames == nullptr || frameCount == 0)
         {
             ronin_err("sound stream can not load");
             return RES_INVALID;
@@ -239,7 +237,11 @@ namespace RoninEngine::Runtime
         gid = make_resource(&id, local);
         id |= gid->gid_audio_clips.size();
 
-        gid->gid_audio_clips.emplace_back(RoninMemory::alloc<AudioClip>(chunk));
+        AudioClip *clip = RoninMemory::alloc<AudioClip>();
+        clip->initDecodedData(pFrames, frameCount, config.channels, config.sampleRate, config.format);
+        ma_free(pFrames, NULL);
+
+        gid->gid_audio_clips.emplace_back(clip);
         return id;
     }
 
@@ -249,12 +251,18 @@ namespace RoninEngine::Runtime
         GroupResources *gid;
 
         auto memory = stream_to_mem(stream);
-        Mix_Music *music = Mix_LoadMUS_RW(SDL_RWFromMem(memory.second, memory.first), SDL_TRUE);
+        if (memory.first == 0 || memory.second == nullptr)
+            return RES_INVALID;
 
-        // register to src for free
-        make_private_resource(memory.second, local);
+        ma_decoder_config config = ma_decoder_config_init(ma_format_f32, 0, 0);
+        ma_uint64 frameCount = 0;
+        void *pFrames = nullptr;
+        ma_result res = ma_decode_memory(memory.second, memory.first, &config, &frameCount, &pFrames);
 
-        if(music == nullptr)
+        // free loaded stream buffer
+        RoninMemory::mem_free(memory.second);
+
+        if (res != MA_SUCCESS || pFrames == nullptr || frameCount == 0)
         {
             SDL_LogError(SDL_LOG_CATEGORY_ERROR, "Music: can not load");
             return RES_INVALID;
@@ -263,7 +271,20 @@ namespace RoninEngine::Runtime
         gid = make_resource(&id, local);
         id |= gid->gid_music_clips.size();
 
-        gid->gid_music_clips.emplace_back(RoninMemory::alloc<MusicClip>(music));
+        MusicClip *music = RoninMemory::alloc<MusicClip>();
+        music->channels = config.channels;
+        music->sampleRate = config.sampleRate;
+        music->format = config.format;
+        music->totalFrames = frameCount;
+        size_t bpf = ma_get_bytes_per_frame(config.format, config.channels);
+        size_t totalBytes = frameCount * bpf;
+        music->lengthInBytes = static_cast<uint32_t>(totalBytes);
+        music->duration = (config.sampleRate > 0) ? (static_cast<double>(frameCount) / config.sampleRate) : 0.0;
+        music->pcmData.resize(totalBytes);
+        std::memcpy(music->pcmData.data(), pFrames, totalBytes);
+        ma_free(pFrames, NULL);
+
+        gid->gid_music_clips.emplace_back(music);
         return id;
     }
 

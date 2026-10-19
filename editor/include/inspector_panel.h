@@ -3,7 +3,7 @@
 #include "editor_state.h"
 #include <functional>
 #include <filesystem>
-#include <SDL2/SDL_mixer.h>
+#include "miniaudio/miniaudio.h"
 
 namespace RoninEditor
 {
@@ -18,6 +18,7 @@ namespace RoninEditor
         PhysicsController,
         Rigidbody2D,
         BoxCollider2D,
+        NavMeshAgent,
         AudioSource,
         MotionScript
     };
@@ -41,6 +42,7 @@ namespace RoninEditor
         PhysicsControllerData physics;
         Rigidbody2DData rigidbody2D;
         BoxCollider2DData boxCollider2D;
+        NavMeshAgentData navMeshAgent;
         AudioSourceData audio;
         MotionScriptData script;
     };
@@ -86,6 +88,7 @@ namespace RoninEditor
         void renderPhysicsComponent(EditorState &state, EditorObject &obj);
         void renderRigidbody2DComponent(EditorState &state, EditorObject &obj);
         void renderBoxCollider2DComponent(EditorState &state, EditorObject &obj);
+        void renderNavMeshAgentComponent(EditorState &state, EditorObject &obj);
         void renderAudioSourceComponent(EditorState &state, EditorObject &obj);
         void renderMotionScriptComponent(EditorState &state, EditorObject &obj);
         void renderAddComponentMenu(EditorState &state, EditorObject &obj);
@@ -110,8 +113,11 @@ namespace RoninEditor
         uint32_t m_pendingAudioAssetId = 0;
         char m_pickerFilter[128] = "";
 
-        // Audio preview playback
-        Mix_Chunk *m_previewChunk = nullptr;
+        // Audio preview playback via miniaudio
+        ma_engine m_editorAudioEngine;
+        bool m_audioEngineInitialized = false;
+        ma_sound m_previewSound;
+        bool m_previewSoundActive = false;
         std::string m_previewPlayingPath;
         float m_previewVolume = 0.8f;
     };

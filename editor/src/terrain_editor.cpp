@@ -32,10 +32,30 @@ namespace RoninEditor
         {
             ImGui::Spacing();
             ImGui::TextColored(ImVec4(0.85f, 0.70f, 0.30f, 1.0f), "No active Terrain2D GameObject selected.");
-            ImGui::TextDisabled("Select a GameObject with a Terrain2D component or create a new terrain below.");
+            ImGui::TextDisabled("Select a GameObject or add a Terrain2D component below.");
             ImGui::Spacing();
 
-            if (ImGui::Button("+ Create New Terrain 2D", ImVec2(220.0f, 32.0f)))
+            EditorObject *curSel = state.findObject(state.selectedObjectId);
+            if (curSel && !curSel->terrain.enabled)
+            {
+                ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.2f, 0.55f, 0.35f, 1.0f));
+                if (ImGui::Button(("+ Add Terrain2D Component to '" + curSel->name + "'").c_str(), ImVec2(340.0f, 32.0f)))
+                {
+                    curSel->terrain.enabled = true;
+                    curSel->terrain.width = 16;
+                    curSel->terrain.length = 8;
+                    curSel->terrain.cellScale = 1.0f;
+                    curSel->terrain.ensureGridInitialized(0);
+                    m_selectedObjId = curSel->id;
+                    state.selectedObjectId = curSel->id;
+                    state.isDirty = true;
+                    state.logInfo("Added Terrain2D component to " + curSel->name);
+                }
+                ImGui::PopStyleColor();
+                ImGui::Spacing();
+            }
+
+            if (ImGui::Button("+ Create New Terrain 2D GameObject", ImVec2(280.0f, 32.0f)))
             {
                 auto &newObj = state.createObject("Terrain 2D");
                 newObj.terrain.enabled = true;
@@ -51,37 +71,59 @@ namespace RoninEditor
             return;
         }
 
-        // Two-column layout: Left column = Tools & Properties (320px), Right column = Interactive Canvas
+        // Two-column layout: Left column = Tools & Properties (340px), Right column = Interactive Canvas
         renderHeaderInfo(state, *terrainObj);
         ImGui::Separator();
 
-        float leftColWidth = 320.0f;
+        float leftColWidth = 340.0f;
         ImGui::BeginChild("TerrainToolsPanel", ImVec2(leftColWidth, 0.0f), true);
-        renderToolbarAndTabs(state, *terrainObj);
 
-        switch (m_activeTab)
+        // Component Management Bar: Add / Delete Terrain2D component
+        renderComponentControls(state, *terrainObj);
+        ImGui::Separator();
+
+        // 1. Surface & Paint (Collapsible)
+        if (ImGui::CollapsingHeader("Surface & Brush Paint", ImGuiTreeNodeFlags_DefaultOpen))
         {
-            case 0:
-                renderBrushPanel(state, *terrainObj);
-                break;
-            case 1:
-                renderFillPanel(state, *terrainObj);
-                break;
-            case 2:
-                renderCollidersPanel(state, *terrainObj);
-                break;
-            case 3:
-                renderNavMeshPanel(state, *terrainObj);
-                break;
-            case 4:
-                renderProceduralPanel(state, *terrainObj);
-                break;
-            case 5:
-                renderSettingsPanel(state, *terrainObj);
-                break;
-            default:
-                break;
+            renderBrushPanel(state, *terrainObj);
+            ImGui::Spacing();
         }
+
+        // 2. Bucket & Fill (Collapsible)
+        if (ImGui::CollapsingHeader("Bucket & Flood Fill"))
+        {
+            renderFillPanel(state, *terrainObj);
+            ImGui::Spacing();
+        }
+
+        // 3. Colliders & Obstacles (Collapsible)
+        if (ImGui::CollapsingHeader("Colliders & Obstacles"))
+        {
+            renderCollidersPanel(state, *terrainObj);
+            ImGui::Spacing();
+        }
+
+        // 4. NavMesh & AI Pathfinding (Collapsible)
+        if (ImGui::CollapsingHeader("NavMesh & AI Pathfinding"))
+        {
+            renderNavMeshPanel(state, *terrainObj);
+            ImGui::Spacing();
+        }
+
+        // 5. Procedural Terrain Generator (Collapsible)
+        if (ImGui::CollapsingHeader("Procedural Generation"))
+        {
+            renderProceduralPanel(state, *terrainObj);
+            ImGui::Spacing();
+        }
+
+        // 6. Dimensions & Settings (Collapsible)
+        if (ImGui::CollapsingHeader("Dimensions & Settings"))
+        {
+            renderSettingsPanel(state, *terrainObj);
+            ImGui::Spacing();
+        }
+
         ImGui::EndChild();
 
         ImGui::SameLine();
@@ -191,32 +233,61 @@ namespace RoninEditor
                             obj.terrain.paintStrokes.size());
     }
 
-    void TerrainEditorPanel::renderToolbarAndTabs(EditorState &state, EditorObject &obj)
+    void TerrainEditorPanel::renderComponentControls(EditorState &state, EditorObject &obj)
     {
-        (void)obj;
-        const char *tabs[] = {"Brush", "Fill", "Colliders", "NavMesh", "Procedural", "Settings"};
-        for (int i = 0; i < 6; ++i)
+        ImGui::TextColored(ImVec4(0.4f, 0.8f, 1.0f, 1.0f), "Terrain2D Component: %s", obj.name.c_str());
+
+        float availWidth = ImGui::GetContentRegionAvail().x;
+        float btnWidth = (availWidth - 8.0f) * 0.5f;
+
+        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.20f, 0.50f, 0.35f, 1.0f));
+        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.25f, 0.60f, 0.42f, 1.0f));
+        if (ImGui::Button("+ Add Sub-Layer", ImVec2(btnWidth, 24.0f)))
         {
-            bool active = (m_activeTab == i);
-            if (active)
-                ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.28f, 0.55f, 0.85f, 1.0f));
+            TerrainPaintStroke stroke;
+            stroke.color = state.terrainBrushColor;
+            stroke.radiusCells = state.terrainBrushRadius;
+            stroke.hardness = state.terrainBrushHardness;
+            stroke.opacity = state.terrainBrushOpacity;
+            stroke.materialId = state.terrainActiveMaterial;
+            stroke.uvPos = {0.5f, 0.5f};
+            obj.terrain.paintStrokes.push_back(stroke);
+            state.isDirty = true;
+            state.logInfo("Added new stroke layer to Terrain2D");
+        }
+        ImGui::PopStyleColor(2);
 
-            if (ImGui::Button(tabs[i], ImVec2(48.0f, 26.0f)))
+        ImGui::SameLine();
+
+        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.60f, 0.22f, 0.22f, 0.85f));
+        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.75f, 0.25f, 0.25f, 1.0f));
+        if (ImGui::Button("- Delete Component", ImVec2(btnWidth, 24.0f)))
+        {
+            ImGui::OpenPopup("ConfirmDeleteTerrainModal");
+        }
+        ImGui::PopStyleColor(2);
+
+        if (ImGui::BeginPopupModal("ConfirmDeleteTerrainModal", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+        {
+            ImGui::Text("Are you sure you want to remove the Terrain2D component from '%s'?", obj.name.c_str());
+            ImGui::TextDisabled("This will remove all cells, colliders, and paint strokes.");
+            ImGui::Spacing();
+            if (ImGui::Button("Yes, Delete", ImVec2(120.0f, 26.0f)))
             {
-                m_activeTab = i;
-                if (i == 0)
-                    state.terrainBrushTool = TerrainBrushTool::FreehandSurfaceBrush;
-                else if (i == 1)
-                    state.terrainBrushTool = TerrainBrushTool::BucketFill;
-                else if (i == 2)
-                    state.terrainBrushTool = TerrainBrushTool::PaintCollider;
+                obj.terrain.enabled = false;
+                obj.terrain.cellColliders.clear();
+                obj.terrain.cellMaterials.clear();
+                obj.terrain.paintStrokes.clear();
+                state.isDirty = true;
+                state.logInfo("Removed Terrain2D component from GameObject '" + obj.name + "'");
+                ImGui::CloseCurrentPopup();
             }
-
-            if (active)
-                ImGui::PopStyleColor();
-
-            if (i < 5)
-                ImGui::SameLine();
+            ImGui::SameLine();
+            if (ImGui::Button("Cancel", ImVec2(100.0f, 26.0f)))
+            {
+                ImGui::CloseCurrentPopup();
+            }
+            ImGui::EndPopup();
         }
         ImGui::Spacing();
     }
@@ -337,7 +408,32 @@ namespace RoninEditor
         }
 
         ImGui::Spacing();
-        if (ImGui::Button("Clear Freehand Paint Strokes", ImVec2(-1.0f, 26.0f)))
+        float halfW = (ImGui::GetContentRegionAvail().x - 6.0f) * 0.5f;
+        if (ImGui::Button("+ Add Stroke Layer", ImVec2(halfW, 24.0f)))
+        {
+            TerrainPaintStroke stroke;
+            stroke.color = state.terrainBrushColor;
+            stroke.radiusCells = state.terrainBrushRadius;
+            stroke.hardness = state.terrainBrushHardness;
+            stroke.opacity = state.terrainBrushOpacity;
+            stroke.materialId = state.terrainActiveMaterial;
+            stroke.uvPos = {0.5f, 0.5f};
+            obj.terrain.paintStrokes.push_back(stroke);
+            state.isDirty = true;
+            state.logInfo("Added stroke layer.");
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("- Delete Last Stroke", ImVec2(halfW, 24.0f)))
+        {
+            if (!obj.terrain.paintStrokes.empty())
+            {
+                obj.terrain.paintStrokes.pop_back();
+                state.isDirty = true;
+                state.logInfo("Removed last stroke.");
+            }
+        }
+
+        if (ImGui::Button("- Delete All Strokes (Clear Canvas)", ImVec2(-1.0f, 26.0f)))
         {
             obj.terrain.paintStrokes.clear();
             state.isDirty = true;
@@ -414,7 +510,16 @@ namespace RoninEditor
             state.logInfo("Applied perimeter border colliders.");
         }
 
-        if (ImGui::Button("Clear All Colliders", ImVec2(-1.0f, 26.0f)))
+        float halfColW = (ImGui::GetContentRegionAvail().x - 6.0f) * 0.5f;
+        if (ImGui::Button("+ Fill All Colliders", ImVec2(halfColW, 26.0f)))
+        {
+            std::fill(obj.terrain.cellColliders.begin(), obj.terrain.cellColliders.end(), true);
+            state.updateNavMeshPreview(true, false);
+            state.isDirty = true;
+            state.logInfo("Filled all terrain colliders.");
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("- Delete All Colliders", ImVec2(halfColW, 26.0f)))
         {
             std::fill(obj.terrain.cellColliders.begin(), obj.terrain.cellColliders.end(), false);
             state.updateNavMeshPreview(true, false);
@@ -593,6 +698,16 @@ namespace RoninEditor
             obj.terrain.tileColor.a = static_cast<uint8_t>(col[3] * 255.0f);
             state.isDirty = true;
         }
+
+        ImGui::Spacing();
+        ImGui::Separator();
+        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.60f, 0.22f, 0.22f, 0.85f));
+        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.75f, 0.25f, 0.25f, 1.0f));
+        if (ImGui::Button("- Delete Terrain2D Component", ImVec2(-1.0f, 26.0f)))
+        {
+            ImGui::OpenPopup("ConfirmDeleteTerrainModal");
+        }
+        ImGui::PopStyleColor(2);
     }
 
     void TerrainEditorPanel::renderInteractiveCanvas(EditorState &state, EditorObject &obj)

@@ -2,6 +2,7 @@
 #include "ronin_std.h"
 #include "ronin_matrix.h"
 #include "ronin_audio.h"
+#include "miniaudio/miniaudio.h"
 #include "ronin_debug.h"
 #include "ronin_splash_world.h"
 #include "ronin_render_cache.h"
@@ -351,7 +352,7 @@ namespace RoninEngine
 
         internal_input_release();
 
-        Mix_Quit();
+        RoninAudio::Finalize();
         IMG_Quit();
         TTF_Quit();
         SDL_Quit();
@@ -958,7 +959,9 @@ namespace RoninEngine
         SDL_memcpy(&version.SDL_Version, &linked, sizeof(Version));
         SDL_memcpy(&version.SDL_TTF_Version, TTF_Linked_Version(), sizeof(Version));
         SDL_memcpy(&version.SDL_IMG_Version, IMG_Linked_Version(), sizeof(Version));
-        SDL_memcpy(&version.SDL_Mix_Version, Mix_Linked_Version(), sizeof(Version));
+        ma_uint32 ma_maj = 0, ma_min = 0, ma_rev = 0;
+        ma_version(&ma_maj, &ma_min, &ma_rev);
+        version.SDL_Mix_Version = {static_cast<std::uint8_t>(ma_maj), static_cast<std::uint8_t>(ma_min), static_cast<std::uint8_t>(ma_rev)};
         version.SDL_GFX_Version = {SDL2_GFXPRIMITIVES_MAJOR, SDL2_GFXPRIMITIVES_MINOR, SDL2_GFXPRIMITIVES_MICRO};
 
         return version;
