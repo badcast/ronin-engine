@@ -8,9 +8,16 @@
 #define _RONIN_AUDIO_H_
 
 #include "ronin.h"
+#include "miniaudio/miniaudio.h"
 
 namespace RoninEngine::Runtime
 {
+    /**
+     * Decode an in-memory audio file into f32 PCM (miniaudio output contract: free with ma_free).
+     * Handles Ogg Vorbis through stb_vorbis, everything else through ma_decode_memory.
+     */
+    ma_result ronin_decode_memory(const void *data, size_t size, ma_decoder_config *config, ma_uint64 *frameCount, void **frames);
+
     struct AudioClipData
     {
         std::vector<uint8_t> pcmData;

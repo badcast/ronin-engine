@@ -75,7 +75,7 @@ namespace RoninEditor
                 // Circular arc with arrow
                 float r = std::min(rw, rh) * 0.44f;
                 drawList->PathArcTo(ImVec2(cx, cy), r, 0.3f, 4.8f, 16);
-                drawList->PathStroke(color, false, 1.8f);
+                drawList->PathStroke(color, 1.8f);
                 // Arrowhead at top
                 float ax = cx + r * std::cos(0.3f);
                 float ay = cy + r * std::sin(0.3f);
@@ -85,7 +85,7 @@ namespace RoninEditor
             case IconType::Scale:
             {
                 // Inner square and outer square corner
-                drawList->AddRect(ImVec2(x0 + 1.0f, y0 + 1.0f), ImVec2(x1 - 1.0f, y1 - 1.0f), color, 0.0f, 0, 1.5f);
+                drawList->AddRect(ImVec2(x0 + 1.0f, y0 + 1.0f), ImVec2(x1 - 1.0f, y1 - 1.0f), color, 0.0f, 1.5f);
                 drawList->AddRectFilled(ImVec2(x1 - 4.5f, y0), ImVec2(x1, y0 + 4.5f), color);
                 drawList->AddRectFilled(ImVec2(x0, y1 - 4.5f), ImVec2(x0 + 4.5f, y1), color);
                 drawList->AddRectFilled(ImVec2(x1 - 4.5f, y1 - 4.5f), ImVec2(x1, y1), color);
@@ -101,7 +101,7 @@ namespace RoninEditor
                     ImVec2(x0 + rw * 0.80f, y0 + rh * 0.30f),
                     ImVec2(x1, y1)
                 };
-                drawList->AddPolyline(pts, 5, color, false, 1.6f);
+                drawList->AddPolyline(pts, 5, color, 1.6f);
                 drawList->AddLine(ImVec2(x0, y1), ImVec2(x1, y1), color, 1.6f);
                 break;
             }
@@ -110,7 +110,7 @@ namespace RoninEditor
                 // Counter-clockwise reload arrow
                 float r = std::min(rw, rh) * 0.42f;
                 drawList->PathArcTo(ImVec2(cx, cy), r, 0.6f, 5.2f, 16);
-                drawList->PathStroke(color, false, 1.6f);
+                drawList->PathStroke(color, 1.6f);
                 float ax = cx + r * std::cos(0.6f);
                 float ay = cy + r * std::sin(0.6f);
                 drawList->AddTriangleFilled(ImVec2(ax, ay), ImVec2(ax + 3.5f, ay + 3.0f), ImVec2(ax + 4.0f, ay - 2.0f), color);
@@ -155,14 +155,14 @@ namespace RoninEditor
             case IconType::Sprite:
             {
                 // Framed picture with mountain & sun
-                drawList->AddRect(ImVec2(x0, y0), ImVec2(x1, y1), color, 2.0f, 0, 1.5f);
+                drawList->AddRect(ImVec2(x0, y0), ImVec2(x1, y1), color, 2.0f, 1.5f);
                 drawList->AddCircleFilled(ImVec2(x0 + rw * 0.30f, y0 + rh * 0.35f), rw * 0.12f, color);
                 ImVec2 mPts[3] = {
                     ImVec2(x0 + 2.0f, y1 - 2.0f),
                     ImVec2(x0 + rw * 0.55f, y0 + rh * 0.45f),
                     ImVec2(x1 - 2.0f, y1 - 2.0f)
                 };
-                drawList->AddPolyline(mPts, 3, color, false, 1.4f);
+                drawList->AddPolyline(mPts, 3, color, 1.4f);
                 break;
             }
             case IconType::Audio:
@@ -178,9 +178,9 @@ namespace RoninEditor
                 drawList->AddConvexPolyFilled(horn, 3, color);
                 // Sound waves
                 drawList->PathArcTo(ImVec2(x0 + hw * 0.5f, cy), rw * 0.38f, -0.7f, 0.7f, 8);
-                drawList->PathStroke(color, false, 1.4f);
+                drawList->PathStroke(color, 1.4f);
                 drawList->PathArcTo(ImVec2(x0 + hw * 0.5f, cy), rw * 0.55f, -0.6f, 0.6f, 8);
-                drawList->PathStroke(color, false, 1.4f);
+                drawList->PathStroke(color, 1.4f);
                 break;
             }
             case IconType::Camera:
@@ -222,7 +222,7 @@ namespace RoninEditor
             {
                 // Trashcan with lid
                 drawList->AddRectFilled(ImVec2(x0 + 1.0f, y0), ImVec2(x1 - 1.0f, y0 + 2.5f), color, 1.0f);
-                drawList->AddRect(ImVec2(x0 + 3.0f, y0 + 3.5f), ImVec2(x1 - 3.0f, y1), color, 1.5f, 0, 1.4f);
+                drawList->AddRect(ImVec2(x0 + 3.0f, y0 + 3.5f), ImVec2(x1 - 3.0f, y1), color, 1.5f, 1.4f);
                 drawList->AddLine(ImVec2(cx - 2.5f, y0 + 6.0f), ImVec2(cx - 2.5f, y1 - 3.0f), color, 1.2f);
                 drawList->AddLine(ImVec2(cx + 2.5f, y0 + 6.0f), ImVec2(cx + 2.5f, y1 - 3.0f), color, 1.2f);
                 break;
@@ -238,7 +238,7 @@ namespace RoninEditor
             case IconType::Texture:
             {
                 // Framed bitmap texture with 2x2 checkerboard pattern
-                drawList->AddRect(ImVec2(x0, y0), ImVec2(x1, y1), color, 2.0f, 0, 1.5f);
+                drawList->AddRect(ImVec2(x0, y0), ImVec2(x1, y1), color, 2.0f, 1.5f);
                 float mx = (x0 + x1) * 0.5f;
                 float my = (y0 + y1) * 0.5f;
                 drawList->AddRectFilled(ImVec2(x0 + 2.0f, y0 + 2.0f), ImVec2(mx, my), color);
@@ -274,7 +274,7 @@ namespace RoninEditor
                 };
                 ImU32 rightCol = (color & 0x00FFFFFF) | (static_cast<ImU32>(static_cast<float>((color >> 24) & 0xFF) * 0.55f) << 24);
                 drawList->AddConvexPolyFilled(rightPts, 4, rightCol);
-                drawList->AddPolyline(topPts, 4, IM_COL32(255, 255, 255, 180), true, 1.0f);
+                drawList->AddPolyline(topPts, 4, IM_COL32(255, 255, 255, 180), 1.0f, ImDrawFlags_Closed);
                 break;
             }
             case IconType::Code:
@@ -322,7 +322,7 @@ namespace RoninEditor
             case IconType::Video:
             {
                 // Film frame rectangle with play triangle
-                drawList->AddRect(ImVec2(x0, y0), ImVec2(x1, y1), color, 2.0f, 0, 1.5f);
+                drawList->AddRect(ImVec2(x0, y0), ImVec2(x1, y1), color, 2.0f, 1.5f);
                 // Sprocket notches
                 float notchH = rh * 0.18f;
                 drawList->AddRectFilled(ImVec2(x0, y0 + rh * 0.15f), ImVec2(x0 + 2.5f, y0 + rh * 0.15f + notchH), color);
@@ -366,7 +366,7 @@ namespace RoninEditor
                 // Circular reload arrow
                 float r = std::min(rw, rh) * 0.42f;
                 drawList->PathArcTo(ImVec2(cx, cy), r, 0.6f, 5.2f, 16);
-                drawList->PathStroke(color, false, 1.8f);
+                drawList->PathStroke(color, 1.8f);
                 float ax = cx + r * std::cos(0.6f);
                 float ay = cy + r * std::sin(0.6f);
                 drawList->AddTriangleFilled(ImVec2(ax, ay), ImVec2(ax + 3.5f, ay + 3.0f), ImVec2(ax + 4.0f, ay - 2.0f), color);

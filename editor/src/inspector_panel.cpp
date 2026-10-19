@@ -2619,23 +2619,45 @@ namespace RoninEditor
             ImGui::TextColored(ImVec4(0.6f, 0.8f, 1.0f, 1.0f), "TextStream / Data Stream Inspector [TextStream]");
             ImGui::Spacing();
 
-            std::vector<std::string> lines = RoninEngine::Runtime::TextStream::ReadLines(p.string());
-            ImGui::Text("Total lines: %zu", lines.size());
+            struct CachedTextStreamInfo
+            {
+                std::filesystem::path path;
+                std::filesystem::file_time_type lastWriteTime{};
+                std::vector<std::string> previewLines;
+                size_t totalLines = 0;
+                bool valid = false;
+            };
+            static CachedTextStreamInfo s_cachedTextStream;
+
+            std::error_code ec;
+            auto curTime = std::filesystem::last_write_time(p, ec);
+            if (!s_cachedTextStream.valid || s_cachedTextStream.path != p || (!ec && s_cachedTextStream.lastWriteTime != curTime))
+            {
+                s_cachedTextStream = CachedTextStreamInfo{};
+                s_cachedTextStream.path = p;
+                s_cachedTextStream.lastWriteTime = curTime;
+                std::vector<std::string> lines = RoninEngine::Runtime::TextStream::ReadLines(p.string());
+                s_cachedTextStream.totalLines = lines.size();
+                size_t previewCount = std::min<size_t>(lines.size(), 40);
+                s_cachedTextStream.previewLines.assign(lines.begin(), lines.begin() + previewCount);
+                s_cachedTextStream.valid = true;
+            }
+
+            ImGui::Text("Total lines: %zu", s_cachedTextStream.totalLines);
             ImGui::Spacing();
 
             if (ImGui::CollapsingHeader("Text Content Preview", ImGuiTreeNodeFlags_DefaultOpen))
             {
                 ImGui::BeginChild("TextStreamPreview", ImVec2(0, 180), true);
-                size_t previewCount = std::min<size_t>(lines.size(), 30);
-                for (size_t i = 0; i < previewCount; ++i)
+                for (size_t i = 0; i < s_cachedTextStream.previewLines.size(); ++i)
                 {
                     ImGui::TextDisabled("%3zu: ", i + 1);
                     ImGui::SameLine();
-                    ImGui::TextUnformatted(lines[i].c_str());
+                    ImGui::TextUnformatted(s_cachedTextStream.previewLines[i].c_str());
                 }
-                if (lines.size() > 30)
+                if (s_cachedTextStream.totalLines > s_cachedTextStream.previewLines.size())
                 {
-                    ImGui::TextDisabled("... (%zu more lines)", lines.size() - 30);
+                    ImGui::TextDisabled("... (%zu more lines)", s_cachedTextStream.totalLines - s_cachedTextStream.previewLines.size());
                 }
                 ImGui::EndChild();
             }
@@ -2653,51 +2675,117 @@ namespace RoninEditor
             ImGui::TextColored(ImVec4(1.0f, 0.5f, 0.8f, 1.0f), "Prefab Inspector [Prefab]");
             ImGui::Spacing();
 
-            std::ifstream ifs(p);
-            if (ifs.is_open())
+            struct CachedPrefabInfo
             {
-                std::stringstream ss;
-                ss << ifs.rdbuf();
-                try {
-                    auto jpref = nlohmann::json::parse(ss.str(), nullptr, false);
-                    if (!jpref.is_discarded() && jpref.is_object())
-                    {
-                        nlohmann::json rootJson;
-                        if (jpref.contains("rootObject")) rootJson = jpref["rootObject"];
-                        else if (jpref.contains("object")) rootJson = jpref["object"];
-                        else rootJson = jpref;
+                std::filesystem::path path;
+                std::filesystem::file_time_type lastWriteTime{};
+                std::string rootName;
+                std::string tag;
+                int layer = 0;
+                std::vector<std::string> componentTypes;
+                std::vector<std::string> childNames;
+                size_t totalChildren = 0;
+                bool valid = false;
+            };
+            static CachedPrefabInfo s_cachedPrefab;
 
-                        if (rootJson.contains("name") && rootJson["name"].is_string())
-                            ImGui::Text("Root GameObject: %s", rootJson["name"].get<std::string>().c_str());
-                        if (rootJson.contains("tag") && rootJson["tag"].is_string())
-                            ImGui::Text("Tag: %s", rootJson["tag"].get<std::string>().c_str());
-                        if (rootJson.contains("layer") && rootJson["layer"].is_number())
-                            ImGui::Text("Layer: %d", rootJson["layer"].get<int>());
+            std::error_code ec;
+            auto curTime = std::filesystem::last_write_time(p, ec);
+            if (!s_cachedPrefab.valid || s_cachedPrefab.path != p || (!ec && s_cachedPrefab.lastWriteTime != curTime))
+            {
+                s_cachedPrefab = CachedPrefabInfo{};
+                s_cachedPrefab.path = p;
+                s_cachedPrefab.lastWriteTime = curTime;
 
-                        if (rootJson.contains("components") && rootJson["components"].is_array())
+                std::ifstream ifs(p);
+                if (ifs.is_open())
+                {
+                    try {
+                        auto jpref = nlohmann::json::parse(ifs, nullptr, false);
+                        if (!jpref.is_discarded() && jpref.is_object())
                         {
-                            ImGui::Spacing();
-                            ImGui::TextDisabled("Root Components:");
-                            for (const auto &c : rootJson["components"])
+                            nlohmann::json rootJson;
+                            if (jpref.contains("rootObject") && jpref.at("rootObject").is_object()) rootJson = jpref.at("rootObject");
+                            else if (jpref.contains("object") && jpref.at("object").is_object()) rootJson = jpref.at("object");
+                            else rootJson = jpref;
+
+                            if (rootJson.contains("name") && rootJson["name"].is_string())
+                                s_cachedPrefab.rootName = rootJson["name"].get<std::string>();
+                            if (rootJson.contains("tag") && rootJson["tag"].is_string())
+                                s_cachedPrefab.tag = rootJson["tag"].get<std::string>();
+                            if (rootJson.contains("layer") && rootJson["layer"].is_number())
+                                s_cachedPrefab.layer = rootJson["layer"].get<int>();
+
+                            if (rootJson.contains("components") && rootJson["components"].is_array())
                             {
-                                if (c.is_object() && c.contains("type") && c["type"].is_string())
-                                    ImGui::BulletText("%s", c["type"].get<std::string>().c_str());
+                                for (const auto &c : rootJson["components"])
+                                {
+                                    if (c.is_object() && c.contains("type") && c["type"].is_string())
+                                        s_cachedPrefab.componentTypes.push_back(c["type"].get<std::string>());
+                                }
                             }
+
+                            if (jpref.contains("children") && jpref["children"].is_array())
+                            {
+                                s_cachedPrefab.totalChildren = jpref["children"].size();
+                                size_t maxPreview = std::min<size_t>(s_cachedPrefab.totalChildren, 100);
+                                s_cachedPrefab.childNames.reserve(maxPreview);
+                                for (size_t ci = 0; ci < maxPreview; ++ci)
+                                {
+                                    const auto &c = jpref["children"][ci];
+                                    if (c.is_object() && c.contains("name") && c["name"].is_string())
+                                        s_cachedPrefab.childNames.push_back(c["name"].get<std::string>());
+                                }
+                            }
+                            s_cachedPrefab.valid = true;
                         }
+                    } catch (...) {}
+                }
+            }
 
-                        if (jpref.contains("children") && jpref["children"].is_array())
+            if (s_cachedPrefab.valid)
+            {
+                if (!s_cachedPrefab.rootName.empty())
+                    ImGui::Text("Root GameObject: %s", s_cachedPrefab.rootName.c_str());
+                if (!s_cachedPrefab.tag.empty())
+                    ImGui::Text("Tag: %s", s_cachedPrefab.tag.c_str());
+                ImGui::Text("Layer: %d", s_cachedPrefab.layer);
+
+                if (!s_cachedPrefab.componentTypes.empty())
+                {
+                    ImGui::Spacing();
+                    ImGui::TextDisabled("Root Components (%zu):", s_cachedPrefab.componentTypes.size());
+                    for (const auto &cType : s_cachedPrefab.componentTypes)
+                    {
+                        ImGui::BulletText("%s", cType.c_str());
+                    }
+                }
+
+                if (s_cachedPrefab.totalChildren > 0)
+                {
+                    ImGui::Spacing();
+                    ImGui::Text("Children Hierarchy (%zu objects):", s_cachedPrefab.totalChildren);
+                    if (s_cachedPrefab.totalChildren > 8)
+                    {
+                        ImGui::BeginChild("PrefabChildrenScroll", ImVec2(0, 140), true);
+                        for (const auto &cName : s_cachedPrefab.childNames)
                         {
-                            size_t childCount = jpref["children"].size();
-                            ImGui::Spacing();
-                            ImGui::Text("Children Hierarchy (%zu objects):", childCount);
-                            for (const auto &c : jpref["children"])
-                            {
-                                if (c.is_object() && c.contains("name") && c["name"].is_string())
-                                    ImGui::BulletText("%s", c["name"].get<std::string>().c_str());
-                            }
+                            ImGui::BulletText("%s", cName.c_str());
+                        }
+                        if (s_cachedPrefab.totalChildren > s_cachedPrefab.childNames.size())
+                        {
+                            ImGui::TextDisabled("... and %zu more objects", s_cachedPrefab.totalChildren - s_cachedPrefab.childNames.size());
+                        }
+                        ImGui::EndChild();
+                    }
+                    else
+                    {
+                        for (const auto &cName : s_cachedPrefab.childNames)
+                        {
+                            ImGui::BulletText("%s", cName.c_str());
                         }
                     }
-                } catch (...) {}
+                }
             }
 
             ImGui::Spacing();
@@ -2716,15 +2804,46 @@ namespace RoninEditor
             ImGui::TextColored(ImVec4(0.7f, 0.9f, 0.4f, 1.0f), "Terrain Asset Inspector [Terrain]");
             ImGui::Spacing();
 
-            Terrain2DData previewTer;
-            if (state.loadTerrainAsset(previewTer, p.string()))
+            struct CachedTerrainPreview
             {
-                ImGui::Text("Grid Size: %d x %d (%d tiles)", previewTer.width, previewTer.length, previewTer.width * previewTer.length);
-                ImGui::Text("Cell Scale: %.2f units", previewTer.cellScale);
-                ImGui::Text("Painted Strokes: %zu", previewTer.paintStrokes.size());
-                int collidersCount = 0;
-                for (bool c : previewTer.cellColliders) if (c) collidersCount++;
-                ImGui::Text("Active Colliders: %d", collidersCount);
+                std::filesystem::path path;
+                std::filesystem::file_time_type lastWriteTime{};
+                int width = 0;
+                int length = 0;
+                float cellScale = 1.0f;
+                size_t paintStrokes = 0;
+                int activeColliders = 0;
+                bool valid = false;
+            };
+            static CachedTerrainPreview s_cachedTerrain;
+
+            std::error_code ec;
+            auto curTime = std::filesystem::last_write_time(p, ec);
+            if (!s_cachedTerrain.valid || s_cachedTerrain.path != p || (!ec && s_cachedTerrain.lastWriteTime != curTime))
+            {
+                s_cachedTerrain = CachedTerrainPreview{};
+                s_cachedTerrain.path = p;
+                s_cachedTerrain.lastWriteTime = curTime;
+                Terrain2DData previewTer;
+                if (state.loadTerrainAsset(previewTer, p.string()))
+                {
+                    s_cachedTerrain.width = previewTer.width;
+                    s_cachedTerrain.length = previewTer.length;
+                    s_cachedTerrain.cellScale = previewTer.cellScale;
+                    s_cachedTerrain.paintStrokes = previewTer.paintStrokes.size();
+                    int collidersCount = 0;
+                    for (bool c : previewTer.cellColliders) if (c) collidersCount++;
+                    s_cachedTerrain.activeColliders = collidersCount;
+                    s_cachedTerrain.valid = true;
+                }
+            }
+
+            if (s_cachedTerrain.valid)
+            {
+                ImGui::Text("Grid Size: %d x %d (%d tiles)", s_cachedTerrain.width, s_cachedTerrain.length, s_cachedTerrain.width * s_cachedTerrain.length);
+                ImGui::Text("Cell Scale: %.2f units", s_cachedTerrain.cellScale);
+                ImGui::Text("Painted Strokes: %zu", s_cachedTerrain.paintStrokes);
+                ImGui::Text("Active Colliders: %d", s_cachedTerrain.activeColliders);
             }
 
             ImGui::Spacing();

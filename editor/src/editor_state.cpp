@@ -1923,26 +1923,34 @@ namespace RoninEditor
 
         if (jt.contains("cellMaterials") && jt.at("cellMaterials").is_array())
         {
+            const auto &arr = jt.at("cellMaterials");
             ter.cellMaterials.clear();
-            for (const auto &jm : jt.at("cellMaterials"))
+            ter.cellMaterials.reserve(arr.size());
+            for (const auto &jm : arr)
                 ter.cellMaterials.push_back(jsonToInt(jm, 0));
         }
         if (jt.contains("cellColors") && jt.at("cellColors").is_array())
         {
+            const auto &arr = jt.at("cellColors");
             ter.cellColors.clear();
-            for (const auto &jc : jt.at("cellColors"))
+            ter.cellColors.reserve(arr.size());
+            for (const auto &jc : arr)
                 ter.cellColors.push_back(jsonToColor(jc, ter.tileColor));
         }
         if (jt.contains("cellColliders") && jt.at("cellColliders").is_array())
         {
+            const auto &arr = jt.at("cellColliders");
             ter.cellColliders.clear();
-            for (const auto &jb : jt.at("cellColliders"))
+            ter.cellColliders.reserve(arr.size());
+            for (const auto &jb : arr)
                 ter.cellColliders.push_back(jsonToBool(jb, false));
         }
         if (jt.contains("paintStrokes") && jt.at("paintStrokes").is_array())
         {
+            const auto &arr = jt.at("paintStrokes");
             ter.paintStrokes.clear();
-            for (const auto &jst : jt.at("paintStrokes"))
+            ter.paintStrokes.reserve(arr.size());
+            for (const auto &jst : arr)
             {
                 if (!jst.is_object())
                     continue;
@@ -2957,9 +2965,7 @@ namespace RoninEditor
             return nullptr;
         }
 
-        std::stringstream buffer;
-        buffer << in.rdbuf();
-        json jpref = json::parse(buffer.str(), nullptr, false);
+        json jpref = json::parse(in, nullptr, false);
         if (jpref.is_discarded() || !jpref.is_object())
         {
             logError("Invalid JSON in Prefab file: " + filePath);
@@ -3001,16 +3007,20 @@ namespace RoninEditor
         rootObj.script.componentId = 0;
         ensureComponentIds(rootObj);
 
+        size_t childCount = (jpref.contains("children") && jpref.at("children").is_array()) ? jpref.at("children").size() : 0;
+        w.objects.reserve(w.objects.size() + 1 + childCount);
         w.objects.push_back(rootObj);
 
         // Deserializing children if present
-        if (jpref.contains("children") && jpref.at("children").is_array())
+        if (childCount > 0)
         {
+            const auto &jchildren = jpref.at("children");
             std::unordered_map<int, int> idMap;
             idMap[oldRootId] = newRootId;
 
             std::vector<EditorObject> newChildren;
-            for (const auto &jc : jpref.at("children"))
+            newChildren.reserve(childCount);
+            for (const auto &jc : jchildren)
             {
                 if (!jc.is_object())
                     continue;

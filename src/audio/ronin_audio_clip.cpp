@@ -2,6 +2,47 @@
 #include "ronin_audio.h"
 #include "miniaudio/miniaudio.h"
 
+// stb_vorbis.c is compiled as a separate C translation unit (src/3rdparty/miniaudio)
+extern "C" int stb_vorbis_decode_memory(const unsigned char *mem, int len, int *channels, int *sample_rate, short **output);
+
+namespace RoninEngine::Runtime
+{
+    ma_result ronin_decode_memory(const void *data, size_t size, ma_decoder_config *config, ma_uint64 *frameCount, void **frames)
+    {
+        const unsigned char *bytes = static_cast<const unsigned char *>(data);
+        if(size >= 4 && std::memcmp(bytes, "OggS", 4) == 0 && size <= 0x7fffffff)
+        {
+            int channels = 0, rate = 0;
+            short *pcm = nullptr;
+            int samples = stb_vorbis_decode_memory(bytes, static_cast<int>(size), &channels, &rate, &pcm);
+            if(samples > 0 && pcm != nullptr && channels > 0)
+            {
+                size_t total = static_cast<size_t>(samples) * channels;
+                float *out = static_cast<float *>(ma_malloc(total * sizeof(float), NULL));
+                if(out == nullptr)
+                {
+                    free(pcm);
+                    return MA_OUT_OF_MEMORY;
+                }
+                for(size_t i = 0; i < total; ++i)
+                    out[i] = pcm[i] / 32768.0f;
+                free(pcm);
+
+                config->format = ma_format_f32;
+                config->channels = static_cast<ma_uint32>(channels);
+                config->sampleRate = static_cast<ma_uint32>(rate);
+                *frameCount = static_cast<ma_uint64>(samples);
+                *frames = out;
+                return MA_SUCCESS;
+            }
+            if(pcm)
+                free(pcm);
+            // fall through to miniaudio for a final attempt / error code
+        }
+        return ma_decode_memory(data, size, config, frameCount, frames);
+    }
+} // namespace RoninEngine::Runtime
+
 namespace RoninEngine::Runtime
 {
     AudioClip::AudioClip()
@@ -127,7 +168,7 @@ namespace RoninEngine::Runtime
         ma_decoder_config config = ma_decoder_config_init(ma_format_f32, 0, 0);
         ma_uint64 frameCount = 0;
         void *pFrames = nullptr;
-        ma_result res = ma_decode_memory(data, sizeInBytes, &config, &frameCount, &pFrames);
+        ma_result res = ronin_decode_memory(data, sizeInBytes, &config, &frameCount, &pFrames);
         if (res != MA_SUCCESS || !pFrames)
             return nullptr;
 

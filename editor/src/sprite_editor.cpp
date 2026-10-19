@@ -401,7 +401,7 @@ namespace RoninEditor
             drawList->AddRectFilled(ImVec2(boxMax.x, boxMin.y), ImVec2(imgMax.x, boxMax.y), IM_COL32(0, 0, 0, 110));
 
             // Green outline for sprite rect
-            drawList->AddRect(boxMin, boxMax, IM_COL32(50, 220, 120, 255), 0.0f, 0, 2.0f);
+            drawList->AddRect(boxMin, boxMax, IM_COL32(50, 220, 120, 255), 0.0f, 2.0f);
 
             // Corner handles
             const float handleR = 5.0f;

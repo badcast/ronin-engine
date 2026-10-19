@@ -1,5 +1,6 @@
 #include "ronin.h"
 #include "ronin_debug.h"
+#include "ronin_audio.h"
 #include "miniaudio/miniaudio.h"
 
 using namespace RoninEngine;
@@ -223,7 +224,7 @@ namespace RoninEngine::Runtime
         ma_decoder_config config = ma_decoder_config_init(ma_format_f32, 0, 0);
         ma_uint64 frameCount = 0;
         void *pFrames = nullptr;
-        ma_result res = ma_decode_memory(memory.second, memory.first, &config, &frameCount, &pFrames);
+        ma_result res = ronin_decode_memory(memory.second, memory.first, &config, &frameCount, &pFrames);
 
         // free loaded stream buffer
         RoninMemory::mem_free(memory.second);
@@ -257,7 +258,7 @@ namespace RoninEngine::Runtime
         ma_decoder_config config = ma_decoder_config_init(ma_format_f32, 0, 0);
         ma_uint64 frameCount = 0;
         void *pFrames = nullptr;
-        ma_result res = ma_decode_memory(memory.second, memory.first, &config, &frameCount, &pFrames);
+        ma_result res = ronin_decode_memory(memory.second, memory.first, &config, &frameCount, &pFrames);
 
         // free loaded stream buffer
         RoninMemory::mem_free(memory.second);

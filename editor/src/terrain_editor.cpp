@@ -833,7 +833,7 @@ namespace RoninEditor
         }
 
         // 6. Grid Outer Border
-        drawList->AddRect(gridOrigin, ImVec2(gridOrigin.x + gridPixelW, gridOrigin.y + gridPixelH), IM_COL32(80, 140, 220, 255), 0.0f, 0, 2.0f);
+        drawList->AddRect(gridOrigin, ImVec2(gridOrigin.x + gridPixelW, gridOrigin.y + gridPixelH), IM_COL32(80, 140, 220, 255), 0.0f, 2.0f);
 
         // 7. Interactive Mouse Painting on Canvas
         ImVec2 mousePos = io.MousePos;

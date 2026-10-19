@@ -11,6 +11,7 @@
 #include <ronin/AudioClip.h>
 #include <ronin/NavMeshAgent.h>
 #include <ronin/TextStream.h>
+#include <unordered_set>
 
 using namespace RoninEditor;
 using json = nlohmann::json;
@@ -857,6 +858,66 @@ int main()
             assert(std::abs(reloadedPoly->multiCollider2D.bounciness - 0.35f) < 0.001f);
 
             std::cout << "  [PASS] Test 30: MultiCollider2D EditorState serialization & properties validated" << std::endl;
+        }
+
+        // 31. Test Large Prefab serialization, child remapping, and instantiating
+        {
+            auto &rootObj = editorState.createObject("LargeBossPrefab");
+            int rootId = rootObj.id;
+            rootObj.position = {10.0f, 20.0f};
+            rootObj.sprite.enabled = true;
+            rootObj.sprite.componentId = editorState.activeWorld().allocateComponentId();
+            rootObj.multiCollider2D.enabled = true;
+            rootObj.multiCollider2D.points = {{-2.0f, -2.0f}, {2.0f, -2.0f}, {2.0f, 2.0f}, {-2.0f, 2.0f}};
+            rootObj.navMeshAgent.enabled = true;
+
+            // Generate a hierarchy with 300 children (some parented to root, some parented to other children)
+            int prevParent = rootId;
+            const int childCount = 300;
+            for (int i = 0; i < childCount; ++i)
+            {
+                auto &child = editorState.createObject("Part_" + std::to_string(i));
+                child.position = {10.0f + static_cast<float>(i), 20.0f + static_cast<float>(i)};
+                child.parentId = (i % 3 == 0) ? rootId : prevParent;
+                child.boxCollider2D.enabled = true;
+                prevParent = child.id;
+            }
+
+            EditorObject *rootPtr = editorState.findObject(rootId);
+            assert(rootPtr != nullptr);
+            std::filesystem::path largePrefabPath = expectedRoot / "Assets" / "Prefabs" / "HeavyBoss.prefab";
+            assert(editorState.savePrefab(*rootPtr, largePrefabPath.string()));
+            assert(std::filesystem::exists(largePrefabPath));
+            assert(std::filesystem::file_size(largePrefabPath) > 50000); // Verify significant size
+
+            // Instantiate prefab at new spawn position
+            EditorState spawnState;
+            EditorObject *instantiatedRoot = spawnState.instantiatePrefab(largePrefabPath.string(), {100.0f, 200.0f});
+            assert(instantiatedRoot != nullptr);
+            assert(instantiatedRoot->name == "LargeBossPrefab");
+            assert(std::abs(instantiatedRoot->position.x - 100.0f) < 0.001f);
+            assert(std::abs(instantiatedRoot->position.y - 200.0f) < 0.001f);
+            assert(instantiatedRoot->sprite.enabled);
+            assert(instantiatedRoot->multiCollider2D.enabled);
+            assert(instantiatedRoot->navMeshAgent.enabled);
+
+            // Verify all 300 children were instantiated in spawnState
+            const auto &allObjs = spawnState.activeWorld().objects;
+            assert(allObjs.size() == static_cast<size_t>(childCount + 1));
+
+            // Verify that all children have valid, unique IDs and parentIds remapped
+            std::unordered_set<int> uniqueIds;
+            for (const auto &obj : allObjs)
+            {
+                assert(uniqueIds.insert(obj.id).second); // IDs must be strictly unique
+                if (obj.id != instantiatedRoot->id)
+                {
+                    assert(obj.parentId != -1);
+                    assert(uniqueIds.count(obj.parentId) || obj.parentId == instantiatedRoot->id);
+                }
+            }
+
+            std::cout << "  [PASS] Test 31: Large prefab (" << childCount << " objects) stream parsing, instantiation & ID remapping validated" << std::endl;
         }
     }
 
