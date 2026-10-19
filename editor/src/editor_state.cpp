@@ -1173,6 +1173,7 @@ namespace RoninEditor
             }
         }
         isDirty = true;
+        updateNavMeshPreview(false, false);
     }
 
     void EditorState::generateProceduralTerrain(Terrain2DData &terrain, int preset)
@@ -1301,6 +1302,7 @@ namespace RoninEditor
             }
         }
         isDirty = true;
+        updateNavMeshPreview(false, false);
     }
 
     bool EditorState::paintTerrainAtUV(Terrain2DData &terrain, const Vec2 &uvPos, bool isDragContinue)
@@ -1425,6 +1427,12 @@ namespace RoninEditor
         }
 
         isDirty = true;
+        if (terrainBrushTool == TerrainBrushTool::PaintCollider ||
+            terrainBrushTool == TerrainBrushTool::EraseCollider ||
+            terrainBrushTool == TerrainBrushTool::Eraser)
+        {
+            updateNavMeshPreview(false, false);
+        }
         return true;
     }
 
@@ -3393,16 +3401,39 @@ namespace RoninEditor
     void EditorState::updateNavMeshPreview(bool regenerateObstacles, bool generateMaze)
     {
         NavMeshPreviewData &navPreview = activeWorld().navMesh;
-        int w = std::max(4, navPreview.width);
-        int h = std::max(4, navPreview.height);
+        EditorObject *terObj = findActiveTerrainObject();
+
+        int w = (terObj && terObj->terrain.width >= 4) ? terObj->terrain.width : std::max(4, navPreview.width);
+        int h = (terObj && terObj->terrain.length >= 4) ? terObj->terrain.length : std::max(4, navPreview.height);
         navPreview.width = w;
         navPreview.height = h;
 
+        if (terObj)
+        {
+            terObj->terrain.ensureGridInitialized(0);
+        }
+
         if (regenerateObstacles || static_cast<int>(navPreview.lockedCells.size()) != w * h)
         {
-            initDefaultNavMesh(navPreview);
-            w = navPreview.width;
-            h = navPreview.height;
+            if (terObj)
+            {
+                navPreview.lockedCells.assign(w * h, false);
+                for (int y = 0; y < h; ++y)
+                {
+                    for (int x = 0; x < w; ++x)
+                    {
+                        size_t idx = static_cast<size_t>(y * w + x);
+                        if (idx < terObj->terrain.cellColliders.size() && terObj->terrain.cellColliders[idx])
+                            navPreview.lockedCells[idx] = true;
+                    }
+                }
+            }
+            else
+            {
+                initDefaultNavMesh(navPreview);
+                w = navPreview.width;
+                h = navPreview.height;
+            }
         }
 
         navPreview.start.x = Math::Clamp(navPreview.start.x, 0, w - 1);
@@ -3425,9 +3456,16 @@ namespace RoninEditor
             {
                 for (int x = 0; x < w; ++x)
                 {
-                    navPreview.lockedCells[y * w + x] = nav.hasLocked(Vec2Int(x, y));
+                    bool locked = nav.hasLocked(Vec2Int(x, y));
+                    navPreview.lockedCells[y * w + x] = locked;
+                    if (terObj && static_cast<size_t>(y * w + x) < terObj->terrain.cellColliders.size())
+                    {
+                        terObj->terrain.cellColliders[y * w + x] = locked;
+                    }
                 }
             }
+            if (terObj)
+                isDirty = true;
         }
         else
         {
@@ -3435,13 +3473,25 @@ namespace RoninEditor
             {
                 for (int x = 0; x < w; ++x)
                 {
-                    bool locked = navPreview.lockedCells[y * w + x];
+                    size_t idx = static_cast<size_t>(y * w + x);
+                    bool locked = false;
+                    if (terObj)
+                    {
+                        locked = (idx < terObj->terrain.cellColliders.size()) ? terObj->terrain.cellColliders[idx] : false;
+                    }
+                    else
+                    {
+                        locked = (idx < navPreview.lockedCells.size()) ? navPreview.lockedCells[idx] : false;
+                    }
+
                     if ((x == navPreview.start.x && y == navPreview.start.y) ||
                         (x == navPreview.goal.x && y == navPreview.goal.y))
                     {
                         locked = false;
-                        navPreview.lockedCells[y * w + x] = false;
+                        if (terObj && idx < terObj->terrain.cellColliders.size())
+                            terObj->terrain.cellColliders[idx] = false;
                     }
+                    navPreview.lockedCells[idx] = locked;
                     nav.setLock(Vec2Int(x, y), locked);
                 }
             }

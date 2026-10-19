@@ -223,7 +223,9 @@ namespace RoninEditor
                             bool hasCol = (idx < obj.terrain.cellColliders.size()) ? obj.terrain.cellColliders[idx] : false;
                             if (hasCol)
                             {
-                                ter->setCollider(Rectf(obj.position.x + c * scale, obj.position.y + r * scale, scale, scale), true);
+                                float cellMinX = obj.position.x + (c - tw * 0.5f) * scale;
+                                float cellMinY = obj.position.y + (tl * 0.5f - (r + 1.0f)) * scale;
+                                ter->setCollider(Rectf(cellMinX, cellMinY, scale, scale), true);
                             }
                         }
                     }
@@ -241,10 +243,13 @@ namespace RoninEditor
                     // Border colliders
                     if (obj.terrain.generateBorderColliders)
                     {
-                        ter->setCollider(Rectf(obj.position.x, obj.position.y, tw * scale, 0.5f), true);
-                        ter->setCollider(Rectf(obj.position.x, obj.position.y + tl * scale - 0.5f, tw * scale, 0.5f), true);
-                        ter->setCollider(Rectf(obj.position.x, obj.position.y, 0.5f, tl * scale), true);
-                        ter->setCollider(Rectf(obj.position.x + tw * scale - 0.5f, obj.position.y, 0.5f, tl * scale), true);
+                        float hw = tw * scale * 0.5f;
+                        float hl = tl * scale * 0.5f;
+                        float thick = std::min(0.5f, scale);
+                        ter->setCollider(Rectf(obj.position.x - hw, obj.position.y - hl, tw * scale, thick), true);
+                        ter->setCollider(Rectf(obj.position.x - hw, obj.position.y + hl - thick, tw * scale, thick), true);
+                        ter->setCollider(Rectf(obj.position.x - hw, obj.position.y - hl, thick, tl * scale), true);
+                        ter->setCollider(Rectf(obj.position.x + hw - thick, obj.position.y - hl, thick, tl * scale), true);
                     }
                 }
 

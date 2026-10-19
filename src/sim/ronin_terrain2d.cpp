@@ -851,6 +851,31 @@ void Terrain2D::setColliderCircle(const Vec2 &worldCenter, float radius, bool st
     }
 }
 
+void Terrain2D::setColliderTile(int gridX, int gridY, bool state, Vec2 tileSize)
+{
+    if(!m_t2data || !m_t2data->nav2d)
+        return;
+    Vec2 sz(std::max(0.01f, tileSize.x), std::max(0.01f, tileSize.y));
+    Vec2 origin = (transform() ? transform()->position() : Vec2::zero) + Vec2(gridX * sz.x, gridY * sz.y);
+    setCollider(Rectf(origin.x, origin.y, sz.x, sz.y), state);
+}
+
+void Terrain2D::setBorderColliders(bool state, float thickness)
+{
+    if(!m_t2data || !m_t2data->nav2d)
+        return;
+    update_navmesh_offset();
+    Vec2 pos = transform() ? transform()->position() : Vec2::zero;
+    float w = m_t2data->size.x;
+    float h = m_t2data->size.y;
+    float t = std::max(0.05f, thickness);
+
+    setCollider(Rectf(pos.x - w * 0.5f, pos.y - h * 0.5f, w, t), state);
+    setCollider(Rectf(pos.x - w * 0.5f, pos.y + h * 0.5f - t, w, t), state);
+    setCollider(Rectf(pos.x - w * 0.5f, pos.y - h * 0.5f, t, h), state);
+    setCollider(Rectf(pos.x + w * 0.5f - t, pos.y - h * 0.5f, t, h), state);
+}
+
 void Terrain2D::clearColliders()
 {
     if(m_t2data && m_t2data->nav2d)
@@ -948,6 +973,52 @@ const bool Terrain2D::is_collider(const Vec2 destination)
     return n && m_t2data->nav2d->hasLocked(n);
 }
 
+const bool Terrain2D::is_collider(int gridX, int gridY, Vec2 tileSize)
+{
+    Vec2 sz(std::max(0.01f, tileSize.x), std::max(0.01f, tileSize.y));
+    Vec2 origin = (transform() ? transform()->position() : Vec2::zero) + Vec2(gridX * sz.x, gridY * sz.y);
+    return is_collider(origin + sz * 0.5f);
+}
+
+bool Terrain2D::findPath(const Vec2 &startWorld, const Vec2 &goalWorld, std::vector<Vec2> &outWorldPath)
+{
+    outWorldPath.clear();
+    if(!m_t2data || !m_t2data->nav2d)
+        return false;
+    update_navmesh_offset();
+
+    RoninEngine::AI::NavResultSite result;
+    bool found = m_t2data->nav2d->Find(result, startWorld, goalWorld);
+    if(found)
+    {
+        outWorldPath.reserve(result.connections.size());
+        for(const Vec2Int &pt : result.connections)
+        {
+            outWorldPath.push_back(m_t2data->nav2d->PointToWorldPoint(pt));
+        }
+    }
+    return found;
+}
+
+Vec2 Terrain2D::findFreeSpace(const Vec2 &worldOrigin, float searchRadius)
+{
+    if(!m_t2data || !m_t2data->nav2d)
+        return worldOrigin;
+    update_navmesh_offset();
+    Vec2Int originPt = m_t2data->nav2d->WorldPointToPoint(worldOrigin);
+    int maxEdges = std::max(1, static_cast<int>(std::round(searchRadius / std::max(0.001f, m_t2data->nav2d->worldScale.x))));
+    Vec2Int freePt = m_t2data->nav2d->FindFreeSpace(originPt, maxEdges);
+    return m_t2data->nav2d->PointToWorldPoint(freePt);
+}
+
+void Terrain2D::generateMaze(RoninEngine::AI::MazeAlgorithm algorithm)
+{
+    if(!m_t2data || !m_t2data->nav2d)
+        return;
+    update_navmesh_offset();
+    m_t2data->nav2d->GenerateMaze(algorithm);
+}
+
 const Vec2 Terrain2D::getSize() const
 {
     return m_t2data ? m_t2data->size : Vec2::zero;
@@ -958,12 +1029,30 @@ void Terrain2D::setSize(const Vec2 &value)
     if(!m_t2data)
         return;
     Vec2 newSize = Vec2::Max(Vec2::one, Vec2::Abs(value));
-    if(m_t2data->nav2d)
-        RoninMemory::free(m_t2data->nav2d);
+    RoninEngine::AI::NavMesh *oldNav = m_t2data->nav2d;
     RoninMemory::alloc_self(m_t2data->nav2d, static_cast<std::uint32_t>(newSize.x * 10), static_cast<std::uint32_t>(newSize.y * 10));
     m_t2data->nav2d->worldScale = Vec2(0.1f, 0.1f);
     if(transform())
         m_t2data->nav2d->worldOffset = -transform()->position();
+
+    if(oldNav)
+    {
+        std::uint32_t commonW = std::min(oldNav->getWidth(), m_t2data->nav2d->getWidth());
+        std::uint32_t commonH = std::min(oldNav->getHeight(), m_t2data->nav2d->getHeight());
+        for(std::uint32_t x = 0; x < commonW; ++x)
+        {
+            for(std::uint32_t y = 0; y < commonH; ++y)
+            {
+                Vec2Int pt(x, y);
+                if(oldNav->hasLocked(pt))
+                {
+                    m_t2data->nav2d->setLock(pt, true);
+                }
+            }
+        }
+        RoninMemory::free(oldNav);
+    }
+
     m_t2data->size = newSize;
 
     if(_owner && transform())

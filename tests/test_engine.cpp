@@ -140,8 +140,41 @@ int main()
     assert(terrain->is_collider(Vec2(-2, -2)) == true);
     assert(terrain->is_collider(Vec2(-2, 0)) == false);
 
+    // Tile collider test
+    terrain->setColliderTile(3, 3, true, Vec2::one);
+    assert(terrain->is_collider(3, 3, Vec2::one) == true);
+    terrain->setColliderTile(3, 3, false, Vec2::one);
+
+    // Border colliders
+    terrain->setBorderColliders(true, 0.5f);
+
+    // NavMesh locks & pathfinding integration
+    AI::NavMesh *tNav = terrain->get_navmesh2D();
+    assert(tNav != nullptr);
+
+    // Clear colliders and test obstacle avoidance pathfinding
     terrain->clearColliders();
     assert(terrain->is_collider(Vec2(2, 2)) == false);
+
+    // Place an obstacle wall between start (-4, 0) and goal (4, 0)
+    terrain->setCollider(Rectf(-0.5f, -3.0f, 1.0f, 6.0f), true);
+    assert(terrain->is_collider(Vec2(0, 0)) == true);
+
+    std::vector<Vec2> worldPath;
+    bool pathFound = terrain->findPath(Vec2(-3.0f, 0.0f), Vec2(3.0f, 0.0f), worldPath);
+    assert(pathFound == true);
+    assert(worldPath.size() >= 2);
+    // Path must navigate around the obstacle wall without any point colliding
+    for (const auto &p : worldPath)
+    {
+        assert(!terrain->is_collider(p));
+    }
+
+    // Find free space near an obstacle
+    Vec2 tFreePt = terrain->findFreeSpace(Vec2(0.0f, 0.0f), 4.0f);
+    assert(!terrain->is_collider(tFreePt));
+
+    terrain->clearColliders();
 
     // 7. Light Components
     std::cout << "[7/8] Testing 2D Lights (SimpleLight, Spotlight, DirectLight)..." << std::endl;

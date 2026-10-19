@@ -243,6 +243,12 @@ int main()
             // Test border colliders
             editorState.applyTerrainBorderColliders(terrainObj.terrain, true);
             assert(terrainObj.terrain.cellColliders[0] == true);
+            assert(editorState.activeWorld().navMesh.lockedCells[0] == true);
+
+            // Test maze generation on Terrain2D NavMesh
+            editorState.updateNavMeshPreview(false, true);
+            assert(editorState.activeWorld().navMesh.pathFound);
+            assert(terrainObj.terrain.cellColliders[1] == editorState.activeWorld().navMesh.lockedCells[1]);
 
             // Test world save & reload roundtrip with terrain
             std::filesystem::path tempScene = expectedRoot / "Assets" / "Worlds" / "TerrainWorld.world";

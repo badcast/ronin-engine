@@ -3,6 +3,12 @@
 #include "Renderer.h"
 #include <vector>
 
+namespace RoninEngine::AI
+{
+    class NavMesh;
+    enum class MazeAlgorithm;
+}
+
 namespace RoninEngine::Runtime
 {
 
@@ -76,6 +82,8 @@ namespace RoninEngine::Runtime
         void setCollider(const Rectf &worldRect, bool state = true);
         void setCollider(const Vec2 &worldPoint, bool state = true);
         void setColliderCircle(const Vec2 &worldCenter, float radius, bool state = true);
+        void setColliderTile(int gridX, int gridY, bool state = true, Vec2 tileSize = Vec2::one);
+        void setBorderColliders(bool state = true, float thickness = 0.5f);
         void clearColliders();
         void clearMesh();
         void clear();
@@ -88,6 +96,11 @@ namespace RoninEngine::Runtime
         void setLayer(int layer);
 
         const bool is_collider(const Vec2 destination);
+        const bool is_collider(int gridX, int gridY, Vec2 tileSize = Vec2::one);
+
+        bool findPath(const Vec2 &startWorld, const Vec2 &goalWorld, std::vector<Vec2> &outWorldPath);
+        Vec2 findFreeSpace(const Vec2 &worldOrigin, float searchRadius = 1.0f);
+        void generateMaze(RoninEngine::AI::MazeAlgorithm algorithm = static_cast<RoninEngine::AI::MazeAlgorithm>(0));
 
         const Vec2 getSize() const;
         void setSize(const Vec2 &value);

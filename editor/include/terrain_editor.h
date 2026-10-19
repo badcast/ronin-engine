@@ -37,6 +37,7 @@ namespace RoninEditor
         void renderBrushPanel(EditorState &state, EditorObject &obj);
         void renderFillPanel(EditorState &state, EditorObject &obj);
         void renderCollidersPanel(EditorState &state, EditorObject &obj);
+        void renderNavMeshPanel(EditorState &state, EditorObject &obj);
         void renderProceduralPanel(EditorState &state, EditorObject &obj);
         void renderSettingsPanel(EditorState &state, EditorObject &obj);
         void renderInteractiveCanvas(EditorState &state, EditorObject &obj);

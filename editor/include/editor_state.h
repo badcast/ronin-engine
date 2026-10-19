@@ -408,6 +408,7 @@ namespace RoninEditor
         bool showGrid = true;
         bool showGizmos = true;
         bool showBounds = true;
+        bool showNavMeshOverlay = false;
         bool snapToGrid = false;
         float gridStep = 0.5f;
 

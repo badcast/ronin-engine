@@ -744,6 +744,53 @@ namespace RoninEditor
                     SDL_SetRenderDrawColor(m_renderer, st.color.r, st.color.g, st.color.b, alpha);
                     drawFilledCircle(m_renderer, static_cast<int>(strokeScreen.x), static_cast<int>(strokeScreen.y), static_cast<int>(radiusPx));
                 }
+
+                // Draw NavMesh overlay & pathfinding route if enabled
+                if (state.showNavMeshOverlay)
+                {
+                    const auto &nav = state.activeWorld().navMesh;
+                    auto getCellCenterWorld = [&](int c, int r) -> RoninEngine::Runtime::Vec2 {
+                        float localX = (c + 0.5f - obj.terrain.width * 0.5f) * cellW;
+                        float localY = (obj.terrain.length * 0.5f - (r + 0.5f)) * cellH;
+                        return RoninEngine::Runtime::Vec2(
+                            obj.position.x + localX * cosA - localY * sinA,
+                            obj.position.y + localX * sinA + localY * cosA
+                        );
+                    };
+
+                    // Draw Path
+                    if (nav.pathFound && nav.path.size() >= 2)
+                    {
+                        SDL_SetRenderDrawColor(m_renderer, 80, 220, 255, 240);
+                        for (size_t pi = 0; pi + 1 < nav.path.size(); ++pi)
+                        {
+                            auto wp0 = getCellCenterWorld(nav.path[pi].x, nav.path[pi].y);
+                            auto wp1 = getCellCenterWorld(nav.path[pi + 1].x, nav.path[pi + 1].y);
+                            auto sp0 = WorldToScreen(wp0, m_cameraPos, viewSize);
+                            auto sp1 = WorldToScreen(wp1, m_cameraPos, viewSize);
+                            SDL_RenderDrawLineF(m_renderer, sp0.x, sp0.y, sp1.x, sp1.y);
+                            drawFilledCircle(m_renderer, static_cast<int>(sp0.x), static_cast<int>(sp0.y), 3);
+                        }
+                    }
+
+                    // Start marker (green)
+                    if (nav.start.x >= 0 && nav.start.x < obj.terrain.width && nav.start.y >= 0 && nav.start.y < obj.terrain.length)
+                    {
+                        auto startWorld = getCellCenterWorld(nav.start.x, nav.start.y);
+                        auto startScreen = WorldToScreen(startWorld, m_cameraPos, viewSize);
+                        SDL_SetRenderDrawColor(m_renderer, 50, 225, 90, 240);
+                        drawFilledCircle(m_renderer, static_cast<int>(startScreen.x), static_cast<int>(startScreen.y), 6);
+                    }
+
+                    // Goal marker (cyan/gold)
+                    if (nav.goal.x >= 0 && nav.goal.x < obj.terrain.width && nav.goal.y >= 0 && nav.goal.y < obj.terrain.length)
+                    {
+                        auto goalWorld = getCellCenterWorld(nav.goal.x, nav.goal.y);
+                        auto goalScreen = WorldToScreen(goalWorld, m_cameraPos, viewSize);
+                        SDL_SetRenderDrawColor(m_renderer, 255, 200, 40, 240);
+                        drawFilledCircle(m_renderer, static_cast<int>(goalScreen.x), static_cast<int>(goalScreen.y), 6);
+                    }
+                }
             }
 
             // C. Light2D Gizmo
@@ -1148,6 +1195,8 @@ namespace RoninEditor
                     if (ImGui::Checkbox("Grid", &state.showGrid)) {}
                     ImGui::SameLine();
                     if (ImGui::Checkbox("Snap", &state.snapToGrid)) {}
+                    ImGui::SameLine();
+                    if (ImGui::Checkbox("NavMesh", &state.showNavMeshOverlay)) {}
                     ImGui::SameLine();
 
                     if (ImGui::Button("Reset Cam"))

@@ -71,9 +71,12 @@ namespace RoninEditor
                 renderCollidersPanel(state, *terrainObj);
                 break;
             case 3:
-                renderProceduralPanel(state, *terrainObj);
+                renderNavMeshPanel(state, *terrainObj);
                 break;
             case 4:
+                renderProceduralPanel(state, *terrainObj);
+                break;
+            case 5:
                 renderSettingsPanel(state, *terrainObj);
                 break;
             default:
@@ -191,14 +194,14 @@ namespace RoninEditor
     void TerrainEditorPanel::renderToolbarAndTabs(EditorState &state, EditorObject &obj)
     {
         (void)obj;
-        const char *tabs[] = {"Brush", "Fill", "Colliders", "Procedural", "Settings"};
-        for (int i = 0; i < 5; ++i)
+        const char *tabs[] = {"Brush", "Fill", "Colliders", "NavMesh", "Procedural", "Settings"};
+        for (int i = 0; i < 6; ++i)
         {
             bool active = (m_activeTab == i);
             if (active)
                 ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.28f, 0.55f, 0.85f, 1.0f));
 
-            if (ImGui::Button(tabs[i], ImVec2(58.0f, 26.0f)))
+            if (ImGui::Button(tabs[i], ImVec2(48.0f, 26.0f)))
             {
                 m_activeTab = i;
                 if (i == 0)
@@ -212,7 +215,7 @@ namespace RoninEditor
             if (active)
                 ImGui::PopStyleColor();
 
-            if (i < 4)
+            if (i < 5)
                 ImGui::SameLine();
         }
         ImGui::Spacing();
@@ -414,8 +417,122 @@ namespace RoninEditor
         if (ImGui::Button("Clear All Colliders", ImVec2(-1.0f, 26.0f)))
         {
             std::fill(obj.terrain.cellColliders.begin(), obj.terrain.cellColliders.end(), false);
+            state.updateNavMeshPreview(true, false);
             state.isDirty = true;
             state.logInfo("Cleared all terrain colliders.");
+        }
+    }
+
+    void TerrainEditorPanel::renderNavMeshPanel(EditorState &state, EditorObject &obj)
+    {
+        ImGui::TextColored(ImVec4(0.4f, 0.8f, 1.0f, 1.0f), "NavMesh & Pathfinding AI");
+        ImGui::Separator();
+
+        auto &nav = state.activeWorld().navMesh;
+
+        int lockedCount = 0;
+        for (bool c : obj.terrain.cellColliders)
+        {
+            if (c) lockedCount++;
+        }
+
+        ImGui::Text("Grid: %dx%d (%d cells)", obj.terrain.width, obj.terrain.length, obj.terrain.width * obj.terrain.length);
+        ImGui::Text("Obstacles Locked: %d cells", lockedCount);
+
+        if (nav.pathFound)
+        {
+            ImGui::TextColored(ImVec4(0.3f, 0.9f, 0.4f, 1.0f), "Status: Path Found (%zu steps)", nav.path.size());
+        }
+        else
+        {
+            ImGui::TextColored(ImVec4(0.9f, 0.4f, 0.3f, 1.0f), "Status: No Path / Unreachable");
+        }
+
+        ImGui::Spacing();
+        ImGui::Checkbox("Show NavMesh in Scene Viewport", &state.showNavMeshOverlay);
+
+        ImGui::Spacing();
+        ImGui::Text("Navigation Coordinates:");
+        int maxW = std::max(1, obj.terrain.width - 1);
+        int maxH = std::max(1, obj.terrain.length - 1);
+
+        int startCoord[2] = {nav.start.x, nav.start.y};
+        if (ImGui::SliderInt2("Start (X,Y)", startCoord, 0, std::max(maxW, maxH)))
+        {
+            nav.start.x = std::clamp(startCoord[0], 0, maxW);
+            nav.start.y = std::clamp(startCoord[1], 0, maxH);
+            state.updateNavMeshPreview(false, false);
+            state.isDirty = true;
+        }
+
+        int goalCoord[2] = {nav.goal.x, nav.goal.y};
+        if (ImGui::SliderInt2("Goal (X,Y)", goalCoord, 0, std::max(maxW, maxH)))
+        {
+            nav.goal.x = std::clamp(goalCoord[0], 0, maxW);
+            nav.goal.y = std::clamp(goalCoord[1], 0, maxH);
+            state.updateNavMeshPreview(false, false);
+            state.isDirty = true;
+        }
+
+        ImGui::Spacing();
+        const char *heuristics[] = {"Pythagorean (Euclidean)", "Manhattan", "Chebyshev", "Octile"};
+        if (ImGui::Combo("Heuristic", &nav.heuristicMethod, heuristics, IM_ARRAYSIZE(heuristics)))
+        {
+            state.updateNavMeshPreview(false, false);
+            state.isDirty = true;
+        }
+
+        const char *identities[] = {"Diagonal (8-Way)", "Plus (4-Cardinal)", "Cross (4-Diagonal)"};
+        if (ImGui::Combo("Neighbours", &nav.identityMethod, identities, IM_ARRAYSIZE(identities)))
+        {
+            state.updateNavMeshPreview(false, false);
+            state.isDirty = true;
+        }
+
+        ImGui::Spacing();
+        ImGui::Text("Maze Obstacle Generator:");
+        const char *mazeAlgs[] = {
+            "Recursive Backtracer",
+            "Recursive Division",
+            "Selective Storm Chaos",
+            "Forced Chaos",
+            "Randomized Prim",
+            "Randomized Kruskal",
+            "Ellers",
+            "Hunt And Kill",
+            "Binary Tree",
+            "Sidewinder",
+            "Aldous Broder",
+            "Wilsons",
+            "Cellular Automata"
+        };
+        ImGui::Combo("Algorithm", &nav.mazeAlgorithm, mazeAlgs, IM_ARRAYSIZE(mazeAlgs));
+
+        if (ImGui::Button("Generate Maze Locks on Terrain", ImVec2(-1.0f, 26.0f)))
+        {
+            state.updateNavMeshPreview(false, true);
+            state.logInfo("Generated NavMesh Maze obstacles on Terrain2D.");
+        }
+
+        ImGui::Spacing();
+        if (ImGui::Button("Recalculate Path", ImVec2(-1.0f, 26.0f)))
+        {
+            state.updateNavMeshPreview(false, false);
+            state.logInfo("Recalculated NavMesh path on Terrain2D.");
+        }
+
+        if (ImGui::Button("Bake Terrain Colliders to NavMesh", ImVec2(-1.0f, 26.0f)))
+        {
+            state.updateNavMeshPreview(true, false);
+            state.logInfo("Baked all Terrain2D colliders into NavMesh locks.");
+        }
+
+        if (ImGui::Button("Clear Terrain Colliders & Locks", ImVec2(-1.0f, 26.0f)))
+        {
+            std::fill(obj.terrain.cellColliders.begin(), obj.terrain.cellColliders.end(), false);
+            state.updateNavMeshPreview(true, false);
+            state.isDirty = true;
+            state.logInfo("Cleared Terrain2D colliders and NavMesh locks.");
         }
     }
 
@@ -571,6 +688,33 @@ namespace RoninEditor
             float radPx = std::max(2.0f, st.radiusNormalized * gridPixelW);
             uint8_t a = static_cast<uint8_t>(std::clamp(st.color.a * st.opacity, 10.0f, 255.0f));
             drawList->AddCircleFilled(strokePos, radPx, IM_COL32(st.color.r, st.color.g, st.color.b, a));
+        }
+
+        // 5b. Render NavMesh Path & Waypoints on Canvas
+        const auto &nav = state.activeWorld().navMesh;
+        if (nav.pathFound && nav.path.size() >= 2)
+        {
+            for (size_t pi = 0; pi + 1 < nav.path.size(); ++pi)
+            {
+                ImVec2 pt0(gridOrigin.x + (nav.path[pi].x + 0.5f) * cellSize, gridOrigin.y + (nav.path[pi].y + 0.5f) * cellSize);
+                ImVec2 pt1(gridOrigin.x + (nav.path[pi + 1].x + 0.5f) * cellSize, gridOrigin.y + (nav.path[pi + 1].y + 0.5f) * cellSize);
+                drawList->AddLine(pt0, pt1, IM_COL32(80, 220, 255, 240), 3.0f);
+                drawList->AddCircleFilled(pt0, 3.5f, IM_COL32(120, 240, 255, 255));
+            }
+        }
+
+        // Draw Start & Goal markers
+        if (nav.start.x >= 0 && nav.start.x < w && nav.start.y >= 0 && nav.start.y < l)
+        {
+            ImVec2 startCenter(gridOrigin.x + (nav.start.x + 0.5f) * cellSize, gridOrigin.y + (nav.start.y + 0.5f) * cellSize);
+            drawList->AddCircleFilled(startCenter, std::max(4.0f, cellSize * 0.35f), IM_COL32(50, 230, 90, 240));
+            drawList->AddCircle(startCenter, std::max(5.0f, cellSize * 0.42f), IM_COL32(255, 255, 255, 220), 16, 2.0f);
+        }
+        if (nav.goal.x >= 0 && nav.goal.x < w && nav.goal.y >= 0 && nav.goal.y < l)
+        {
+            ImVec2 goalCenter(gridOrigin.x + (nav.goal.x + 0.5f) * cellSize, gridOrigin.y + (nav.goal.y + 0.5f) * cellSize);
+            drawList->AddCircleFilled(goalCenter, std::max(4.0f, cellSize * 0.35f), IM_COL32(255, 200, 40, 240));
+            drawList->AddCircle(goalCenter, std::max(5.0f, cellSize * 0.42f), IM_COL32(255, 255, 255, 220), 16, 2.0f);
         }
 
         // 6. Grid Outer Border
