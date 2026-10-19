@@ -325,7 +325,7 @@ namespace RoninEditor
         bool isHovered = (mouseScreen.x >= 0.0f && mouseScreen.x < viewportSize.x &&
                           mouseScreen.y >= 0.0f && mouseScreen.y < viewportSize.y);
 
-        if (!isHovered && !m_isDraggingGizmo && !m_isPanning)
+        if (!isHovered && !m_isDraggingGizmo && !m_isPanning && !m_isDraggingColliderVertex)
             return;
 
         // 1. Mouse Wheel Zoom (centered around mouse cursor)
@@ -340,7 +340,7 @@ namespace RoninEditor
         }
 
         // 2. Middle Mouse or Right Mouse Drag Pan
-        bool panButtonDown = io.MouseDown[2] || (io.MouseDown[1] && !m_isDraggingGizmo) || (io.KeyAlt && io.MouseDown[0]);
+        bool panButtonDown = io.MouseDown[2] || (io.MouseDown[1] && !m_isDraggingGizmo && !m_isDraggingColliderVertex) || (io.KeyAlt && io.MouseDown[0]);
         if (panButtonDown)
         {
             if (!m_isPanning && isHovered)
@@ -405,54 +405,90 @@ namespace RoninEditor
         }
         else if (io.MouseClicked[0] && isHovered && !m_isPanning && !io.KeyAlt)
         {
-            // Check if clicking Gizmo handles of selected object
-            int clickedAxis = 0;
-            if (selObj)
+            // Check if clicking MultiCollider2D vertex handles of selected object
+            int clickedVertexIdx = -1;
+            if (selObj && selObj->multiCollider2D.enabled && (state.editColliderVertices || state.selectedColliderVertexIdx >= 0))
             {
-                // Center box
-                if (std::hypot(mouseScreen.x - objScreen.x, mouseScreen.y - objScreen.y) <= 12.0f)
+                float rad = selObj->angle * (3.1415926535f / 180.0f);
+                float cosA = std::cos(rad);
+                float sinA = std::sin(rad);
+                for (size_t i = 0; i < selObj->multiCollider2D.points.size(); ++i)
                 {
-                    clickedAxis = 3; // Center / Free move
-                }
-                // X handle (pointing right)
-                else if (mouseScreen.x >= objScreen.x && mouseScreen.x <= objScreen.x + handleLength &&
-                         std::abs(mouseScreen.y - objScreen.y) <= handleHitRadius)
-                {
-                    clickedAxis = 1; // X axis
-                }
-                // Y handle (pointing up in world = pointing up in screen = -Y)
-                else if (mouseScreen.y <= objScreen.y && mouseScreen.y >= objScreen.y - handleLength &&
-                         std::abs(mouseScreen.x - objScreen.x) <= handleHitRadius)
-                {
-                    clickedAxis = 2; // Y axis
-                }
-                // Rotation ring
-                else if (state.gizmoTool == GizmoToolMode::Rotate)
-                {
-                    float dist = std::hypot(mouseScreen.x - objScreen.x, mouseScreen.y - objScreen.y);
-                    if (std::abs(dist - 45.0f) <= 10.0f)
+                    RoninEngine::Runtime::Vec2 local = {
+                        (selObj->multiCollider2D.points[i].x + selObj->multiCollider2D.offset.x) * selObj->scale.x,
+                        (selObj->multiCollider2D.points[i].y + selObj->multiCollider2D.offset.y) * selObj->scale.y
+                    };
+                    RoninEngine::Runtime::Vec2 world = {
+                        selObj->position.x + local.x * cosA - local.y * sinA,
+                        selObj->position.y + local.x * sinA + local.y * cosA
+                    };
+                    RoninEngine::Runtime::Vec2 sPt = WorldToScreen(world, m_cameraPos, viewportSize);
+                    if (std::hypot(mouseScreen.x - sPt.x, mouseScreen.y - sPt.y) <= 12.0f)
                     {
-                        clickedAxis = 4; // Rotate
+                        clickedVertexIdx = static_cast<int>(i);
+                        break;
                     }
                 }
             }
 
-            if (clickedAxis > 0)
+            if (clickedVertexIdx >= 0)
             {
-                state.recordUndo("Transform " + (selObj ? selObj->name : "GameObject"));
-                m_isDraggingGizmo = true;
-                m_dragGizmoAxis = clickedAxis;
-                m_dragStartMouse = mouseScreen;
-                m_dragStartWorldPos = selObj->position;
-                m_dragStartAngle = selObj->angle;
-                m_dragStartScale = selObj->scale;
+                state.recordUndo("Move Collider Vertex");
+                state.selectedColliderVertexIdx = clickedVertexIdx;
+                m_isDraggingColliderVertex = true;
+                m_dragVertexIdx = clickedVertexIdx;
             }
             else
             {
-                // Object picking in scene
-                RoninEngine::Runtime::Vec2 worldMouse = ScreenToWorld(mouseScreen, m_cameraPos, viewportSize);
-                int pickedId = state.pickObjectAt(worldMouse);
-                state.selectObject(pickedId, io.KeyCtrl);
+                // Check if clicking Gizmo handles of selected object
+                int clickedAxis = 0;
+                if (selObj)
+                {
+                    // Center box
+                    if (std::hypot(mouseScreen.x - objScreen.x, mouseScreen.y - objScreen.y) <= 12.0f)
+                    {
+                        clickedAxis = 3; // Center / Free move
+                    }
+                    // X handle (pointing right)
+                    else if (mouseScreen.x >= objScreen.x && mouseScreen.x <= objScreen.x + handleLength &&
+                             std::abs(mouseScreen.y - objScreen.y) <= handleHitRadius)
+                    {
+                        clickedAxis = 1; // X axis
+                    }
+                    // Y handle (pointing up in world = pointing up in screen = -Y)
+                    else if (mouseScreen.y <= objScreen.y && mouseScreen.y >= objScreen.y - handleLength &&
+                             std::abs(mouseScreen.x - objScreen.x) <= handleHitRadius)
+                    {
+                        clickedAxis = 2; // Y axis
+                    }
+                    // Rotation ring
+                    else if (state.gizmoTool == GizmoToolMode::Rotate)
+                    {
+                        float dist = std::hypot(mouseScreen.x - objScreen.x, mouseScreen.y - objScreen.y);
+                        if (std::abs(dist - 45.0f) <= 10.0f)
+                        {
+                            clickedAxis = 4; // Rotate
+                        }
+                    }
+                }
+
+                if (clickedAxis > 0)
+                {
+                    state.recordUndo("Transform " + (selObj ? selObj->name : "GameObject"));
+                    m_isDraggingGizmo = true;
+                    m_dragGizmoAxis = clickedAxis;
+                    m_dragStartMouse = mouseScreen;
+                    m_dragStartWorldPos = selObj->position;
+                    m_dragStartAngle = selObj->angle;
+                    m_dragStartScale = selObj->scale;
+                }
+                else
+                {
+                    // Object picking in scene
+                    RoninEngine::Runtime::Vec2 worldMouse = ScreenToWorld(mouseScreen, m_cameraPos, viewportSize);
+                    int pickedId = state.pickObjectAt(worldMouse);
+                    state.selectObject(pickedId, io.KeyCtrl);
+                }
             }
         }
 
@@ -554,6 +590,37 @@ namespace RoninEditor
             {
                 m_isDraggingGizmo = false;
                 m_dragGizmoAxis = 0;
+            }
+        }
+
+        // Dragging Collider Vertex update
+        if (m_isDraggingColliderVertex)
+        {
+            if (io.MouseDown[0] && selObj && selObj->multiCollider2D.enabled &&
+                m_dragVertexIdx >= 0 && m_dragVertexIdx < static_cast<int>(selObj->multiCollider2D.points.size()))
+            {
+                RoninEngine::Runtime::Vec2 worldMouse = ScreenToWorld(mouseScreen, m_cameraPos, viewportSize);
+                float rad = -selObj->angle * (3.1415926535f / 180.0f);
+                float cosA = std::cos(rad);
+                float sinA = std::sin(rad);
+                RoninEngine::Runtime::Vec2 d = {worldMouse.x - selObj->position.x, worldMouse.y - selObj->position.y};
+                RoninEngine::Runtime::Vec2 unrot = {
+                    d.x * cosA - d.y * sinA,
+                    d.x * sinA + d.y * cosA
+                };
+                float sx = std::abs(selObj->scale.x) > 1e-4f ? selObj->scale.x : 1.0f;
+                float sy = std::abs(selObj->scale.y) > 1e-4f ? selObj->scale.y : 1.0f;
+                RoninEngine::Runtime::Vec2 newLocalPt = {
+                    (unrot.x / sx) - selObj->multiCollider2D.offset.x,
+                    (unrot.y / sy) - selObj->multiCollider2D.offset.y
+                };
+                selObj->multiCollider2D.points[m_dragVertexIdx] = newLocalPt;
+                state.isDirty = true;
+            }
+            else
+            {
+                m_isDraggingColliderVertex = false;
+                m_dragVertexIdx = -1;
             }
         }
     }
@@ -875,6 +942,70 @@ namespace RoninEditor
                     SDL_RenderDrawLine(m_renderer, dX - 6, dY, dX + 6, dY);
                     SDL_RenderDrawLine(m_renderer, dX, dY - 6, dX, dY + 6);
                     drawWireCircle(m_renderer, dX, dY, 4);
+                }
+            }
+
+            // G. MultiCollider2D Gizmo
+            if (obj.multiCollider2D.enabled && !obj.multiCollider2D.points.empty())
+            {
+                float rad = obj.angle * (3.1415926535f / 180.0f);
+                float cosA = std::cos(rad);
+                float sinA = std::sin(rad);
+                const auto &pts = obj.multiCollider2D.points;
+                size_t n = pts.size();
+
+                std::vector<RoninEngine::Runtime::Vec2> screenPts(n);
+                for (size_t i = 0; i < n; ++i)
+                {
+                    RoninEngine::Runtime::Vec2 local = {
+                        (pts[i].x + obj.multiCollider2D.offset.x) * obj.scale.x,
+                        (pts[i].y + obj.multiCollider2D.offset.y) * obj.scale.y
+                    };
+                    RoninEngine::Runtime::Vec2 world = {
+                        obj.position.x + local.x * cosA - local.y * sinA,
+                        obj.position.y + local.x * sinA + local.y * cosA
+                    };
+                    screenPts[i] = WorldToScreen(world, m_cameraPos, viewSize);
+                }
+
+                // Draw wire polygon edges (green)
+                SDL_SetRenderDrawColor(m_renderer, 50, 240, 90, 220);
+                for (size_t i = 0; i < n; ++i)
+                {
+                    if (!obj.multiCollider2D.isClosed && i + 1 == n)
+                        break;
+                    size_t next = (i + 1) % n;
+                    SDL_RenderDrawLine(m_renderer,
+                        static_cast<int>(screenPts[i].x), static_cast<int>(screenPts[i].y),
+                        static_cast<int>(screenPts[next].x), static_cast<int>(screenPts[next].y));
+                }
+
+                // If this object is selected, render vertex handles
+                if (state.selectedObjectId == obj.id)
+                {
+                    for (size_t i = 0; i < n; ++i)
+                    {
+                        int px = static_cast<int>(screenPts[i].x);
+                        int py = static_cast<int>(screenPts[i].y);
+                        bool isSelVertex = (state.selectedColliderVertexIdx == static_cast<int>(i));
+
+                        if (isSelVertex)
+                        {
+                            SDL_SetRenderDrawColor(m_renderer, 255, 230, 40, 255); // Yellow for selected vertex
+                            SDL_Rect r = {px - 5, py - 5, 11, 11};
+                            SDL_RenderFillRect(m_renderer, &r);
+                            SDL_SetRenderDrawColor(m_renderer, 20, 20, 20, 255);
+                            SDL_RenderDrawRect(m_renderer, &r);
+                        }
+                        else
+                        {
+                            SDL_SetRenderDrawColor(m_renderer, 40, 220, 90, 255); // Green handle
+                            SDL_Rect r = {px - 4, py - 4, 9, 9};
+                            SDL_RenderFillRect(m_renderer, &r);
+                            SDL_SetRenderDrawColor(m_renderer, 20, 20, 20, 255);
+                            SDL_RenderDrawRect(m_renderer, &r);
+                        }
+                    }
                 }
             }
         }

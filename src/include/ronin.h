@@ -54,6 +54,8 @@
 #include "NavMeshAgent.h"
 #include "RenderUtility.h"
 #include "Physics2D.h"
+#include "BoxCollider2D.h"
+#include "MultiCollider2D.h"
 
 #include "end.h"
 

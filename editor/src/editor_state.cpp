@@ -689,6 +689,7 @@ namespace RoninEditor
         if (obj.physics.colliderEnabled && obj.physics.componentId == 0) obj.physics.componentId = w.allocateComponentId();
         if (obj.rigidbody2D.enabled && obj.rigidbody2D.componentId == 0) obj.rigidbody2D.componentId = w.allocateComponentId();
         if (obj.boxCollider2D.enabled && obj.boxCollider2D.componentId == 0) obj.boxCollider2D.componentId = w.allocateComponentId();
+        if (obj.multiCollider2D.enabled && obj.multiCollider2D.componentId == 0) obj.multiCollider2D.componentId = w.allocateComponentId();
         if (obj.navMeshAgent.enabled && obj.navMeshAgent.componentId == 0) obj.navMeshAgent.componentId = w.allocateComponentId();
         if (obj.audio.enabled && obj.audio.componentId == 0) obj.audio.componentId = w.allocateComponentId();
         if (obj.script.enabled && obj.script.componentId == 0) obj.script.componentId = w.allocateComponentId();
@@ -724,6 +725,8 @@ namespace RoninEditor
         if (obj.physics.colliderEnabled || obj.physics.moveControllerEnabled) obj.physics.componentId = w.allocateComponentId();
         if (obj.rigidbody2D.enabled) obj.rigidbody2D.componentId = w.allocateComponentId();
         if (obj.boxCollider2D.enabled) obj.boxCollider2D.componentId = w.allocateComponentId();
+        if (obj.multiCollider2D.enabled) obj.multiCollider2D.componentId = w.allocateComponentId();
+        if (obj.navMeshAgent.enabled) obj.navMeshAgent.componentId = w.allocateComponentId();
         if (obj.audio.enabled) obj.audio.componentId = w.allocateComponentId();
         if (obj.script.enabled) obj.script.componentId = w.allocateComponentId();
     }
@@ -1643,7 +1646,7 @@ namespace RoninEditor
         bool hasPhysicsObjects = false;
         for (const auto &obj : w.objects)
         {
-            if (obj.active && (obj.rigidbody2D.enabled || obj.boxCollider2D.enabled))
+            if (obj.active && (obj.rigidbody2D.enabled || obj.boxCollider2D.enabled || obj.multiCollider2D.enabled))
             {
                 hasPhysicsObjects = true;
                 break;
@@ -1660,11 +1663,24 @@ namespace RoninEditor
                 if (!obj.active)
                     continue;
 
-                if (obj.rigidbody2D.enabled || obj.boxCollider2D.enabled)
+                if (obj.rigidbody2D.enabled || obj.boxCollider2D.enabled || obj.multiCollider2D.enabled)
                 {
                     Vec2 size = {1.0f, 1.0f};
                     if (obj.boxCollider2D.enabled)
                         size = obj.boxCollider2D.size;
+                    else if (obj.multiCollider2D.enabled && !obj.multiCollider2D.points.empty())
+                    {
+                        float minX = obj.multiCollider2D.points[0].x, maxX = minX;
+                        float minY = obj.multiCollider2D.points[0].y, maxY = minY;
+                        for (const auto &p : obj.multiCollider2D.points)
+                        {
+                            minX = std::min(minX, p.x);
+                            maxX = std::max(maxX, p.x);
+                            minY = std::min(minY, p.y);
+                            maxY = std::max(maxY, p.y);
+                        }
+                        size = {std::max(0.1f, maxX - minX), std::max(0.1f, maxY - minY)};
+                    }
                     else if (obj.sprite.enabled)
                         size = {obj.sprite.size.x * obj.scale.x, obj.sprite.size.y * obj.scale.y};
 
@@ -1694,6 +1710,12 @@ namespace RoninEditor
                         body->friction = obj.boxCollider2D.friction;
                         body->restitution = obj.boxCollider2D.bounciness;
                         body->isTrigger = obj.boxCollider2D.isTrigger;
+                    }
+                    else if (obj.multiCollider2D.enabled)
+                    {
+                        body->friction = obj.multiCollider2D.friction;
+                        body->restitution = obj.multiCollider2D.bounciness;
+                        body->isTrigger = obj.multiCollider2D.isTrigger;
                     }
 
                     body->Set(body->width, body->mass);
@@ -2056,6 +2078,24 @@ namespace RoninEditor
         jbox["friction"] = static_cast<double>(obj.boxCollider2D.friction);
         jbox["bounciness"] = static_cast<double>(obj.boxCollider2D.bounciness);
         jo["boxCollider2D"] = jbox;
+
+        // MultiCollider2D
+        json::JSON jmulti = json::JSON::Make(json::JSON::Class::Object);
+        jmulti["componentId"] = obj.multiCollider2D.componentId;
+        jmulti["enabled"] = obj.multiCollider2D.enabled;
+        json::JSON jpoints = json::JSON::Make(json::JSON::Class::Array);
+        for (const auto &pt : obj.multiCollider2D.points)
+        {
+            jpoints.append(vec2ToJson(pt));
+        }
+        jmulti["points"] = jpoints;
+        jmulti["offset"] = vec2ToJson(obj.multiCollider2D.offset);
+        jmulti["isTrigger"] = obj.multiCollider2D.isTrigger;
+        jmulti["density"] = static_cast<double>(obj.multiCollider2D.density);
+        jmulti["friction"] = static_cast<double>(obj.multiCollider2D.friction);
+        jmulti["bounciness"] = static_cast<double>(obj.multiCollider2D.bounciness);
+        jmulti["isClosed"] = obj.multiCollider2D.isClosed;
+        jo["multiCollider2D"] = jmulti;
 
         // NavMeshAgent
         json::JSON jagent = json::JSON::Make(json::JSON::Class::Object);
@@ -2501,6 +2541,35 @@ namespace RoninEditor
                 obj.boxCollider2D.bounciness = jsonToFloat(jbox.at("bounciness"), 0.0f);
         }
 
+        if (jo.hasKey("multiCollider2D"))
+        {
+            const json::JSON &jmulti = jo.at("multiCollider2D");
+            if (jmulti.hasKey("componentId"))
+                obj.multiCollider2D.componentId = jsonToInt(jmulti.at("componentId"));
+            if (jmulti.hasKey("enabled"))
+                obj.multiCollider2D.enabled = jsonToBool(jmulti.at("enabled"));
+            if (jmulti.hasKey("points") && jmulti.at("points").JSONType() == json::JSON::Class::Array)
+            {
+                obj.multiCollider2D.points.clear();
+                for (const auto &item : jmulti.at("points").ArrayRange())
+                {
+                    obj.multiCollider2D.points.push_back(jsonToVec2(item, {0.0f, 0.0f}));
+                }
+            }
+            if (jmulti.hasKey("offset"))
+                obj.multiCollider2D.offset = jsonToVec2(jmulti.at("offset"), obj.multiCollider2D.offset);
+            if (jmulti.hasKey("isTrigger"))
+                obj.multiCollider2D.isTrigger = jsonToBool(jmulti.at("isTrigger"), false);
+            if (jmulti.hasKey("density"))
+                obj.multiCollider2D.density = jsonToFloat(jmulti.at("density"), 1.0f);
+            if (jmulti.hasKey("friction"))
+                obj.multiCollider2D.friction = jsonToFloat(jmulti.at("friction"), 0.4f);
+            if (jmulti.hasKey("bounciness"))
+                obj.multiCollider2D.bounciness = jsonToFloat(jmulti.at("bounciness"), 0.1f);
+            if (jmulti.hasKey("isClosed"))
+                obj.multiCollider2D.isClosed = jsonToBool(jmulti.at("isClosed"), true);
+        }
+
         if (jo.hasKey("navMeshAgent"))
         {
             const json::JSON &jagent = jo.at("navMeshAgent");
@@ -2897,6 +2966,35 @@ namespace RoninEditor
                         obj.boxCollider2D.bounciness = jsonToFloat(jbox.at("bounciness"), 0.0f);
                 }
 
+                if (jo.hasKey("multiCollider2D"))
+                {
+                    const json::JSON &jmulti = jo.at("multiCollider2D");
+                    if (jmulti.hasKey("componentId"))
+                        obj.multiCollider2D.componentId = jsonToInt(jmulti.at("componentId"));
+                    if (jmulti.hasKey("enabled"))
+                        obj.multiCollider2D.enabled = jsonToBool(jmulti.at("enabled"));
+                    if (jmulti.hasKey("points") && jmulti.at("points").JSONType() == json::JSON::Class::Array)
+                    {
+                        obj.multiCollider2D.points.clear();
+                        for (const auto &item : jmulti.at("points").ArrayRange())
+                        {
+                            obj.multiCollider2D.points.push_back(jsonToVec2(item, {0.0f, 0.0f}));
+                        }
+                    }
+                    if (jmulti.hasKey("offset"))
+                        obj.multiCollider2D.offset = jsonToVec2(jmulti.at("offset"), obj.multiCollider2D.offset);
+                    if (jmulti.hasKey("isTrigger"))
+                        obj.multiCollider2D.isTrigger = jsonToBool(jmulti.at("isTrigger"), false);
+                    if (jmulti.hasKey("density"))
+                        obj.multiCollider2D.density = jsonToFloat(jmulti.at("density"), 1.0f);
+                    if (jmulti.hasKey("friction"))
+                        obj.multiCollider2D.friction = jsonToFloat(jmulti.at("friction"), 0.4f);
+                    if (jmulti.hasKey("bounciness"))
+                        obj.multiCollider2D.bounciness = jsonToFloat(jmulti.at("bounciness"), 0.1f);
+                    if (jmulti.hasKey("isClosed"))
+                        obj.multiCollider2D.isClosed = jsonToBool(jmulti.at("isClosed"), true);
+                }
+
                 if (jo.hasKey("navMeshAgent"))
                 {
                     const json::JSON &jagent = jo.at("navMeshAgent");
@@ -2969,6 +3067,7 @@ namespace RoninEditor
                 if (obj.physics.colliderEnabled && obj.physics.componentId == 0) obj.physics.componentId = w.allocateComponentId();
                 if (obj.rigidbody2D.enabled && obj.rigidbody2D.componentId == 0) obj.rigidbody2D.componentId = w.allocateComponentId();
                 if (obj.boxCollider2D.enabled && obj.boxCollider2D.componentId == 0) obj.boxCollider2D.componentId = w.allocateComponentId();
+                if (obj.multiCollider2D.enabled && obj.multiCollider2D.componentId == 0) obj.multiCollider2D.componentId = w.allocateComponentId();
                 if (obj.navMeshAgent.enabled && obj.navMeshAgent.componentId == 0) obj.navMeshAgent.componentId = w.allocateComponentId();
                 if (obj.audio.enabled && obj.audio.componentId == 0) obj.audio.componentId = w.allocateComponentId();
                 if (obj.script.enabled && obj.script.componentId == 0) obj.script.componentId = w.allocateComponentId();
@@ -3323,6 +3422,7 @@ namespace RoninEditor
         rootObj.physics.componentId = 0;
         rootObj.rigidbody2D.componentId = 0;
         rootObj.boxCollider2D.componentId = 0;
+        rootObj.multiCollider2D.componentId = 0;
         rootObj.navMeshAgent.componentId = 0;
         rootObj.audio.componentId = 0;
         rootObj.script.componentId = 0;
@@ -3360,6 +3460,7 @@ namespace RoninEditor
                 childObj.physics.componentId = 0;
                 childObj.rigidbody2D.componentId = 0;
                 childObj.boxCollider2D.componentId = 0;
+                childObj.multiCollider2D.componentId = 0;
                 childObj.navMeshAgent.componentId = 0;
                 childObj.audio.componentId = 0;
                 childObj.script.componentId = 0;

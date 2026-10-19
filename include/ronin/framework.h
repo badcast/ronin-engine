@@ -47,6 +47,8 @@
 #include "Rigidbody2D.h"
 #include "BoxCollider2D.h"
 #include "CircleCollider2D.h"
+#include "MultiCollider2D.h"
+#include "NavMeshAgent.h"
 
 #include "end.h"
 

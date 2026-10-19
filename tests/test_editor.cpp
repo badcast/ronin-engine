@@ -819,6 +819,44 @@ int main()
 
             std::cout << "  [PASS] Test 29: Miniaudio AudioClip PCM buffer management validated" << std::endl;
         }
+
+        // 30. Test MultiCollider2D component in EditorState & World JSON serialization
+        {
+            auto &polyObj = editorState.createObject("CustomPolygonZone");
+            polyObj.multiCollider2D.enabled = true;
+            polyObj.multiCollider2D.componentId = editorState.activeWorld().allocateComponentId();
+            polyObj.multiCollider2D.points = {{-1.0f, -0.5f}, {1.0f, -0.5f}, {1.5f, 0.5f}, {-0.5f, 1.0f}};
+            polyObj.multiCollider2D.offset = {0.2f, -0.1f};
+            polyObj.multiCollider2D.isTrigger = true;
+            polyObj.multiCollider2D.isClosed = true;
+            polyObj.multiCollider2D.density = 2.5f;
+            polyObj.multiCollider2D.friction = 0.65f;
+            polyObj.multiCollider2D.bounciness = 0.35f;
+
+            std::filesystem::path polyWorldPath = expectedRoot / "Assets" / "Worlds" / "PolyColliderWorld.world";
+            assert(editorState.saveWorldToFile(polyWorldPath.string()));
+
+            EditorState reloadState;
+            assert(reloadState.loadWorldFromFile(polyWorldPath.string()));
+            EditorObject *reloadedPoly = reloadState.findObject(polyObj.id);
+            assert(reloadedPoly != nullptr);
+            assert(reloadedPoly->multiCollider2D.enabled);
+            assert(reloadedPoly->multiCollider2D.componentId == polyObj.multiCollider2D.componentId);
+            assert(reloadedPoly->multiCollider2D.points.size() == 4);
+            assert(std::abs(reloadedPoly->multiCollider2D.points[0].x - -1.0f) < 0.001f);
+            assert(std::abs(reloadedPoly->multiCollider2D.points[0].y - -0.5f) < 0.001f);
+            assert(std::abs(reloadedPoly->multiCollider2D.points[2].x - 1.5f) < 0.001f);
+            assert(std::abs(reloadedPoly->multiCollider2D.points[2].y - 0.5f) < 0.001f);
+            assert(std::abs(reloadedPoly->multiCollider2D.offset.x - 0.2f) < 0.001f);
+            assert(std::abs(reloadedPoly->multiCollider2D.offset.y - -0.1f) < 0.001f);
+            assert(reloadedPoly->multiCollider2D.isTrigger == true);
+            assert(reloadedPoly->multiCollider2D.isClosed == true);
+            assert(std::abs(reloadedPoly->multiCollider2D.density - 2.5f) < 0.001f);
+            assert(std::abs(reloadedPoly->multiCollider2D.friction - 0.65f) < 0.001f);
+            assert(std::abs(reloadedPoly->multiCollider2D.bounciness - 0.35f) < 0.001f);
+
+            std::cout << "  [PASS] Test 30: MultiCollider2D EditorState serialization & properties validated" << std::endl;
+        }
     }
 
     // Cleanup

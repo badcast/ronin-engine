@@ -64,6 +64,10 @@ namespace RoninEditor
         float m_dragStartAngle = 0.0f;
         RoninEngine::Runtime::Vec2 m_dragStartScale = {1.0f, 1.0f};
 
+        // Collider Vertex Dragging State
+        bool m_isDraggingColliderVertex = false;
+        int m_dragVertexIdx = -1;
+
         // Panning State
         bool m_isPanning = false;
         RoninEngine::Runtime::Vec2 m_panStartMouse = {0.0f, 0.0f};

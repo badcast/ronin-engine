@@ -249,6 +249,36 @@ namespace RoninEditor
         }
     };
 
+    struct MultiCollider2DData
+    {
+        int componentId = 0;
+        bool enabled = false;
+        std::vector<RoninEngine::Runtime::Vec2> points;
+        RoninEngine::Runtime::Vec2 offset = {0.0f, 0.0f};
+        bool isTrigger = false;
+        float density = 1.0f;
+        float friction = 0.4f;
+        float bounciness = 0.1f;
+        bool isClosed = true;
+
+        void reset()
+        {
+            enabled = false;
+            offset = {0.0f, 0.0f};
+            isTrigger = false;
+            density = 1.0f;
+            friction = 0.4f;
+            bounciness = 0.1f;
+            isClosed = true;
+            points = {
+                RoninEngine::Runtime::Vec2(-0.5f, -0.5f),
+                RoninEngine::Runtime::Vec2( 0.5f, -0.5f),
+                RoninEngine::Runtime::Vec2( 0.5f,  0.5f),
+                RoninEngine::Runtime::Vec2(-0.5f,  0.5f)
+            };
+        }
+    };
+
     struct EditorObject
     {
         int id = 0;
@@ -271,6 +301,7 @@ namespace RoninEditor
         PhysicsControllerData physics;
         Rigidbody2DData rigidbody2D;
         BoxCollider2DData boxCollider2D;
+        MultiCollider2DData multiCollider2D;
         NavMeshAgentData navMeshAgent;
         AudioSourceData audio;
         MotionScriptData script;
@@ -471,6 +502,10 @@ namespace RoninEditor
         bool terrainShowStrokes = true;
         float terrainCanvasZoom = 1.0f;
         bool isTerrainEditorOpen = true;
+
+        // MultiCollider2D vertex editing state
+        bool editColliderVertices = false;
+        int selectedColliderVertexIdx = -1;
 
         // Logs
         std::vector<EditorLogEntry> logs;

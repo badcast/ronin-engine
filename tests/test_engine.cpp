@@ -226,8 +226,104 @@ int main()
     assert(popped == true);
     assert(gui->ElementContains(btn) == false);
 
+    // 9. MultiCollider2D Component & SAT Collision System
+    std::cout << "[9/9] Testing MultiCollider2D (Vertices, Presets, SAT, Raycast, ContainsPoint)..." << std::endl;
+    GameObjectRef polyObjA = Primitive::CreateEmptyGameObject("PolyA");
+    MultiCollider2DRef colA = polyObjA->AddComponent<MultiCollider2D>();
+    assert(colA != nullptr);
+
+    // Initial state: default 1x1 box preset (4 vertices)
+    assert(colA->getPointCount() == 4);
+    assert(colA->isClosed == true);
+
+    // Clear and point manipulation
+    colA->clear();
+    assert(colA->getPointCount() == 0);
+    colA->addPoint({0.0f, 0.0f});
+    colA->addPoint({2.0f, 0.0f});
+    colA->addPoint({2.0f, 2.0f});
+    colA->addPoint({0.0f, 2.0f});
+    assert(colA->getPointCount() == 4);
+    assert(colA->getPoint(1) == Vec2(2.0f, 0.0f));
+
+    colA->setPoint(1, {3.0f, 0.0f});
+    assert(colA->getPoint(1) == Vec2(3.0f, 0.0f));
+    colA->setPoint(1, {2.0f, 0.0f});
+
+    colA->insertPoint(2, {2.5f, 1.0f});
+    assert(colA->getPointCount() == 5);
+    assert(colA->getPoint(2) == Vec2(2.5f, 1.0f));
+    colA->removePoint(2);
+    assert(colA->getPointCount() == 4);
+
+    // Presets
+    colA->setBox(2.0f, 2.0f);
+    assert(colA->getPointCount() == 4);
+    assert(std::abs(colA->computeArea() - 4.0f) < 0.001f);
+    assert(colA->isConvex() == true);
+    Vec2 centroid = colA->computeCentroid();
+    assert(std::abs(centroid.x) < 0.001f && std::abs(centroid.y) < 0.001f);
+
+    // Containment
+    assert(colA->containsPoint({0.0f, 0.0f}) == true);
+    assert(colA->containsPoint({0.5f, 0.5f}) == true);
+    assert(colA->containsPoint({2.0f, 0.0f}) == false);
+
+    // SAT Intersections with another MultiCollider2D
+    GameObjectRef polyObjB = Primitive::CreateEmptyGameObject("PolyB");
+    MultiCollider2DRef colB = polyObjB->AddComponent<MultiCollider2D>();
+    colB->setBox(2.0f, 2.0f);
+    polyObjB->transform()->position(Vec2(1.5f, 0.0f));
+
+    // Overlapping boxes (colA is [-1, 1], colB is [0.5, 2.5])
+    assert(colA->intersects(colB) == true);
+    assert(colB->intersects(colA) == true);
+
+    // Move away -> separated
+    polyObjB->transform()->position(Vec2(5.0f, 0.0f));
+    assert(colA->intersects(colB) == false);
+    assert(colB->intersects(colA) == false);
+
+    // SAT Intersections with BoxCollider2D
+    GameObjectRef boxObj = Primitive::CreateEmptyGameObject("BoxObj");
+    BoxCollider2DRef boxCol = boxObj->AddComponent<BoxCollider2D>();
+    boxCol->size = {2.0f, 2.0f};
+    boxObj->transform()->position(Vec2(0.5f, 0.5f));
+    assert(colA->intersects(boxCol) == true);
+
+    boxObj->transform()->position(Vec2(10.0f, 0.0f));
+    assert(colA->intersects(boxCol) == false);
+
+    // Circle Distance Check
+    assert(colA->intersectsCircle(Vec2(0.0f, 0.0f), 0.5f) == true);
+    assert(colA->intersectsCircle(Vec2(5.0f, 0.0f), 0.5f) == false);
+
+    // Raycast
+    Vec2 hitPt;
+    float hitDist = 0.0f;
+    bool didHit = colA->raycast(Vec2(-3.0f, 0.0f), Vec2(1.0f, 0.0f), hitPt, hitDist);
+    assert(didHit == true);
+    assert(std::abs(hitDist - 2.0f) < 0.01f);
+    assert(std::abs(hitPt.x - -1.0f) < 0.01f);
+
+    bool didMiss = colA->raycast(Vec2(-3.0f, 0.0f), Vec2(0.0f, 1.0f), hitPt, hitDist);
+    assert(didMiss == false);
+
+    // Triangle preset & Regular Polygon & Star presets
+    colA->setTriangle(2.0f, 2.0f);
+    assert(colA->getPointCount() == 3);
+    assert(colA->isConvex() == true);
+
+    colA->setRegularPolygon(6, 1.0f);
+    assert(colA->getPointCount() == 6);
+    assert(colA->isConvex() == true);
+
+    colA->setStar(5, 2.0f, 1.0f);
+    assert(colA->getPointCount() == 10);
+    assert(colA->isConvex() == false);
+
     std::cout << "========================================" << std::endl;
-    std::cout << "All Comprehensive Unit Tests PASSED! [8/8]" << std::endl;
+    std::cout << "All Comprehensive Unit Tests PASSED! [9/9]" << std::endl;
     std::cout << "========================================" << std::endl;
     return 0;
 }

@@ -290,6 +290,10 @@ namespace RoninEditor
             clone.boxCollider2D = obj.boxCollider2D;
             clone.boxCollider2D.componentId = w.allocateComponentId();
             break;
+        case ComponentType::MultiCollider2D:
+            clone.multiCollider2D = obj.multiCollider2D;
+            clone.multiCollider2D.componentId = w.allocateComponentId();
+            break;
         case ComponentType::NavMeshAgent:
             clone.navMeshAgent = obj.navMeshAgent;
             clone.navMeshAgent.componentId = w.allocateComponentId();
@@ -1138,6 +1142,331 @@ namespace RoninEditor
         }
     }
 
+    void InspectorPanel::renderMultiCollider2DComponent(EditorState &state, EditorObject &obj)
+    {
+        if (!obj.multiCollider2D.enabled) return;
+        if (obj.multiCollider2D.componentId == 0) obj.multiCollider2D.componentId = state.activeWorld().allocateComponentId();
+
+        ComponentHeaderResult hr = renderComponentHeader("Multi Collider 2D", obj.multiCollider2D.componentId, ComponentType::MultiCollider2D, true);
+        if (hr.reset)
+        {
+            int oldId = obj.multiCollider2D.componentId;
+            obj.multiCollider2D.reset();
+            obj.multiCollider2D.enabled = true;
+            obj.multiCollider2D.componentId = oldId;
+            state.isDirty = true;
+        }
+        if (hr.remove)
+        {
+            obj.multiCollider2D.enabled = false;
+            state.isDirty = true;
+            return;
+        }
+        if (hr.copy)
+        {
+            m_clipboard.hasData = true;
+            m_clipboard.type = ComponentType::MultiCollider2D;
+            m_clipboard.multiCollider2D = obj.multiCollider2D;
+            state.logInfo("Copied Multi Collider 2D [ID: " + std::to_string(obj.multiCollider2D.componentId) + "]");
+        }
+        if (hr.paste && m_clipboard.hasData && m_clipboard.type == ComponentType::MultiCollider2D)
+        {
+            int oldId = obj.multiCollider2D.componentId;
+            obj.multiCollider2D = m_clipboard.multiCollider2D;
+            obj.multiCollider2D.componentId = oldId ? oldId : state.activeWorld().allocateComponentId();
+            obj.multiCollider2D.enabled = true;
+            state.isDirty = true;
+            state.logInfo("Pasted Multi Collider 2D values");
+        }
+        if (hr.duplicate)
+        {
+            m_clipboard.hasData = true;
+            m_clipboard.type = ComponentType::MultiCollider2D;
+            m_clipboard.multiCollider2D = obj.multiCollider2D;
+            duplicateComponentToNewObject(state, obj, ComponentType::MultiCollider2D, "Multi Collider 2D");
+            return;
+        }
+
+        if (hr.isOpen)
+        {
+            // Viewport editing mode toggle
+            bool isEditing = state.editColliderVertices;
+            if (isEditing)
+            {
+                ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.2f, 0.6f, 0.3f, 1.0f));
+                ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.25f, 0.7f, 0.35f, 1.0f));
+            }
+            if (ImGui::Button(isEditing ? "Editing Vertices in Viewport (Active)" : "Edit Vertices in Viewport", ImVec2(ImGui::GetContentRegionAvail().x, 26.0f)))
+            {
+                state.editColliderVertices = !state.editColliderVertices;
+            }
+            if (isEditing)
+            {
+                ImGui::PopStyleColor(2);
+            }
+            if (ImGui::IsItemHovered())
+            {
+                ImGui::SetTooltip("When active, click and drag vertex handles directly in the Scene Viewport to reshape collider");
+            }
+
+            ImGui::Spacing();
+            drawVec2Control("Offset", obj.multiCollider2D.offset, 0.0f);
+
+            if (ImGui::Checkbox("Is Trigger", &obj.multiCollider2D.isTrigger))
+            {
+                state.isDirty = true;
+            }
+            ImGui::SameLine();
+            if (ImGui::Checkbox("Is Closed Loop", &obj.multiCollider2D.isClosed))
+            {
+                state.isDirty = true;
+            }
+
+            if (ImGui::SliderFloat("Friction##Multi", &obj.multiCollider2D.friction, 0.0f, 1.0f, "%.2f"))
+            {
+                state.isDirty = true;
+            }
+            if (ImGui::SliderFloat("Bounciness##Multi", &obj.multiCollider2D.bounciness, 0.0f, 1.0f, "%.2f"))
+            {
+                state.isDirty = true;
+            }
+            if (ImGui::DragFloat("Density##Multi", &obj.multiCollider2D.density, 0.1f, 0.001f, 100.0f, "%.2f"))
+            {
+                state.isDirty = true;
+            }
+
+            ImGui::Spacing();
+            ImGui::Separator();
+            ImGui::TextColored(ImVec4(0.4f, 0.8f, 1.0f, 1.0f), "Shape Presets:");
+
+            if (ImGui::Button("Box##MC2D"))
+            {
+                obj.multiCollider2D.points = {{-0.5f, -0.5f}, {0.5f, -0.5f}, {0.5f, 0.5f}, {-0.5f, 0.5f}};
+                state.isDirty = true;
+            }
+            ImGui::SameLine();
+            if (ImGui::Button("Triangle##MC2D"))
+            {
+                obj.multiCollider2D.points = {{0.0f, 0.5f}, {0.5f, -0.5f}, {-0.5f, -0.5f}};
+                state.isDirty = true;
+            }
+            ImGui::SameLine();
+            if (ImGui::Button("Pentagon##MC2D"))
+            {
+                obj.multiCollider2D.points.clear();
+                for (int i = 0; i < 5; ++i)
+                {
+                    float a = i * 2.0f * RoninEngine::Runtime::Math::Pi / 5.0f - RoninEngine::Runtime::Math::Pi / 2.0f;
+                    obj.multiCollider2D.points.push_back({0.5f * std::cos(a), 0.5f * std::sin(a)});
+                }
+                state.isDirty = true;
+            }
+            ImGui::SameLine();
+            if (ImGui::Button("Hexagon##MC2D"))
+            {
+                obj.multiCollider2D.points.clear();
+                for (int i = 0; i < 6; ++i)
+                {
+                    float a = i * 2.0f * RoninEngine::Runtime::Math::Pi / 6.0f;
+                    obj.multiCollider2D.points.push_back({0.5f * std::cos(a), 0.5f * std::sin(a)});
+                }
+                state.isDirty = true;
+            }
+
+            if (ImGui::Button("Star##MC2D"))
+            {
+                obj.multiCollider2D.points.clear();
+                for (int i = 0; i < 10; ++i)
+                {
+                    float a = i * RoninEngine::Runtime::Math::Pi / 5.0f - RoninEngine::Runtime::Math::Pi / 2.0f;
+                    float r = (i % 2 == 0) ? 0.6f : 0.25f;
+                    obj.multiCollider2D.points.push_back({r * std::cos(a), r * std::sin(a)});
+                }
+                state.isDirty = true;
+            }
+            ImGui::SameLine();
+            if (ImGui::Button("Capsule##MC2D"))
+            {
+                obj.multiCollider2D.points.clear();
+                float r = 0.3f, h = 0.4f;
+                int segs = 4;
+                for (int i = 0; i <= segs; ++i)
+                {
+                    float a = i * RoninEngine::Runtime::Math::Pi / segs;
+                    obj.multiCollider2D.points.push_back({r * std::cos(a), h * 0.5f + r * std::sin(a)});
+                }
+                for (int i = 0; i <= segs; ++i)
+                {
+                    float a = RoninEngine::Runtime::Math::Pi + i * RoninEngine::Runtime::Math::Pi / segs;
+                    obj.multiCollider2D.points.push_back({r * std::cos(a), -h * 0.5f + r * std::sin(a)});
+                }
+                state.isDirty = true;
+            }
+            ImGui::SameLine();
+            if (ImGui::Button("Circle (8-gon)##MC2D"))
+            {
+                obj.multiCollider2D.points.clear();
+                for (int i = 0; i < 8; ++i)
+                {
+                    float a = i * 2.0f * RoninEngine::Runtime::Math::Pi / 8.0f;
+                    obj.multiCollider2D.points.push_back({0.5f * std::cos(a), 0.5f * std::sin(a)});
+                }
+                state.isDirty = true;
+            }
+
+            ImGui::Spacing();
+            ImGui::Separator();
+            
+            // Header for vertices
+            ImGui::Text("Collider Vertices (%zu):", obj.multiCollider2D.points.size());
+            ImGui::SameLine();
+            if (ImGui::SmallButton("+ Add Vertex"))
+            {
+                RoninEngine::Runtime::Vec2 newPt{0.0f, 0.0f};
+                if (!obj.multiCollider2D.points.empty())
+                {
+                    const auto &last = obj.multiCollider2D.points.back();
+                    newPt = {last.x + 0.2f, last.y};
+                }
+                obj.multiCollider2D.points.push_back(newPt);
+                state.selectedColliderVertexIdx = static_cast<int>(obj.multiCollider2D.points.size()) - 1;
+                state.isDirty = true;
+            }
+            ImGui::SameLine();
+            if (ImGui::SmallButton("Reverse Order"))
+            {
+                std::reverse(obj.multiCollider2D.points.begin(), obj.multiCollider2D.points.end());
+                state.isDirty = true;
+            }
+            ImGui::SameLine();
+            if (ImGui::SmallButton("Clear"))
+            {
+                obj.multiCollider2D.points.clear();
+                state.selectedColliderVertexIdx = -1;
+                state.isDirty = true;
+            }
+
+            // Vertex items list
+            int pointToDelete = -1;
+            int pointToInsertAfter = -1;
+            int moveUpIdx = -1;
+            int moveDownIdx = -1;
+
+            ImGui::BeginChild("VerticesList", ImVec2(0, std::min(220.0f, std::max(70.0f, (float)obj.multiCollider2D.points.size() * 28.0f + 10.0f))), true);
+            for (size_t i = 0; i < obj.multiCollider2D.points.size(); ++i)
+            {
+                ImGui::PushID(static_cast<int>(i));
+                bool isSelected = (state.selectedColliderVertexIdx == static_cast<int>(i));
+                if (isSelected)
+                {
+                    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.3f, 1.0f, 0.4f, 1.0f));
+                }
+
+                char vLabel[32];
+                std::snprintf(vLabel, sizeof(vLabel), "[%zu]", i);
+                if (ImGui::Selectable(vLabel, isSelected, 0, ImVec2(32.0f, 20.0f)))
+                {
+                    state.selectedColliderVertexIdx = static_cast<int>(i);
+                }
+                if (isSelected)
+                {
+                    ImGui::PopStyleColor();
+                }
+
+                ImGui::SameLine();
+                ImGui::SetNextItemWidth(75.0f);
+                if (ImGui::DragFloat("##X", &obj.multiCollider2D.points[i].x, 0.05f, 0.0f, 0.0f, "X: %.2f"))
+                {
+                    state.isDirty = true;
+                }
+                ImGui::SameLine();
+                ImGui::SetNextItemWidth(75.0f);
+                if (ImGui::DragFloat("##Y", &obj.multiCollider2D.points[i].y, 0.05f, 0.0f, 0.0f, "Y: %.2f"))
+                {
+                    state.isDirty = true;
+                }
+
+                ImGui::SameLine();
+                if (ImGui::SmallButton("+"))
+                {
+                    pointToInsertAfter = static_cast<int>(i);
+                }
+                if (ImGui::IsItemHovered()) ImGui::SetTooltip("Insert midpoint vertex after this point");
+
+                ImGui::SameLine();
+                if (ImGui::SmallButton("^") && i > 0)
+                {
+                    moveUpIdx = static_cast<int>(i);
+                }
+
+                ImGui::SameLine();
+                if (ImGui::SmallButton("v") && i + 1 < obj.multiCollider2D.points.size())
+                {
+                    moveDownIdx = static_cast<int>(i);
+                }
+
+                ImGui::SameLine();
+                if (ImGui::SmallButton("-"))
+                {
+                    pointToDelete = static_cast<int>(i);
+                }
+                if (ImGui::IsItemHovered()) ImGui::SetTooltip("Delete this vertex");
+
+                ImGui::PopID();
+            }
+            ImGui::EndChild();
+
+            if (pointToDelete >= 0 && pointToDelete < static_cast<int>(obj.multiCollider2D.points.size()))
+            {
+                obj.multiCollider2D.points.erase(obj.multiCollider2D.points.begin() + pointToDelete);
+                if (state.selectedColliderVertexIdx >= static_cast<int>(obj.multiCollider2D.points.size()))
+                {
+                    state.selectedColliderVertexIdx = static_cast<int>(obj.multiCollider2D.points.size()) - 1;
+                }
+                state.isDirty = true;
+            }
+            if (pointToInsertAfter >= 0 && pointToInsertAfter < static_cast<int>(obj.multiCollider2D.points.size()))
+            {
+                size_t nextIdx = (pointToInsertAfter + 1) % obj.multiCollider2D.points.size();
+                RoninEngine::Runtime::Vec2 p1 = obj.multiCollider2D.points[pointToInsertAfter];
+                RoninEngine::Runtime::Vec2 p2 = obj.multiCollider2D.points[nextIdx];
+                RoninEngine::Runtime::Vec2 mid = {(p1.x + p2.x) * 0.5f, (p1.y + p2.y) * 0.5f};
+                obj.multiCollider2D.points.insert(obj.multiCollider2D.points.begin() + pointToInsertAfter + 1, mid);
+                state.selectedColliderVertexIdx = pointToInsertAfter + 1;
+                state.isDirty = true;
+            }
+            if (moveUpIdx > 0 && moveUpIdx < static_cast<int>(obj.multiCollider2D.points.size()))
+            {
+                std::swap(obj.multiCollider2D.points[moveUpIdx], obj.multiCollider2D.points[moveUpIdx - 1]);
+                state.selectedColliderVertexIdx = moveUpIdx - 1;
+                state.isDirty = true;
+            }
+            if (moveDownIdx >= 0 && moveDownIdx + 1 < static_cast<int>(obj.multiCollider2D.points.size()))
+            {
+                std::swap(obj.multiCollider2D.points[moveDownIdx], obj.multiCollider2D.points[moveDownIdx + 1]);
+                state.selectedColliderVertexIdx = moveDownIdx + 1;
+                state.isDirty = true;
+            }
+
+            // Geometric stats
+            if (obj.multiCollider2D.points.size() >= 3)
+            {
+                float area = 0.0f;
+                size_t n = obj.multiCollider2D.points.size();
+                for (size_t i = 0; i < n; ++i)
+                {
+                    size_t j = (i + 1) % n;
+                    area += obj.multiCollider2D.points[i].x * obj.multiCollider2D.points[j].y;
+                    area -= obj.multiCollider2D.points[j].x * obj.multiCollider2D.points[i].y;
+                }
+                area = 0.5f * std::abs(area);
+
+                ImGui::Spacing();
+                ImGui::TextDisabled("Polygon Area: %.3f sq units (%zu vertices)", area, n);
+            }
+        }
+    }
+
     void InspectorPanel::renderNavMeshAgentComponent(EditorState &state, EditorObject &obj)
     {
         if (!obj.navMeshAgent.enabled) return;
@@ -1520,6 +1849,13 @@ namespace RoninEditor
                 obj.boxCollider2D.reset();
                 obj.boxCollider2D.enabled = true;
                 if (obj.boxCollider2D.componentId == 0) obj.boxCollider2D.componentId = w.allocateComponentId();
+                state.isDirty = true;
+            }
+            if (!obj.multiCollider2D.enabled && ImGui::MenuItem("Multi Collider 2D (Polygon/Custom)"))
+            {
+                obj.multiCollider2D.reset();
+                obj.multiCollider2D.enabled = true;
+                if (obj.multiCollider2D.componentId == 0) obj.multiCollider2D.componentId = w.allocateComponentId();
                 state.isDirty = true;
             }
             if (!obj.navMeshAgent.enabled && ImGui::MenuItem("NavMesh Agent (AI Pathfinding)"))
@@ -2565,6 +2901,8 @@ namespace RoninEditor
             renderRigidbody2DComponent(state, *getObj());
             if (!getObj()) { ImGui::End(); return; }
             renderBoxCollider2DComponent(state, *getObj());
+            if (!getObj()) { ImGui::End(); return; }
+            renderMultiCollider2DComponent(state, *getObj());
             if (!getObj()) { ImGui::End(); return; }
             renderNavMeshAgentComponent(state, *getObj());
             if (!getObj()) { ImGui::End(); return; }

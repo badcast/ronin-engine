@@ -175,6 +175,7 @@ namespace RoninEditor
         IMGUI_CHECKVERSION();
         ImGui::CreateContext();
         ImGuiIO &io = ImGui::GetIO();
+        io.IniFilename = nullptr;
         io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
         io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
         applyDarkTheme();
@@ -185,6 +186,7 @@ namespace RoninEditor
         fontConfig.OversampleV = 2;
         fontConfig.RasterizerMultiply = 1.15f;
 
+        //TODO: Move to Application Resoucrce outside from Operation System (Need cross-platforms)
         const char *candidateFonts[] = {
             "/usr/share/fonts/TTF/Roboto-Medium.ttf",
             "/usr/share/fonts/TTF/Roboto-Regular.ttf",

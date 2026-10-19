@@ -18,6 +18,7 @@ namespace RoninEditor
         PhysicsController,
         Rigidbody2D,
         BoxCollider2D,
+        MultiCollider2D,
         NavMeshAgent,
         AudioSource,
         MotionScript
@@ -42,6 +43,7 @@ namespace RoninEditor
         PhysicsControllerData physics;
         Rigidbody2DData rigidbody2D;
         BoxCollider2DData boxCollider2D;
+        MultiCollider2DData multiCollider2D;
         NavMeshAgentData navMeshAgent;
         AudioSourceData audio;
         MotionScriptData script;
@@ -88,6 +90,7 @@ namespace RoninEditor
         void renderPhysicsComponent(EditorState &state, EditorObject &obj);
         void renderRigidbody2DComponent(EditorState &state, EditorObject &obj);
         void renderBoxCollider2DComponent(EditorState &state, EditorObject &obj);
+        void renderMultiCollider2DComponent(EditorState &state, EditorObject &obj);
         void renderNavMeshAgentComponent(EditorState &state, EditorObject &obj);
         void renderAudioSourceComponent(EditorState &state, EditorObject &obj);
         void renderMotionScriptComponent(EditorState &state, EditorObject &obj);
