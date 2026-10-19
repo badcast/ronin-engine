@@ -547,7 +547,18 @@ int main()
             assert(MetaManager::DetermineAssetType("player.prefab") == AssetType::Prefab);
             assert(MetaManager::DetermineAssetType("ground.terrain") == AssetType::Terrain);
             assert(MetaManager::DetermineAssetType("cutscene.mp4") == AssetType::Video);
-            assert(MetaManager::DetermineAssetType("script.cpp") == AssetType::Script);
+            // Source code files strictly Code (.code for the system)
+            assert(MetaManager::DetermineAssetType("PlayerController.h") == AssetType::Code);
+            assert(MetaManager::DetermineAssetType("PlayerController.hpp") == AssetType::Code);
+            assert(MetaManager::DetermineAssetType("system.c") == AssetType::Code);
+            assert(MetaManager::DetermineAssetType("PlayerController.cpp") == AssetType::Code);
+            assert(MetaManager::DetermineAssetType("math_simd.cxx") == AssetType::Code);
+            assert(MetaManager::DetermineAssetType("intrinsics.inc") == AssetType::Code);
+
+            // Text data streams strictly TextStream
+            assert(MetaManager::DetermineAssetType("readme.txt") == AssetType::TextStream);
+            assert(MetaManager::DetermineAssetType("dialogues.json") == AssetType::TextStream);
+            assert(MetaManager::DetermineAssetType("engine.log") == AssetType::TextStream);
 
             std::filesystem::path dummyAsset = expectedRoot / "Assets" / "Textures" / "Hero.png";
             std::filesystem::create_directories(dummyAsset.parent_path(), ec);

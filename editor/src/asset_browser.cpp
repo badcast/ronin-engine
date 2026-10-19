@@ -16,22 +16,7 @@ namespace RoninEditor
 
     AssetType AssetBrowser::determineAssetType(const std::filesystem::path &path) const
     {
-        if (std::filesystem::is_directory(path))
-            return AssetType::Folder;
-
-        std::string ext = path.extension().string();
-        std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
-
-        if (ext == ".world" || ext == ".wld" || ext == ".ron" || ext == ".roninscene") return AssetType::World;
-        if (ext == ".sprite") return AssetType::Sprite;
-        if (ext == ".png" || ext == ".jpg" || ext == ".jpeg" || ext == ".bmp") return AssetType::Texture;
-        if (ext == ".wav" || ext == ".ogg" || ext == ".mp3") return AssetType::Audio;
-        if (ext == ".h" || ext == ".hpp" || ext == ".cpp") return AssetType::Script;
-        if (ext == ".prefab") return AssetType::Prefab;
-        if (ext == ".ttf" || ext == ".otf") return AssetType::Font;
-        if (ext == ".json" || ext == ".ronin") return AssetType::Config;
-
-        return AssetType::Unknown;
+        return MetaManager::DetermineAssetType(path);
     }
 
     const char *AssetBrowser::getAssetTypeIcon(AssetType type) const
@@ -43,8 +28,11 @@ namespace RoninEditor
             case AssetType::Sprite: return "[Sprite]";
             case AssetType::Texture: return "[Tex]";
             case AssetType::Audio: return "[Aud]";
-            case AssetType::Script: return "[Code]";
+            case AssetType::Code: return "[Code]";
+            case AssetType::TextStream: return "[Text]";
             case AssetType::Prefab: return "[Pref]";
+            case AssetType::Terrain: return "[Terr]";
+            case AssetType::Video: return "[Video]";
             case AssetType::Font: return "[Font]";
             case AssetType::Config: return "[Cfg]";
             default: return "[File]";
@@ -453,7 +441,8 @@ namespace RoninEditor
                 else if (entry.type == AssetType::Sprite) { iconColor = ImVec4(0.20f, 0.90f, 0.85f, 1.0f); if (!isSelected) cardBg = ImVec4(0.14f, 0.26f, 0.26f, 0.7f); }
                 else if (entry.type == AssetType::Texture) { iconColor = ImVec4(0.35f, 0.88f, 0.50f, 1.0f); if (!isSelected) cardBg = ImVec4(0.16f, 0.26f, 0.18f, 0.7f); }
                 else if (entry.type == AssetType::Audio) { iconColor = ImVec4(1.00f, 0.68f, 0.25f, 1.0f); if (!isSelected) cardBg = ImVec4(0.30f, 0.22f, 0.14f, 0.7f); }
-                else if (entry.type == AssetType::Script) { iconColor = ImVec4(0.45f, 0.82f, 1.00f, 1.0f); }
+                else if (entry.type == AssetType::Code) { iconColor = ImVec4(0.35f, 0.75f, 1.00f, 1.0f); }
+                else if (entry.type == AssetType::TextStream) { iconColor = ImVec4(0.80f, 0.85f, 0.90f, 1.0f); }
                 else if (entry.type == AssetType::Prefab) { iconColor = ImVec4(0.95f, 0.85f, 0.30f, 1.0f); }
 
                 // Group representing card
@@ -684,7 +673,8 @@ namespace RoninEditor
                     else if (entry.type == AssetType::World) { iconKind = IconType::World; iconCol = EditorPalette::IconWorld; }
                     else if (entry.type == AssetType::Sprite || entry.type == AssetType::Texture) { iconKind = IconType::Sprite; iconCol = EditorPalette::IconSprite; }
                     else if (entry.type == AssetType::Audio) { iconKind = IconType::Audio; iconCol = EditorPalette::IconAudio; }
-                    else if (entry.type == AssetType::Script) { iconCol = EditorPalette::IconScript; }
+                    else if (entry.type == AssetType::Code) { iconCol = EditorPalette::IconScript; }
+                    else if (entry.type == AssetType::TextStream) { iconCol = EditorPalette::TextMuted; }
                     EditorIcons::IconLabel(iconKind, getAssetTypeIcon(entry.type), iconCol, 13.0f);
 
                     ImGui::TableSetColumnIndex(2);

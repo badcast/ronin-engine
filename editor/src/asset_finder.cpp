@@ -1,5 +1,6 @@
 #include "asset_finder.h"
 #include "project_manager.h"
+#include "meta_manager.h"
 #include "editor_icons.h"
 #include <imgui.h>
 #include <algorithm>
@@ -28,27 +29,7 @@ namespace RoninEditor
 
     AssetType AssetFinder::determineType(const std::filesystem::path &path) const
     {
-        std::string ext = path.extension().string();
-        std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
-
-        if (ext == ".world" || ext == ".scene")
-            return AssetType::World;
-        if (ext == ".sprite")
-            return AssetType::Sprite;
-        if (ext == ".png" || ext == ".jpg" || ext == ".jpeg" || ext == ".bmp")
-            return AssetType::Texture;
-        if (ext == ".wav" || ext == ".ogg" || ext == ".mp3")
-            return AssetType::Audio;
-        if (ext == ".h" || ext == ".hpp" || ext == ".cpp" || ext == ".c")
-            return AssetType::Script;
-        if (ext == ".prefab")
-            return AssetType::Prefab;
-        if (ext == ".ttf" || ext == ".otf")
-            return AssetType::Font;
-        if (ext == ".json" || ext == ".ronin")
-            return AssetType::Config;
-
-        return AssetType::Unknown;
+        return MetaManager::DetermineAssetType(path);
     }
 
     void AssetFinder::rescan(const std::filesystem::path &projectRoot)
@@ -168,7 +149,7 @@ namespace RoninEditor
                 if (m_selectedCategory == 2 && item.type != AssetType::Sprite) continue;
                 if (m_selectedCategory == 3 && item.type != AssetType::Texture) continue;
                 if (m_selectedCategory == 4 && item.type != AssetType::Audio) continue;
-                if (m_selectedCategory == 5 && item.type != AssetType::Script) continue;
+                if (m_selectedCategory == 5 && item.type != AssetType::Code && item.type != AssetType::TextStream) continue;
                 if (m_selectedCategory == 6 && item.type != AssetType::Prefab) continue;
 
                 if (!query.empty())
@@ -244,10 +225,15 @@ namespace RoninEditor
                         iconCol = EditorPalette::IconAudio;
                         typeStr = "Audio";
                         break;
-                    case AssetType::Script:
+                    case AssetType::Code:
                         iconKind = IconType::File;
                         iconCol = EditorPalette::IconScript;
-                        typeStr = "Script";
+                        typeStr = "Code";
+                        break;
+                    case AssetType::TextStream:
+                        iconKind = IconType::File;
+                        iconCol = EditorPalette::TextMuted;
+                        typeStr = "Text";
                         break;
                     case AssetType::Prefab:
                         iconKind = IconType::World;

@@ -1949,18 +1949,53 @@ namespace RoninEditor
                 state.logInfo("Loaded world from asset: " + filename);
             }
         }
-        else if (assetType == AssetType::Script)
+        else if (assetType == AssetType::Code)
         {
-            ImGui::TextColored(ImVec4(0.6f, 0.8f, 1.0f, 1.0f), "Text / Script Inspector");
+            ImGui::TextColored(ImVec4(0.3f, 0.85f, 1.0f, 1.0f), "System Source Code Inspector [Code]");
+            ImGui::Spacing();
+
+            std::vector<std::string> lines = RoninEngine::Runtime::TextStream::ReadLines(p.string());
+            ImGui::Text("Language: C/C++ Source (.h, .hpp, .c, .cpp, .cxx, .inc)");
+            ImGui::Text("Total lines: %zu", lines.size());
+            ImGui::Spacing();
+
+            if (ImGui::CollapsingHeader("Source Code Preview", ImGuiTreeNodeFlags_DefaultOpen))
+            {
+                ImGui::BeginChild("CodePreview", ImVec2(0, 200), true);
+                size_t previewCount = std::min<size_t>(lines.size(), 40);
+                for (size_t i = 0; i < previewCount; ++i)
+                {
+                    ImGui::TextDisabled("%3zu: ", i + 1);
+                    ImGui::SameLine();
+                    ImGui::TextUnformatted(lines[i].c_str());
+                }
+                if (lines.size() > 40)
+                {
+                    ImGui::TextDisabled("... (%zu more lines)", lines.size() - 40);
+                }
+                ImGui::EndChild();
+            }
+
+#if defined(__linux__)
+            if (ImGui::Button("Open in IDE / System Editor", ImVec2(220.0f, 30.0f)))
+            {
+                std::string cmd = "xdg-open \"" + p.string() + "\" &";
+                std::system(cmd.c_str());
+            }
+#endif
+        }
+        else if (assetType == AssetType::TextStream)
+        {
+            ImGui::TextColored(ImVec4(0.6f, 0.8f, 1.0f, 1.0f), "TextStream / Data Stream Inspector");
             ImGui::Spacing();
 
             std::vector<std::string> lines = RoninEngine::Runtime::TextStream::ReadLines(p.string());
             ImGui::Text("Total lines: %zu", lines.size());
             ImGui::Spacing();
 
-            if (ImGui::CollapsingHeader("Preview Content", ImGuiTreeNodeFlags_DefaultOpen))
+            if (ImGui::CollapsingHeader("Text Content Preview", ImGuiTreeNodeFlags_DefaultOpen))
             {
-                ImGui::BeginChild("ScriptPreview", ImVec2(0, 180), true);
+                ImGui::BeginChild("TextStreamPreview", ImVec2(0, 180), true);
                 size_t previewCount = std::min<size_t>(lines.size(), 30);
                 for (size_t i = 0; i < previewCount; ++i)
                 {

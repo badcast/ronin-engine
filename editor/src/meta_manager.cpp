@@ -39,18 +39,19 @@ namespace RoninEditor
     {
         switch (type)
         {
-        case AssetType::World:    return "World";
-        case AssetType::Texture:  return "Texture2D";
-        case AssetType::Sprite:   return "Sprite";
-        case AssetType::Audio:    return "AudioClip";
-        case AssetType::Script:   return "TextStream";
-        case AssetType::Prefab:   return "Prefab";
-        case AssetType::Terrain:  return "Terrain";
-        case AssetType::Video:    return "VideoClip";
-        case AssetType::Font:     return "Font";
-        case AssetType::Config:   return "Config";
-        case AssetType::Folder:   return "Folder";
-        default:                  return "Unknown";
+        case AssetType::World:      return "World";
+        case AssetType::Texture:    return "Texture2D";
+        case AssetType::Sprite:     return "Sprite";
+        case AssetType::Audio:      return "AudioClip";
+        case AssetType::Code:       return "Code";
+        case AssetType::TextStream: return "TextStream";
+        case AssetType::Prefab:     return "Prefab";
+        case AssetType::Terrain:    return "Terrain";
+        case AssetType::Video:      return "VideoClip";
+        case AssetType::Font:       return "Font";
+        case AssetType::Config:     return "Config";
+        case AssetType::Folder:     return "Folder";
+        default:                    return "Unknown";
         }
     }
 
@@ -60,7 +61,8 @@ namespace RoninEditor
         if (str == "Texture2D")  return AssetType::Texture;
         if (str == "Sprite")     return AssetType::Sprite;
         if (str == "AudioClip")  return AssetType::Audio;
-        if (str == "TextStream") return AssetType::Script;
+        if (str == "Code" || str == "Script") return AssetType::Code;
+        if (str == "TextStream") return AssetType::TextStream;
         if (str == "Prefab")     return AssetType::Prefab;
         if (str == "Terrain")    return AssetType::Terrain;
         if (str == "VideoClip")  return AssetType::Video;
@@ -78,7 +80,7 @@ namespace RoninEditor
         std::string ext = path.extension().string();
         std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
 
-        if (ext == ".world") return AssetType::World;
+        if (ext == ".world" || ext == ".scene" || ext == ".roninscene") return AssetType::World;
         if (ext == ".sprite") return AssetType::Sprite;
         if (ext == ".prefab") return AssetType::Prefab;
         if (ext == ".terrain") return AssetType::Terrain;
@@ -87,9 +89,14 @@ namespace RoninEditor
         if (ext == ".mp4" || ext == ".avi" || ext == ".mkv" || ext == ".webm") return AssetType::Video;
         if (ext == ".ttf" || ext == ".otf") return AssetType::Font;
         if (ext == ".ronin") return AssetType::Config;
-        if (ext == ".h" || ext == ".hpp" || ext == ".cpp" || ext == ".c" ||
-            ext == ".txt" || ext == ".json" || ext == ".lua" || ext == ".shader")
-            return AssetType::Script;
+
+        // .h, .hpp, .c, .cpp, .cxx, .inc files are strictly Code (System source code)
+        if (ext == ".h" || ext == ".hpp" || ext == ".c" || ext == ".cpp" || ext == ".cxx" || ext == ".inc")
+            return AssetType::Code;
+
+        // Text data streams
+        if (ext == ".txt" || ext == ".json" || ext == ".log" || ext == ".csv" || ext == ".tsv" || ext == ".lua" || ext == ".shader")
+            return AssetType::TextStream;
 
         return AssetType::Unknown;
     }
@@ -98,18 +105,19 @@ namespace RoninEditor
     {
         switch (type)
         {
-        case AssetType::World:    return "[World]";
-        case AssetType::Texture:  return "[Texture2D]";
-        case AssetType::Sprite:   return "[Sprite]";
-        case AssetType::Audio:    return "[AudioClip]";
-        case AssetType::Script:   return "[TextStream]";
-        case AssetType::Prefab:   return "[Prefab]";
-        case AssetType::Terrain:  return "[Terrain]";
-        case AssetType::Video:    return "[VideoClip]";
-        case AssetType::Font:     return "[Font]";
-        case AssetType::Config:   return "[Config]";
-        case AssetType::Folder:   return "[Folder]";
-        default:                  return "[Asset]";
+        case AssetType::World:      return "[World]";
+        case AssetType::Texture:    return "[Texture2D]";
+        case AssetType::Sprite:     return "[Sprite]";
+        case AssetType::Audio:      return "[AudioClip]";
+        case AssetType::Code:       return "[Code]";
+        case AssetType::TextStream: return "[TextStream]";
+        case AssetType::Prefab:     return "[Prefab]";
+        case AssetType::Terrain:    return "[Terrain]";
+        case AssetType::Video:      return "[VideoClip]";
+        case AssetType::Font:       return "[Font]";
+        case AssetType::Config:     return "[Config]";
+        case AssetType::Folder:     return "[Folder]";
+        default:                    return "[Asset]";
         }
     }
 
@@ -224,7 +232,12 @@ namespace RoninEditor
         case AssetType::Sprite:
             settings["pixelsPerUnit"] = 100.0;
             break;
-        case AssetType::Script:
+        case AssetType::Code:
+            settings["language"] = "C++";
+            settings["encoding"] = "UTF-8";
+            settings["systemSource"] = true;
+            break;
+        case AssetType::TextStream:
             settings["encoding"] = "UTF-8";
             break;
         case AssetType::Prefab:
